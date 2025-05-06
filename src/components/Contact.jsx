@@ -17,7 +17,7 @@ const Contact = () => {
           <div className="bg-gradient-to-br from-primary to-accent p-8 text-white flex flex-col justify-center items-center">
             <div className="mb-6 w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-white/30 mx-auto">
               <img
-                src="./images/ShreyPic2.jpg"
+                src="/images/ShreyPic2.jpg"
                 alt="Shreyans Khunteta"
                 className="w-full h-full object-cover"
               />

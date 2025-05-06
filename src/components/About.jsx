@@ -16,7 +16,7 @@ const About = () => {
           <div className="relative">
             <div className="overflow-hidden rounded-lg shadow-custom-lg">
               <img
-                src="./images/ShreyPic2.jpg"
+                src="/images/ShreyPic2.jpg"
                 alt="Shreyans Khunteta"
                 className="w-full h-full object-cover rounded-lg shadow-lg"
               />
