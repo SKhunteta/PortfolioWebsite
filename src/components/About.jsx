@@ -16,9 +16,9 @@ const About = () => {
           <div className="relative">
             <div className="overflow-hidden rounded-lg shadow-custom-lg">
               <img
-                src="/images/ShreyPic2.jpg"
+                src="./images/ShreyPic2.jpg"
                 alt="Shreyans Khunteta"
-                className="w-full h-auto object-cover transform hover:scale-105 transition duration-500"
+                className="w-full h-full object-cover rounded-lg shadow-lg"
               />
             </div>
             <div className="absolute -bottom-3 -right-3 bg-white p-2 rounded-md shadow-custom-lg">

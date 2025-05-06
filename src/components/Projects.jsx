@@ -11,7 +11,7 @@ const Projects = () => {
       technologies: ["Python", "OpenAI API", "Docker", "Discord Bot"],
       github: "https://github.com/SKhunteta/lingua-ai",
       featured: true,
-      video: "/images/LinguaVideo.MOV",
+      video: "./images/LinguaVideo.MOV",
     },
     {
       id: 2,

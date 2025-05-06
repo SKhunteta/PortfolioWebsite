@@ -76,9 +76,9 @@ const Skills = () => {
             <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
             <div className="relative rounded-lg overflow-hidden shadow-custom-lg">
               <img
-                src="/images/ShreyPic3.PNG"
-                alt="Shreyans at work"
-                className="w-full h-auto object-cover transform group-hover:scale-105 transition duration-500"
+                src="./images/ShreyPic3.PNG"
+                alt="Working with modern technologies"
+                className="w-full h-full object-cover object-center rounded"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent flex flex-col justify-end p-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <h3 className="text-xl font-bold mb-2">Hands-on Experience</h3>
