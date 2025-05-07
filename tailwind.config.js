@@ -4,15 +4,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#4F46E5",
-        secondary: "#2D3748",
-        accent: "#EC4899",
-        "accent-light": "#F9A8D4",
+        primary: "#2D3E50",
+        secondary: "#2C3E50",
+        accent: "#3498DB",
+        "accent-light": "#85C1E9",
         dark: "#1A202C",
-        light: "#F7FAFC",
+        light: "#F8FAFC",
         "gray-dark": "#4A5568",
         "gray-light": "#EDF2F7",
-        "bg-gradient-start": "#E9D5FF",
+        "bg-gradient-start": "#D6EAF8",
         "bg-gradient-end": "#FFFFFF",
       },
       fontFamily: {

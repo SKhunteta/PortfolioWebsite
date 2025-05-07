@@ -63,9 +63,9 @@ const Navbar = () => {
       <div className="container-wide h-full flex items-center justify-between">
         <a
           href="#home"
-          className="text-primary text-2xl md:text-3xl font-bold font-display"
+          className="text-primary text-lg md:text-xl font-bold font-display"
         >
-          <span className="gradient-text">SK</span>
+          <span className="gradient-text">Shreyans Khunteta</span>
         </a>
 
         {/* Desktop Navigation */}
@@ -117,9 +117,9 @@ const Navbar = () => {
           <div className="flex items-center justify-between mb-8">
             <a
               href="#home"
-              className="text-primary text-2xl font-bold font-display"
+              className="text-primary text-lg font-bold font-display"
             >
-              <span className="gradient-text">SK</span>
+              <span className="gradient-text">Shreyans Khunteta</span>
             </a>
             <button
               onClick={() => setNav(false)}
