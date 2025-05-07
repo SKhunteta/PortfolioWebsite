@@ -75,13 +75,20 @@ const Navbar = () => {
               <li key={id}>
                 <a
                   href={`#${link}`}
-                  className={`px-3 py-2 rounded-md mx-1 text-sm font-medium transition-all duration-300 ${
+                  className={`px-3 py-2 rounded-md mx-1 text-sm font-medium inline-block transition-all duration-300 relative ${
                     activeSection === link
-                      ? "text-primary bg-primary/5"
-                      : "text-secondary hover:text-primary hover:bg-primary/5"
+                      ? "text-primary"
+                      : "text-secondary hover:text-primary"
                   }`}
                 >
                   {label}
+                  <span
+                    className={`absolute bottom-0 left-0 w-full h-0.5 rounded transition-all duration-300 ${
+                      activeSection === link
+                        ? "bg-primary scale-x-100"
+                        : "bg-transparent scale-x-0 hover:bg-primary/30 hover:scale-x-100"
+                    }`}
+                  ></span>
                 </a>
               </li>
             ))}
@@ -137,13 +144,18 @@ const Navbar = () => {
                   <a
                     onClick={() => setNav(false)}
                     href={`#${link}`}
-                    className={`block py-3 px-4 rounded-md transition-colors ${
+                    className={`block py-3 px-4 rounded-md transition-colors relative ${
                       activeSection === link
-                        ? "bg-primary/5 text-primary font-medium"
-                        : "text-secondary hover:bg-gray-light"
+                        ? "text-primary font-medium"
+                        : "text-secondary hover:text-primary"
                     }`}
                   >
                     {label}
+                    <span
+                      className={`absolute left-0 top-0 w-1 h-full rounded-l transition-all duration-300 ${
+                        activeSection === link ? "bg-primary" : "bg-transparent"
+                      }`}
+                    ></span>
                   </a>
                 </li>
               ))}

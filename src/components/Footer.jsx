@@ -15,9 +15,9 @@ const Footer = () => {
           <div>
             <a
               href="#home"
-              className="text-3xl font-bold font-display mb-4 inline-block"
+              className="text-xl font-bold font-display mb-4 inline-block"
             >
-              <span className="gradient-text">SK</span>
+              <span className="gradient-text">Shreyans Khunteta</span>
             </a>
             <p className="text-gray-300 mt-2 max-w-xs">
               Building innovative solutions that drive business value through
