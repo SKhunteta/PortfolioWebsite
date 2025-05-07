@@ -21,7 +21,7 @@ const Hero = () => {
           <div className="md:col-span-3 space-y-4 text-center md:text-left animate-fade-in">
             <div>
               <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-semibold mb-4">
-                ✨ Senior Software Engineer
+                Senior Software Engineer
               </span>
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold font-display">
                 Hey, I'm{" "}
