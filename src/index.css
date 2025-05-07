@@ -54,7 +54,7 @@ body {
   }
   
   .section-title::after {
-    @apply content-[''] absolute -bottom-2 left-0 h-1 w-2/3 bg-accent rounded;
+    @apply content-[''] absolute -bottom-2 left-0 h-1 w-full bg-accent rounded;
   }
   
   .section-subtitle {
