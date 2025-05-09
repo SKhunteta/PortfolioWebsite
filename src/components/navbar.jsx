@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import {
-  FaBars,
-  FaTimes,
-  FaGithub,
-  FaLinkedin,
-  FaExternalLinkAlt,
-} from "react-icons/fa";
+import { FaBars, FaTimes, FaGithub, FaLinkedin } from "react-icons/fa";
 import { HiOutlineMail } from "react-icons/hi";
 
 const Navbar = () => {
@@ -132,9 +126,6 @@ const Navbar = () => {
                     className="px-3 py-2 rounded-md mx-1 text-sm font-medium inline-block transition-all duration-300 relative text-secondary hover:text-primary"
                   >
                     {label}
-                    <span className="ml-1 inline-block">
-                      <FaExternalLinkAlt size={10} />
-                    </span>
                     <span className="absolute bottom-0 left-0 w-full h-0.5 rounded transition-all duration-300 bg-transparent scale-x-0 hover:bg-primary/30 hover:scale-x-100"></span>
                   </a>
                 ) : (
@@ -250,9 +241,6 @@ const Navbar = () => {
                       className="block py-3 px-4 rounded-md transition-colors relative text-secondary hover:text-primary"
                     >
                       {label}
-                      <span className="ml-1 inline-block">
-                        <FaExternalLinkAlt size={10} />
-                      </span>
                       <span className="absolute left-0 top-0 w-1 h-full rounded-l transition-all duration-300 bg-transparent"></span>
                     </a>
                   ) : (
