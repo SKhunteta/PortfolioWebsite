@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { FaBars, FaTimes, FaGithub, FaLinkedin } from "react-icons/fa";
 import { HiOutlineMail } from "react-icons/hi";
 
@@ -6,6 +7,7 @@ const Navbar = () => {
   const [nav, setNav] = useState(false);
   const [shadow, setShadow] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const location = useLocation();
 
   const links = [
     { id: 1, link: "home", label: "Home" },
@@ -14,6 +16,11 @@ const Navbar = () => {
     { id: 4, link: "skills", label: "Skills" },
     { id: 5, link: "projects", label: "Projects" },
     { id: 6, link: "contact", label: "Contact" },
+  ];
+
+  const pageLinks = [
+    { id: 7, to: "/blog", label: "Blog" },
+    { id: 8, to: "/stories", label: "Stories" },
   ];
 
   useEffect(() => {
@@ -26,21 +33,23 @@ const Navbar = () => {
     };
 
     const handleScroll = () => {
-      const sections = document.querySelectorAll("div[id]");
-      const scrollPosition = window.scrollY;
+      if (location.pathname === "/") {
+        const sections = document.querySelectorAll("div[id]");
+        const scrollPosition = window.scrollY;
 
-      sections.forEach((section) => {
-        const sectionTop = section.offsetTop - 100;
-        const sectionHeight = section.offsetHeight;
-        const sectionId = section.getAttribute("id");
+        sections.forEach((section) => {
+          const sectionTop = section.offsetTop - 100;
+          const sectionHeight = section.offsetHeight;
+          const sectionId = section.getAttribute("id");
 
-        if (
-          scrollPosition >= sectionTop &&
-          scrollPosition < sectionTop + sectionHeight
-        ) {
-          setActiveSection(sectionId);
-        }
-      });
+          if (
+            scrollPosition >= sectionTop &&
+            scrollPosition < sectionTop + sectionHeight
+          ) {
+            setActiveSection(sectionId);
+          }
+        });
+      }
     };
 
     window.addEventListener("scroll", handleShadow);
@@ -50,7 +59,7 @@ const Navbar = () => {
       window.removeEventListener("scroll", handleShadow);
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [location.pathname]);
 
   return (
     <header
@@ -61,22 +70,53 @@ const Navbar = () => {
       }
     >
       <div className="container-wide h-full flex items-center justify-between">
-        <a
-          href="#home"
+        <Link
+          to="/"
           className="text-primary text-lg md:text-xl font-bold font-display"
         >
           <span className="gradient-text">Shreyans Khunteta</span>
-        </a>
+        </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:block">
           <ul className="flex space-x-1 lg:space-x-2">
             {links.map(({ id, link, label }) => (
               <li key={id}>
-                <a
-                  href={`#${link}`}
+                {location.pathname === "/" ? (
+                  <a
+                    href={`#${link}`}
+                    className={`px-3 py-2 rounded-md mx-1 text-sm font-medium inline-block transition-all duration-300 relative ${
+                      activeSection === link
+                        ? "text-primary"
+                        : "text-secondary hover:text-primary"
+                    }`}
+                  >
+                    {label}
+                    <span
+                      className={`absolute bottom-0 left-0 w-full h-0.5 rounded transition-all duration-300 ${
+                        activeSection === link
+                          ? "bg-primary scale-x-100"
+                          : "bg-transparent scale-x-0 hover:bg-primary/30 hover:scale-x-100"
+                      }`}
+                    ></span>
+                  </a>
+                ) : (
+                  <Link
+                    to={`/#${link}`}
+                    className="px-3 py-2 rounded-md mx-1 text-sm font-medium inline-block transition-all duration-300 relative text-secondary hover:text-primary"
+                  >
+                    {label}
+                    <span className="absolute bottom-0 left-0 w-full h-0.5 rounded transition-all duration-300 bg-transparent scale-x-0 hover:bg-primary/30 hover:scale-x-100"></span>
+                  </Link>
+                )}
+              </li>
+            ))}
+            {pageLinks.map(({ id, to, label }) => (
+              <li key={id}>
+                <Link
+                  to={to}
                   className={`px-3 py-2 rounded-md mx-1 text-sm font-medium inline-block transition-all duration-300 relative ${
-                    activeSection === link
+                    location.pathname === to
                       ? "text-primary"
                       : "text-secondary hover:text-primary"
                   }`}
@@ -84,12 +124,12 @@ const Navbar = () => {
                   {label}
                   <span
                     className={`absolute bottom-0 left-0 w-full h-0.5 rounded transition-all duration-300 ${
-                      activeSection === link
+                      location.pathname === to
                         ? "bg-primary scale-x-100"
                         : "bg-transparent scale-x-0 hover:bg-primary/30 hover:scale-x-100"
                     }`}
                   ></span>
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
@@ -122,12 +162,13 @@ const Navbar = () => {
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-8">
-            <a
-              href="#home"
+            <Link
+              to="/"
               className="text-primary text-lg font-bold font-display"
+              onClick={() => setNav(false)}
             >
               <span className="gradient-text">Shreyans Khunteta</span>
-            </a>
+            </Link>
             <button
               onClick={() => setNav(false)}
               className="rounded-full bg-gray-light p-2 hover:bg-gray-200 transition-colors"
@@ -141,11 +182,44 @@ const Navbar = () => {
             <ul className="space-y-2">
               {links.map(({ id, link, label }) => (
                 <li key={id}>
-                  <a
+                  {location.pathname === "/" ? (
+                    <a
+                      onClick={() => setNav(false)}
+                      href={`#${link}`}
+                      className={`block py-3 px-4 rounded-md transition-colors relative ${
+                        activeSection === link
+                          ? "text-primary font-medium"
+                          : "text-secondary hover:text-primary"
+                      }`}
+                    >
+                      {label}
+                      <span
+                        className={`absolute left-0 top-0 w-1 h-full rounded-l transition-all duration-300 ${
+                          activeSection === link
+                            ? "bg-primary"
+                            : "bg-transparent"
+                        }`}
+                      ></span>
+                    </a>
+                  ) : (
+                    <Link
+                      to={`/#${link}`}
+                      onClick={() => setNav(false)}
+                      className="block py-3 px-4 rounded-md transition-colors relative text-secondary hover:text-primary"
+                    >
+                      {label}
+                      <span className="absolute left-0 top-0 w-1 h-full rounded-l transition-all duration-300 bg-transparent"></span>
+                    </Link>
+                  )}
+                </li>
+              ))}
+              {pageLinks.map(({ id, to, label }) => (
+                <li key={id}>
+                  <Link
+                    to={to}
                     onClick={() => setNav(false)}
-                    href={`#${link}`}
                     className={`block py-3 px-4 rounded-md transition-colors relative ${
-                      activeSection === link
+                      location.pathname === to
                         ? "text-primary font-medium"
                         : "text-secondary hover:text-primary"
                     }`}
@@ -153,10 +227,12 @@ const Navbar = () => {
                     {label}
                     <span
                       className={`absolute left-0 top-0 w-1 h-full rounded-l transition-all duration-300 ${
-                        activeSection === link ? "bg-primary" : "bg-transparent"
+                        location.pathname === to
+                          ? "bg-primary"
+                          : "bg-transparent"
                       }`}
                     ></span>
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
