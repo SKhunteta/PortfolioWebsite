@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaBars, FaTimes, FaGithub, FaLinkedin } from "react-icons/fa";
+import {
+  FaBars,
+  FaTimes,
+  FaGithub,
+  FaLinkedin,
+  FaExternalLinkAlt,
+} from "react-icons/fa";
 import { HiOutlineMail } from "react-icons/hi";
 
 const Navbar = () => {
@@ -19,7 +25,12 @@ const Navbar = () => {
   ];
 
   const pageLinks = [
-    { id: 7, to: "/blog", label: "Blog" },
+    {
+      id: 7,
+      external: true,
+      to: "https://prompt-injection.ghost.io/tag/blogs/",
+      label: "Blog",
+    },
     { id: 8, to: "/stories", label: "Stories" },
   ];
 
@@ -111,25 +122,40 @@ const Navbar = () => {
                 )}
               </li>
             ))}
-            {pageLinks.map(({ id, to, label }) => (
+            {pageLinks.map(({ id, to, label, external }) => (
               <li key={id}>
-                <Link
-                  to={to}
-                  className={`px-3 py-2 rounded-md mx-1 text-sm font-medium inline-block transition-all duration-300 relative ${
-                    location.pathname === to
-                      ? "text-primary"
-                      : "text-secondary hover:text-primary"
-                  }`}
-                >
-                  {label}
-                  <span
-                    className={`absolute bottom-0 left-0 w-full h-0.5 rounded transition-all duration-300 ${
+                {external ? (
+                  <a
+                    href={to}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-2 rounded-md mx-1 text-sm font-medium inline-block transition-all duration-300 relative text-secondary hover:text-primary"
+                  >
+                    {label}
+                    <span className="ml-1 inline-block">
+                      <FaExternalLinkAlt size={10} />
+                    </span>
+                    <span className="absolute bottom-0 left-0 w-full h-0.5 rounded transition-all duration-300 bg-transparent scale-x-0 hover:bg-primary/30 hover:scale-x-100"></span>
+                  </a>
+                ) : (
+                  <Link
+                    to={to}
+                    className={`px-3 py-2 rounded-md mx-1 text-sm font-medium inline-block transition-all duration-300 relative ${
                       location.pathname === to
-                        ? "bg-primary scale-x-100"
-                        : "bg-transparent scale-x-0 hover:bg-primary/30 hover:scale-x-100"
+                        ? "text-primary"
+                        : "text-secondary hover:text-primary"
                     }`}
-                  ></span>
-                </Link>
+                  >
+                    {label}
+                    <span
+                      className={`absolute bottom-0 left-0 w-full h-0.5 rounded transition-all duration-300 ${
+                        location.pathname === to
+                          ? "bg-primary scale-x-100"
+                          : "bg-transparent scale-x-0 hover:bg-primary/30 hover:scale-x-100"
+                      }`}
+                    ></span>
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
@@ -213,26 +239,42 @@ const Navbar = () => {
                   )}
                 </li>
               ))}
-              {pageLinks.map(({ id, to, label }) => (
+              {pageLinks.map(({ id, to, label, external }) => (
                 <li key={id}>
-                  <Link
-                    to={to}
-                    onClick={() => setNav(false)}
-                    className={`block py-3 px-4 rounded-md transition-colors relative ${
-                      location.pathname === to
-                        ? "text-primary font-medium"
-                        : "text-secondary hover:text-primary"
-                    }`}
-                  >
-                    {label}
-                    <span
-                      className={`absolute left-0 top-0 w-1 h-full rounded-l transition-all duration-300 ${
+                  {external ? (
+                    <a
+                      href={to}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setNav(false)}
+                      className="block py-3 px-4 rounded-md transition-colors relative text-secondary hover:text-primary"
+                    >
+                      {label}
+                      <span className="ml-1 inline-block">
+                        <FaExternalLinkAlt size={10} />
+                      </span>
+                      <span className="absolute left-0 top-0 w-1 h-full rounded-l transition-all duration-300 bg-transparent"></span>
+                    </a>
+                  ) : (
+                    <Link
+                      to={to}
+                      onClick={() => setNav(false)}
+                      className={`block py-3 px-4 rounded-md transition-colors relative ${
                         location.pathname === to
-                          ? "bg-primary"
-                          : "bg-transparent"
+                          ? "text-primary font-medium"
+                          : "text-secondary hover:text-primary"
                       }`}
-                    ></span>
-                  </Link>
+                    >
+                      {label}
+                      <span
+                        className={`absolute left-0 top-0 w-1 h-full rounded-l transition-all duration-300 ${
+                          location.pathname === to
+                            ? "bg-primary"
+                            : "bg-transparent"
+                        }`}
+                      ></span>
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

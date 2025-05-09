@@ -8,7 +8,6 @@ import Skills from "./components/Skills";
 import Projects from "./components/Projects";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
-import Blog from "./pages/Blog";
 import Stories from "./pages/Stories";
 
 function App() {
@@ -42,7 +41,6 @@ function App() {
                 </>
               }
             />
-            <Route path="/blog" element={<Blog />} />
             <Route path="/stories" element={<Stories />} />
           </Routes>
         </main>
