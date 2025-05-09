@@ -74,13 +74,6 @@ const Hero = () => {
               >
                 <FaGithub size={20} className="text-primary" />
               </a>
-              <a
-                href="mailto:shreyans.khunteta@gmail.com"
-                className="bg-white rounded-full shadow-custom p-3 cursor-pointer hover:scale-110 ease-in duration-300 hover:shadow-custom-lg"
-                aria-label="Email"
-              >
-                <HiOutlineMail size={20} className="text-primary" />
-              </a>
             </div>
           </div>
 
