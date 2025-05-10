@@ -25,7 +25,12 @@ const Navbar = () => {
       to: "https://prompt-injection.ghost.io/tag/blogs/",
       label: "Blog",
     },
-    { id: 8, to: "/stories", label: "Stories" },
+    {
+      id: 8,
+      external: true,
+      to: "https://prompt-injection.ghost.io/tag/stories/",
+      label: "Stories",
+    },
   ];
 
   useEffect(() => {
