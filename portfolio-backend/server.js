@@ -9,11 +9,45 @@ import askRoute from "./routes/ask.js";
 import schemaRoute from "./routes/schema.js";
 import mcpRoute from "./routes/mcp.js";
 
+// Service imports
+import QdrantService from "./services/qdrant.js";
+import setup from "./setup.js";
+
 // Load environment variables
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Auto-setup function
+async function checkAndRunSetup() {
+  try {
+    console.log("🔍 Checking if Qdrant collection exists...");
+
+    // Try to get collection info
+    await QdrantService.getCollectionInfo();
+    console.log("✅ Qdrant collection exists");
+  } catch (error) {
+    if (error.message.includes("Not found") || error.message.includes("404")) {
+      console.log("⚠️  Qdrant collection not found, running setup...");
+      try {
+        await setup();
+        console.log("✅ Auto-setup completed successfully");
+      } catch (setupError) {
+        console.error("❌ Auto-setup failed:", setupError.message);
+        console.log(
+          "🔄 Server will start anyway, but AI features may not work until setup is run manually"
+        );
+      }
+    } else {
+      console.log(
+        "⚠️  Could not check Qdrant collection status:",
+        error.message
+      );
+      console.log("🔄 Server will start anyway");
+    }
+  }
+}
 
 // Middleware
 app.use(helmet());
@@ -108,8 +142,11 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Portfolio Backend running on port ${PORT}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/health`);
   console.log(`🧠 Ask endpoint: http://localhost:${PORT}/api/ask`);
+
+  // Run auto-setup check
+  await checkAndRunSetup();
 });
