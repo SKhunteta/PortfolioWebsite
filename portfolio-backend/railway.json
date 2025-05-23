@@ -1,0 +1,14 @@
+{
+  "name": "portfolio-backend",
+  "build": {
+    "builder": "nixpacks"
+  },
+  "deploy": {
+    "startCommand": "npm start",
+    "restartPolicyType": "on-failure",
+    "restartPolicyMaxRetries": 3
+  },
+  "env": {
+    "NODE_ENV": "production"
+  }
+} 
