@@ -232,6 +232,13 @@ class QdrantService {
       const collections = await this.client.getCollections();
       console.log(`✅ Connected to Qdrant successfully`);
       console.log(`   Found ${collections.collections.length} collections`);
+
+      if (collections.collections.length === 0) {
+        console.log(
+          "   ℹ️  Empty cluster (normal for new clusters) - collections will be created during setup"
+        );
+      }
+
       return true;
     } catch (error) {
       console.error("❌ Qdrant health check failed:");

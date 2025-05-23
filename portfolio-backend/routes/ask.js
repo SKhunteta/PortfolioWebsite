@@ -194,4 +194,24 @@ router.get("/qdrant-health", async (req, res) => {
   }
 });
 
+// Initialize Qdrant collection endpoint
+router.post("/init-collection", async (req, res) => {
+  try {
+    console.log("📋 Manual collection initialization triggered via API");
+    await QdrantService.initializeCollection();
+    res.json({
+      success: true,
+      message: "Collection initialized successfully",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("❌ Manual collection initialization failed:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
 export default router;

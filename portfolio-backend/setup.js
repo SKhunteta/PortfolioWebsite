@@ -78,12 +78,15 @@ function checkEnvironment() {
 
 async function testQdrantConnection() {
   try {
+    console.log("   🔗 Connecting to Qdrant...");
     const isHealthy = await QdrantService.healthCheck();
     if (!isHealthy) {
-      throw new Error("Qdrant health check failed");
+      throw new Error("Unable to connect to Qdrant - check URL and API key");
     }
     console.log("   ✅ Qdrant connection successful");
+    console.log("   ℹ️  Ready to create collections and index content");
   } catch (error) {
+    console.error("   ❌ Qdrant connection failed");
     throw new Error(`Qdrant connection failed: ${error.message}`);
   }
 }
