@@ -1,72 +1,36 @@
 # Environment variables - NEVER COMMIT THESE
 .env
-.env.local
-.env.development
-.env.test
-.env.production
+.env.*
+!.env.example
 
 # Dependencies
 node_modules/
-.pnp
-.pnp.js
 
-# Testing
-coverage/
-
-# Production builds
-build/
+# Build outputs
 dist/
-
-# Development
-.vite/
-*.local
+build/
 
 # Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+*.log
 
 # macOS
 .DS_Store
 
-# Windows
-Thumbs.db
+# IDE files
+.vscode/
+.idea/
 
-# Vite
-vite.config.js.timestamp-*
-vite.config.ts.timestamp-*
-
-# Cache directories
+# Cache
 .cache/
-.parcel-cache/
+.npm/
 
-# Optional npm cache directory
-.npm
+# Vector database data
+qdrant_data/
 
-# Yarn
-.yarn-integrity
-
-# ESLint cache
-.eslintcache
+# API Keys and secrets
+*.key
+*.pem
 
 # Temporary files
 tmp/
-temp/
+temp/ 

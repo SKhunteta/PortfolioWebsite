@@ -1,0 +1,39 @@
+{
+  "name": "portfolio-backend",
+  "version": "1.0.0",
+  "description": "AI-powered backend for Shreyans Khunteta's portfolio website",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "setup": "node setup.js",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f qdrant",
+    "reindex": "curl -X POST http://localhost:3001/api/ask/reindex -H 'Content-Type: application/json' -d '{\"contentType\": \"all\"}'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "portfolio",
+    "ai",
+    "nlweb",
+    "qdrant",
+    "openai"
+  ],
+  "author": "Shreyans Khunteta",
+  "license": "MIT",
+  "dependencies": {
+    "@qdrant/js-client-rest": "^1.14.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.0",
+    "openai": "^4.103.0",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "projects": [
+    {
+      "id": "lingua-ai-chatbot",
+      "title": "Lingua AI Chatbot",
+      "description": "A conversational language learning chatbot using Python and the OpenAI GPT-3 API. The application helps users practice language skills with intelligent feedback and correction.",
+      "technologies": ["Python", "OpenAI API", "Docker", "Discord Bot"],
+      "github": "https://github.com/SKhunteta/lingua-ai",
+      "featured": true,
+      "type": "AI/ML",
+      "status": "Completed"
+    },
+    {
+      "id": "loan-origination-system",
+      "title": "Loan Origination System",
+      "description": "Led the development of a comprehensive system for loan applications and processing using Blazor and MS SQL Server. Implemented secure data handling and credit score API integration.",
+      "technologies": ["Blazor", "C#", ".NET", "MS SQL Server", "Equifax API"],
+      "github": null,
+      "featured": false,
+      "type": "Enterprise Software",
+      "status": "Completed"
+    },
+    {
+      "id": "healthcare-data-pipeline",
+      "title": "Healthcare Data Pipeline",
+      "description": "Multi-cloud data processing system for healthcare information, converting data between formats and creating standardized outputs for medical records.",
+      "technologies": ["AWS", "Google Cloud", "Docker", "FHIR API", "Camunda"],
+      "github": null,
+      "featured": false,
+      "type": "Data Engineering",
+      "status": "Completed"
+    },
+    {
+      "id": "provider-data-management",
+      "title": "Provider Data Management Tool",
+      "description": "Internal tool to streamline healthcare provider data management with data validation, cleaning, and standardization capabilities.",
+      "technologies": ["C#", ".NET", "ETL", "Informatica PowerCenter", "MDM"],
+      "github": null,
+      "featured": false,
+      "type": "Data Management",
+      "status": "Completed"
+    }
+  ],
+  "skills": [
+    {
+      "category": "Languages & Frameworks",
+      "skills": ["C#", ".NET Core", "Python", "JavaScript", "HTML/CSS", "Blazor"],
+      "experience_level": "Expert"
+    },
+    {
+      "category": "Cloud & DevOps",
+      "skills": ["AWS", "Google Cloud", "Docker", "Microservices", "Terraform"],
+      "experience_level": "Advanced"
+    },
+    {
+      "category": "Databases & Data",
+      "skills": ["MS SQL Server", "Data Engineering", "ETL", "Informatica PowerCenter", "MDM"],
+      "experience_level": "Expert"
+    },
+    {
+      "category": "Tools & Methodologies",
+      "skills": ["Test-Driven Development", "Git", "CI/CD", "Agile", "SDLC", "API Development"],
+      "experience_level": "Expert"
+    },
+    {
+      "category": "Artificial Intelligence",
+      "skills": ["Generative AI", "OpenAI GPT", "AI Chatbots", "ML Integration"],
+      "experience_level": "Intermediate"
+    }
+  ],
+  "experience": [
+    {
+      "role": "Senior Software Engineer",
+      "company": "Healthcare Technology Company",
+      "duration": "Current Role",
+      "description": "Leading development of healthcare data processing systems and loan origination platforms. Expertise in .NET, cloud technologies, and data engineering.",
+      "key_achievements": [
+        "Architected multi-cloud healthcare data pipeline",
+        "Led team in developing loan origination system",
+        "Implemented AI-powered chatbot solutions",
+        "Designed data validation and cleaning tools"
+      ],
+      "technologies": ["C#", ".NET", "AWS", "Google Cloud", "Docker", "MS SQL Server"]
+    }
+  ],
+  "personal": {
+    "name": "Shreyans Khunteta",
+    "title": "Software Engineer",
+    "bio": "Experienced full-stack developer specializing in .NET, cloud technologies, and data engineering. Building innovative solutions that drive business value through clean, scalable code.",
+    "location": "United States",
+    "email": "shreyans.khunteta@gmail.com",
+    "website": "https://builtbyshrey.com",
+    "linkedin": "https://www.linkedin.com/in/shreyans-khunteta-3167247a/",
+    "github": "https://github.com/SKhunteta",
+    "blog": "https://prompt-injection.ghost.io"
+  },
+  "interests": [
+    "Software Architecture",
+    "AI and Machine Learning",
+    "Cloud Computing",
+    "Data Engineering",
+    "Technical Writing",
+    "Open Source Development"
+  ]
+} 
