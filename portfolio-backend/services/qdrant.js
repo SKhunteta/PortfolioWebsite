@@ -223,10 +223,44 @@ class QdrantService {
    */
   async healthCheck() {
     try {
-      await this.client.getCollections();
+      console.log("🔍 Testing Qdrant connection...");
+      console.log(`   URL: ${config.qdrant.url}`);
+      console.log(
+        `   API Key: ${config.qdrant.apiKey ? "***set***" : "NOT SET"}`
+      );
+
+      const collections = await this.client.getCollections();
+      console.log(`✅ Connected to Qdrant successfully`);
+      console.log(`   Found ${collections.collections.length} collections`);
       return true;
     } catch (error) {
-      console.error("Qdrant health check failed:", error);
+      console.error("❌ Qdrant health check failed:");
+      console.error(`   Status: ${error.status || "Unknown"}`);
+      console.error(`   Message: ${error.message || "Unknown error"}`);
+      console.error(`   URL: ${error.url || "Unknown URL"}`);
+
+      // Provide specific guidance based on error type
+      if (error.status === 404) {
+        console.error("🔧 Troubleshooting tips:");
+        console.error(
+          "   1. Check if your Qdrant Cloud cluster URL is correct"
+        );
+        console.error("   2. Verify the cluster is running and accessible");
+        console.error(
+          "   3. Ensure the API key is valid and has proper permissions"
+        );
+        console.error("   4. Try accessing the cluster directly in a browser");
+        console.error(
+          "   5. Try URL without port: remove ':6333' from QDRANT_URL"
+        );
+      } else if (error.status === 401) {
+        console.error("🔧 Authentication failed - check your QDRANT_API_KEY");
+      } else if (error.status === 403) {
+        console.error(
+          "🔧 Permission denied - API key may lack necessary permissions"
+        );
+      }
+
       return false;
     }
   }
