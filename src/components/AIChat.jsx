@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FaPaperPlane, FaRobot, FaUser, FaMagic } from "react-icons/fa";
+import { API_ENDPOINTS } from "../config/api.js";
 
 const AIChat = () => {
   const [messages, setMessages] = useState([
@@ -33,23 +34,32 @@ const AIChat = () => {
 
   const fetchSuggestions = async () => {
     try {
-      const response = await fetch("http://localhost:3001/api/ask/suggestions");
+      const response = await fetch(API_ENDPOINTS.suggestions);
       const data = await response.json();
+
+      // Combine suggestions from different categories
       const allSuggestions = [
-        ...data.general,
-        ...data.projects,
-        ...data.skills,
-        ...data.experience,
-        ...data.personal,
+        ...(data.general || []),
+        ...(data.technical || []),
+        ...(data.projects || []),
+        ...(data.personal || []),
       ];
-      setSuggestions(allSuggestions.slice(0, 6)); // Show first 6 suggestions
+
+      setSuggestions(allSuggestions);
     } catch (error) {
       console.error("Error fetching suggestions:", error);
+      // Set default suggestions if API fails
+      setSuggestions([
+        "What are Shreyans' key technical skills?",
+        "Tell me about his AI projects",
+        "What's his educational background?",
+        "What programming languages does he know?",
+      ]);
     }
   };
 
   const handleSendMessage = async (message = inputMessage) => {
-    if (!message.trim() || isLoading) return;
+    if (!message.trim()) return;
 
     const userMessage = {
       id: Date.now(),
@@ -64,7 +74,7 @@ const AIChat = () => {
     setShowSuggestions(false);
 
     try {
-      const response = await fetch("http://localhost:3001/api/ask", {
+      const response = await fetch(API_ENDPOINTS.ask, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
