@@ -19,34 +19,9 @@ const AIChat = () => {
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
 
-  const scrollToBottom = () => {
-    if (chatContainerRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } =
-        chatContainerRef.current;
-      // Only scroll if user is within 200px of the bottom, or if the chat is not yet scrollable
-      if (
-        scrollHeight - scrollTop - clientHeight < 200 ||
-        scrollHeight <= clientHeight
-      ) {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      }
-    }
-  };
-
-  useEffect(() => {
-    // Only scroll when a new AI message is added, respecting user's scroll position
-    if (messages.length > 0 && messages[messages.length - 1].type === "ai") {
-      scrollToBottom();
-    }
-  }, [messages]);
-
   useEffect(() => {
     // Fetch suggestions on component mount
     fetchSuggestions();
-    // Scroll to top on initial load
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = 0;
-    }
   }, []);
 
   const fetchSuggestions = async () => {
