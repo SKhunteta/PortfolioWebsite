@@ -2,7 +2,7 @@ import express from "express";
 import OpenAIService from "../services/openai.js";
 import QdrantService from "../services/qdrant.js";
 import IndexerService from "../services/indexer.js";
-import config from "../config/index.js";
+import { config } from "../config/index.js";
 import { v4 as uuidv4 } from "uuid";
 import setup from "../setup.js";
 
