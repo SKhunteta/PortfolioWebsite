@@ -2,6 +2,9 @@ import express from "express";
 import OpenAIService from "../services/openai.js";
 import QdrantService from "../services/qdrant.js";
 import IndexerService from "../services/indexer.js";
+import config from "../config/index.js";
+import { v4 as uuidv4 } from "uuid";
+import setup from "../setup.js";
 
 const router = express.Router();
 
@@ -129,5 +132,43 @@ function formatSearchResults(searchResults) {
     },
   }));
 }
+
+// Manual setup endpoint for debugging
+router.post("/setup", async (req, res) => {
+  try {
+    console.log("📋 Manual setup triggered via API");
+    await setup();
+    res.json({
+      success: true,
+      message: "Setup completed successfully",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("❌ Manual setup failed:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
+// Collection info endpoint for debugging
+router.get("/collection-info", async (req, res) => {
+  try {
+    const info = await QdrantService.getCollectionInfo();
+    res.json({
+      success: true,
+      collection: info,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
 
 export default router;
