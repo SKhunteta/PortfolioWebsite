@@ -11,6 +11,7 @@ import mcpRoute from "./routes/mcp.js";
 
 // Service imports
 import QdrantService from "./services/qdrant.js";
+import IndexerService from "./services/indexer.js";
 import setup from "./setup.js";
 
 // Load environment variables
@@ -29,6 +30,23 @@ async function checkAndRunSetup() {
 
     if (collectionInfo) {
       console.log("✅ Qdrant collection exists");
+
+      // If in production, always reindex to ensure latest content
+      if (process.env.NODE_ENV === "production") {
+        console.log(
+          "🔄 Production environment detected - reindexing content..."
+        );
+        try {
+          await QdrantService.clearCollection();
+          const result = await IndexerService.indexAllContent();
+          console.log(
+            `✅ Production reindex completed - ${result.documentsIndexed} documents indexed`
+          );
+        } catch (reindexError) {
+          console.error("❌ Production reindex failed:", reindexError.message);
+          console.log("⚠️  Server will continue, but content may be outdated");
+        }
+      }
     } else {
       console.log("⚠️  Qdrant collection not found, running setup...");
       try {
