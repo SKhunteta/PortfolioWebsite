@@ -4,7 +4,7 @@ const API_CONFIG = {
     baseURL: "http://localhost:3001",
   },
   production: {
-    baseURL: "https://your-backend-production-url.railway.app", // 🚨 REPLACE WITH YOUR ACTUAL RAILWAY URL AFTER DEPLOYMENT
+    baseURL: "https://backend.builtbyshrey.com",
   },
 };
 
