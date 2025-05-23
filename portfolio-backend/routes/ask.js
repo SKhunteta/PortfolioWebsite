@@ -171,4 +171,27 @@ router.get("/collection-info", async (req, res) => {
   }
 });
 
+// Qdrant health check endpoint
+router.get("/qdrant-health", async (req, res) => {
+  try {
+    const isHealthy = await QdrantService.healthCheck();
+    const collections = isHealthy
+      ? await QdrantService.client.getCollections()
+      : null;
+
+    res.json({
+      success: true,
+      healthy: isHealthy,
+      collections: collections?.collections?.map((c) => c.name) || [],
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
 export default router;

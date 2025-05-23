@@ -25,10 +25,11 @@ async function checkAndRunSetup() {
     console.log("🔍 Checking if Qdrant collection exists...");
 
     // Try to get collection info
-    await QdrantService.getCollectionInfo();
-    console.log("✅ Qdrant collection exists");
-  } catch (error) {
-    if (error.message.includes("Not found") || error.message.includes("404")) {
+    const collectionInfo = await QdrantService.getCollectionInfo();
+
+    if (collectionInfo) {
+      console.log("✅ Qdrant collection exists");
+    } else {
       console.log("⚠️  Qdrant collection not found, running setup...");
       try {
         await setup();
@@ -39,13 +40,10 @@ async function checkAndRunSetup() {
           "🔄 Server will start anyway, but AI features may not work until setup is run manually"
         );
       }
-    } else {
-      console.log(
-        "⚠️  Could not check Qdrant collection status:",
-        error.message
-      );
-      console.log("🔄 Server will start anyway");
     }
+  } catch (error) {
+    console.log("⚠️  Could not check Qdrant collection status:", error.message);
+    console.log("🔄 Server will start anyway");
   }
 }
 

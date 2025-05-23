@@ -6,6 +6,7 @@ class QdrantService {
     this.client = new QdrantClient({
       url: config.qdrant.url,
       apiKey: config.qdrant.apiKey,
+      checkCompatibility: false,
     });
 
     this.collectionName = config.qdrant.collection;
@@ -16,6 +17,10 @@ class QdrantService {
    */
   async initializeCollection() {
     try {
+      console.log(
+        `🔍 Checking if collection '${this.collectionName}' exists...`
+      );
+
       // Check if collection exists
       const collections = await this.client.getCollections();
       const collectionExists = collections.collections.some(
@@ -23,7 +28,9 @@ class QdrantService {
       );
 
       if (!collectionExists) {
-        console.log(`Creating Qdrant collection: ${this.collectionName}`);
+        console.log(`📦 Creating Qdrant collection: ${this.collectionName}`);
+        console.log(`   Vector size: ${config.qdrant.vectorSize}`);
+        console.log(`   Distance metric: ${config.qdrant.distance}`);
 
         await this.client.createCollection(this.collectionName, {
           vectors: {
@@ -37,8 +44,10 @@ class QdrantService {
         console.log("✅ Qdrant collection already exists");
       }
     } catch (error) {
-      console.error("Error initializing Qdrant collection:", error);
-      throw new Error("Failed to initialize Qdrant collection");
+      console.error("❌ Error initializing Qdrant collection:", error.message);
+      throw new Error(
+        `Failed to initialize Qdrant collection: ${error.message}`
+      );
     }
   }
 
@@ -161,12 +170,16 @@ class QdrantService {
 
   /**
    * Get collection info
-   * @returns {Promise<Object>} - Collection information
+   * @returns {Promise<Object|null>} - Collection information or null if not found
    */
   async getCollectionInfo() {
     try {
       return await this.client.getCollection(this.collectionName);
     } catch (error) {
+      // If collection doesn't exist (404), return null instead of throwing
+      if (error.status === 404) {
+        return null;
+      }
       console.error("Error getting collection info:", error);
       throw new Error("Failed to get collection information");
     }
