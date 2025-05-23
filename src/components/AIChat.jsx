@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { FaPaperPlane, FaRobot, FaUser, FaMagic } from "react-icons/fa";
+import { FaPaperPlane, FaUser, FaMagic } from "react-icons/fa";
 import { API_ENDPOINTS } from "../config/api.js";
+import KaliAvatar from "../../images/Kaliavatar.png";
 
 const AIChat = () => {
   const [messages, setMessages] = useState([
@@ -132,10 +133,14 @@ const AIChat = () => {
           <div className="bg-gradient-to-r from-primary to-accent p-4 text-white">
             <div className="flex items-center space-x-3">
               <div className="bg-white/20 rounded-full p-2">
-                <FaRobot size={20} />
+                <img
+                  src={KaliAvatar}
+                  alt="Kali AI Assistant"
+                  className="w-20 h-20 rounded-full object-cover"
+                />
               </div>
               <div>
-                <h3 className="font-semibold">Portfolio AI Assistant</h3>
+                <h3 className="font-semibold">Kali AI Assistant</h3>
                 <p className="text-sm opacity-90">
                   Powered by OpenAI & Vector Search
                 </p>
@@ -168,7 +173,11 @@ const AIChat = () => {
                   <div className="flex items-start space-x-2">
                     {message.type === "ai" && (
                       <div className="flex-shrink-0 mt-1">
-                        <FaRobot size={16} className="text-primary" />
+                        <img
+                          src={KaliAvatar}
+                          alt="Kali"
+                          className="w-16 h-16 rounded-full object-cover"
+                        />
                       </div>
                     )}
                     {message.type === "user" && (
@@ -195,7 +204,11 @@ const AIChat = () => {
               <div className="flex justify-start">
                 <div className="bg-white text-gray-800 shadow-md border max-w-xs lg:max-w-md px-4 py-2 rounded-lg">
                   <div className="flex items-center space-x-2">
-                    <FaRobot size={16} className="text-primary" />
+                    <img
+                      src={KaliAvatar}
+                      alt="Kali thinking"
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
                       <div
