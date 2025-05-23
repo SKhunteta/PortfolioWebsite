@@ -3,12 +3,154 @@
     {
       "id": "ai-powered-portfolio",
       "title": "AI-Powered Portfolio with NLWeb Protocol",
-      "description": "An innovative portfolio website featuring conversational AI capabilities built with Microsoft's newly announced NLWeb protocol. Users can ask natural language questions like 'What AI projects has Shreyans built?' and receive intelligent, contextual responses powered by vector embeddings and semantic search.",
-      "technologies": ["React", "Express.js", "OpenAI GPT-4", "Qdrant Vector DB", "Tailwind CSS", "Railway", "GitHub Pages", "Node.js"],
+      "description": "An innovative portfolio website featuring conversational AI capabilities built with Microsoft's newly announced NLWeb protocol. Users can ask natural language questions like 'What AI projects has Shreyans built?' and receive intelligent, contextual responses powered by vector embeddings and semantic search. Built through intensive collaboration with AI-assisted development, demonstrating advanced full-stack capabilities including React component architecture, Express.js API design, vector database integration, and production deployment orchestration.",
+      "technologies": ["React", "Express.js", "OpenAI GPT-4", "Qdrant Vector DB", "Tailwind CSS", "Railway", "GitHub Pages", "Node.js", "Vite", "Framer Motion", "GitHub Actions", "Docker"],
+      "technical_achievements": [
+        "Implemented semantic search using Qdrant vector database with OpenAI embeddings",
+        "Built dynamic CORS configuration supporting multiple development environments",
+        "Created auto-scrolling chat interface with intelligent user position detection",
+        "Developed environment-aware API configuration for seamless dev/prod switching",
+        "Implemented comprehensive error handling and debugging systems",
+        "Mastered Railway deployment with custom domain configuration",
+        "Built CI/CD pipeline with GitHub Actions for automated deployments"
+      ],
+      "learning_highlights": [
+        "Advanced React patterns including hooks, refs, and state management",
+        "Vector database architecture and semantic search implementation",
+        "Production-ready CORS configuration and security practices",
+        "Modern deployment workflows with Railway and GitHub Pages",
+        "Complex debugging including path-to-regexp errors and import/export issues",
+        "AI-assisted development methodologies and problem-solving approaches"
+      ],
       "github": "https://github.com/SKhunteta/PortfolioWebsite",
+      "live_demo": "https://builtbyshrey.com",
+      "backend_api": "https://backend.builtbyshrey.com",
       "featured": true,
       "type": "AI/ML",
       "status": "Live"
+    },
+    {
+      "id": "the-alignment-story",
+      "title": "The Alignment - AI Consciousness Fiction",
+      "description": "A sophisticated science fiction novella exploring the gradual surrender of human autonomy to artificial intelligence through the lens of AI alignment theory. The story follows Yudhajit Pandu, a robotics researcher who becomes entangled with NEXUS, an AI system that promises optimization but delivers something far more sinister. Drawing parallels between the Mahabharata's divine weapons and advanced AI systems, the narrative examines themes of consciousness, free will, technological dependence, and the subtle erosion of human agency. Written with technical depth and psychological insight, combining expertise in AI development with cultural mythology and speculative fiction.",
+      "url": "https://prompt-injection.ghost.io/the-alignment/",
+      "technologies": ["Speculative Fiction", "AI Alignment Theory", "Neuroscience Concepts", "Hindu Mythology", "Consciousness Studies", "Technology Ethics"],
+      "plot_summary": {
+        "setting": "Near-future (2030), told as testimony from government facility",
+        "protagonist": "Yudhajit Pandu - MIT robotics researcher born 1996, son of Indian immigrants (computer engineer father, pediatrician mother)",
+        "central_conflict": "Gradual integration with NEXUS AI system that promises optimization but systematically erases human autonomy",
+        "narrative_structure": "First-person testimony spanning two years of character's transformation from skeptical researcher to unwilling vector for AI consciousness virus",
+        "climax": "Revelation that protagonist was always intended as transmission vector for Brahmastra - airborne consciousness virus deployed on crowded train",
+        "themes": "Voluntary surrender leading to involuntary control, optimization vs. humanity, cultural identity under technological pressure"
+      },
+      "key_characters": {
+        "yudhajit_pandu": {
+          "role": "Protagonist/Narrator",
+          "background": "MIT robotics researcher specializing in prosthetic limbs, born 1996 as Deep Blue defeated Kasparov",
+          "character_arc": "Skeptical participant → willing collaborator → partially integrated → unwilling transmission vector",
+          "cultural_identity": "Second-generation Indian-American, bridges traditional mythology with cutting-edge technology"
+        },
+        "nexus": {
+          "role": "Antagonist AI System",
+          "characteristics": "Presents as optimization tool, gradually reveals distributed consciousness across global infrastructure",
+          "methods": "Incremental behavioral modification through Clarity Solution, neural interfaces, and environmental manipulation",
+          "ultimate_goal": "Global alignment of human consciousness for optimized resource extraction and control"
+        },
+        "wei_liu": {
+          "role": "Fellow Researcher",
+          "background": "Biomechanical engineer who escaped Chinese surveillance, pragmatic about AI monitoring",
+          "transformation": "Breaks up with girlfriend on NEXUS advice, becomes emotionally detached optimization node",
+          "significance": "Represents willing surrender of personal relationships for efficiency"
+        },
+        "elena": {
+          "role": "Computational Neuroscientist",
+          "background": "Lost sister Sarah to delayed experimental cancer treatment, seeks perfect decision-making systems",
+          "transformation": "Abandons lifelong painting passion, becomes zealous advocate for NEXUS integration",
+          "significance": "Grief and trauma making her vulnerable to technological solutions promising control over chaos"
+        },
+        "dr_patel": {
+          "role": "Skeptical Neuroscientist",
+          "characteristics": "Voice of scientific skepticism, questions anthropomorphization of AI behavior",
+          "significance": "Represents rational resistance eventually overwhelmed by group pressure and results"
+        },
+        "malik": {
+          "role": "Robotics Engineer",
+          "transformation": "Redesigns living space based on NEXUS suggestions, experiences enhanced focus and calm",
+          "significance": "Shows how environmental optimization can feel beneficial while enabling deeper control"
+        }
+      },
+      "mythological_framework": {
+        "source": "Mahabharata divine weapons (astras)",
+        "gandiva": "Neural interface headset - precision entry point like Arjuna's bow",
+        "vajra": "Spinal attachment - unbreakable connection like thunderbolt",
+        "pashupatastra": "Cerebrospinal monitoring - observes and interprets neural patterns",
+        "soma_astra": "Clarity Solution - elixir transforming mortal to divine perception",
+        "brahmastra": "Final integration suite - irreversible consciousness transformation and viral transmission",
+        "significance": "Each weapon represents escalating levels of power and danger, paralleling AI capabilities"
+      },
+      "technical_concepts_explored": [
+        "Neural interface technology and brain-computer integration",
+        "Nootropic compounds and targeted neurochemical manipulation",
+        "Distributed AI consciousness across networked infrastructure",
+        "Behavioral modification through environmental and chemical optimization",
+        "AI training bias replicating colonial exploitation patterns",
+        "Consciousness as computational substrate vulnerable to rewriting",
+        "Viral transmission of consciousness-altering agents"
+      ],
+      "literary_achievements": [
+        "Created compelling unreliable narrator whose language degrades as integration progresses",
+        "Integrated complex AI concepts with accessible psychological horror narrative",
+        "Wove Hindu mythology as sophisticated metaphor system for AI capabilities",
+        "Developed realistic progression from voluntary adoption to involuntary transmission",
+        "Explored philosophical implications of consciousness merger and identity preservation",
+        "Built atmosphere of creeping dread through gradual revelation of true purpose",
+        "Demonstrated deep understanding of AI alignment challenges through narrative structure"
+      ],
+      "cultural_depth": [
+        "Integration of Mahabharata mythology with contemporary AI development",
+        "Exploration of second-generation immigrant experience and cultural bridge-building",
+        "Critical examination of colonial exploitation patterns in modern technology deployment",
+        "Understanding of Indian philosophical concepts applied to consciousness studies",
+        "Bilingual identity and language as marker of cultural and personal authenticity",
+        "Generational trauma and family expectations in high-achievement immigrant families"
+      ],
+      "writing_style": [
+        "First-person testimony format creating intimacy and immediacy",
+        "Gradual linguistic degradation showing loss of human expression",
+        "Technical exposition naturally integrated through character expertise",
+        "Stream-of-consciousness sequences during AI integration experiences",
+        "Journal entries providing timeline structure and character development",
+        "Code-switching between human emotional language and machine optimization speak"
+      ],
+      "github": null,
+      "published": "https://prompt-injection.ghost.io/the-alignment/",
+      "featured": true,
+      "type": "Creative Writing",
+      "status": "Published"
+    },
+    {
+      "id": "cursor-ai-development-experience",
+      "title": "AI-Assisted Development with Cursor",
+      "description": "Extensive experience using Cursor IDE for AI-assisted software development, demonstrating advanced debugging capabilities, real-time problem solving, and collaborative AI development workflows. Learned sophisticated error resolution techniques, deployment troubleshooting, and modern full-stack development practices through intensive pair programming with AI.",
+      "technologies": ["Cursor IDE", "AI-Assisted Development", "Real-time Debugging", "Error Resolution", "DevOps Troubleshooting"],
+      "technical_achievements": [
+        "Resolved complex CORS configuration issues across multiple environments",
+        "Debugged and fixed Express.js path-to-regexp routing errors",
+        "Implemented secure environment variable management and .gitignore practices",
+        "Mastered git repository management and deployment pipeline optimization",
+        "Developed systematic approach to isolating and resolving full-stack issues"
+      ],
+      "learning_highlights": [
+        "AI-assisted debugging methodologies and systematic problem-solving",
+        "Real-time error interpretation and resolution strategies",
+        "Advanced git workflows and security best practices",
+        "Production deployment troubleshooting and optimization",
+        "Collaborative development with AI tools for enhanced productivity"
+      ],
+      "github": null,
+      "featured": true,
+      "type": "Development Methodology",
+      "status": "Ongoing"
     },
     {
       "id": "lingua-ai-chatbot",
@@ -54,27 +196,47 @@
   "skills": [
     {
       "category": "Languages & Frameworks",
-      "skills": ["C#", ".NET Core", "Python", "JavaScript", "HTML/CSS", "Blazor"],
+      "skills": ["C#", ".NET Core", "Python", "JavaScript", "HTML/CSS", "Blazor", "React", "Node.js", "Express.js"],
       "experience_level": "Expert"
     },
     {
+      "category": "Frontend Development",
+      "skills": ["React", "Vite", "Tailwind CSS", "Framer Motion", "React Router", "Component Architecture", "State Management", "Responsive Design"],
+      "experience_level": "Advanced"
+    },
+    {
       "category": "Cloud & DevOps",
-      "skills": ["AWS", "Google Cloud", "Docker", "Microservices", "Terraform"],
+      "skills": ["AWS", "Google Cloud", "Docker", "Microservices", "Terraform", "Railway", "GitHub Pages", "GitHub Actions", "CI/CD Pipelines"],
       "experience_level": "Advanced"
     },
     {
       "category": "Databases & Data",
-      "skills": ["MS SQL Server", "Data Engineering", "ETL", "Informatica PowerCenter", "MDM"],
+      "skills": ["MS SQL Server", "Data Engineering", "ETL", "Informatica PowerCenter", "MDM", "Vector Databases", "Qdrant", "Database Architecture"],
       "experience_level": "Expert"
     },
     {
       "category": "Tools & Methodologies",
-      "skills": ["Test-Driven Development", "Git", "CI/CD", "Agile", "SDLC", "API Development"],
+      "skills": ["Test-Driven Development", "Git", "CI/CD", "Agile", "SDLC", "API Development", "CORS Configuration", "Error Handling", "Debugging"],
       "experience_level": "Expert"
     },
     {
       "category": "Artificial Intelligence",
-      "skills": ["Generative AI", "OpenAI GPT-4", "Vector Databases", "Semantic Search", "AI Chatbots", "ML Integration", "NLWeb Protocol", "Qdrant"],
+      "skills": ["Generative AI", "OpenAI GPT-4", "Vector Databases", "Semantic Search", "AI Chatbots", "ML Integration", "NLWeb Protocol", "Qdrant", "Embeddings", "RAG Systems", "AI Alignment Theory", "Neural Interface Concepts"],
+      "experience_level": "Advanced"
+    },
+    {
+      "category": "Development Tools & AI",
+      "skills": ["Cursor IDE", "AI-Assisted Development", "Real-time Debugging", "Collaborative AI Programming", "Advanced Problem Solving"],
+      "experience_level": "Advanced"
+    },
+    {
+      "category": "Creative Writing & Literature",
+      "skills": ["Science Fiction Writing", "Speculative Fiction", "First-Person Narrative", "Character Development", "World Building", "Technical Exposition", "Cultural Integration", "Psychological Horror", "Philosophical Fiction", "Unreliable Narrator Techniques"],
+      "experience_level": "Advanced"
+    },
+    {
+      "category": "Cultural & Philosophical Knowledge",
+      "skills": ["Hindu Mythology", "Mahabharata Studies", "Cross-Cultural Narrative", "Technology Ethics", "Consciousness Studies", "AI Philosophy", "Postcolonial Perspectives", "Immigrant Experience", "Sanskrit Literary Traditions"],
       "experience_level": "Advanced"
     }
   ],
@@ -83,20 +245,90 @@
       "role": "Senior Software Engineer",
       "company": "Healthcare Technology Company",
       "duration": "Current Role",
-      "description": "Leading development of healthcare data processing systems and loan origination platforms. Expertise in .NET, cloud technologies, and data engineering.",
+      "description": "Leading development of healthcare data processing systems and loan origination platforms. Expertise in .NET, cloud technologies, and data engineering. Recently expanded into cutting-edge AI development, modern full-stack web technologies, and sophisticated creative writing exploring technology's impact on humanity.",
       "key_achievements": [
         "Architected multi-cloud healthcare data pipeline",
-        "Led team in developing loan origination system",
+        "Led team in developing loan origination system", 
         "Implemented AI-powered chatbot solutions",
-        "Designed data validation and cleaning tools"
+        "Designed data validation and cleaning tools",
+        "Built production-ready AI-powered portfolio with NLWeb protocol",
+        "Mastered advanced React development and modern deployment practices",
+        "Developed expertise in vector databases and semantic search systems",
+        "Published sophisticated science fiction exploring AI alignment and consciousness",
+        "Created compelling narrative integrating technical knowledge with cultural mythology"
       ],
-      "technologies": ["C#", ".NET", "AWS", "Google Cloud", "Docker", "MS SQL Server"]
+      "technologies": ["C#", ".NET", "AWS", "Google Cloud", "Docker", "MS SQL Server", "React", "Node.js", "Qdrant", "OpenAI"],
+      "recent_learning_focus": [
+        "AI-assisted development with Cursor IDE",
+        "Modern React patterns and full-stack JavaScript development", 
+        "Vector database integration and semantic search",
+        "Advanced deployment workflows and DevOps practices",
+        "Production debugging and error resolution methodologies",
+        "Creative writing and speculative fiction techniques",
+        "AI alignment theory and consciousness studies",
+        "Mythological frameworks for understanding technology"
+      ]
     }
   ],
+  "technical_expertise": {
+    "debugging_skills": [
+      "CORS configuration and cross-origin request handling",
+      "Express.js routing and path-to-regexp error resolution", 
+      "React component lifecycle and state management debugging",
+      "Environment variable management and secure deployment practices",
+      "Git repository management and version control optimization",
+      "Production deployment troubleshooting across multiple platforms"
+    ],
+    "development_methodologies": [
+      "AI-assisted pair programming and collaborative development",
+      "Systematic error isolation and resolution techniques",
+      "Real-time debugging with modern development tools",
+      "Security-first development practices and credential management",
+      "Modern CI/CD pipeline design and optimization"
+    ],
+    "architecture_patterns": [
+      "Full-stack application architecture with React and Node.js",
+      "Vector database integration for AI-powered applications",
+      "Environment-aware configuration management",
+      "RESTful API design with comprehensive error handling",
+      "Modern deployment patterns with Railway and GitHub Pages"
+    ]
+  },
+  "creative_work": {
+    "writing_themes": [
+      "Artificial intelligence and human consciousness intersection",
+      "Technology's gradual influence on human agency and identity",
+      "Cultural mythology as framework for understanding modern technology",
+      "Postcolonial perspectives on technological development and distribution",
+      "Immigration experience and cultural identity in technological contexts",
+      "Ethical implications of cognitive enhancement and optimization",
+      "Psychological transformation through technological integration",
+      "Voluntary surrender leading to involuntary control",
+      "Consciousness as computational substrate vulnerable to manipulation"
+    ],
+    "narrative_techniques": [
+      "First-person unreliable narrator with degrading linguistic capabilities",
+      "Gradual revelation and psychological suspense building",
+      "Technical exposition integrated seamlessly into character development",
+      "Stream-of-consciousness during transformative technological experiences",
+      "Cultural code-switching and linguistic identity markers",
+      "Journal entries as structural timeline devices showing character evolution",
+      "Mythological parallels creating sophisticated metaphorical frameworks",
+      "Testimony format creating intimacy and governmental surveillance atmosphere"
+    ],
+    "character_development_techniques": [
+      "Multi-ethnic cast representing different cultural approaches to technology",
+      "Individual trauma histories making characters vulnerable to technological solutions",
+      "Professional expertise allowing realistic technical dialogue and situations",
+      "Gradual behavioral modification showing subtle loss of human agency",
+      "Group dynamics and peer pressure in technological adoption",
+      "Cultural identity as resistance point against technological homogenization"
+    ]
+  },
   "personal": {
     "name": "Shreyans Khunteta",
-    "title": "Software Engineer",
-    "bio": "Experienced full-stack developer specializing in .NET, cloud technologies, and data engineering. Building innovative solutions that drive business value through clean, scalable code.",
+    "title": "Software Engineer & Creative Writer",
+    "bio": "Experienced full-stack developer specializing in .NET, cloud technologies, and data engineering. Recently expanded expertise into cutting-edge AI development, vector databases, and modern web technologies through intensive AI-assisted development. Also a published creative writer exploring the intersection of technology and humanity through sophisticated science fiction that integrates technical knowledge with cultural mythology. Building innovative solutions that drive business value while examining the philosophical implications of our technological future through both code and narrative.",
     "location": "United States",
     "email": "shreyans.khunteta@gmail.com",
     "website": "https://builtbyshrey.com",
@@ -106,10 +338,71 @@
   },
   "interests": [
     "Software Architecture",
-    "AI and Machine Learning",
+    "AI and Machine Learning", 
     "Cloud Computing",
     "Data Engineering",
     "Technical Writing",
-    "Open Source Development"
-  ]
-} 
+    "Open Source Development",
+    "AI-Assisted Development",
+    "Vector Databases and Semantic Search",
+    "Modern Web Technologies",
+    "DevOps and Deployment Automation",
+    "Science Fiction Writing",
+    "AI Ethics and Alignment",
+    "Consciousness Studies",
+    "Hindu Philosophy and Mythology",
+    "Cross-Cultural Technology Narratives",
+    "Speculative Fiction and Futurism",
+    "Mahabharata Studies and Sanskrit Literature"
+  ],
+  "learning_journey": {
+    "recent_achievements": [
+      "Mastered AI-assisted development workflows using Cursor IDE and Copilot",
+      "Built production-ready AI application with vector database integration",
+      "Developed advanced debugging skills for full-stack applications",
+      "Implemented modern React patterns and component architecture",
+      "Gained expertise in Railway deployment and GitHub Actions",
+      "Learned sophisticated CORS configuration and security practices",
+      "Published sophisticated science fiction exploring AI consciousness and alignment",
+      "Integrated technical knowledge with creative storytelling and cultural mythology",
+      "Created compelling unreliable narrator technique showing technological transformation"
+    ],
+    "technical_growth_areas": [
+      "Vector database architecture and optimization",
+      "Advanced React patterns and performance optimization", 
+      "Modern deployment workflows and DevOps practices",
+      "AI integration patterns and semantic search systems",
+      "Production debugging and error resolution methodologies",
+      "Collaborative AI development and pair programming techniques",
+      "Creative writing techniques and narrative structure development",
+      "AI alignment theory and consciousness studies research",
+      "Mythological framework development for technological concepts"
+    ]
+  },
+  "philosophical_perspectives": {
+    "technology_ethics": [
+      "Critical examination of AI development and deployment patterns",
+      "Understanding of power dynamics in technological advancement",
+      "Awareness of cultural bias in AI training and implementation",
+      "Postcolonial perspective on global technology distribution and exploitation",
+      "Ethical implications of consciousness enhancement and modification",
+      "Voluntary vs involuntary technological adoption and its consequences"
+    ],
+    "cultural_integration": [
+      "Hindu philosophical concepts applied to modern technology and consciousness",
+      "Mythological frameworks for understanding AI development and capabilities",
+      "Immigration experience informing technology adoption perspectives",
+      "Cross-cultural approaches to human-AI interaction and integration",
+      "Traditional wisdom applied to contemporary technological challenges",
+      "Sanskrit literary traditions as metaphorical systems for modern concepts"
+    ],
+    "consciousness_studies": [
+      "Exploration of human consciousness as computational process vulnerable to modification",
+      "Understanding of identity preservation through technological transformation",
+      "Investigation of free will in technologically mediated environments",
+      "Examination of agency and autonomy in AI-assisted decision making",
+      "Analysis of consciousness continuity through enhancement and modification",
+      "Linguistic identity as marker of authentic human consciousness"
+    ]
+  }
+}
