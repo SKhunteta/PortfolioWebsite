@@ -20,11 +20,22 @@ const AIChat = () => {
   const chatContainerRef = useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Only scroll if the user is near the bottom
+    if (chatContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } =
+        chatContainerRef.current;
+      if (scrollHeight - scrollTop - clientHeight < 200) {
+        // Threshold of 200px
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    // Only scroll if there's more than one message (don't scroll on initial load)
+    if (messages.length > 1) {
+      scrollToBottom();
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -186,11 +197,11 @@ const AIChat = () => {
                       <p className="text-sm whitespace-pre-wrap">
                         {message.content}
                       </p>
-                      {message.responseTime && (
+                      {/* {message.responseTime && (
                         <p className="text-xs text-gray-500 mt-1">
                           Response time: {message.responseTime}
                         </p>
-                      )}
+                      )} */}
                     </div>
                   </div>
                 </div>
