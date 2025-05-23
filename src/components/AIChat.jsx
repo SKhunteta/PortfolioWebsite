@@ -34,8 +34,8 @@ const AIChat = () => {
   };
 
   useEffect(() => {
-    // Scroll when a new message is added, respecting user's scroll position
-    if (messages.length > 0) {
+    // Only scroll when a new AI message is added, respecting user's scroll position
+    if (messages.length > 0 && messages[messages.length - 1].type === "ai") {
       scrollToBottom();
     }
   }, [messages]);
