@@ -104,12 +104,83 @@ router.get("/suggestions", (req, res) => {
   res.json(suggestions);
 });
 
-/*
 // All other routes commented out for troubleshooting
-router.post("/search", async (req, res) => { ... });
-router.get("/status", async (req, res) => { ... });
-router.post("/reindex", async (req, res) => { ... });
-*/
+router.post("/search", async (req, res) => {
+  try {
+    const { query, type } = req.body;
+    if (!query) {
+      return res.status(400).json({ error: "Query is required" });
+    }
+    const queryEmbedding = await OpenAIService.generateEmbedding(query);
+    let searchResults;
+    if (type) {
+      searchResults = await QdrantService.searchByType(
+        queryEmbedding,
+        type,
+        10
+      );
+    } else {
+      searchResults = await QdrantService.search(queryEmbedding, 10);
+    }
+    res.json(formatSearchResults(searchResults));
+  } catch (error) {
+    console.error("Error in search endpoint:", error);
+    res.status(500).json({ error: "Failed to perform search" });
+  }
+});
+
+router.get("/status", async (req, res) => {
+  try {
+    const qdrantStatus = await QdrantService.healthCheck();
+    const openAIStatus = await OpenAIService.testConnection();
+    const collectionInfo = await QdrantService.getCollectionInfo();
+    res.json({
+      qdrantHealthy: qdrantStatus,
+      openAIHealthy: openAIStatus,
+      collectionExists: !!collectionInfo,
+      collectionName: collectionInfo ? collectionInfo.name : null,
+      pointsCount: collectionInfo ? collectionInfo.points_count : 0,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Error in status endpoint:", error);
+    res.status(500).json({ error: "Failed to get status" });
+  }
+});
+
+router.post("/reindex", async (req, res) => {
+  try {
+    const { contentType } = req.body; // contentType can be 'all', 'project', 'skill', etc.
+    let result;
+    if (contentType && contentType.toLowerCase() !== "all") {
+      console.log(`Re-indexing specific content type: ${contentType}`);
+      result = await IndexerService.reindexContentType(contentType);
+    } else {
+      console.log(
+        "Clearing entire collection before re-indexing all content..."
+      );
+      await QdrantService.clearCollection(); // Clear the collection first
+      console.log("Re-indexing all content...");
+      result = await IndexerService.indexAllContent();
+    }
+    res.json({
+      success: result.success,
+      message:
+        result.message ||
+        (result.success
+          ? "Content re-indexed successfully"
+          : "Failed to re-index content"),
+      documentsProcessed:
+        result.documentsIndexed || result.documentsReindexed || 0,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Error in reindex endpoint:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to re-index content", details: error.message });
+  }
+});
 
 /**
  * Format search results for API response
