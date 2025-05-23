@@ -6,6 +6,7 @@ import About from "./components/About";
 import Experience from "./components/Experience";
 import Skills from "./components/Skills";
 import Projects from "./components/Projects";
+import AIChat from "./components/AIChat";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 
@@ -35,6 +36,9 @@ function App() {
                     <Projects />
                   </div>
                   <div className="bg-white py-8">
+                    <AIChat />
+                  </div>
+                  <div className="bg-gray-light py-8">
                     <Contact />
                   </div>
                 </>
