@@ -24,6 +24,13 @@ app.use(express.urlencoded({ extended: true }));
 // CORS configuration
 const corsOptions = {
   origin: function (origin, callback) {
+    console.log(
+      "CORS Origin check:",
+      origin,
+      "NODE_ENV:",
+      process.env.NODE_ENV
+    );
+
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
 
@@ -32,6 +39,7 @@ const corsOptions = {
       process.env.NODE_ENV !== "production" &&
       origin.startsWith("http://localhost:")
     ) {
+      console.log("Allowing localhost origin:", origin);
       return callback(null, true);
     }
 
@@ -40,14 +48,25 @@ const corsOptions = {
       process.env.FRONTEND_URL || "http://localhost:5173",
       "http://localhost:5174", // Add support for alternate port
       process.env.PRODUCTION_URL || "https://builtbyshrey.com",
+      "https://builtbyshrey.com", // Explicitly include production URL
       "http://localhost:3000",
     ];
 
+    console.log(
+      "Checking origin:",
+      origin,
+      "against allowed origins:",
+      allowedOrigins
+    );
+
     if (allowedOrigins.includes(origin)) {
+      console.log("Origin allowed:", origin);
       return callback(null, true);
     }
 
-    return callback(new Error("Not allowed by CORS"));
+    console.log("Origin not allowed:", origin);
+    // Instead of throwing an error, just return false
+    return callback(null, false);
   },
   credentials: true,
   optionsSuccessStatus: 200,
