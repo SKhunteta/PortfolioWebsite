@@ -36,12 +36,17 @@ function App() {
                     <Projects />
                   </div>
                   <div className="bg-white py-8">
-                    <AIChat />
-                  </div>
-                  <div className="bg-gray-light py-8">
                     <Contact />
                   </div>
                 </>
+              }
+            />
+            <Route
+              path="/chat"
+              element={
+                <div className="bg-white py-8 min-h-screen">
+                  <AIChat />
+                </div>
               }
             />
           </Routes>

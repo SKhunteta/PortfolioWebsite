@@ -124,7 +124,7 @@ const AIChat = () => {
   };
 
   return (
-    <div id="ai-chat" className="section-container py-12 md:py-16">
+    <div className="section-container py-12 md:py-16">
       <div className="text-center mb-8">
         <h2 className="section-title mx-auto">AI Assistant</h2>
         <p className="section-subtitle">

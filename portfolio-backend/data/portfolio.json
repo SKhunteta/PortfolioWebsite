@@ -1,6 +1,16 @@
 {
   "projects": [
     {
+      "id": "ai-powered-portfolio",
+      "title": "AI-Powered Portfolio with NLWeb Protocol",
+      "description": "An innovative portfolio website featuring conversational AI capabilities built with Microsoft's newly announced NLWeb protocol. Users can ask natural language questions like 'What AI projects has Shreyans built?' and receive intelligent, contextual responses powered by vector embeddings and semantic search.",
+      "technologies": ["React", "Express.js", "OpenAI GPT-4", "Qdrant Vector DB", "Tailwind CSS", "Railway", "GitHub Pages", "Node.js"],
+      "github": "https://github.com/SKhunteta/PortfolioWebsite",
+      "featured": true,
+      "type": "AI/ML",
+      "status": "Live"
+    },
+    {
       "id": "lingua-ai-chatbot",
       "title": "Lingua AI Chatbot",
       "description": "A conversational language learning chatbot using Python and the OpenAI GPT-3 API. The application helps users practice language skills with intelligent feedback and correction.",
@@ -64,8 +74,8 @@
     },
     {
       "category": "Artificial Intelligence",
-      "skills": ["Generative AI", "OpenAI GPT", "AI Chatbots", "ML Integration"],
-      "experience_level": "Intermediate"
+      "skills": ["Generative AI", "OpenAI GPT-4", "Vector Databases", "Semantic Search", "AI Chatbots", "ML Integration", "NLWeb Protocol", "Qdrant"],
+      "experience_level": "Advanced"
     }
   ],
   "experience": [
