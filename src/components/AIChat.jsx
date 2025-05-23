@@ -20,20 +20,22 @@ const AIChat = () => {
   const chatContainerRef = useRef(null);
 
   const scrollToBottom = () => {
-    // Only scroll if the user is near the bottom
     if (chatContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } =
         chatContainerRef.current;
-      if (scrollHeight - scrollTop - clientHeight < 200) {
-        // Threshold of 200px
+      // Only scroll if user is within 200px of the bottom, or if the chat is not yet scrollable
+      if (
+        scrollHeight - scrollTop - clientHeight < 200 ||
+        scrollHeight <= clientHeight
+      ) {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
       }
     }
   };
 
   useEffect(() => {
-    // Only scroll if there's more than one message (don't scroll on initial load)
-    if (messages.length > 1) {
+    // Scroll when a new AI message is added, respecting user's scroll position
+    if (messages.length > 0 && messages[messages.length - 1].type === "ai") {
       scrollToBottom();
     }
   }, [messages]);
@@ -41,6 +43,10 @@ const AIChat = () => {
   useEffect(() => {
     // Fetch suggestions on component mount
     fetchSuggestions();
+    // Scroll to top on initial load
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = 0;
+    }
   }, []);
 
   const fetchSuggestions = async () => {
@@ -80,7 +86,26 @@ const AIChat = () => {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    // Add user message and then scroll if needed
+    setMessages((prevMessages) => {
+      const newMessages = [...prevMessages, userMessage];
+      // Use requestAnimationFrame to wait for DOM update before scrolling
+      requestAnimationFrame(() => {
+        // Check if user is near bottom BEFORE AI responds
+        if (chatContainerRef.current) {
+          const { scrollTop, scrollHeight, clientHeight } =
+            chatContainerRef.current;
+          if (
+            scrollHeight - scrollTop - clientHeight < 200 ||
+            scrollHeight <= clientHeight
+          ) {
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          }
+        }
+      });
+      return newMessages;
+    });
+
     setInputMessage("");
     setIsLoading(true);
     setShowSuggestions(false);
