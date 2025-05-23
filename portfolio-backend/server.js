@@ -23,11 +23,32 @@ app.use(express.urlencoded({ extended: true }));
 
 // CORS configuration
 const corsOptions = {
-  origin: [
-    process.env.FRONTEND_URL || "http://localhost:5173",
-    process.env.PRODUCTION_URL || "https://builtbyshrey.com",
-    "http://localhost:3000",
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    // In development, allow any localhost port
+    if (
+      process.env.NODE_ENV !== "production" &&
+      origin.startsWith("http://localhost:")
+    ) {
+      return callback(null, true);
+    }
+
+    // Production and specific allowed origins
+    const allowedOrigins = [
+      process.env.FRONTEND_URL || "http://localhost:5173",
+      "http://localhost:5174", // Add support for alternate port
+      process.env.PRODUCTION_URL || "https://builtbyshrey.com",
+      "http://localhost:3000",
+    ];
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("Not allowed by CORS"));
+  },
   credentials: true,
   optionsSuccessStatus: 200,
 };

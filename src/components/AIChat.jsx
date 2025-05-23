@@ -47,7 +47,6 @@ const AIChat = () => {
 
       setSuggestions(allSuggestions);
     } catch (error) {
-      console.error("Error fetching suggestions:", error);
       // Set default suggestions if API fails
       setSuggestions([
         "What are Shreyans' key technical skills?",
@@ -59,7 +58,9 @@ const AIChat = () => {
   };
 
   const handleSendMessage = async (message = inputMessage) => {
-    if (!message.trim()) return;
+    if (!message.trim()) {
+      return;
+    }
 
     const userMessage = {
       id: Date.now(),
@@ -98,7 +99,6 @@ const AIChat = () => {
         throw new Error(data.message || "Failed to get response");
       }
     } catch (error) {
-      console.error("Error sending message:", error);
       const errorMessage = {
         id: Date.now() + 1,
         type: "ai",
