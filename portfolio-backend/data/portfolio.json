@@ -404,5 +404,37 @@
       "Analysis of consciousness continuity through enhancement and modification",
       "Linguistic identity as marker of authentic human consciousness"
     ]
-  }
+  },
+  "Kali": {
+    "id": "kali-the-cat",
+    "name": "Kali",
+    "species": "Cat",
+    "breed": "Domestic shorthair (likely)",
+    "color": "Black",
+    "age": "8 years (approx)",
+    "personality": [
+      "Extremely intelligent",
+      "Demanding and particular",
+      "Playful but requires immersive engagement",
+      "Emotionally expressive",
+      "Independent and queen-like"
+    ],
+    "favorite_activities": [
+      "Staring out the window",
+      "Broom play",
+      "Story-based toy play (requires roleplaying immersion)",
+      "Being pampered like royalty"
+    ],
+    "notable_traits": [
+      "Requires elaborate foreplay to engage in play",
+      "Doesn’t respond to lazy string wiggling",
+      "Enjoys narrative-driven interaction",
+      "Owns her human completely"
+    ],
+    "nicknames": [
+      "Queen Kali",
+      "Mythic Familiar"
+    ],
+    "mythic_lore": "Kali is not merely a cat but an avatar of divine mischief and domestic sovereignty. She once graduated top of her class under a cat professor and currently resides in a mansion serviced by robot butlers."
+  }  
 }
