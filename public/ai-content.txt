@@ -54,6 +54,7 @@ EDUCATION & CERTIFICATIONS:
 
 CONTACT & LINKS:
 - GitHub: https://github.com/skhunteta
+- LinkedIn: https://www.linkedin.com/in/shreyans-khunteta-3167247a/
 - Location: Seattle, WA, USA
 - Portfolio Website: https://shreyanskhunteta.com
 - Open to collaboration, consultation, and new opportunities in software development and AI technologies

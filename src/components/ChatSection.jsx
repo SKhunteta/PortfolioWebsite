@@ -13,6 +13,12 @@ const parseMessageWithLinks = (text) => {
     "[GitHub Profile](https://github.com/skhunteta)"
   );
 
+  // Handle specific LinkedIn mentions for Shreyans
+  processedText = processedText.replace(
+    /(my LinkedIn|his LinkedIn|Shreyans'?\s*LinkedIn|LinkedIn profile|LinkedIn account)/gi,
+    "[LinkedIn Profile](https://www.linkedin.com/in/shreyans-khunteta-3167247a/)"
+  );
+
   // Split text by line breaks first to preserve formatting
   const lines = processedText.split("\n");
 
@@ -229,7 +235,8 @@ const ChatSection = () => {
         <h2 className="section-title mx-auto">Ask Kali AI Assistant</h2>
         <p className="section-subtitle">
           Ask my cat Kali about anything regarding my work, projects and
-          expertise. She's running on the NLWeb framework and knows everything about my technical background.
+          expertise. She's running on the NLWeb framework and knows everything
+          about my technical background.
         </p>
       </div>
 
