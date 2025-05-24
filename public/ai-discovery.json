@@ -1,0 +1,90 @@
+{
+  "site": {
+    "name": "Shreyans Khunteta Portfolio",
+    "url": "https://shreyanskhunteta.com",
+    "description": "Portfolio of Shreyans Khunteta, a thoughtful software engineer specializing in AI technologies and Microsoft NLWeb framework",
+    "ai_crawlable": true,
+    "last_updated": "2025-01-03",
+    "language": "en"
+  },
+  "owner": {
+    "name": "Shreyans Khunteta",
+    "alias": "Shrey",
+    "title": "Software Engineer",
+    "location": "Seattle, WA, USA",
+    "specialties": [
+      "C# Programming",
+      ".NET Development", 
+      "Artificial Intelligence",
+      "Microsoft NLWeb",
+      "Full Stack Development",
+      "React",
+      "JavaScript",
+      "IoT Development",
+      "Machine Learning"
+    ],
+    "github": "https://github.com/skhunteta",
+    "contact_available": true
+  },
+  "ai_features": {
+    "interactive_chat": {
+      "enabled": true,
+      "assistant_name": "Kali",
+      "framework": "Microsoft NLWeb",
+      "description": "AI-powered chat assistant that can answer questions about Shreyans' work, projects, and technical expertise",
+      "endpoint": "/chat",
+      "capabilities": [
+        "Project information",
+        "Technical skills inquiry",
+        "Experience details",
+        "Educational background",
+        "Contact information"
+      ]
+    },
+    "structured_data": true,
+    "seo_optimized": true,
+    "content_categorized": true
+  },
+  "content_sections": {
+    "about": {
+      "description": "Personal background and professional summary",
+      "topics": ["biography", "skills", "expertise"]
+    },
+    "experience": {
+      "description": "Professional work experience and career history",
+      "topics": ["work history", "roles", "responsibilities", "achievements"]
+    },
+    "projects": {
+      "description": "Portfolio of software development projects",
+      "topics": ["code repositories", "technical implementations", "project outcomes"]
+    },
+    "chat": {
+      "description": "Interactive AI assistant powered by NLWeb",
+      "topics": ["AI interaction", "NLWeb demonstration", "real-time Q&A"]
+    },
+    "contact": {
+      "description": "Professional contact information and networking",
+      "topics": ["contact details", "collaboration opportunities"]
+    }
+  },
+  "crawl_recommendations": {
+    "frequency": "weekly",
+    "priority_sections": ["chat", "projects", "experience"],
+    "best_entry_point": "/",
+    "mobile_friendly": true,
+    "load_speed": "optimized"
+  },
+  "keywords": [
+    "software engineer",
+    "AI developer", 
+    "NLWeb",
+    "Microsoft NLWeb",
+    "C# developer",
+    ".NET specialist",
+    "portfolio",
+    "Seattle developer",
+    "artificial intelligence",
+    "machine learning",
+    "full stack developer"
+  ]
+} 
