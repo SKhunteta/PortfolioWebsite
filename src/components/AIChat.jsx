@@ -142,7 +142,14 @@ const AIChat = () => {
               <div>
                 <h3 className="font-semibold">Kali AI Assistant</h3>
                 <p className="text-sm opacity-90">
-                  Powered by OpenAI & Vector Search
+                  <a
+                    href="https://github.com/microsoft/NLWeb"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white/80 transition-colors underline"
+                  >
+                    Running on NLWeb!
+                  </a>
                 </p>
               </div>
               <div className="ml-auto">
