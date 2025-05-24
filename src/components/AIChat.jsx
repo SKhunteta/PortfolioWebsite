@@ -9,7 +9,7 @@ const AIChat = () => {
       id: 1,
       type: "ai",
       content:
-        "Hi! I'm an AI assistant that knows all about Shreyans and his work. Ask me anything about his projects, skills, experience, or background!",
+        "Hello! I'm Kali, and I help answer questions about Shreyans' work and background. I have a unique perspective on his projects and skills - ask me anything about his experience, technical expertise, or creative work!",
       timestamp: new Date(),
     },
   ]);
@@ -253,7 +253,7 @@ const AIChat = () => {
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask me anything about Shreyans..."
+                placeholder="Ask me anything about Shreyans' work or experience..."
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 disabled={isLoading}
               />

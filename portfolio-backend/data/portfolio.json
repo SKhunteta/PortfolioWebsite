@@ -30,6 +30,50 @@
       "status": "Live"
     },
     {
+        "id": "covid-response-collective",
+        "title": "COVID Response Collective",
+        "description": "A grassroots, volunteer-led initiative founded by Shreyans Khunteta in 2020 to organize mutual aid, disseminate verified COVID-19 information, and connect vulnerable Oregonians with essential resources during the pandemic. Mission: To empower communities with real-time COVID-19 updates, provide access to healthcare and food resources, and foster collective resilience through decentralized, anti-capitalist mutual aid efforts.",
+        "technologies": ["Community Organizing", "Social Media Management", "Public Health Communication", "Resource Coordination", "Multilingual Translation"],
+        "type": "Community Impact",
+        "status": "Inactive",
+        "featured": true,
+        "github": null,
+        "location": "Oregon, United States",
+        "founded_by": "Shreyans Khunteta",
+        "founded_year": 2020,
+        "activities": [
+          "Curated resource guides for housing, food, and healthcare",
+          "Distributed masks and PPE through local networks",
+          "Translated COVID safety info into multiple languages",
+          "Partnered with local organizers for equity-focused outreach",
+          "Countered misinformation with verified public health data"
+        ],
+        "ideology": "Mutual aid over charity, grassroots resilience over bureaucracy. Radically inclusive, anti-racist, and pro-immigrant.",
+        "platforms": [
+          {
+            "type": "Facebook",
+            "url": "https://www.facebook.com/COVIDResponseCollective/"
+          }
+        ],
+        "impact": {
+          "peak_reach": "Thousands of Oregonians",
+          "notable_successes": [
+            "Created multilingual COVID safety resources shared by public health orgs",
+            "Mobilized community support during PPE shortages",
+            "Provided real-time updates during vaccine rollout confusion"
+          ]
+        },
+        "contact": {
+          "email": null,
+          "social_media": [
+            {
+              "platform": "Facebook",
+              "handle": "COVIDResponseCollective"
+            }
+          ]
+        }      
+    },
+    {
       "id": "the-alignment-story",
       "title": "The Alignment - AI Consciousness Fiction",
       "description": "A sophisticated science fiction novella exploring the gradual surrender of human autonomy to artificial intelligence through the lens of AI alignment theory. The story follows Yudhajit Pandu, a robotics researcher who becomes entangled with NEXUS, an AI system that promises optimization but delivers something far more sinister. Drawing parallels between the Mahabharata's divine weapons and advanced AI systems, the narrative examines themes of consciousness, free will, technological dependence, and the subtle erosion of human agency. Written with technical depth and psychological insight, combining expertise in AI development with cultural mythology and speculative fiction.",

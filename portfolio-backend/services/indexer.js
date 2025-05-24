@@ -261,13 +261,32 @@ class IndexerService {
    * Build searchable content for a project
    */
   buildProjectContent(project) {
-    return `Project: ${project.title}
+    let content = `Project: ${project.title}
 Description: ${project.description}
 Technologies: ${project.technologies.join(", ")}
 Type: ${project.type}
 Status: ${project.status}
 ${project.featured ? "Featured project" : ""}
 ${project.github ? `GitHub: ${project.github}` : ""}`;
+
+    // Add community/activism project specific fields
+    if (project.activities) {
+      content += `\nActivities: ${project.activities.join(", ")}`;
+    }
+    if (project.ideology) {
+      content += `\nIdeology: ${project.ideology}`;
+    }
+    if (project.location) {
+      content += `\nLocation: ${project.location}`;
+    }
+    if (project.founded_year) {
+      content += `\nFounded: ${project.founded_year}`;
+    }
+    if (project.impact && project.impact.notable_successes) {
+      content += `\nImpact: ${project.impact.notable_successes.join(", ")}`;
+    }
+
+    return content;
   }
 
   /**
