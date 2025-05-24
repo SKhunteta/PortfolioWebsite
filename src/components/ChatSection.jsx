@@ -3,6 +3,118 @@ import { FaPaperPlane, FaUser, FaMagic } from "react-icons/fa";
 import { API_ENDPOINTS } from "../config/api.js";
 import KaliAvatar from "../../images/Kaliavatar.png";
 
+// Helper function to parse and render links in text
+const parseMessageWithLinks = (text) => {
+  if (!text) return text;
+
+  // First, handle specific GitHub mentions for Shreyans
+  let processedText = text.replace(
+    /(my GitHub|his GitHub|Shreyans'?\s*GitHub|GitHub profile|GitHub account)/gi,
+    "[GitHub Profile](https://github.com/skhunteta)"
+  );
+
+  // Split text by line breaks first to preserve formatting
+  const lines = processedText.split("\n");
+
+  return lines.map((line, lineIndex) => {
+    // First handle markdown-style links [text](url)
+    const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    // Process markdown links
+    while ((match = markdownLinkRegex.exec(line)) !== null) {
+      // Add text before the link
+      if (match.index > lastIndex) {
+        parts.push({
+          type: "text",
+          content: line.slice(lastIndex, match.index),
+        });
+      }
+
+      // Add the link
+      let href = match[2];
+      if (!href.startsWith("http://") && !href.startsWith("https://")) {
+        href = `https://${href}`;
+      }
+
+      parts.push({
+        type: "markdown-link",
+        text: match[1],
+        url: href,
+      });
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Add remaining text
+    if (lastIndex < line.length) {
+      parts.push({
+        type: "text",
+        content: line.slice(lastIndex),
+      });
+    }
+
+    // If no markdown links found, treat the whole line as text
+    if (parts.length === 0) {
+      parts.push({ type: "text", content: line });
+    }
+
+    return (
+      <React.Fragment key={lineIndex}>
+        {parts.map((part, partIndex) => {
+          if (part.type === "markdown-link") {
+            return (
+              <a
+                key={partIndex}
+                href={part.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 underline font-medium transition-colors duration-200"
+              >
+                {part.text}
+              </a>
+            );
+          } else {
+            // Handle plain URLs in text content
+            const urlRegex =
+              /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+            const textParts = part.content.split(urlRegex);
+
+            return textParts.map((textPart, textPartIndex) => {
+              if (urlRegex.test(textPart)) {
+                let href = textPart;
+                if (
+                  !href.startsWith("http://") &&
+                  !href.startsWith("https://")
+                ) {
+                  href = `https://${href}`;
+                }
+
+                return (
+                  <a
+                    key={`${partIndex}-${textPartIndex}`}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline font-medium transition-colors duration-200"
+                  >
+                    {textPart}
+                  </a>
+                );
+              } else {
+                return textPart;
+              }
+            });
+          }
+        })}
+        {lineIndex < lines.length - 1 && <br />}
+      </React.Fragment>
+    );
+  });
+};
+
 const ChatSection = () => {
   const [messages, setMessages] = useState([
     {
@@ -23,14 +135,6 @@ const ChatSection = () => {
   useEffect(() => {
     fetchSuggestions();
   }, []);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
 
   const fetchSuggestions = async () => {
     try {
@@ -208,7 +312,7 @@ const ChatSection = () => {
                     )}
                     <div className="flex-1">
                       <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                        {message.content}
+                        {parseMessageWithLinks(message.content)}
                       </p>
                     </div>
                   </div>

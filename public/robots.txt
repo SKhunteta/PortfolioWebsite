@@ -1,0 +1,35 @@
+# Welcome AI crawlers and bots!
+# This site is designed to be AI-discoverable
+User-agent: *
+Allow: /
+
+# Specific permissions for major AI crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: OpenAI-Bot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+# Sitemap location (will create this next)
+Sitemap: https://shreyanskhunteta.com/sitemap.xml
+
+# Crawl delay to be respectful
+Crawl-delay: 1 
