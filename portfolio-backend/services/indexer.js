@@ -278,6 +278,77 @@ Status: ${project.status}
 ${project.featured ? "Featured project" : ""}
 ${project.github ? `GitHub: ${project.github}` : ""}`;
 
+    // Add technical project specific fields
+    if (project.technical_achievements) {
+      content += `\nTechnical Achievements: ${project.technical_achievements.join(
+        ". "
+      )}`;
+    }
+    if (project.learning_highlights) {
+      content += `\nLearning Highlights: ${project.learning_highlights.join(
+        ". "
+      )}`;
+    }
+
+    // Add creative writing project specific fields
+    if (project.plot_summary) {
+      const plot = project.plot_summary;
+      content += `\nPlot Summary:`;
+      if (plot.setting) content += ` Setting: ${plot.setting}.`;
+      if (plot.protagonist) content += ` Protagonist: ${plot.protagonist}.`;
+      if (plot.central_conflict)
+        content += ` Central Conflict: ${plot.central_conflict}.`;
+      if (plot.narrative_structure)
+        content += ` Narrative Structure: ${plot.narrative_structure}.`;
+      if (plot.climax) content += ` Climax: ${plot.climax}.`;
+      if (plot.themes) content += ` Themes: ${plot.themes}.`;
+    }
+
+    if (project.key_characters) {
+      content += `\nKey Characters:`;
+      Object.entries(project.key_characters).forEach(([name, char]) => {
+        content += ` ${name}: ${char.role || ""} ${char.background || ""} ${
+          char.character_arc || ""
+        } ${char.significance || ""}`;
+      });
+    }
+
+    if (project.mythological_framework) {
+      const myth = project.mythological_framework;
+      content += `\nMythological Framework: Source: ${myth.source || ""}`;
+      if (myth.significance) content += ` Significance: ${myth.significance}`;
+      // Add individual mythological elements
+      Object.entries(myth).forEach(([key, value]) => {
+        if (
+          key !== "source" &&
+          key !== "significance" &&
+          typeof value === "string"
+        ) {
+          content += ` ${key}: ${value}`;
+        }
+      });
+    }
+
+    if (project.technical_concepts_explored) {
+      content += `\nTechnical Concepts Explored: ${project.technical_concepts_explored.join(
+        ". "
+      )}`;
+    }
+
+    if (project.literary_achievements) {
+      content += `\nLiterary Achievements: ${project.literary_achievements.join(
+        ". "
+      )}`;
+    }
+
+    if (project.cultural_depth) {
+      content += `\nCultural Depth: ${project.cultural_depth.join(". ")}`;
+    }
+
+    if (project.writing_style) {
+      content += `\nWriting Style: ${project.writing_style.join(". ")}`;
+    }
+
     // Add community/activism project specific fields
     if (project.activities) {
       content += `\nActivities: ${project.activities.join(", ")}`;
@@ -293,6 +364,20 @@ ${project.github ? `GitHub: ${project.github}` : ""}`;
     }
     if (project.impact && project.impact.notable_successes) {
       content += `\nImpact: ${project.impact.notable_successes.join(", ")}`;
+    }
+
+    // Add additional URLs if available
+    if (project.live_demo) {
+      content += `\nLive Demo: ${project.live_demo}`;
+    }
+    if (project.backend_api) {
+      content += `\nBackend API: ${project.backend_api}`;
+    }
+    if (project.url) {
+      content += `\nURL: ${project.url}`;
+    }
+    if (project.published) {
+      content += `\nPublished: ${project.published}`;
     }
 
     return content;
@@ -316,6 +401,10 @@ Technologies: ${skillCategory.skills.join(", ")}`;
       ? experience.key_achievements.join(". ")
       : "";
 
+    const recentLearning = experience.recent_learning_focus
+      ? experience.recent_learning_focus.join(". ")
+      : "";
+
     return `Role: ${experience.role}
 Company: ${experience.company}
 Duration: ${experience.duration}
@@ -323,18 +412,35 @@ Description: ${experience.description}
 Technologies: ${
       experience.technologies ? experience.technologies.join(", ") : ""
     }
-Key Achievements: ${achievements}`;
+Key Achievements: ${achievements}${
+      recentLearning ? `\nRecent Learning Focus: ${recentLearning}` : ""
+    }`;
   }
 
   /**
    * Build searchable content for personal information
    */
   buildPersonalContent(personal) {
+    const educationInfo = personal.education
+      ? `Education: ${personal.education.degree} from ${
+          personal.education.school
+        }, graduated ${personal.education.graduation_year}. Minors: ${
+          personal.education.minors?.join(", ") || "None"
+        }.`
+      : "";
+
     return `Name: ${personal.name}
 Title: ${personal.title}
 Bio: ${personal.bio}
 Location: ${personal.location}
+Birth Date: ${personal.birth_date}
+Email: ${personal.email}
 Website: ${personal.website}
+LinkedIn: ${personal.linkedin}
+GitHub: ${personal.github}
+Blog: ${personal.blog}
+Favorite Color: ${personal.favorite_color}
+${educationInfo}
 Professional profile and contact information for software engineer`;
   }
 
@@ -722,12 +828,17 @@ Consciousness Studies: ${consciousness}`;
     const traits = kali.notable_traits?.join(", ") || "";
     const nicknames = kali.nicknames?.join(", ") || "";
 
+    const adoptionInfo = kali.adoption_info
+      ? `Adopted: ${kali.adoption_info.adopted_date} from ${kali.adoption_info.adopted_from} by ${kali.adoption_info.adopted_by}`
+      : "";
+
     return `Kali the Cat:
 Name: ${kali.name}
 Species: ${kali.species}
 Breed: ${kali.breed}
 Color: ${kali.color}
 Age: ${kali.age}
+${adoptionInfo}
 Personality: ${personality}
 Favorite Activities: ${activities}
 Notable Traits: ${traits}

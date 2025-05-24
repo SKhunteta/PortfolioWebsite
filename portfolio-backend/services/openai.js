@@ -144,7 +144,13 @@ Guidelines:
 
     return context
       .map((item) => {
-        const { content_type, title, description, technologies } = item.payload;
+        const {
+          content_type,
+          title,
+          description,
+          technologies,
+          searchable_content,
+        } = item.payload;
         let contextItem = `${content_type.toUpperCase()}: ${title}`;
 
         if (description) {
@@ -153,6 +159,10 @@ Guidelines:
 
         if (technologies && technologies.length > 0) {
           contextItem += `\nTechnologies: ${technologies.join(", ")}`;
+        }
+
+        if (searchable_content) {
+          contextItem += `\nDetailed Information: ${searchable_content}`;
         }
 
         return contextItem;
