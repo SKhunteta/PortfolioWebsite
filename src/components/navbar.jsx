@@ -15,16 +15,11 @@ const Navbar = () => {
     { id: 3, link: "experience", label: "Experience" },
     { id: 4, link: "skills", label: "Skills" },
     { id: 5, link: "projects", label: "Projects" },
-    { id: 6, link: "contact", label: "Contact" },
+    { id: 6, link: "chat", label: "AI Chat" },
+    { id: 7, link: "contact", label: "Contact" },
   ];
 
   const pageLinks = [
-    {
-      id: 7,
-      external: false,
-      to: "/chat",
-      label: "AI Chat",
-    },
     {
       id: 8,
       external: true,

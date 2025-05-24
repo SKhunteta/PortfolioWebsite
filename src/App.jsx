@@ -6,9 +6,9 @@ import About from "./components/About";
 import Experience from "./components/Experience";
 import Skills from "./components/Skills";
 import Projects from "./components/Projects";
-import AIChat from "./components/AIChat";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
+import ChatSection from "./components/ChatSection";
 
 function App() {
   return (
@@ -27,26 +27,21 @@ function App() {
                     <About />
                   </div>
                   <div className="bg-gray-light py-8">
+                    <ChatSection />
+                  </div>
+                  <div className="bg-white py-8">
                     <Experience />
                   </div>
-                  <div className="bg-white py-8">
+                  <div className="bg-gray-light py-8">
                     <Skills />
                   </div>
-                  <div className="bg-gray-light py-8">
+                  <div className="bg-white py-8">
                     <Projects />
                   </div>
-                  <div className="bg-white py-8">
+                  <div className="bg-gray-light py-8">
                     <Contact />
                   </div>
                 </>
-              }
-            />
-            <Route
-              path="/chat"
-              element={
-                <div className="bg-white py-8 min-h-screen">
-                  <AIChat />
-                </div>
               }
             />
           </Routes>

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaGithub, FaLinkedin, FaRobot } from "react-icons/fa";
+import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { HiOutlineMail } from "react-icons/hi";
 
 const Hero = () => {
@@ -54,13 +54,6 @@ const Hero = () => {
               >
                 View Projects
               </a>
-              <Link
-                to="/chat"
-                className="btn btn-accent text-sm md:text-base flex items-center gap-2"
-              >
-                <FaRobot size={16} />
-                Try AI Chat
-              </Link>
             </div>
 
             <div className="flex items-center gap-5 pt-4 justify-center md:justify-start">
