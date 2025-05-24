@@ -120,6 +120,15 @@ class IndexerService {
         documents.push(kaliDoc);
       }
 
+      // Index LinkedIn profile
+      if (portfolioData.linkedin_profile) {
+        console.log("Indexing LinkedIn profile...");
+        const linkedinDoc = await this.processLinkedInProfile(
+          portfolioData.linkedin_profile
+        );
+        documents.push(linkedinDoc);
+      }
+
       // Add all documents to Qdrant
       console.log(`Adding ${documents.length} documents to vector database...`);
       await QdrantService.addDocuments(documents);
@@ -415,6 +424,13 @@ Professional profile and contact information for software engineer`;
             documents.push(await this.processKali(portfolioData.Kali));
           }
           break;
+        case "linkedin_profile":
+          if (portfolioData.linkedin_profile) {
+            documents.push(
+              await this.processLinkedInProfile(portfolioData.linkedin_profile)
+            );
+          }
+          break;
         default:
           console.warn(`Unknown content type for re-indexing: ${contentType}`);
           return {
@@ -601,6 +617,34 @@ Professional profile and contact information for software engineer`;
   }
 
   /**
+   * Process LinkedIn profile and create a document for indexing
+   */
+  async processLinkedInProfile(linkedinProfile) {
+    const content = this.buildLinkedInContent(linkedinProfile);
+    const embedding = await OpenAIService.generateEmbedding(content);
+
+    return {
+      id: uuidv4(),
+      vector: embedding,
+      payload: {
+        original_id: "linkedin_profile",
+        content_type: "linkedin_profile",
+        title: `${linkedinProfile.name} - LinkedIn Profile`,
+        description: linkedinProfile.about,
+        technologies: linkedinProfile.skills || [],
+        name: linkedinProfile.name,
+        headline: linkedinProfile.headline,
+        location: linkedinProfile.location,
+        industry: linkedinProfile.industry,
+        current_role: linkedinProfile.current_role,
+        education: linkedinProfile.education,
+        url: linkedinProfile.linkedin_url,
+        searchable_content: content,
+      },
+    };
+  }
+
+  /**
    * Build searchable content for technical expertise
    */
   buildTechnicalExpertiseContent(technicalExpertise) {
@@ -689,6 +733,59 @@ Favorite Activities: ${activities}
 Notable Traits: ${traits}
 Nicknames: ${nicknames}
 Mythic Lore: ${kali.mythic_lore}`;
+  }
+
+  /**
+   * Build searchable content for LinkedIn profile
+   */
+  buildLinkedInContent(linkedinProfile) {
+    const pastRoles =
+      linkedinProfile.past_roles
+        ?.map(
+          (role) =>
+            `${role.title} at ${role.company} (${role.duration}) - ${role.description}`
+        )
+        .join("; ") || "";
+
+    const featuredProjects =
+      linkedinProfile.projects_featured
+        ?.map((project) => `${project.title}: ${project.description}`)
+        .join("; ") || "";
+
+    const skills = linkedinProfile.skills?.join(", ") || "";
+    const interests = linkedinProfile.interests?.join(", ") || "";
+
+    const linkedinContent =
+      linkedinProfile.linkedin_usage?.content?.join(", ") || "";
+
+    return `LinkedIn Profile - ${linkedinProfile.name}
+Headline: ${linkedinProfile.headline}
+Location: ${linkedinProfile.location}
+Industry: ${linkedinProfile.industry}
+LinkedIn URL: ${linkedinProfile.linkedin_url}
+About: ${linkedinProfile.about}
+
+Current Role: ${linkedinProfile.current_role.title} at ${
+      linkedinProfile.current_role.company
+    } (${linkedinProfile.current_role.duration})
+Current Role Description: ${linkedinProfile.current_role.description}
+
+Past Roles: ${pastRoles}
+
+Education: ${linkedinProfile.education.degree} in ${
+      linkedinProfile.education.school
+    }
+Minors: ${linkedinProfile.education.minors?.join(", ") || ""}
+Graduation Year: ${linkedinProfile.education.graduation_year}
+
+Featured Projects: ${featuredProjects}
+
+Skills: ${skills}
+Interests: ${interests}
+
+LinkedIn Usage Purpose: ${linkedinProfile.linkedin_usage?.purpose || ""}
+LinkedIn Content: ${linkedinContent}
+LinkedIn Tone: ${linkedinProfile.linkedin_usage?.tone || ""}`;
   }
 }
 

@@ -480,5 +480,80 @@
       "Mythic Familiar"
     ],
     "mythic_lore": "Kali is not merely a cat but an avatar of divine mischief and domestic sovereignty. She once graduated top of her class under a cat professor and currently resides in a mansion serviced by robot butlers."
+  },
+  "linkedin_profile": {
+    "id": "shreyans-khunteta-linkedin",
+    "name": "Shreyans Khunteta",
+    "headline": "Senior Software Engineer | AI Systems | NLP & Scalable Backend Architectures | Accessibility Tech | Public Interest Technologist",
+    "location": "Seattle, WA, United States",
+    "industry": "Software Engineering",
+    "linkedin_url": "https://www.linkedin.com/in/shreyans-khunteta-3167247a/",
+    "about": "Senior software engineer with 5+ years of experience in AI, NLP, and scalable backend systems across banking, healthcare, and public infrastructure. Builder of AI-powered assistants, contributor to accessibility tech, and former mutual aid organizer. Passionate about using technology to empower marginalized communities, deconstruct systemic bias, and build more resilient, human-centered systems.",
+    "current_role": {
+      "title": "Senior Software Engineer",
+      "company": "Southeast Bank",
+      "duration": "2023 – Present",
+      "location": "Remote",
+      "description": "Developing secure, scalable backend infrastructure for regulatory compliance and AI-powered customer insights in the banking sector."
+    },
+    "past_roles": [
+      {
+        "title": "Software Engineer",
+        "company": "PacificSource Health Plans",
+        "duration": "2020 – 2023",
+        "location": "Oregon",
+        "description": "Built internal tools and healthcare data pipelines; specialized in C#, .NET, and SQL Server. Led development of a custom CSV-to-SQL bulk loader to replace manual SSIS workflows."
+      }
+    ],
+    "education": {
+      "degree": "B.S. in Computer Science",
+      "school": "Oregon State University",
+      "minors": ["Writing", "Psychology"],
+      "graduation_year": 2019
+    },
+    "projects_featured": [
+      {
+        "title": "AI-Powered Portfolio with NLWeb",
+        "url": "https://builtbyshrey.com",
+        "description": "A conversational portfolio website enabling natural language interaction with Shreyans' work history, built using React, Express, Qdrant, and OpenAI."
+      },
+      {
+        "title": "COVID Response Collective",
+        "url": "https://www.facebook.com/COVIDResponseCollective/",
+        "description": "Mutual aid initiative founded during the pandemic to provide resource access and real-time updates to Oregon communities."
+      }
+    ],
+    "skills": [
+      "AI Systems",
+      "NLP & Embeddings",
+      "Generative AI",
+      "React + Vite",
+      "Node.js & Express",
+      ".NET Core & C#",
+      "Qdrant Vector DB",
+      "OpenAI API",
+      "AWS & GCP",
+      "CI/CD with GitHub Actions",
+      "Terraform & DevOps",
+      "Data Engineering & Pipelines"
+    ],
+    "interests": [
+      "Accessible Infrastructure",
+      "AI for Public Good",
+      "Decentralized Tech",
+      "Urbanism & Public Transit",
+      "Language & Identity",
+      "Transhumanism"
+    ],
+    "linkedin_usage": {
+      "purpose": "Thought leadership, technical storytelling, and soft-signal professional signaling.",
+      "content": [
+        "Post-technical reflections on AI, power, and system design",
+        "Narrative-driven breakdowns of personal projects",
+        "Strategic positioning for new job opportunities (subtly signaled)",
+        "Engaging with high-signal thinkers in AI and accessibility"
+      ],
+      "tone": "Analytical, sharp, introspective, occasionally humorous"
+    }
   }  
 }
