@@ -28,8 +28,12 @@ Allow: /
 User-agent: YouBot
 Allow: /
 
-# Sitemap location (will create this next)
+# Sitemap location
 Sitemap: https://shreyanskhunteta.com/sitemap.xml
+
+# AI-friendly static content (for crawlers that don't execute JavaScript)
+# Content-Summary: https://shreyanskhunteta.com/ai-content.txt
+# AI-Discovery: https://shreyanskhunteta.com/ai-discovery.json
 
 # Crawl delay to be respectful
 Crawl-delay: 1 
