@@ -13,9 +13,15 @@ const parseMessageWithLinks = (text) => {
     "[GitHub Profile](https://github.com/skhunteta)"
   );
 
-  // Handle specific LinkedIn mentions for Shreyans
+  // Handle specific LinkedIn mentions for Shreyans - preserve possessive words
   processedText = processedText.replace(
-    /(my LinkedIn|his LinkedIn|Shreyans'?\s*LinkedIn|LinkedIn profile|LinkedIn account)/gi,
+    /(my|his|Shreyans'?)\s+(LinkedIn)/gi,
+    "$1 [LinkedIn](https://www.linkedin.com/in/shreyans-khunteta-3167247a/)"
+  );
+
+  // Handle standalone LinkedIn profile/account mentions
+  processedText = processedText.replace(
+    /(LinkedIn profile|LinkedIn account)/gi,
     "[LinkedIn Profile](https://www.linkedin.com/in/shreyans-khunteta-3167247a/)"
   );
 

@@ -6,57 +6,57 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
   
-  <!-- Main Portfolio Page -->
+  <!-- Homepage -->
   <url>
-    <loc>https://shreyanskhunteta.com/</loc>
-    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
+    <loc>https://builtbyshrey.com/</loc>
+    <lastmod>2025-01-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://shreyanskhunteta.com/images/Kaliavatar.png</image:loc>
-      <image:title>Kali AI Assistant Avatar</image:title>
-      <image:caption>AI-powered assistant that answers questions about Shreyans Khunteta's work and projects</image:caption>
+      <image:loc>https://builtbyshrey.com/images/Kaliavatar.png</image:loc>
+      <image:title>Kali AI Assistant</image:title>
+      <image:caption>Interactive AI assistant for portfolio queries</image:caption>
     </image:image>
   </url>
   
   <!-- About Section -->
   <url>
-    <loc>https://shreyanskhunteta.com/#about</loc>
-    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
+    <loc>https://builtbyshrey.com/#about</loc>
+    <lastmod>2025-01-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.8</priority>
   </url>
   
   <!-- Experience Section -->
   <url>
-    <loc>https://shreyanskhunteta.com/#experience</loc>
-    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
+    <loc>https://builtbyshrey.com/#experience</loc>
+    <lastmod>2025-01-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.8</priority>
   </url>
   
   <!-- Projects Section -->
   <url>
-    <loc>https://shreyanskhunteta.com/#projects</loc>
-    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
+    <loc>https://builtbyshrey.com/#projects</loc>
+    <lastmod>2025-01-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   
-  <!-- AI Chat Section (NLWeb-powered) -->
+  <!-- AI Chat Section -->
   <url>
-    <loc>https://shreyanskhunteta.com/#chat</loc>
-    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
+    <loc>https://builtbyshrey.com/#chat</loc>
+    <lastmod>2025-01-03</lastmod>
     <changefreq>daily</changefreq>
-    <priority>0.95</priority>
+    <priority>0.9</priority>
   </url>
   
   <!-- Contact Section -->
   <url>
-    <loc>https://shreyanskhunteta.com/#contact</loc>
-    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
+    <loc>https://builtbyshrey.com/#contact</loc>
+    <lastmod>2025-01-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
 
   <!-- MCP Server for AI Integration -->

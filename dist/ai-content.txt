@@ -39,7 +39,7 @@ Portfolio includes various innovative projects spanning:
 - Cloud-native applications with microservices architecture
 
 AI ASSISTANT - KALI:
-This portfolio features an interactive AI assistant named Kali, powered by Microsoft's NLWeb framework. Kali can answer questions about Shreyans' work, projects, technical expertise, and professional background. This represents practical implementation of conversational AI technology in a real-world application. The assistant demonstrates:
+This portfolio features an interactive AI assistant named Kali, powered by Microsoft's NLWeb framework. Named after Shreyans' beloved black cat Kali (adopted from a Eugene, Oregon shelter in September 2021), the AI assistant can answer questions about Shreyans' work, projects, technical expertise, and professional background. This represents practical implementation of conversational AI technology in a real-world application. The assistant demonstrates:
 - Natural language processing capabilities
 - Context-aware responses
 - Integration with portfolio data
@@ -47,6 +47,8 @@ This portfolio features an interactive AI assistant named Kali, powered by Micro
 - Professional knowledge base querying
 
 EDUCATION & CERTIFICATIONS:
+- Bachelor of Science in Computer Science from Oregon State University (2019)
+- Minors in Writing and Psychology
 - Strong foundation in computer science principles
 - Continuous learning in AI and machine learning technologies
 - Microsoft technology stack expertise
@@ -56,7 +58,7 @@ CONTACT & LINKS:
 - GitHub: https://github.com/skhunteta
 - LinkedIn: https://www.linkedin.com/in/shreyans-khunteta-3167247a/
 - Location: Seattle, WA, USA
-- Portfolio Website: https://shreyanskhunteta.com
+- Portfolio Website: https://builtbyshrey.com
 - Open to collaboration, consultation, and new opportunities in software development and AI technologies
 
 SPECIALIZATIONS:
