@@ -371,6 +371,7 @@
   },
   "personal": {
     "name": "Shreyans Khunteta",
+    "birth_date": "July 16, 1996",
     "title": "Software Engineer & Creative Writer",
     "bio": "Experienced full-stack developer specializing in .NET, cloud technologies, and data engineering. Recently expanded expertise into cutting-edge AI development, vector databases, and modern web technologies through intensive AI-assisted development. Also a published creative writer exploring the intersection of technology and humanity through sophisticated science fiction that integrates technical knowledge with cultural mythology. Building innovative solutions that drive business value while examining the philosophical implications of our technological future through both code and narrative.",
     "location": "United States",
@@ -378,7 +379,15 @@
     "website": "https://builtbyshrey.com",
     "linkedin": "https://www.linkedin.com/in/shreyans-khunteta-3167247a/",
     "github": "https://github.com/SKhunteta",
-    "blog": "https://prompt-injection.ghost.io"
+    "blog": "https://prompt-injection.ghost.io",
+    "favorite_color": "blue",
+    "education": {
+      "degree": "Bachelor of Science in Computer Science",
+      "school": "Oregon State University",
+      "minors": ["Writing", "Psychology"],
+      "graduation_year": 2019,
+      "location": "Corvallis, Oregon"
+    }
   },
   "interests": [
     "Software Architecture",
@@ -456,6 +465,11 @@
     "breed": "Domestic shorthair (likely)",
     "color": "Black",
     "age": "8 years (approx)",
+    "adoption_info": {
+      "adopted_date": "September 2021",
+      "adopted_from": "Animal shelter in Eugene, Oregon",
+      "adopted_by": "Shreyans Khunteta"
+    },
     "personality": [
       "Extremely intelligent",
       "Demanding and particular",
@@ -506,10 +520,11 @@
       }
     ],
     "education": {
-      "degree": "B.S. in Computer Science",
+      "degree": "Bachelor of Science in Computer Science",
       "school": "Oregon State University",
       "minors": ["Writing", "Psychology"],
-      "graduation_year": 2019
+      "graduation_year": 2019,
+      "location": "Corvallis, Oregon"
     },
     "projects_featured": [
       {

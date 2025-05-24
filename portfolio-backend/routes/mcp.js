@@ -126,7 +126,7 @@ router.get("/", (req, res) => {
           contact_info: {
             location: "Seattle, WA, USA",
             github: "https://github.com/skhunteta",
-            website: "https://shreyanskhunteta.com",
+            website: "https://builtbyshrey.com",
             availability: "Open for collaboration and consultation",
           },
         },

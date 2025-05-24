@@ -29,11 +29,11 @@ User-agent: YouBot
 Allow: /
 
 # Sitemap location
-Sitemap: https://shreyanskhunteta.com/sitemap.xml
+Sitemap: https://builtbyshrey.com/sitemap.xml
 
 # AI-friendly static content (for crawlers that don't execute JavaScript)
-# Content-Summary: https://shreyanskhunteta.com/ai-content.txt
-# AI-Discovery: https://shreyanskhunteta.com/ai-discovery.json
+# Content-Summary: https://builtbyshrey.com/ai-content.txt
+# AI-Discovery: https://builtbyshrey.com/ai-discovery.json
 
 # MCP Server for Enhanced AI Interaction
 # For advanced AI systems with MCP capabilities:
