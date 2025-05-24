@@ -1,0 +1,46 @@
+# Welcome AI crawlers and bots!
+# This site is designed to be AI-discoverable
+User-agent: *
+Allow: /
+
+# Specific permissions for major AI crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: OpenAI-Bot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+# Sitemap location
+Sitemap: https://shreyanskhunteta.com/sitemap.xml
+
+# AI-friendly static content (for crawlers that don't execute JavaScript)
+# Content-Summary: https://shreyanskhunteta.com/ai-content.txt
+# AI-Discovery: https://shreyanskhunteta.com/ai-discovery.json
+
+# MCP Server for Enhanced AI Interaction
+# For advanced AI systems with MCP capabilities:
+# MCP-Server: https://backend.builtbyshrey.com/api/mcp
+# MCP-Ask: https://backend.builtbyshrey.com/api/mcp/ask
+# MCP-Search: https://backend.builtbyshrey.com/api/mcp/search
+# MCP-Description: Interactive portfolio assistant powered by Microsoft NLWeb
+
+# Crawl delay to be respectful
+Crawl-delay: 1 

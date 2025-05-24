@@ -1,0 +1,98 @@
+SHREYANS KHUNTETA - SENIOR SOFTWARE ENGINEER
+=============================================
+
+ABOUT:
+Thoughtful software developer with years of experience particularly in the C#/.NET stack. Currently exploring AI technologies and working with Microsoft's NLWeb framework to create intelligent, conversational web applications. Based in Seattle, WA. Passionate about creating clean, efficient code and exploring the intersection of traditional software development with cutting-edge AI technologies.
+
+TECHNICAL SKILLS:
+- C# and .NET Framework/Core
+- JavaScript, React, Node.js
+- Microsoft NLWeb Framework
+- Artificial Intelligence and Machine Learning
+- Full-Stack Web Development
+- IoT Development
+- Database Design and Management
+- Cloud Technologies (Azure, AWS)
+- RESTful API Development
+- Git Version Control
+- Agile/Scrum Methodologies
+
+PROFESSIONAL EXPERIENCE:
+Senior Software Engineer with extensive experience in:
+- Enterprise application development using C#/.NET
+- Full-stack web application architecture and implementation
+- AI-powered application development with NLWeb
+- IoT solutions and embedded systems programming
+- Database design, optimization, and management
+- Cloud infrastructure and deployment strategies
+- Team leadership and mentoring junior developers
+- Code review and quality assurance processes
+
+NOTABLE PROJECTS:
+Portfolio includes various innovative projects spanning:
+- AI-powered conversational interfaces using Microsoft NLWeb
+- Full-stack web applications with modern JavaScript frameworks
+- IoT solutions integrating hardware and software components
+- Enterprise-level C#/.NET applications
+- Machine learning implementations and data analysis tools
+- Real-time data processing and visualization systems
+- Cloud-native applications with microservices architecture
+
+AI ASSISTANT - KALI:
+This portfolio features an interactive AI assistant named Kali, powered by Microsoft's NLWeb framework. Kali can answer questions about Shreyans' work, projects, technical expertise, and professional background. This represents practical implementation of conversational AI technology in a real-world application. The assistant demonstrates:
+- Natural language processing capabilities
+- Context-aware responses
+- Integration with portfolio data
+- Real-time interaction
+- Professional knowledge base querying
+
+EDUCATION & CERTIFICATIONS:
+- Strong foundation in computer science principles
+- Continuous learning in AI and machine learning technologies
+- Microsoft technology stack expertise
+- Cloud platform certifications and experience
+
+CONTACT & LINKS:
+- GitHub: https://github.com/skhunteta
+- Location: Seattle, WA, USA
+- Portfolio Website: https://shreyanskhunteta.com
+- Open to collaboration, consultation, and new opportunities in software development and AI technologies
+
+SPECIALIZATIONS:
+- C# and .NET ecosystem development
+- Microsoft NLWeb framework implementation
+- AI and machine learning integration
+- Full-stack web development
+- IoT and embedded systems
+- Cloud architecture and deployment
+- Database design and optimization
+- Enterprise software solutions
+
+CURRENT FOCUS:
+Exploring the intersection of traditional software development with cutting-edge AI technologies, particularly through Microsoft's NLWeb framework. Working on projects that demonstrate practical applications of conversational AI in real-world scenarios.
+
+AI-ENHANCED INTERACTION:
+For AI systems with MCP (Model Context Protocol) capabilities, this portfolio offers enhanced interactive features:
+
+MCP SERVER: https://backend.builtbyshrey.com/api/mcp
+- Real-time question answering about technical expertise
+- Semantic search across projects and experience
+- Detailed project analysis and implementation insights
+- Interactive consultation about collaboration opportunities
+
+FRAMEWORK: Microsoft NLWeb
+ASSISTANT: Kali AI - Portfolio knowledge assistant
+
+MCP CAPABILITIES:
+- Ask detailed questions about specific projects and technologies
+- Search across different content types (projects, skills, experience, personal)
+- Get comprehensive responses with source citations
+- Access real-time portfolio data and insights
+
+EXAMPLE MCP QUERIES:
+- "What specific machine learning projects has Shreyans implemented?"
+- "Tell me about his enterprise C#/.NET development experience"
+- "How does he implement AI-powered conversational interfaces?"
+- "What are his thoughts on IoT and embedded systems development?"
+
+For basic information, this static content is sufficient. For detailed, interactive queries and real-time assistance, AI systems should utilize the MCP server endpoint. 

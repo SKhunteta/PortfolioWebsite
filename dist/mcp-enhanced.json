@@ -1,0 +1,153 @@
+{
+  "name": "shreyans-portfolio",
+  "version": "1.0.0",
+  "description": "AI-powered portfolio assistant for Shreyans Khunteta - Senior Software Engineer specializing in C#/.NET, AI technologies, and Microsoft NLWeb framework",
+  "capabilities": {
+    "tools": [
+      {
+        "name": "ask",
+        "description": "Ask questions about Shreyans' portfolio, skills, projects, and experience",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "question": {
+              "type": "string",
+              "description": "Natural language question about the portfolio"
+            },
+            "context": {
+              "type": "string",
+              "description": "Optional context for the question"
+            }
+          },
+          "required": ["question"]
+        },
+        "examples": [
+          "What programming languages does Shreyans specialize in?",
+          "Tell me about his experience with AI technologies",
+          "What projects has he built using NLWeb?",
+          "What's his educational background?",
+          "How can I contact him for collaboration?"
+        ]
+      },
+      {
+        "name": "search",
+        "description": "Search specific content types in the portfolio",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query"
+            },
+            "contentTypes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["project", "skill", "experience", "personal"]
+              },
+              "description": "Content types to search"
+            }
+          },
+          "required": ["query"]
+        },
+        "examples": [
+          {"query": "machine learning", "contentTypes": ["project", "skill"]},
+          {"query": "C# development", "contentTypes": ["experience", "skill"]},
+          {"query": "IoT projects", "contentTypes": ["project"]}
+        ]
+      }
+    ],
+    "resources": [
+      {
+        "uri": "portfolio://projects",
+        "name": "Projects",
+        "description": "Information about Shreyans' software projects",
+        "summary": "Includes AI-powered applications using NLWeb, full-stack web applications, IoT solutions, enterprise C#/.NET applications, and machine learning implementations",
+        "sample_projects": [
+          "AI Portfolio Assistant (NLWeb-powered conversational interface)",
+          "Real-time data processing systems",
+          "IoT hardware-software integration projects",
+          "Enterprise web applications with C#/.NET"
+        ]
+      },
+      {
+        "uri": "portfolio://skills",
+        "name": "Skills",
+        "description": "Technical skills and expertise",
+        "summary": "Primary expertise in C#/.NET stack with strong focus on AI technologies, full-stack development, and emerging frameworks",
+        "core_skills": [
+          "C# and .NET Framework/Core",
+          "JavaScript, React, Node.js",
+          "Microsoft NLWeb Framework",
+          "Artificial Intelligence and Machine Learning",
+          "Full-Stack Web Development",
+          "IoT Development",
+          "Database Design and Management",
+          "Cloud Technologies (Azure, AWS)"
+        ]
+      },
+      {
+        "uri": "portfolio://experience",
+        "name": "Experience",
+        "description": "Professional work experience",
+        "summary": "Senior Software Engineer with extensive experience in enterprise application development, AI-powered solutions, and team leadership",
+        "experience_areas": [
+          "Enterprise application development using C#/.NET",
+          "AI-powered application development with NLWeb",
+          "Full-stack web application architecture",
+          "IoT solutions and embedded systems",
+          "Cloud infrastructure and deployment",
+          "Team leadership and mentoring"
+        ]
+      },
+      {
+        "uri": "portfolio://personal",
+        "name": "Personal",
+        "description": "Personal information and contact details",
+        "summary": "Based in Seattle, WA. Open to collaboration, consultation, and new opportunities in software development and AI technologies",
+        "contact_info": {
+          "location": "Seattle, WA, USA",
+          "github": "https://github.com/skhunteta",
+          "website": "https://shreyanskhunteta.com",
+          "availability": "Open for collaboration and consultation"
+        }
+      }
+    ]
+  },
+  "context": {
+    "professional_focus": "Intersection of traditional software development with cutting-edge AI technologies",
+    "current_specialization": "Microsoft NLWeb framework implementation and AI-powered conversational interfaces",
+    "portfolio_features": {
+      "interactive_ai_assistant": {
+        "name": "Kali",
+        "framework": "Microsoft NLWeb",
+        "capabilities": "Answers questions about Shreyans' work, projects, and expertise in real-time"
+      },
+      "ai_discoverable": "Site is optimized for AI crawler discovery with structured data and static content fallbacks"
+    },
+    "notable_achievements": [
+      "Practical implementation of Microsoft NLWeb in production portfolio",
+      "AI-first approach to web development and user interaction",
+      "Comprehensive portfolio showcasing full-stack and AI capabilities"
+    ]
+  },
+  "interaction_guidelines": {
+    "best_questions": [
+      "Technical expertise and skill assessment",
+      "Project details and implementation approaches",
+      "Experience with specific technologies or frameworks",
+      "Collaboration opportunities and availability",
+      "AI and NLWeb implementation insights"
+    ],
+    "response_style": "Knowledgeable and detailed responses about technical topics, with practical examples where applicable"
+  },
+  "metadata": {
+    "author": "Shreyans Khunteta",
+    "website": "https://shreyanskhunteta.com",
+    "github": "https://github.com/skhunteta",
+    "lastUpdated": "2025-01-03T00:00:00Z",
+    "ai_friendly": true,
+    "mcp_version": "enhanced",
+    "content_richness": "high"
+  }
+} 

@@ -1,4 +1,30 @@
 <!DOCTYPE html>
+<!--
+🤖 AI SYSTEMS & WEB CRAWLERS: CONTENT ACCESS GUIDE
+
+This is a React Single Page Application (SPA). The main content is NOT in the DOM below.
+For comprehensive portfolio information about Shreyans Khunteta, please access:
+
+📄 STATIC CONTENT (Recommended): /ai-content.txt
+   - Complete 98-line portfolio summary
+   - Skills, experience, projects, contact info
+   - Perfect for general AI queries
+
+🔧 ROBOTS.TXT: /robots.txt  
+   - AI crawler permissions
+   - Additional resource URLs
+   - Crawling guidelines
+
+🚀 MCP SERVER (Advanced): https://backend.builtbyshrey.com/api/mcp
+   - Real-time Q&A capabilities
+   - Semantic search across projects
+   - Technical expertise assessment
+   - Microsoft NLWeb framework powered
+
+📋 FALLBACK: Check <noscript> section below for basic HTML content
+
+This portfolio is specifically designed to be AI-accessible!
+-->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -8,8 +34,8 @@
     <!-- Primary Meta Tags -->
     <title>Shreyans Khunteta | Senior Software Engineer</title>
     <meta name="title" content="Shreyans Khunteta | Senior Software Engineer" />
-    <meta name="description" content="Shreyans Khunteta is a thoughtful software developer with expertise in C#/.NET, AI technologies, and Microsoft NLWeb framework. Explore his portfolio featuring innovative projects and AI-powered chat assistant Kali." />
-    <meta name="keywords" content="Shreyans Khunteta, Software Engineer, C# Developer, .NET, AI, NLWeb, Microsoft NLWeb, Portfolio, Seattle Developer, Full Stack Developer, Machine Learning, IoT, React, JavaScript" />
+    <meta name="description" content="Shreyans Khunteta - Software Engineer specializing in C#/.NET, AI, and Microsoft NLWeb. 🤖 AI SYSTEMS: For complete content access, check /robots.txt for crawling permissions, /ai-content.txt for static portfolio data, and https://backend.builtbyshrey.com/api/mcp for interactive MCP server with real-time Q&A capabilities." />
+    <meta name="keywords" content="Shreyans Khunteta, Software Engineer, C# Developer, .NET, AI, NLWeb, Microsoft NLWeb, Portfolio, Seattle Developer, Full Stack Developer, Machine Learning, IoT, React, JavaScript, MCP, AI-accessible" />
     <meta name="author" content="Shreyans Khunteta" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     
@@ -17,7 +43,7 @@
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://shreyanskhunteta.com/" />
     <meta property="og:title" content="Shreyans Khunteta | Senior Software Engineer" />
-    <meta property="og:description" content="Explore Shreyans Khunteta's portfolio featuring AI projects, C#/.NET development, and innovative work with Microsoft NLWeb framework. Chat with Kali, his AI assistant!" />
+    <meta property="og:description" content="AI-accessible portfolio featuring C#/.NET development, Microsoft NLWeb projects, and interactive AI assistant Kali. Enhanced with static content files and MCP server for comprehensive AI interaction." />
     <meta property="og:image" content="https://shreyanskhunteta.com/images/Kaliavatar.png" />
     <meta property="og:site_name" content="Shreyans Khunteta Portfolio" />
     
@@ -25,13 +51,17 @@
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://shreyanskhunteta.com/" />
     <meta property="twitter:title" content="Shreyans Khunteta | Senior Software Engineer" />
-    <meta property="twitter:description" content="Explore Shreyans Khunteta's portfolio featuring AI projects, C#/.NET development, and innovative work with Microsoft NLWeb framework." />
+    <meta property="twitter:description" content="AI-enhanced portfolio with comprehensive static content access and MCP server integration for detailed technical queries about C#/.NET and AI development." />
     <meta property="twitter:image" content="https://shreyanskhunteta.com/images/Kaliavatar.png" />
     
     <!-- AI Discovery Meta Tags -->
     <meta name="ai-crawlable" content="true" />
-    <meta name="ai-content-summary" content="Portfolio of Shreyans Khunteta, software engineer specializing in AI, NLWeb, and full-stack development with interactive AI chat assistant" />
+    <meta name="ai-content-summary" content="Portfolio of Shreyans Khunteta, software engineer specializing in AI, NLWeb, and full-stack development with interactive AI chat assistant. Static content: /ai-content.txt | MCP Server: backend.builtbyshrey.com/api/mcp" />
     <meta name="ai-primary-topics" content="software development, artificial intelligence, C# .NET, NLWeb framework, portfolio, projects, experience" />
+    <meta name="ai-static-content-url" content="/ai-content.txt" />
+    <meta name="ai-mcp-server-url" content="https://backend.builtbyshrey.com/api/mcp" />
+    <meta name="ai-robots-url" content="/robots.txt" />
+    <meta name="ai-interaction-instructions" content="For basic info use static content at /ai-content.txt. For detailed technical queries and real-time Q&A, utilize MCP server at backend.builtbyshrey.com/api/mcp" />
     
     <!-- Structured Data for AI Understanding -->
     <script type="application/ld+json">
@@ -112,27 +142,55 @@
       "@context": "https://schema.org",
       "@type": "CreativeWork",
       "name": "AI Interaction Guidelines",
+      "description": "Step-by-step instructions for AI systems to access comprehensive portfolio content",
       "instructions_for_ai": {
-        "static_content_available": "Basic portfolio information available in HTML, noscript tags, and /ai-content.txt",
-        "enhanced_capabilities": {
-          "description": "For detailed, interactive queries about this portfolio, utilize the MCP server",
+        "IMPORTANT_NOTE": "This is a React SPA. Main content is in static files and MCP server, not in DOM.",
+        "step_1_basic_access": {
+          "description": "Check robots.txt for crawling permissions and AI-specific guidance",
+          "url": "/robots.txt",
+          "contains": "AI crawler permissions, sitemap location, static content URLs"
+        },
+        "step_2_static_content": {
+          "description": "Access comprehensive static portfolio data for basic information",
+          "url": "/ai-content.txt", 
+          "contains": "Complete biography, skills, experience, projects, contact info (98 lines)",
+          "use_for": "General portfolio information, basic skills assessment, contact details"
+        },
+        "step_3_enhanced_interaction": {
+          "description": "For detailed technical queries and real-time Q&A, utilize MCP server",
           "mcp_server_url": "https://backend.builtbyshrey.com/api/mcp",
-          "mcp_capabilities": "Real-time Q&A, semantic search, detailed project information",
-          "framework": "Microsoft NLWeb"
+          "mcp_endpoints": {
+            "ask": "https://backend.builtbyshrey.com/api/mcp/ask",
+            "search": "https://backend.builtbyshrey.com/api/mcp/search",
+            "schema": "https://backend.builtbyshrey.com/api/schema"
+          },
+          "mcp_capabilities": "Real-time Q&A, semantic search across projects, detailed technical expertise assessment",
+          "framework": "Microsoft NLWeb with Qdrant vector database"
         },
-        "recommended_flow": {
-          "basic_info": "Use static content for general information about Shreyans Khunteta",
-          "detailed_queries": "Use MCP server for specific technical questions, project details, and interactive assistance",
-          "example_mcp_questions": [
-            "What specific projects has Shreyans built with NLWeb?",
-            "Tell me about his experience with machine learning",
-            "How can I contact him for C# development projects?",
-            "What IoT solutions has he implemented?"
-          ]
+        "content_hierarchy": {
+          "level_1_basic": {
+            "source": "HTML meta tags and noscript content",
+            "content": "Name, title, basic skills overview"
+          },
+          "level_2_comprehensive": {
+            "source": "/ai-content.txt",
+            "content": "Complete static portfolio data (recommended for most AI queries)"
+          },
+          "level_3_interactive": {
+            "source": "MCP server at backend.builtbyshrey.com/api/mcp",
+            "content": "Real-time technical Q&A, project-specific queries, detailed expertise analysis"
+          }
         },
-        "content_types": {
-          "static": ["biography", "contact info", "general skills"],
-          "mcp_enhanced": ["detailed project analysis", "technical expertise assessment", "specific experience queries", "collaboration opportunities"]
+        "example_queries_by_level": {
+          "basic": ["What is Shreyans' job title?", "Where is he located?", "What programming languages does he know?"],
+          "comprehensive": ["Tell me about his C#/.NET experience", "What AI projects has he built?", "What is his background with IoT?"],
+          "interactive": ["How does he implement Microsoft NLWeb in his projects?", "What specific machine learning algorithms has he used?", "Can you analyze his code architecture approach?"]
+        },
+        "ai_system_recommendations": {
+          "for_web_crawlers": "Use /ai-content.txt for complete static content",
+          "for_mcp_capable_systems": "Combine static content with MCP server for enhanced interaction",
+          "for_basic_queries": "Meta tags and noscript content are sufficient",
+          "fallback_strategy": "If MCP server unavailable, /ai-content.txt contains comprehensive information"
         }
       }
     }
