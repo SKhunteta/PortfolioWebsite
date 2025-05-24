@@ -59,4 +59,12 @@
     <priority>0.8</priority>
   </url>
 
+  <!-- MCP Server for AI Integration -->
+  <url>
+    <loc>https://backend.builtbyshrey.com/api/mcp</loc>
+    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+
 </urlset> 

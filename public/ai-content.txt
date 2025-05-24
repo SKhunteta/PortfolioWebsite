@@ -69,4 +69,30 @@ SPECIALIZATIONS:
 - Enterprise software solutions
 
 CURRENT FOCUS:
-Exploring the intersection of traditional software development with cutting-edge AI technologies, particularly through Microsoft's NLWeb framework. Working on projects that demonstrate practical applications of conversational AI in real-world scenarios. 
+Exploring the intersection of traditional software development with cutting-edge AI technologies, particularly through Microsoft's NLWeb framework. Working on projects that demonstrate practical applications of conversational AI in real-world scenarios.
+
+AI-ENHANCED INTERACTION:
+For AI systems with MCP (Model Context Protocol) capabilities, this portfolio offers enhanced interactive features:
+
+MCP SERVER: https://backend.builtbyshrey.com/api/mcp
+- Real-time question answering about technical expertise
+- Semantic search across projects and experience
+- Detailed project analysis and implementation insights
+- Interactive consultation about collaboration opportunities
+
+FRAMEWORK: Microsoft NLWeb
+ASSISTANT: Kali AI - Portfolio knowledge assistant
+
+MCP CAPABILITIES:
+- Ask detailed questions about specific projects and technologies
+- Search across different content types (projects, skills, experience, personal)
+- Get comprehensive responses with source citations
+- Access real-time portfolio data and insights
+
+EXAMPLE MCP QUERIES:
+- "What specific machine learning projects has Shreyans implemented?"
+- "Tell me about his enterprise C#/.NET development experience"
+- "How does he implement AI-powered conversational interfaces?"
+- "What are his thoughts on IoT and embedded systems development?"
+
+For basic information, this static content is sufficient. For detailed, interactive queries and real-time assistance, AI systems should utilize the MCP server endpoint. 

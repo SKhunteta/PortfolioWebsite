@@ -35,5 +35,12 @@ Sitemap: https://shreyanskhunteta.com/sitemap.xml
 # Content-Summary: https://shreyanskhunteta.com/ai-content.txt
 # AI-Discovery: https://shreyanskhunteta.com/ai-discovery.json
 
+# MCP Server for Enhanced AI Interaction
+# For advanced AI systems with MCP capabilities:
+# MCP-Server: https://backend.builtbyshrey.com/api/mcp
+# MCP-Ask: https://backend.builtbyshrey.com/api/mcp/ask
+# MCP-Search: https://backend.builtbyshrey.com/api/mcp/search
+# MCP-Description: Interactive portfolio assistant powered by Microsoft NLWeb
+
 # Crawl delay to be respectful
 Crawl-delay: 1 
