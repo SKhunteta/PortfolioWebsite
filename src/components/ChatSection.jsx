@@ -229,16 +229,7 @@ const ChatSection = () => {
         <h2 className="section-title mx-auto">Ask Kali AI Assistant</h2>
         <p className="section-subtitle">
           Ask my cat Kali about anything regarding my work, projects and
-          expertise. She's running on{" "}
-          <a
-            href="https://github.com/microsoft/NLWeb"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary font-semibold hover:underline transition-colors"
-          >
-            Microsoft's NLWeb
-          </a>{" "}
-          framework and knows everything about my technical background.
+          expertise. She's running on the NLWeb framework and knows everything about my technical background.
         </p>
       </div>
 
@@ -256,14 +247,13 @@ const ChatSection = () => {
                 <div>
                   <h3 className="text-xl font-bold">Kali AI Assistant</h3>
                   <p className="text-lg opacity-95">
-                    Running on{" "}
                     <a
                       href="https://github.com/microsoft/NLWeb"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-semibold underline hover:text-white/80 transition-colors"
                     >
-                      Microsoft NLWeb
+                      Running on NLWeb!
                     </a>
                   </p>
                 </div>
