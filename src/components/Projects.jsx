@@ -11,7 +11,7 @@ const Projects = () => {
       technologies: [
         "React",
         "Express.js",
-        "OpenAI GPT-4",
+        "OpenAI GPT-4o-mini",
         "Qdrant Vector DB",
         "Tailwind CSS",
         "Railway",
