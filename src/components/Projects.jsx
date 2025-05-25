@@ -7,7 +7,7 @@ const Projects = () => {
       id: 0,
       title: "AI-Powered Portfolio with NLWeb Protocol",
       description:
-        "An innovative portfolio website featuring conversational AI capabilities built with Microsoft's newly announced NLWeb protocol. Users can ask natural language questions like 'What AI projects has Shreyans built?' and receive intelligent, contextual responses powered by vector embeddings and semantic search. Built through intensive collaboration with AI-assisted development - you're looking at it! 🚀",
+        "A cutting-edge portfolio website featuring an intelligent conversational AI interface that understands natural language queries about my professional background. Users can ask questions like 'What AI projects has Shreyans built?' and receive contextually-aware responses powered by OpenAI embeddings and vector similarity search. This full-stack application demonstrates modern AI integration patterns, featuring a React frontend with real-time chat capabilities and an Express.js backend handling semantic search operations through Qdrant vector database.",
       technologies: [
         "React",
         "Express.js",
@@ -24,11 +24,11 @@ const Projects = () => {
       github: "https://github.com/SKhunteta/PortfolioWebsite",
       featured: true,
       highlights: [
-        "Semantic search using Qdrant vector database with OpenAI embeddings",
-        "Dynamic CORS configuration supporting multiple development environments",
-        "Auto-scrolling chat interface with intelligent user position detection",
-        "Environment-aware API configuration for seamless dev/prod switching",
-        "AI-assisted development methodologies and collaborative problem-solving",
+        "Semantic search engine using OpenAI text-embedding-3-small with Qdrant vector database for intelligent query processing",
+        "Production-ready full-stack architecture with Express.js API deployed on Railway and React frontend on GitHub Pages",
+        "Real-time conversational interface with streaming responses and dynamic loading states for enhanced UX",
+        "Environment-aware CORS configuration and API routing supporting seamless development-to-production workflows",
+        "Integrated vector search with context-aware response generation combining retrieval and generative AI patterns",
       ],
     },
     {
