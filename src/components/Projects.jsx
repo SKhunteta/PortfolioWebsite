@@ -45,7 +45,7 @@ const Projects = () => {
       id: 2,
       title: "Loan Origination System",
       description:
-        "Led the development of a comprehensive system for loan applications and processing using Blazor and MS SQL Server. Implemented secure data handling and credit score API integration.",
+        "Helped lead the development of a comprehensive system for loan applications and processing using Blazor and MS SQL Server. Implemented secure data handling and credit score API integration.",
       technologies: ["Blazor", "C#", ".NET", "MS SQL Server", "Equifax API"],
       github: null,
     },
