@@ -158,14 +158,27 @@ router.get("/sse", (req, res) => {
 });
 
 /**
- * POST endpoint for MCP tool calls
- * Claude will send tool execution requests here
+ * HTTP endpoint for MCP tool calls (primary for Claude Desktop UI)
+ * Claude Desktop UI prefers HTTP transport over SSE for tool calls
  */
-router.post("/sse", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
-    const { method, params, id } = req.body;
+    const { jsonrpc, method, params, id } = req.body;
 
-    console.log(`🔧 MCP Method: ${method}`, params);
+    console.log(`🔧 MCP HTTP Method: ${method}`, params);
+
+    // Validate JSON-RPC 2.0 format
+    if (jsonrpc !== "2.0") {
+      return res.status(400).json({
+        jsonrpc: "2.0",
+        id: id || null,
+        error: {
+          code: -32600,
+          message: "Invalid Request",
+          data: "Expected jsonrpc: '2.0'",
+        },
+      });
+    }
 
     let result;
 
@@ -180,7 +193,15 @@ router.post("/sse", async (req, res) => {
         result = await handleToolCall(params);
         break;
       default:
-        throw new Error(`Unknown method: ${method}`);
+        return res.status(400).json({
+          jsonrpc: "2.0",
+          id: id || null,
+          error: {
+            code: -32601,
+            message: "Method not found",
+            data: `Unknown method: ${method}`,
+          },
+        });
     }
 
     // Send MCP-compliant response
@@ -190,11 +211,79 @@ router.post("/sse", async (req, res) => {
       result: result,
     });
   } catch (error) {
-    console.error("❌ MCP Error:", error);
+    console.error("❌ MCP HTTP Error:", error);
 
     res.status(500).json({
       jsonrpc: "2.0",
-      id: req.body.id || null,
+      id: req.body?.id || null,
+      error: {
+        code: -32603,
+        message: "Internal error",
+        data: error.message,
+      },
+    });
+  }
+});
+
+/**
+ * POST endpoint for MCP tool calls via SSE
+ * Backup transport method
+ */
+router.post("/sse", async (req, res) => {
+  try {
+    const { jsonrpc, method, params, id } = req.body;
+
+    console.log(`🔧 MCP SSE Method: ${method}`, params);
+
+    // Validate JSON-RPC 2.0 format
+    if (jsonrpc !== "2.0") {
+      return res.status(400).json({
+        jsonrpc: "2.0",
+        id: id || null,
+        error: {
+          code: -32600,
+          message: "Invalid Request",
+          data: "Expected jsonrpc: '2.0'",
+        },
+      });
+    }
+
+    let result;
+
+    switch (method) {
+      case "initialize":
+        result = await handleInitialize(params);
+        break;
+      case "tools/list":
+        result = await handleToolsList();
+        break;
+      case "tools/call":
+        result = await handleToolCall(params);
+        break;
+      default:
+        return res.status(400).json({
+          jsonrpc: "2.0",
+          id: id || null,
+          error: {
+            code: -32601,
+            message: "Method not found",
+            data: `Unknown method: ${method}`,
+          },
+        });
+    }
+
+    // Send MCP-compliant response
+    res.json({
+      jsonrpc: "2.0",
+      id: id,
+      result: result,
+    });
+  } catch (error) {
+    console.error("❌ MCP SSE Error:", error);
+
+    res.status(500).json({
+      jsonrpc: "2.0",
+      id: req.body?.id || null,
       error: {
         code: -32603,
         message: "Internal error",
@@ -208,7 +297,9 @@ router.post("/sse", async (req, res) => {
  * Handle MCP initialize request
  */
 async function handleInitialize(params) {
-  return {
+  console.log("📝 MCP Initialize request received", params);
+
+  const initResponse = {
     protocolVersion: MCP_VERSION,
     serverInfo: {
       name: "shreyans-portfolio-mcp",
@@ -217,19 +308,32 @@ async function handleInitialize(params) {
         "Shreyans Khunteta's AI-powered portfolio intelligence server",
     },
     capabilities: {
-      tools: {},
-      logging: {},
+      tools: {
+        listChanged: false,
+      },
+      logging: {
+        level: "info",
+      },
+      experimental: {},
     },
   };
+
+  console.log("✅ MCP Initialize response:", initResponse);
+  return initResponse;
 }
 
 /**
  * Handle tools list request
  */
 async function handleToolsList() {
-  return {
+  console.log("📋 MCP Tools list requested");
+  
+  const toolsResponse = {
     tools: MCP_TOOLS,
   };
+  
+  console.log("✅ MCP Tools response:", JSON.stringify(toolsResponse, null, 2));
+  return toolsResponse;
 }
 
 /**
@@ -463,23 +567,23 @@ router.get("/info", (req, res) => {
       supportedTransports: ["sse", "http"],
     },
     usage: {
-      claudeExample: {
-        mcp_servers: [
-          {
-            type: "url",
-            url: "https://backend.builtbyshrey.com/api/mcp-connector/sse",
-            name: "shreyans-portfolio",
-            tool_configuration: {
-              enabled: true,
-              allowed_tools: [
-                "portfolio_search",
-                "analyze_portfolio",
-                "get_project_details",
-              ],
+              claudeExample: {
+          mcp_servers: [
+            {
+              type: "url",
+              url: "https://backend.builtbyshrey.com/api/mcp-connector",
+              name: "shreyans-portfolio",
+              tool_configuration: {
+                enabled: true,
+                allowed_tools: [
+                  "portfolio_search",
+                  "analyze_portfolio",
+                  "get_project_details",
+                ],
+              },
             },
-          },
-        ],
-      },
+          ],
+        },
     },
   });
 });

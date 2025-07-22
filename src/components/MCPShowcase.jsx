@@ -44,7 +44,7 @@ const MCPShowcase = () => {
   "mcp_servers": [
     {
       "type": "url",
-      "url": "https://backend.builtbyshrey.com/api/mcp-connector/sse",
+      "url": "https://backend.builtbyshrey.com/api/mcp-connector",
       "name": "shreyans-portfolio",
       "tool_configuration": {
         "enabled": true,
@@ -59,7 +59,13 @@ const MCPShowcase = () => {
 }`}</pre>
             </div>
             <div className="mt-3 text-sm text-gray-600">
-              <strong>Full server endpoint:</strong>{" "}
+              <strong>Primary endpoint:</strong>{" "}
+              <code className="bg-gray-200 px-2 py-1 rounded">
+                https://backend.builtbyshrey.com/api/mcp-connector
+              </code>
+            </div>
+            <div className="mt-2 text-sm text-gray-600">
+              <strong>Alternative SSE endpoint:</strong>{" "}
               <code className="bg-gray-200 px-2 py-1 rounded">
                 https://backend.builtbyshrey.com/api/mcp-connector/sse
               </code>
@@ -96,6 +102,29 @@ const MCPShowcase = () => {
               <p className="text-gray-600 text-sm">
                 Get technical, business, or summary details about any project
               </p>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+              <h4 className="font-semibold text-yellow-800 mb-2 flex items-center">
+                <span className="mr-2">⚠️</span>
+                Troubleshooting Claude Desktop UI Connection
+              </h4>
+              <div className="text-yellow-700 text-sm space-y-2">
+                <p><strong>If Claude's MCP connector shows "disabled" or can't connect:</strong></p>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li><strong>Use HTTP endpoint:</strong> <code className="bg-yellow-100 px-1 rounded">https://backend.builtbyshrey.com/api/mcp-connector</code> (not /sse)</li>
+                  <li><strong>Check server status:</strong> <a href="https://backend.builtbyshrey.com/api/mcp-connector/info" target="_blank" className="text-blue-600 underline">MCP server info</a></li>
+                  <li><strong>Restart Claude Desktop</strong> after adding the connector</li>
+                  <li><strong>Look for the hammer icon</strong> in the chat input to verify connection</li>
+                  <li><strong>Check Claude's logs</strong> for error messages about the connection</li>
+                  <li><strong>If tools show as disabled:</strong> The server is connecting but initialization failed</li>
+                </ul>
+                <p className="mt-3"><strong>Alternative connection methods:</strong></p>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Use <code className="bg-yellow-100 px-1 rounded">mcp-remote</code> package: <code className="bg-yellow-100 px-1 rounded">npx mcp-remote https://backend.builtbyshrey.com/api/mcp-connector</code></li>
+                  <li>Contact me at <a href="mailto:contact@builtbyshrey.com" className="text-blue-600 underline">contact@builtbyshrey.com</a> for direct integration support</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -175,7 +204,13 @@ const MCPShowcase = () => {
                 </h4>
                 <div className="space-y-2 text-sm">
                   <div>
-                    <span className="font-medium">SSE:</span>
+                    <span className="font-medium">HTTP (Primary):</span>
+                    <code className="block bg-gray-900 text-green-400 p-2 rounded text-xs mt-1">
+                      https://backend.builtbyshrey.com/api/mcp-connector
+                    </code>
+                  </div>
+                  <div>
+                    <span className="font-medium">SSE (Fallback):</span>
                     <code className="block bg-gray-900 text-green-400 p-2 rounded text-xs mt-1">
                       https://backend.builtbyshrey.com/api/mcp-connector/sse
                     </code>
