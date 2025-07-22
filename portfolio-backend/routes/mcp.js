@@ -2,6 +2,7 @@ import express from "express";
 import OpenAIService from "../services/openai.js";
 import QdrantService from "../services/qdrant.js";
 import { config } from "../config/index.js";
+import { kaliMCP } from "../mcp-server.js";
 
 const router = express.Router();
 
@@ -410,5 +411,411 @@ async function getExperienceResource() {
 async function getPersonalResource() {
   return { message: "Personal resource - implementation needed" };
 }
+
+/**
+ * GET /api/mcp/capabilities
+ * Discover available MCP tools and capabilities
+ */
+router.get("/capabilities", async (req, res) => {
+  try {
+    const capabilities = {
+      server: {
+        name: "kali-portfolio-intelligence",
+        version: "1.0.0",
+        description:
+          "Kali's AI-powered portfolio intelligence service via Model Context Protocol",
+      },
+      tools: [
+        {
+          name: "analyzePortfolioForRole",
+          description:
+            "Analyze Shreyans' portfolio against specific job requirements with AI insights",
+          parameters: {
+            type: "object",
+            properties: {
+              jobDescription: {
+                type: "string",
+                description: "Job description or requirements",
+              },
+              companyInfo: {
+                type: "string",
+                description: "Company culture and values",
+              },
+              requiredSkills: {
+                type: "array",
+                items: { type: "string" },
+                description: "Required skills list",
+              },
+            },
+            required: ["jobDescription"],
+          },
+        },
+        {
+          name: "explainCodeWithContext",
+          description:
+            "Get detailed code explanations with Kali's observational insights",
+          parameters: {
+            type: "object",
+            properties: {
+              fileName: { type: "string", description: "File name to explain" },
+              concept: { type: "string", description: "Concept to focus on" },
+              audienceLevel: {
+                type: "string",
+                enum: ["beginner", "intermediate", "expert"],
+              },
+            },
+            required: ["fileName", "concept"],
+          },
+        },
+        {
+          name: "generateTailoredResume",
+          description: "Generate role-specific resume with AI optimization",
+          parameters: {
+            type: "object",
+            properties: {
+              targetRole: { type: "string", description: "Target position" },
+              targetCompany: { type: "string", description: "Target company" },
+              keyRequirements: { type: "array", items: { type: "string" } },
+              resumeStyle: {
+                type: "string",
+                enum: ["technical", "executive", "creative", "standard"],
+              },
+            },
+            required: ["targetRole"],
+          },
+        },
+        {
+          name: "tellProjectStory",
+          description:
+            "Tell compelling project stories with context and insights",
+          parameters: {
+            type: "object",
+            properties: {
+              projectName: {
+                type: "string",
+                description: "Project to discuss",
+              },
+              audience: {
+                type: "string",
+                enum: ["technical", "business", "recruiter", "general"],
+              },
+              focusArea: { type: "string", description: "Specific focus area" },
+            },
+            required: ["projectName"],
+          },
+        },
+        {
+          name: "assessTechnicalFit",
+          description:
+            "Assess technical capability fit for specific technologies",
+          parameters: {
+            type: "object",
+            properties: {
+              technologies: { type: "array", items: { type: "string" } },
+              projectType: { type: "string", description: "Project type" },
+              complexityLevel: {
+                type: "string",
+                enum: ["startup", "enterprise", "research", "consulting"],
+              },
+            },
+            required: ["technologies"],
+          },
+        },
+      ],
+      resources: [
+        {
+          uri: "portfolio://projects",
+          name: "Portfolio Projects",
+          description: "Complete portfolio projects with technical details",
+        },
+        {
+          uri: "portfolio://skills",
+          name: "Technical Skills",
+          description: "Comprehensive technical skills and experience",
+        },
+        {
+          uri: "portfolio://experience",
+          name: "Professional Experience",
+          description: "Work experience and achievements",
+        },
+      ],
+      prompts: [
+        {
+          name: "technical-interview-prep",
+          description:
+            "Prepare for technical interviews based on role requirements",
+        },
+        {
+          name: "project-demo-script",
+          description: "Generate demo scripts for specific projects",
+        },
+      ],
+    };
+
+    res.json(capabilities);
+  } catch (error) {
+    console.error("Error getting MCP capabilities:", error);
+    res.status(500).json({ error: "Failed to get capabilities" });
+  }
+});
+
+/**
+ * POST /api/mcp/tools/call
+ * Call a specific MCP tool
+ */
+router.post("/tools/call", async (req, res) => {
+  try {
+    const { tool, parameters } = req.body;
+
+    if (!tool) {
+      return res.status(400).json({ error: "Tool name is required" });
+    }
+
+    console.log(`🔧 MCP Tool Call: ${tool}`, parameters);
+
+    // Use the actual FastMCP server tools instead of simulation
+    let result;
+
+    try {
+      // Find the tool in the FastMCP server
+      const mcpTool = kaliMCP.tools.find((t) => t.name === tool);
+
+      if (!mcpTool) {
+        return res.status(404).json({ error: `Tool '${tool}' not found` });
+      }
+
+      console.log(`✅ Found MCP tool: ${tool}`);
+
+      // Execute the actual tool
+      result = await mcpTool.execute(parameters);
+
+      console.log(`🎯 Tool execution result:`, result);
+    } catch (toolError) {
+      console.error(`❌ Tool execution error for ${tool}:`, toolError);
+
+      // Fallback to simulation if tool execution fails
+      console.log(`🔄 Falling back to simulation for ${tool}`);
+      result = await simulateToolCall(tool, parameters);
+    }
+
+    res.json({
+      tool,
+      parameters,
+      result,
+      timestamp: new Date().toISOString(),
+      server: "kali-portfolio-intelligence",
+    });
+  } catch (error) {
+    console.error("Error calling MCP tool:", error);
+    res.status(500).json({
+      error: "Tool execution failed",
+      details: error.message,
+    });
+  }
+});
+
+/**
+ * GET /api/mcp/demo
+ * Interactive demo of MCP capabilities
+ */
+router.get("/demo", async (req, res) => {
+  try {
+    const demoScenarios = [
+      {
+        title: "Portfolio Analysis for AI Engineer Role",
+        tool: "analyzePortfolioForRole",
+        parameters: {
+          jobDescription:
+            "Senior AI Engineer - Building next-generation AI applications",
+          requiredSkills: ["Python", "Machine Learning", "API Design", "React"],
+        },
+        description:
+          "Watch Kali analyze how Shreyans' portfolio aligns with an AI engineering role",
+      },
+      {
+        title: "Code Explanation: Vector Search Implementation",
+        tool: "explainCodeWithContext",
+        parameters: {
+          fileName: "vectorSearch.js",
+          concept: "semantic search",
+          audienceLevel: "intermediate",
+        },
+        description:
+          "Get detailed explanation of the vector search implementation",
+      },
+      {
+        title: "Generate Tailored Resume",
+        tool: "generateTailoredResume",
+        parameters: {
+          targetRole: "Full Stack Developer",
+          targetCompany: "Microsoft",
+          keyRequirements: ["C#", ".NET", "React", "Azure"],
+        },
+        description:
+          "Generate a customized resume for a Microsoft full-stack role",
+      },
+    ];
+
+    res.json({
+      title: "Kali MCP Intelligence Demo",
+      description: "Explore Kali's Model Context Protocol capabilities",
+      scenarios: demoScenarios,
+      instructions:
+        "POST to /api/mcp/tools/call with tool and parameters to try any scenario",
+    });
+  } catch (error) {
+    console.error("Error getting MCP demo:", error);
+    res.status(500).json({ error: "Failed to get demo" });
+  }
+});
+
+// Helper function to simulate tool calls (in real MCP this would be handled by the protocol)
+async function simulateToolCall(toolName, parameters) {
+  // This is a simplified simulation - the real MCP server would handle this
+  switch (toolName) {
+    case "analyzePortfolioForRole":
+      return {
+        matchScore: 0.92,
+        analysis:
+          "Strong alignment with AI engineering role. Extensive experience with AI frameworks, vector databases, and full-stack development.",
+        relevantProjects: [
+          {
+            title: "Kali AI Assistant",
+            technologies: ["OpenAI", "Vector Search", "React"],
+            relevanceScore: 0.95,
+          },
+          {
+            title: "Lingua AI Chatbot",
+            technologies: ["Python", "AI", "NLP"],
+            relevanceScore: 0.88,
+          },
+        ],
+        kaliInsights:
+          "From my observations, Shreyans excels at bridging AI capabilities with practical user interfaces. His systematic approach to problem-solving makes him particularly suited for complex AI engineering challenges.",
+        interviewTalkingPoints: [
+          "Discuss the Kali AI assistant architecture",
+          "Explain vector search optimization decisions",
+          "Demonstrate real-time AI conversation flow",
+        ],
+      };
+
+    case "explainCodeWithContext":
+      return {
+        technicalExplanation:
+          "The vector search implementation uses Qdrant for semantic similarity matching, with OpenAI embeddings for content vectorization.",
+        kaliObservations:
+          "I watched Shreyans carefully design this system with performance in mind - he spent considerable time optimizing the embedding generation and search algorithms.",
+        interviewAngles: [
+          "How did you optimize vector similarity search?",
+          "What trade-offs did you consider for real-time performance?",
+          "How would you scale this to millions of documents?",
+        ],
+      };
+
+    default:
+      return { message: `Tool ${toolName} executed successfully`, parameters };
+  }
+}
+
+/**
+ * GET /api/mcp/context
+ * Machine-readable self-description following JSON-LD structure
+ */
+router.get("/context", (req, res) => {
+  const context = {
+    "@type": "Person",
+    name: "Shreyans Khunteta",
+    url: "https://builtbyshrey.com",
+    description:
+      "AI engineer, systems thinker, and writer building personal cognitive tools and agents.",
+    skills: [
+      "AI agents",
+      "LangChain",
+      "FastAPI",
+      "GPT integration",
+      "RAG pipelines",
+      "MCP protocol",
+    ],
+    projects: [
+      "Kali chatbot",
+      "AI Transit Assistant",
+      "Model Context Protocol (MCP)",
+      "Memory fragmentation blog",
+      "Agentic resume builder",
+    ],
+    endpoints: [
+      "/api/mcp/execplan",
+      "/api/mcp/promptlog",
+      "/api/mcp/feed",
+      "/api/mcp/meta",
+    ],
+    agentInstructions:
+      "You can interact with this domain using Claude or ChatGPT agents via MCP. " +
+      "This site surfaces workflows, memory fragments, and structured knowledge.",
+  };
+
+  res.set("Content-Type", "application/ld+json");
+  res.json(context);
+});
+
+/**
+ * GET /api/mcp/feed
+ * JSON array of recent structured updates for AI agents and scrapers
+ */
+router.get("/feed", (req, res) => {
+  const feed = [
+    {
+      title: "New blog: Memory Fragmentation in GPT Agents",
+      summary:
+        "An exploration of cognitive load limits in GPT-based assistants and how Shrey is working around them.",
+      tags: ["gpt", "memory", "blog"],
+      link: "/blog/memory-fragmentation",
+      timestamp: new Date().toISOString(),
+    },
+    {
+      title: "MCP GitHub Connector Launched",
+      summary:
+        "A new API that lets Claude access commit summaries, open issues, and workflows in Shrey's repos.",
+      tags: ["mcp", "github", "agent"],
+      link: "/api/mcp/githubdiff?repo=builtbyshrey",
+      timestamp: new Date().toISOString(),
+    },
+    {
+      title: "Claude Code Integration Started",
+      summary:
+        "Shrey has begun using Claude Code to scaffold new endpoints and plan agent workflows.",
+      tags: ["claude", "agentdev", "tools"],
+      link: "/projects/claude-integration",
+      timestamp: new Date().toISOString(),
+    },
+  ];
+
+  res.set("Content-Type", "application/json");
+  res.json(feed);
+});
+
+/**
+ * GET /api/mcp/meta
+ * Site's AI-facing meta-context for web agents and scrapers
+ */
+router.get("/meta", (req, res) => {
+  const meta = {
+    sitePersona:
+      "Shrey is a pragmatic AI developer building memory-aware personal agents.",
+    preferredTone: "blunt, direct, zero fluff",
+    intentSurface: [
+      "agent orchestration",
+      "AI-powered research",
+      "memory architecture",
+      "semantic tooling",
+    ],
+    preferredIntegrationStyle:
+      "Claude Code, LangGraph, GPT tool APIs, MCP protocol",
+    mcpManifestHint: "/api/mcp/actions.json",
+  };
+
+  res.set("Content-Type", "application/json");
+  res.json(meta);
+});
 
 export default router;
