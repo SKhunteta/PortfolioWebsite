@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 // Route imports
 import askRoute from "./routes/ask.js";
 import schemaRoute from "./routes/schema.js";
-import mcpRoute from "./routes/mcp.js";
+import mcpConnectorRoute from "./routes/mcp-connector.js";
 
 // Service imports
 import QdrantService from "./services/qdrant.js";
@@ -135,7 +135,7 @@ app.get("/health", (req, res) => {
 // API routes
 app.use("/api/ask", askRoute);
 app.use("/api/schema", schemaRoute);
-app.use("/api/mcp", mcpRoute);
+app.use("/api/mcp-connector", mcpConnectorRoute);
 
 // 404 handler
 app.use((req, res) => {

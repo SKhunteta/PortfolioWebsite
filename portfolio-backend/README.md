@@ -76,6 +76,12 @@ npm run dev
 - `POST /api/ask` - Ask questions about the portfolio
 - `GET /api/ask/suggestions` - Get suggested questions
 
+### MCP Connector (Claude Integration)
+
+- `GET /api/mcp-connector/info` - MCP server information
+- `GET /api/mcp-connector/sse` - Server-Sent Events endpoint for Claude
+- `POST /api/mcp-connector/sse` - Tool execution endpoint
+
 ### Debug Endpoints
 
 - `GET /api/ask/collection-info` - Qdrant collection information

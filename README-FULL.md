@@ -144,7 +144,8 @@ npm run dev
 - `POST /api/ask` - AI-powered Q&A
 - `GET /api/ask/suggestions` - Question suggestions
 - `GET /api/schema` - Portfolio schema data
-- `GET /api/mcp` - MCP server capabilities
+- `GET /api/mcp-connector/info` - MCP connector server information
+- `GET /api/mcp-connector/sse` - MCP connector SSE endpoint for Claude
 
 ## 🔒 Security Considerations
 

@@ -1,376 +1,234 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   FaRobot,
   FaCode,
   FaFileAlt,
-  FaPlay,
-  FaCheck,
-  FaSpinner,
 } from "react-icons/fa";
-import { API_ENDPOINTS } from "../config/api.js";
 
 const MCPShowcase = () => {
-  const [mcpCapabilities, setMcpCapabilities] = useState(null);
-  const [demoScenarios, setDemoScenarios] = useState([]);
-  const [activeDemo, setActiveDemo] = useState(null);
-  const [demoResults, setDemoResults] = useState({});
-  const [loading, setLoading] = useState({});
-  const [showTechnicalDetails, setShowTechnicalDetails] = useState(false);
-
-  useEffect(() => {
-    fetchMCPCapabilities();
-    fetchDemoScenarios();
-  }, []);
-
-  const fetchMCPCapabilities = async () => {
-    try {
-      const response = await fetch(`${API_ENDPOINTS.mcp}/capabilities`);
-      const data = await response.json();
-      setMcpCapabilities(data);
-    } catch (error) {
-      console.error("Failed to fetch MCP capabilities:", error);
-    }
-  };
-
-  const fetchDemoScenarios = async () => {
-    try {
-      const response = await fetch(`${API_ENDPOINTS.mcp}/demo`);
-      const data = await response.json();
-      setDemoScenarios(data.scenarios || []);
-    } catch (error) {
-      console.error("Failed to fetch demo scenarios:", error);
-    }
-  };
-
-  const runDemo = async (scenario) => {
-    const demoKey = scenario.tool;
-    setLoading((prev) => ({ ...prev, [demoKey]: true }));
-    setActiveDemo(scenario.tool);
-
-    try {
-      const response = await fetch(`${API_ENDPOINTS.mcp}/tools/call`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          tool: scenario.tool,
-          parameters: scenario.parameters,
-        }),
-      });
-
-      const result = await response.json();
-      setDemoResults((prev) => ({ ...prev, [demoKey]: result }));
-    } catch (error) {
-      console.error("Demo failed:", error);
-      setDemoResults((prev) => ({
-        ...prev,
-        [demoKey]: {
-          error:
-            "Oops! It looks like too many users made too many requests this month. My human Shreyans doesn't have the budget for that! If you'd like him to have the update, you can send him some money at his Venmo @Shreyans-Khunteta or his PayPal paypal.me/SKhunteta",
-          details: error.message,
-        },
-      }));
-    } finally {
-      setLoading((prev) => ({ ...prev, [demoKey]: false }));
-    }
-  };
-
-  const formatDemoResult = (result) => {
-    if (!result) return null;
-
-    if (result.error) {
-      return (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800 font-semibold">Error: {result.error}</p>
-          {result.details && (
-            <p className="text-red-600 text-sm mt-1">{result.details}</p>
-          )}
-        </div>
-      );
-    }
-
-    const { result: toolResult } = result;
-    if (!toolResult) return null;
-
-    return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-3">
-        {toolResult.matchScore && (
-          <div className="flex items-center space-x-2">
-            <span className="text-green-800 font-semibold">Match Score:</span>
-            <div className="bg-green-200 rounded-full px-3 py-1 text-green-800 font-bold">
-              {Math.round(toolResult.matchScore * 100)}%
-            </div>
-          </div>
-        )}
-
-        {toolResult.analysis && (
-          <div>
-            <h4 className="text-green-800 font-semibold mb-2">
-              Kali's Analysis:
-            </h4>
-            <p className="text-green-700 text-sm">{toolResult.analysis}</p>
-          </div>
-        )}
-
-        {toolResult.kaliInsights && (
-          <div>
-            <h4 className="text-green-800 font-semibold mb-2">
-              🐱 Kali's Insights:
-            </h4>
-            <p className="text-green-700 text-sm italic">
-              {toolResult.kaliInsights}
-            </p>
-          </div>
-        )}
-
-        {toolResult.interviewTalkingPoints && (
-          <div>
-            <h4 className="text-green-800 font-semibold mb-2">
-              Interview Talking Points:
-            </h4>
-            <ul className="list-disc list-inside text-green-700 text-sm space-y-1">
-              {toolResult.interviewTalkingPoints.map((point, index) => (
-                <li key={index}>{point}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {toolResult.relevantProjects && (
-          <div>
-            <h4 className="text-green-800 font-semibold mb-2">
-              Relevant Projects:
-            </h4>
-            <div className="space-y-2">
-              {toolResult.relevantProjects.map((project, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded border border-green-200 p-3"
-                >
-                  <div className="flex justify-between items-start">
-                    <h5 className="font-semibold text-green-800">
-                      {project.title}
-                    </h5>
-                    {project.relevanceScore && (
-                      <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                        {Math.round(project.relevanceScore * 100)}% match
-                      </span>
-                    )}
-                  </div>
-                  {project.description && (
-                    <p className="text-green-600 text-sm mt-1">
-                      {project.description}
-                    </p>
-                  )}
-                  {project.technologies && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {project.technologies.map((tech, techIndex) => (
-                        <span
-                          key={techIndex}
-                          className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   return (
     <div id="mcp" className="section-container py-12 md:py-16">
       <div className="text-center mb-12">
-        <h2 className="section-title mx-auto">
-          🚀 MCP-Powered Portfolio Intelligence
-        </h2>
+        <h2 className="section-title mx-auto">🚀 Claude MCP Connector Ready</h2>
         <p className="section-subtitle">
-          Experience the future of AI-discoverable portfolios with Model Context
-          Protocol
+          Connect Claude directly to my portfolio using Anthropic's MCP
+          Connector
         </p>
         <p className="text-gray-600 max-w-3xl mx-auto">
-          This portfolio features cutting-edge MCP integration, allowing AI
-          systems to intelligently discover and interact with my professional
-          information. Try the interactive demos below to see what makes this
-          revolutionary.
+          This portfolio implements a proper MCP server that Claude can connect
+          to using the
+          <a
+            href="https://docs.anthropic.com/en/docs/agents-and-tools/mcp-connector"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:text-accent underline font-medium mx-1"
+          >
+            MCP Connector feature
+          </a>
+          for real-time portfolio intelligence and analysis.
         </p>
       </div>
 
-      {/* MCP Overview */}
-      <div className="max-w-6xl mx-auto mb-12">
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="card text-center">
-            <div className="text-primary text-3xl mb-4">
-              <FaRobot className="mx-auto" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">AI-Discoverable</h3>
-            <p className="text-gray-600">
-              AI systems can automatically discover and use portfolio
-              intelligence tools
-            </p>
+      {/* Claude MCP Connection Guide */}
+      <div className="max-w-4xl mx-auto mb-12">
+        <div className="card">
+          <h3 className="text-2xl font-bold mb-6 text-center">
+            Connect Claude to My Portfolio
+          </h3>
+
+          <div className="bg-gray-50 rounded-lg p-6 mb-6">
+            <h4 className="font-semibold mb-3 text-gray-800">
+              Add this to your Claude conversation:
+            </h4>
+            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
+              {`{
+  "mcp_servers": [
+    {
+      "type": "url",
+      "url": "https://backend.builtbyshrey.com/api/mcp-connector/sse",
+      "name": "shreyans-portfolio",
+      "tool_configuration": {
+        "enabled": true,
+        "allowed_tools": [
+          "portfolio_search",
+          "analyze_portfolio", 
+          "get_project_details"
+        ]
+      }
+    }
+  ]
+}`}
+            </pre>
           </div>
 
-          <div className="card text-center">
-            <div className="text-primary text-3xl mb-4">
-              <FaCode className="mx-auto" />
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="text-primary text-3xl mb-4">
+                <FaRobot className="mx-auto" />
+              </div>
+              <h4 className="font-semibold mb-2">Portfolio Search</h4>
+              <p className="text-gray-600 text-sm">
+                Search my projects, skills, and experience with natural language
+                queries
+              </p>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Intelligent Analysis</h3>
-            <p className="text-gray-600">
-              Deep technical analysis with Kali's observational insights
-            </p>
-          </div>
 
-          <div className="card text-center">
-            <div className="text-primary text-3xl mb-4">
-              <FaFileAlt className="mx-auto" />
+            <div className="text-center">
+              <div className="text-primary text-3xl mb-4">
+                <FaCode className="mx-auto" />
+              </div>
+              <h4 className="font-semibold mb-2">Role Analysis</h4>
+              <p className="text-gray-600 text-sm">
+                Analyze how my portfolio matches specific job requirements
+              </p>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Dynamic Content</h3>
-            <p className="text-gray-600">
-              Real-time resume generation and role-specific optimization
-            </p>
+
+            <div className="text-center">
+              <div className="text-primary text-3xl mb-4">
+                <FaFileAlt className="mx-auto" />
+              </div>
+              <h4 className="font-semibold mb-2">Project Details</h4>
+              <p className="text-gray-600 text-sm">
+                Get technical, business, or summary details about any project
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Interactive Demos */}
+      {/* Usage Examples */}
       <div className="max-w-4xl mx-auto mb-12">
         <h3 className="text-2xl font-bold text-center mb-8">
-          Interactive MCP Demos
+          Claude Usage Examples
         </h3>
 
         <div className="space-y-6">
-          {demoScenarios.map((scenario, index) => (
-            <div key={index} className="card">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h4 className="text-lg font-semibold text-primary mb-2">
-                    {scenario.title}
-                  </h4>
-                  <p className="text-gray-600 mb-3">{scenario.description}</p>
+          <div className="card">
+            <h4 className="font-semibold text-primary mb-3">
+              🔍 Portfolio Search
+            </h4>
+            <p className="text-gray-700 mb-2">
+              <strong>Ask Claude:</strong> "Search Shreyans' portfolio for AI
+              and machine learning projects"
+            </p>
+            <p className="text-gray-600 text-sm">
+              Claude will use the{" "}
+              <code className="bg-gray-100 px-1 rounded">portfolio_search</code>{" "}
+              tool to find relevant AI/ML projects, skills, and experience.
+            </p>
+          </div>
 
-                  {/* Show parameters */}
-                  <div className="bg-gray-50 rounded p-3 mb-4">
-                    <h5 className="text-sm font-semibold text-gray-700 mb-2">
-                      Parameters:
-                    </h5>
-                    <pre className="text-xs text-gray-600 whitespace-pre-wrap">
-                      {JSON.stringify(scenario.parameters, null, 2)}
-                    </pre>
-                  </div>
-                </div>
+          <div className="card">
+            <h4 className="font-semibold text-primary mb-3">
+              📊 Role Analysis
+            </h4>
+            <p className="text-gray-700 mb-2">
+              <strong>Ask Claude:</strong> "Analyze how well Shreyans matches a
+              Senior Full Stack Developer role at Microsoft"
+            </p>
+            <p className="text-gray-600 text-sm">
+              Claude will use{" "}
+              <code className="bg-gray-100 px-1 rounded">
+                analyze_portfolio
+              </code>{" "}
+              to provide a detailed match analysis with specific examples.
+            </p>
+          </div>
 
-                <button
-                  onClick={() => runDemo(scenario)}
-                  disabled={loading[scenario.tool]}
-                  className="btn btn-primary flex items-center space-x-2 ml-4"
-                >
-                  {loading[scenario.tool] ? (
-                    <>
-                      <FaSpinner className="animate-spin" />
-                      <span>Running...</span>
-                    </>
-                  ) : demoResults[scenario.tool] ? (
-                    <>
-                      <FaCheck />
-                      <span>Re-run</span>
-                    </>
-                  ) : (
-                    <>
-                      <FaPlay />
-                      <span>Try Demo</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {/* Demo Results */}
-              {demoResults[scenario.tool] && (
-                <div className="mt-4">
-                  <h5 className="text-sm font-semibold text-gray-700 mb-3">
-                    Results:
-                  </h5>
-                  {formatDemoResult(demoResults[scenario.tool])}
-                </div>
-              )}
-            </div>
-          ))}
+          <div className="card">
+            <h4 className="font-semibold text-primary mb-3">
+              🛠️ Project Deep Dive
+            </h4>
+            <p className="text-gray-700 mb-2">
+              <strong>Ask Claude:</strong> "Get technical details about
+              Shreyans' AI-Powered Portfolio project"
+            </p>
+            <p className="text-gray-600 text-sm">
+              Claude will use{" "}
+              <code className="bg-gray-100 px-1 rounded">
+                get_project_details
+              </code>{" "}
+              to provide architecture, implementation details, and technical
+              insights.
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Technical Details */}
+      {/* Technical Implementation */}
       <div className="max-w-4xl mx-auto">
         <div className="card">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold">Technical Implementation</h3>
-            <button
-              onClick={() => setShowTechnicalDetails(!showTechnicalDetails)}
-              className="btn btn-secondary text-sm"
-            >
-              {showTechnicalDetails ? "Hide Details" : "Show Details"}
-            </button>
-          </div>
+          <h3 className="text-xl font-bold mb-6">
+            MCP Connector Implementation
+          </h3>
 
-          {showTechnicalDetails && mcpCapabilities && (
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-semibold text-primary mb-2">
-                  Available MCP Tools:
+          <div className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-800 mb-3">
+                  🔗 Endpoints
                 </h4>
-                <div className="grid md:grid-cols-2 gap-4">
-                  {mcpCapabilities.tools?.map((tool, index) => (
-                    <div key={index} className="bg-gray-50 rounded p-3">
-                      <h5 className="font-semibold text-gray-800">
-                        {tool.name}
-                      </h5>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {tool.description}
-                      </p>
-                    </div>
-                  ))}
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="font-medium">SSE:</span>
+                    <code className="block bg-gray-900 text-green-400 p-2 rounded text-xs mt-1">
+                      GET/POST /api/mcp-connector/sse
+                    </code>
+                  </div>
+                  <div>
+                    <span className="font-medium">Info:</span>
+                    <code className="block bg-gray-900 text-green-400 p-2 rounded text-xs mt-1">
+                      GET /api/mcp-connector/info
+                    </code>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <h4 className="font-semibold text-primary mb-2">
-                  MCP Resources:
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-800 mb-3">
+                  ⚡ Features
                 </h4>
-                <div className="grid md:grid-cols-2 gap-4">
-                  {mcpCapabilities.resources?.map((resource, index) => (
-                    <div key={index} className="bg-gray-50 rounded p-3">
-                      <h5 className="font-semibold text-gray-800">
-                        {resource.name}
-                      </h5>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {resource.description}
-                      </p>
-                      <code className="text-xs text-blue-600 block mt-2">
-                        {resource.uri}
-                      </code>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded p-4">
-                <h4 className="font-semibold text-blue-800 mb-2">
-                  🔗 MCP Endpoint
-                </h4>
-                <p className="text-blue-700 text-sm mb-2">
-                  AI systems can discover and interact with this portfolio at:
-                </p>
-                <code className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                  {API_ENDPOINTS.mcp ||
-                    "https://backend.builtbyshrey.com/api/mcp"}
-                </code>
+                <ul className="text-sm space-y-1">
+                  <li>• Server-Sent Events (SSE) transport</li>
+                  <li>• JSON-RPC 2.0 protocol</li>
+                  <li>• Real-time portfolio search</li>
+                  <li>• AI-powered analysis tools</li>
+                  <li>• Claude MCP connector compatible</li>
+                </ul>
               </div>
             </div>
-          )}
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-semibold text-blue-800 mb-2 flex items-center">
+                <span className="mr-2">🛠️</span>
+                Test the MCP Connector
+              </h4>
+              <p className="text-blue-700 text-sm mb-3">
+                Get server information and test connectivity:
+              </p>
+              <a
+                href="https://backend.builtbyshrey.com/api/mcp-connector/info"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+              >
+                View MCP Server Info
+                <span className="ml-2">→</span>
+              </a>
+            </div>
+
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h4 className="font-semibold text-green-800 mb-2">
+                ✅ Ready for Claude Integration
+              </h4>
+              <p className="text-green-700 text-sm">
+                This MCP server follows Anthropic's specification and is ready
+                to connect with Claude's MCP connector feature. Just add the
+                configuration above to your Claude conversation and start asking
+                questions about my portfolio!
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
