@@ -9,7 +9,7 @@ import Projects from "./components/Projects";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import ChatSection from "./components/ChatSection";
-import MCPShowcase from "./components/MCPShowcase";
+// import MCPShowcase from "./components/MCPShowcase";
 
 function App() {
   return (
@@ -30,9 +30,9 @@ function App() {
                   <div className="bg-gray-light py-8">
                     <ChatSection />
                   </div>
-                  <div className="bg-white py-8">
+                  {/* <div className="bg-white py-8">
                     <MCPShowcase />
-                  </div>
+                  </div> */}
                   <div className="bg-gray-light py-8">
                     <Experience />
                   </div>
