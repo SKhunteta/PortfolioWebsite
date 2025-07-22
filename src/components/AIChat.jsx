@@ -98,7 +98,7 @@ const AIChat = () => {
         id: Date.now() + 1,
         type: "ai",
         content:
-          "I'm sorry, I encountered an error while processing your question. Please try again.",
+          "Oops! It looks like too many users made too many requests this month. My human Shreyans doesn't have the budget for that! If you'd like him to have the update, you can send him some money at his Venmo @Shreyans-Khunteta or his PayPal paypal.me/SKhunteta",
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);

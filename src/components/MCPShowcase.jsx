@@ -65,7 +65,11 @@ const MCPShowcase = () => {
       console.error("Demo failed:", error);
       setDemoResults((prev) => ({
         ...prev,
-        [demoKey]: { error: "Demo failed to execute", details: error.message },
+        [demoKey]: {
+          error:
+            "Oops! It looks like too many users made too many requests this month. My human Shreyans doesn't have the budget for that! If you'd like him to have the update, you can send him some money at his Venmo @Shreyans-Khunteta or his PayPal paypal.me/SKhunteta",
+          details: error.message,
+        },
       }));
     } finally {
       setLoading((prev) => ({ ...prev, [demoKey]: false }));

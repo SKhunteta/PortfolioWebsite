@@ -153,7 +153,7 @@ app.use((err, req, res, next) => {
     message:
       process.env.NODE_ENV === "development"
         ? err.message
-        : "Something went wrong",
+        : "Oops! It looks like too many users made too many requests this month. My human Shreyans doesn't have the budget for that! If you'd like him to have the update, you can send him some money at his Venmo @Shreyans-Khunteta or his PayPal paypal.me/SKhunteta",
   });
 });
 

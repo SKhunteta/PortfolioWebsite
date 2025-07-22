@@ -228,7 +228,7 @@ router.post("/ask", async (req, res) => {
       content: [
         {
           type: "text",
-          text: "I encountered an error while processing your question. Please try again.",
+          text: "Oops! It looks like too many users made too many requests this month. My human Shreyans doesn't have the budget for that! If you'd like him to have the update, you can send him some money at his Venmo @Shreyans-Khunteta or his PayPal paypal.me/SKhunteta",
         },
       ],
       isError: true,
@@ -302,7 +302,7 @@ router.post("/search", async (req, res) => {
       content: [
         {
           type: "text",
-          text: "Search failed. Please try again.",
+          text: "Oops! It looks like too many users made too many requests this month. My human Shreyans doesn't have the budget for that! If you'd like him to have the update, you can send him some money at his Venmo @Shreyans-Khunteta or his PayPal paypal.me/SKhunteta",
         },
       ],
       isError: true,
