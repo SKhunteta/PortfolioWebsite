@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  FaRobot,
-  FaCode,
-  FaFileAlt,
-} from "react-icons/fa";
+import { FaRobot, FaCode, FaFileAlt } from "react-icons/fa";
 
 const MCPShowcase = () => {
   return (
@@ -38,10 +34,13 @@ const MCPShowcase = () => {
 
           <div className="bg-gray-50 rounded-lg p-6 mb-6">
             <h4 className="font-semibold mb-3 text-gray-800">
-              Add this to your Claude conversation:
+              Add this exact configuration to your Claude conversation:
             </h4>
-            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`{
+            <div className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
+              <div className="mb-2 text-gray-500 text-xs">
+                // Copy and paste this entire block into Claude
+              </div>
+              <pre className="whitespace-pre-wrap">{`{
   "mcp_servers": [
     {
       "type": "url",
@@ -57,8 +56,14 @@ const MCPShowcase = () => {
       }
     }
   ]
-}`}
-            </pre>
+}`}</pre>
+            </div>
+            <div className="mt-3 text-sm text-gray-600">
+              <strong>Full server endpoint:</strong>{" "}
+              <code className="bg-gray-200 px-2 py-1 rounded">
+                https://backend.builtbyshrey.com/api/mcp-connector/sse
+              </code>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -172,13 +177,13 @@ const MCPShowcase = () => {
                   <div>
                     <span className="font-medium">SSE:</span>
                     <code className="block bg-gray-900 text-green-400 p-2 rounded text-xs mt-1">
-                      GET/POST /api/mcp-connector/sse
+                      https://backend.builtbyshrey.com/api/mcp-connector/sse
                     </code>
                   </div>
                   <div>
                     <span className="font-medium">Info:</span>
                     <code className="block bg-gray-900 text-green-400 p-2 rounded text-xs mt-1">
-                      GET /api/mcp-connector/info
+                      https://backend.builtbyshrey.com/api/mcp-connector/info
                     </code>
                   </div>
                 </div>
@@ -227,6 +232,52 @@ const MCPShowcase = () => {
                 configuration above to your Claude conversation and start asking
                 questions about my portfolio!
               </p>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+              <h4 className="font-semibold text-yellow-800 mb-2 flex items-center">
+                <span className="mr-2">⚠️</span>
+                Troubleshooting Claude Connection
+              </h4>
+              <div className="text-yellow-700 text-sm space-y-2">
+                <p>
+                  <strong>If Claude can't connect:</strong>
+                </p>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>
+                    Verify the full URL:{" "}
+                    <code className="bg-yellow-100 px-1 rounded">
+                      https://backend.builtbyshrey.com/api/mcp-connector/sse
+                    </code>
+                  </li>
+                  <li>
+                    Try the alternative format:{" "}
+                    <code className="bg-yellow-100 px-1 rounded">
+                      https://backend.builtbyshrey.com/api/mcp-connector/info
+                    </code>
+                  </li>
+                  <li>
+                    Test server status:{" "}
+                    <a
+                      href="https://backend.builtbyshrey.com/health"
+                      target="_blank"
+                      className="text-blue-600 underline"
+                    >
+                      backend health check
+                    </a>
+                  </li>
+                  <li>
+                    Contact me at{" "}
+                    <a
+                      href="mailto:contact@builtbyshrey.com"
+                      className="text-blue-600 underline"
+                    >
+                      contact@builtbyshrey.com
+                    </a>{" "}
+                    for direct integration
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>

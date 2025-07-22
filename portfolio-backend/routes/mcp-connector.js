@@ -5,6 +5,23 @@ import { config } from "../config/index.js";
 
 const router = express.Router();
 
+// Handle preflight requests for CORS (needed for Claude MCP connector)
+router.use((req, res, next) => {
+  // Set CORS headers for all MCP connector requests
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, Cache-Control, X-Requested-With"
+  );
+  res.header("Access-Control-Allow-Credentials", "false");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+  next();
+});
+
 /**
  * MCP Server Implementation for Claude MCP Connector
  * Follows the MCP specification: https://modelcontextprotocol.io/specification/
@@ -106,13 +123,16 @@ const MCP_TOOLS = [
 router.get("/sse", (req, res) => {
   console.log("🔗 MCP SSE connection initiated");
 
-  // Set SSE headers
+  // Set SSE headers with broad CORS for MCP access
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
     Connection: "keep-alive",
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Cache-Control",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers":
+      "Content-Type, Authorization, Cache-Control, X-Requested-With",
+    "Access-Control-Allow-Credentials": "false",
   });
 
   // Send initial connection event

@@ -81,7 +81,7 @@ const corsOptions = {
       process.env.NODE_ENV
     );
 
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // Allow requests with no origin (like mobile apps, curl, or Claude MCP connector)
     if (!origin) return callback(null, true);
 
     // In development, allow any localhost port
@@ -90,6 +90,12 @@ const corsOptions = {
       origin.startsWith("http://localhost:")
     ) {
       console.log("Allowing localhost origin:", origin);
+      return callback(null, true);
+    }
+
+    // Allow Claude/Anthropic servers for MCP connector
+    if (origin.includes("anthropic.com") || origin.includes("claude.ai")) {
+      console.log("Allowing Claude/Anthropic origin for MCP:", origin);
       return callback(null, true);
     }
 
