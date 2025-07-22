@@ -53,6 +53,32 @@ class OpenAIService {
   }
 
   /**
+   * Generate AI response with custom system prompt (for MCP tools)
+   * @param {Object} options - Options object
+   * @param {string} options.systemPrompt - Custom system prompt
+   * @param {string} options.userQuery - User's question
+   * @returns {Promise<string>} - AI response text
+   */
+  async generateMCPResponse({ systemPrompt, userQuery }) {
+    try {
+      const response = await this.client.chat.completions.create({
+        model: config.openai.model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userQuery },
+        ],
+        max_tokens: config.openai.maxTokens,
+        temperature: config.openai.temperature,
+      });
+
+      return response.choices[0].message.content;
+    } catch (error) {
+      console.error("Error generating MCP response:", error);
+      throw new Error("Failed to generate AI response");
+    }
+  }
+
+  /**
    * Generate AI response based on context and query
    * @param {string} query - User's question
    * @param {Array} context - Relevant content from vector search
