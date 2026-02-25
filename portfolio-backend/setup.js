@@ -25,9 +25,14 @@ async function setup() {
     console.log("\n3. Testing OpenAI connection...");
     await testOpenAIConnection();
 
-    // Test Anthropic connection
+    // Test Anthropic connection (optional — MCP tools degrade gracefully without it)
     console.log("\n3b. Testing Anthropic connection...");
-    await testAnthropicConnection();
+    try {
+      await testAnthropicConnection();
+    } catch (error) {
+      console.warn(`   ⚠️  Anthropic connection failed: ${error.message}`);
+      console.warn("   MCP tools using Claude Haiku will not work, but server will continue.");
+    }
 
     // Initialize indexer
     console.log("\n4. Initializing indexer service...");
@@ -58,13 +63,19 @@ async function setup() {
 }
 
 function checkEnvironment() {
-  const requiredVars = ["OPENAI_API_KEY", "ANTHROPIC_API_KEY"];
+  const requiredVars = ["OPENAI_API_KEY"];
+  const optionalSecrets = ["ANTHROPIC_API_KEY"];
   const missingVars = requiredVars.filter((varName) => !process.env[varName]);
+  const missingOptional = optionalSecrets.filter((varName) => !process.env[varName]);
 
   if (missingVars.length > 0) {
     throw new Error(
       `Missing required environment variables: ${missingVars.join(", ")}`
     );
+  }
+
+  if (missingOptional.length > 0) {
+    console.log(`   ⚠️  Optional variables not set: ${missingOptional.join(", ")} (MCP tools will be limited)`);
   }
 
   console.log("   ✅ Environment variables configured");
