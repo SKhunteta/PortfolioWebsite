@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import IndexerService from "./services/indexer.js";
 import QdrantService from "./services/qdrant.js";
 import OpenAIService from "./services/openai.js";
+import AnthropicService from "./services/anthropic.js";
 
 // Load environment variables
 dotenv.config();
@@ -23,6 +24,10 @@ async function setup() {
     // Test OpenAI connection
     console.log("\n3. Testing OpenAI connection...");
     await testOpenAIConnection();
+
+    // Test Anthropic connection
+    console.log("\n3b. Testing Anthropic connection...");
+    await testAnthropicConnection();
 
     // Initialize indexer
     console.log("\n4. Initializing indexer service...");
@@ -46,13 +51,14 @@ async function setup() {
       "   1. Make sure Qdrant is running (docker run -p 6333:6333 qdrant/qdrant)"
     );
     console.log("   2. Check your OpenAI API key in .env file");
-    console.log("   3. Verify network connectivity");
+    console.log("   3. Check your Anthropic API key in .env file");
+    console.log("   4. Verify network connectivity");
     process.exit(1);
   }
 }
 
 function checkEnvironment() {
-  const requiredVars = ["OPENAI_API_KEY"];
+  const requiredVars = ["OPENAI_API_KEY", "ANTHROPIC_API_KEY"];
   const missingVars = requiredVars.filter((varName) => !process.env[varName]);
 
   if (missingVars.length > 0) {
@@ -101,6 +107,15 @@ async function testOpenAIConnection() {
     console.log("   ✅ OpenAI connection successful");
   } catch (error) {
     throw new Error(`OpenAI connection failed: ${error.message}`);
+  }
+}
+
+async function testAnthropicConnection() {
+  try {
+    await AnthropicService.testConnection();
+    console.log("   ✅ Anthropic connection successful");
+  } catch (error) {
+    throw new Error(`Anthropic connection failed: ${error.message}`);
   }
 }
 

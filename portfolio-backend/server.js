@@ -66,7 +66,13 @@ async function checkAndRunSetup() {
 }
 
 // Middleware
-app.use(helmet());
+// Skip helmet for MCP routes (SSE compatibility)
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api/mcp-connector")) {
+    return next();
+  }
+  helmet()(req, res, next);
+});
 app.use(morgan("combined"));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -125,6 +131,16 @@ const corsOptions = {
     return callback(null, false);
   },
   credentials: true,
+  methods: ["GET", "POST", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "Cache-Control",
+    "X-Requested-With",
+    "Accept",
+    "Mcp-Session-Id",
+  ],
+  exposedHeaders: ["Mcp-Session-Id"],
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));

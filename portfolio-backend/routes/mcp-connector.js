@@ -1,19 +1,26 @@
 import express from "express";
+import { randomUUID } from "node:crypto";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { z } from "zod";
+import AnthropicService from "../services/anthropic.js";
 import OpenAIService from "../services/openai.js";
 import QdrantService from "../services/qdrant.js";
-import { config } from "../config/index.js";
 
 const router = express.Router();
 
-// Handle preflight requests for CORS (needed for Claude MCP connector)
+// Session management: Map<sessionId, transport>
+const sessions = new Map();
+
+// CORS middleware for MCP connector requests
 router.use((req, res, next) => {
-  // Set CORS headers for all MCP connector requests
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
   res.header(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, Cache-Control, X-Requested-With"
+    "Content-Type, Authorization, Accept, Cache-Control, X-Requested-With, Mcp-Session-Id"
   );
+  res.header("Access-Control-Expose-Headers", "Mcp-Session-Id");
   res.header("Access-Control-Allow-Credentials", "false");
 
   if (req.method === "OPTIONS") {
@@ -23,551 +30,452 @@ router.use((req, res, next) => {
 });
 
 /**
- * MCP Server Implementation for Claude MCP Connector
- * Follows the MCP specification: https://modelcontextprotocol.io/specification/
- *
- * This server can be connected to Claude using:
- * {
- *   "mcp_servers": [
- *     {
- *       "type": "url",
- *       "url": "https://backend.builtbyshrey.com/api/mcp-connector/sse",
- *       "name": "shreyans-portfolio",
- *       "tool_configuration": {
- *         "enabled": true,
- *         "allowed_tools": ["portfolio_search", "analyze_portfolio", "get_project_details"]
- *       }
- *     }
- *   ]
- * }
+ * Create and configure a new McpServer instance with all tools registered.
+ * Each session gets its own server instance.
  */
-
-// MCP Protocol Messages
-const MCP_VERSION = "2025-03-26";
-
-// Available MCP Tools
-const MCP_TOOLS = [
-  {
-    name: "portfolio_search",
-    description:
-      "Search Shreyans' portfolio for specific information about projects, skills, or experience",
-    inputSchema: {
-      type: "object",
-      properties: {
-        query: {
-          type: "string",
-          description: "Search query about Shreyans' portfolio",
-        },
-        contentTypes: {
-          type: "array",
-          items: {
-            type: "string",
-            enum: ["project", "skill", "experience", "personal"],
-          },
-          description: "Types of content to search in",
-        },
-      },
-      required: ["query"],
-    },
-  },
-  {
-    name: "analyze_portfolio",
-    description:
-      "Analyze how well Shreyans' portfolio matches specific job requirements",
-    inputSchema: {
-      type: "object",
-      properties: {
-        jobDescription: {
-          type: "string",
-          description: "Job description or requirements to analyze against",
-        },
-        requiredSkills: {
-          type: "array",
-          items: { type: "string" },
-          description: "List of required skills",
-        },
-        focusArea: {
-          type: "string",
-          description: "Specific area to focus the analysis on",
-        },
-      },
-      required: ["jobDescription"],
-    },
-  },
-  {
-    name: "get_project_details",
-    description:
-      "Get detailed information about a specific project in Shreyans' portfolio",
-    inputSchema: {
-      type: "object",
-      properties: {
-        projectName: {
-          type: "string",
-          description: "Name of the project to get details for",
-        },
-        detailLevel: {
-          type: "string",
-          enum: ["summary", "technical", "business"],
-          description: "Level of detail to provide",
-        },
-      },
-      required: ["projectName"],
-    },
-  },
-];
-
-/**
- * SSE (Server-Sent Events) endpoint for MCP
- * This is the main endpoint Claude will connect to
- */
-router.get("/sse", (req, res) => {
-  console.log("🔗 MCP SSE connection initiated");
-
-  // Set SSE headers with broad CORS for MCP access
-  res.writeHead(200, {
-    "Content-Type": "text/event-stream",
-    "Cache-Control": "no-cache",
-    Connection: "keep-alive",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers":
-      "Content-Type, Authorization, Cache-Control, X-Requested-With",
-    "Access-Control-Allow-Credentials": "false",
-  });
-
-  // Send initial connection event
-  sendSSEMessage(res, "connected", {
-    message: "MCP server connected",
-    version: MCP_VERSION,
-    server: "shreyans-portfolio-mcp",
-  });
-
-  // Handle client disconnect
-  req.on("close", () => {
-    console.log("🔌 MCP SSE connection closed");
-  });
-
-  // Keep connection alive
-  const keepAlive = setInterval(() => {
-    sendSSEMessage(res, "ping", { timestamp: new Date().toISOString() });
-  }, 30000);
-
-  req.on("close", () => {
-    clearInterval(keepAlive);
-  });
-});
-
-/**
- * HTTP endpoint for MCP tool calls (primary for Claude Desktop UI)
- * Claude Desktop UI prefers HTTP transport over SSE for tool calls
- */
-router.post("/", async (req, res) => {
-  try {
-    const { jsonrpc, method, params, id } = req.body;
-
-    console.log(`🔧 MCP HTTP Method: ${method}`, params);
-
-    // Validate JSON-RPC 2.0 format
-    if (jsonrpc !== "2.0") {
-      return res.status(400).json({
-        jsonrpc: "2.0",
-        id: id || null,
-        error: {
-          code: -32600,
-          message: "Invalid Request",
-          data: "Expected jsonrpc: '2.0'",
-        },
-      });
-    }
-
-    let result;
-
-    switch (method) {
-      case "initialize":
-        result = await handleInitialize(params);
-        break;
-      case "tools/list":
-        result = await handleToolsList();
-        break;
-      case "tools/call":
-        result = await handleToolCall(params);
-        break;
-      default:
-        return res.status(400).json({
-          jsonrpc: "2.0",
-          id: id || null,
-          error: {
-            code: -32601,
-            message: "Method not found",
-            data: `Unknown method: ${method}`,
-          },
-        });
-    }
-
-    // Send MCP-compliant response
-    res.json({
-      jsonrpc: "2.0",
-      id: id,
-      result: result,
-    });
-  } catch (error) {
-    console.error("❌ MCP HTTP Error:", error);
-
-    res.status(500).json({
-      jsonrpc: "2.0",
-      id: req.body?.id || null,
-      error: {
-        code: -32603,
-        message: "Internal error",
-        data: error.message,
-      },
-    });
-  }
-});
-
-/**
- * POST endpoint for MCP tool calls via SSE
- * Backup transport method
- */
-router.post("/sse", async (req, res) => {
-  try {
-    const { jsonrpc, method, params, id } = req.body;
-
-    console.log(`🔧 MCP SSE Method: ${method}`, params);
-
-    // Validate JSON-RPC 2.0 format
-    if (jsonrpc !== "2.0") {
-      return res.status(400).json({
-        jsonrpc: "2.0",
-        id: id || null,
-        error: {
-          code: -32600,
-          message: "Invalid Request",
-          data: "Expected jsonrpc: '2.0'",
-        },
-      });
-    }
-
-    let result;
-
-    switch (method) {
-      case "initialize":
-        result = await handleInitialize(params);
-        break;
-      case "tools/list":
-        result = await handleToolsList();
-        break;
-      case "tools/call":
-        result = await handleToolCall(params);
-        break;
-      default:
-        return res.status(400).json({
-          jsonrpc: "2.0",
-          id: id || null,
-          error: {
-            code: -32601,
-            message: "Method not found",
-            data: `Unknown method: ${method}`,
-          },
-        });
-    }
-
-    // Send MCP-compliant response
-    res.json({
-      jsonrpc: "2.0",
-      id: id,
-      result: result,
-    });
-  } catch (error) {
-    console.error("❌ MCP SSE Error:", error);
-
-    res.status(500).json({
-      jsonrpc: "2.0",
-      id: req.body?.id || null,
-      error: {
-        code: -32603,
-        message: "Internal error",
-        data: error.message,
-      },
-    });
-  }
-});
-
-/**
- * Handle MCP initialize request
- */
-async function handleInitialize(params) {
-  console.log("📝 MCP Initialize request received", params);
-
-  const initResponse = {
-    protocolVersion: MCP_VERSION,
-    serverInfo: {
+function createMcpServer() {
+  const server = new McpServer(
+    {
       name: "shreyans-portfolio-mcp",
-      version: "1.0.0",
-      description:
-        "Shreyans Khunteta's AI-powered portfolio intelligence server",
+      version: "2.0.0",
     },
-    capabilities: {
-      tools: {
-        listChanged: false,
+    {
+      capabilities: {
+        tools: { listChanged: false },
+        logging: { level: "info" },
       },
-      logging: {
-        level: "info",
-      },
-      experimental: {},
-    },
-  };
-
-  console.log("✅ MCP Initialize response:", initResponse);
-  return initResponse;
-}
-
-/**
- * Handle tools list request
- */
-async function handleToolsList() {
-  console.log("📋 MCP Tools list requested");
-  
-  const toolsResponse = {
-    tools: MCP_TOOLS,
-  };
-  
-  console.log("✅ MCP Tools response:", JSON.stringify(toolsResponse, null, 2));
-  return toolsResponse;
-}
-
-/**
- * Handle tool execution
- */
-async function handleToolCall(params) {
-  const { name, arguments: args } = params;
-
-  console.log(`🛠️ Executing tool: ${name}`, args);
-
-  switch (name) {
-    case "portfolio_search":
-      return await executePortfolioSearch(args);
-    case "analyze_portfolio":
-      return await executePortfolioAnalysis(args);
-    case "get_project_details":
-      return await executeGetProjectDetails(args);
-    default:
-      throw new Error(`Unknown tool: ${name}`);
-  }
-}
-
-/**
- * Execute portfolio search tool
- */
-async function executePortfolioSearch({ query, contentTypes = [] }) {
-  try {
-    // Generate embedding for the query
-    const queryEmbedding = await OpenAIService.generateEmbedding(query);
-
-    // Search using vector database
-    let searchResults;
-    if (contentTypes.length > 0) {
-      searchResults = await QdrantService.searchMultipleTypes(
-        queryEmbedding,
-        contentTypes,
-        5
-      );
-    } else {
-      searchResults = await QdrantService.search(queryEmbedding, 5);
     }
+  );
 
-    // Generate AI response
-    const aiResponse = await OpenAIService.generateResponse(
-      query,
-      searchResults
-    );
+  // ---- Tool 1: portfolio_search ----
+  server.tool(
+    "portfolio_search",
+    "Search Shreyans' portfolio for specific information about projects, skills, or experience",
+    {
+      query: z.string().describe("Search query about Shreyans' portfolio"),
+      contentTypes: z
+        .array(z.enum(["project", "skill", "experience", "personal"]))
+        .optional()
+        .describe("Types of content to search in"),
+    },
+    async ({ query, contentTypes }) => {
+      try {
+        const queryEmbedding = await OpenAIService.generateEmbedding(query);
 
-    return {
-      content: [
-        {
-          type: "text",
-          text: aiResponse.answer,
-        },
-      ],
-      metadata: {
-        query: query,
-        contentTypes: contentTypes,
-        resultsFound: searchResults.length,
-        sources: aiResponse.sources,
-      },
-    };
-  } catch (error) {
-    console.error("Error in portfolio search:", error);
-    return {
-      content: [
-        {
-          type: "text",
-          text: "I encountered an error while searching the portfolio. Please try again with a different query.",
-        },
-      ],
-      isError: true,
-    };
-  }
-}
+        let searchResults;
+        if (contentTypes && contentTypes.length > 0) {
+          searchResults = await QdrantService.searchMultipleTypes(
+            queryEmbedding,
+            contentTypes,
+            5
+          );
+        } else {
+          searchResults = await QdrantService.search(queryEmbedding, 5);
+        }
 
-/**
- * Execute portfolio analysis tool
- */
-async function executePortfolioAnalysis({
-  jobDescription,
-  requiredSkills = [],
-  focusArea = "",
-}) {
-  try {
-    // Create analysis query
-    const analysisQuery = `Analyze portfolio for: ${jobDescription}. Required skills: ${requiredSkills.join(
-      ", "
-    )}. Focus: ${focusArea}`;
+        const aiResponse = await AnthropicService.generateResponse(
+          query,
+          searchResults
+        );
 
-    // Search for relevant content
-    const queryEmbedding = await OpenAIService.generateEmbedding(analysisQuery);
-    const searchResults = await QdrantService.search(queryEmbedding, 8);
+        return {
+          content: [{ type: "text", text: aiResponse.answer }],
+        };
+      } catch (error) {
+        console.error("Error in portfolio_search:", error);
+        return {
+          content: [
+            {
+              type: "text",
+              text: "I encountered an error while searching the portfolio. Please try again with a different query.",
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
 
-    // Generate comprehensive analysis
-    const systemPrompt = `You are Kali, Shreyans' AI assistant with deep knowledge of his portfolio. 
+  // ---- Tool 2: analyze_portfolio ----
+  server.tool(
+    "analyze_portfolio",
+    "Analyze how well Shreyans' portfolio matches specific job requirements",
+    {
+      jobDescription: z
+        .string()
+        .describe("Job description or requirements to analyze against"),
+      requiredSkills: z
+        .array(z.string())
+        .optional()
+        .describe("List of required skills"),
+      focusArea: z
+        .string()
+        .optional()
+        .describe("Specific area to focus the analysis on"),
+    },
+    async ({ jobDescription, requiredSkills, focusArea }) => {
+      try {
+        const skills = requiredSkills || [];
+        const focus = focusArea || "";
+
+        const analysisQuery = `Analyze portfolio for: ${jobDescription}. Required skills: ${skills.join(
+          ", "
+        )}. Focus: ${focus}`;
+
+        const queryEmbedding =
+          await OpenAIService.generateEmbedding(analysisQuery);
+        const searchResults = await QdrantService.search(queryEmbedding, 8);
+
+        const systemPrompt = `You are Kali, Shreyans' AI assistant with deep knowledge of his portfolio.
     Analyze how well his background aligns with the job requirements. Provide:
     1. Overall match score (0-100%)
     2. Detailed analysis of strengths
     3. Areas where he excels
     4. Relevant projects and experience
     5. Specific talking points for interviews
-    
+
     Be honest but highlight the strongest alignments.`;
 
-    const userPrompt = `Job: ${jobDescription}
-    Required Skills: ${requiredSkills.join(", ")}
-    Focus Area: ${focusArea}
-    
+        const userPrompt = `Job: ${jobDescription}
+    Required Skills: ${skills.join(", ")}
+    Focus Area: ${focus}
+
     Portfolio Context: ${JSON.stringify(searchResults.slice(0, 5), null, 2)}`;
 
-    const analysis = await OpenAIService.generateMCPResponse({
-      systemPrompt,
-      userQuery: userPrompt,
-    });
+        const analysis = await AnthropicService.generateMCPResponse({
+          systemPrompt,
+          userQuery: userPrompt,
+        });
 
-    return {
-      content: [
-        {
-          type: "text",
-          text: analysis,
-        },
-      ],
-      metadata: {
-        jobDescription,
-        requiredSkills,
-        focusArea,
-        portfolioItemsAnalyzed: searchResults.length,
-      },
-    };
-  } catch (error) {
-    console.error("Error in portfolio analysis:", error);
-    return {
-      content: [
-        {
-          type: "text",
-          text: "I encountered an error while analyzing the portfolio. Please try again.",
-        },
-      ],
-      isError: true,
-    };
-  }
-}
+        return {
+          content: [{ type: "text", text: analysis }],
+        };
+      } catch (error) {
+        console.error("Error in analyze_portfolio:", error);
+        return {
+          content: [
+            {
+              type: "text",
+              text: "I encountered an error while analyzing the portfolio. Please try again.",
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
 
-/**
- * Execute get project details tool
- */
-async function executeGetProjectDetails({
-  projectName,
-  detailLevel = "summary",
-}) {
-  try {
-    // Search for the specific project
-    const projectQuery = `${projectName} project details implementation architecture`;
-    const queryEmbedding = await OpenAIService.generateEmbedding(projectQuery);
-    const searchResults = await QdrantService.search(queryEmbedding, 3);
+  // ---- Tool 3: get_project_details ----
+  server.tool(
+    "get_project_details",
+    "Get detailed information about a specific project in Shreyans' portfolio",
+    {
+      projectName: z
+        .string()
+        .describe("Name of the project to get details for"),
+      detailLevel: z
+        .enum(["summary", "technical", "business"])
+        .optional()
+        .describe("Level of detail to provide"),
+    },
+    async ({ projectName, detailLevel }) => {
+      try {
+        const level = detailLevel || "summary";
+        const projectQuery = `${projectName} project details implementation architecture`;
+        const queryEmbedding =
+          await OpenAIService.generateEmbedding(projectQuery);
+        const searchResults = await QdrantService.search(queryEmbedding, 3);
 
-    // Generate detailed project information
-    const systemPrompt = `You are Kali, providing detailed information about Shreyans' ${projectName} project.
-    Detail level: ${detailLevel}
-    
+        const systemPrompt = `You are Kali, providing detailed information about Shreyans' ${projectName} project.
+    Detail level: ${level}
+
     For summary: Overview, key features, technologies used
     For technical: Architecture, implementation details, challenges solved
     For business: Impact, value proposition, results achieved`;
 
-    const userPrompt = `Provide ${detailLevel} details about the ${projectName} project.
-    
+        const userPrompt = `Provide ${level} details about the ${projectName} project.
+
     Available context: ${JSON.stringify(searchResults, null, 2)}`;
 
-    const projectDetails = await OpenAIService.generateMCPResponse({
-      systemPrompt,
-      userQuery: userPrompt,
+        const projectDetails = await AnthropicService.generateMCPResponse({
+          systemPrompt,
+          userQuery: userPrompt,
+        });
+
+        return {
+          content: [{ type: "text", text: projectDetails }],
+        };
+      } catch (error) {
+        console.error("Error in get_project_details:", error);
+        return {
+          content: [
+            {
+              type: "text",
+              text: `I encountered an error while retrieving details for ${projectName}. Please try again.`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // ---- Tool 4: assess_fit (NEW) ----
+  server.tool(
+    "assess_fit",
+    "Assess how well Shreyans fits a specific job based on his portfolio, experience, and skills. Designed for recruiters evaluating Shrey as a candidate.",
+    {
+      jobDescription: z.string().describe("Full job description text"),
+      requiredSkills: z
+        .array(z.string())
+        .optional()
+        .describe("List of required skills from the job posting"),
+    },
+    async ({ jobDescription, requiredSkills }) => {
+      try {
+        const skills = requiredSkills || [];
+        const fitQuery = `Skills and experience relevant to: ${jobDescription} ${skills.join(
+          ", "
+        )}`;
+
+        const queryEmbedding = await OpenAIService.generateEmbedding(fitQuery);
+
+        // Search broadly across experience, skills, and projects
+        const searchResults = await QdrantService.searchMultipleTypes(
+          queryEmbedding,
+          ["experience", "skill", "project"],
+          10
+        );
+
+        const systemPrompt = `You are Kali, Shreyans Khunteta's intelligent assistant. A recruiter is evaluating Shreyans as a candidate. Provide a structured fit assessment based on his actual portfolio data.
+
+Your response MUST include these sections:
+1. **Overall Fit Summary** - A brief 2-3 sentence assessment
+2. **Matching Experience** - Specific roles and responsibilities that align, with evidence from his work history
+3. **Relevant Projects** - Portfolio projects that demonstrate qualification, with specific technical details
+4. **Skill Alignment** - Skills that match the requirements, noting proficiency levels
+5. **Potential Gaps** - Honest assessment of areas where growth or upskilling would be needed
+6. **Interview Talking Points** - Key strengths to highlight in conversation
+
+Be specific and reference actual projects, roles, and skills from the context. Do not fabricate experience.`;
+
+        const userPrompt = `Job Description:\n${jobDescription}\n\nRequired Skills: ${skills.join(
+          ", "
+        )}\n\nShreyans' Relevant Background:\n${JSON.stringify(
+          searchResults,
+          null,
+          2
+        )}`;
+
+        const assessment = await AnthropicService.generateMCPResponse({
+          systemPrompt,
+          userQuery: userPrompt,
+        });
+
+        return {
+          content: [{ type: "text", text: assessment }],
+        };
+      } catch (error) {
+        console.error("Error in assess_fit:", error);
+        return {
+          content: [
+            {
+              type: "text",
+              text: "I encountered an error while assessing fit. Please try again.",
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // ---- Tool 5: ask_shrey (NEW) ----
+  server.tool(
+    "ask_shrey",
+    "Ask Shreyans a question -- searches across all portfolio content (projects, writing, experience, interests) and responds as if Shrey were answering, grounded in his actual work and perspectives.",
+    {
+      question: z.string().describe("The question to ask Shreyans"),
+    },
+    async ({ question }) => {
+      try {
+        // Broad vector search across ALL content types
+        const queryEmbedding =
+          await OpenAIService.generateEmbedding(question);
+        const searchResults = await QdrantService.search(queryEmbedding, 8);
+
+        const systemPrompt = `You are responding on behalf of Shreyans Khunteta, drawing from his actual portfolio, projects, writing, and documented perspectives.
+
+Guidelines:
+- Ground every response in the provided context -- reference specific projects, blog posts, experiences, and views that appear in the data
+- If Shreyans has written about or worked on something relevant, cite it specifically
+- Do not fabricate opinions or experiences that aren't supported by the context
+- If the context doesn't contain enough information to answer fully, say so honestly and suggest where more information might be found (his blog, GitHub, LinkedIn)
+- Respond in first person as Shreyans would -- professionally but with personality
+- Draw from his philosophical perspectives, creative work, and interests when relevant to give well-rounded answers`;
+
+        const contextText = AnthropicService.buildContextText(searchResults);
+        const userPrompt = `Based on the following information about Shreyans Khunteta's portfolio and work:\n\n${contextText}\n\nPlease answer this question as Shreyans would: ${question}`;
+
+        const answer = await AnthropicService.generateMCPResponse({
+          systemPrompt,
+          userQuery: userPrompt,
+        });
+
+        return {
+          content: [{ type: "text", text: answer }],
+        };
+      } catch (error) {
+        console.error("Error in ask_shrey:", error);
+        return {
+          content: [
+            {
+              type: "text",
+              text: "I encountered an error while processing your question. Please try again.",
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  return server;
+}
+
+// ---- Express Route Handlers ----
+
+/**
+ * POST /api/mcp-connector
+ * Main MCP endpoint -- handles JSON-RPC requests via Streamable HTTP transport.
+ * Creates a new session on first request (no Mcp-Session-Id header),
+ * routes to existing session otherwise.
+ */
+router.post("/", async (req, res) => {
+  const sessionId = req.headers["mcp-session-id"];
+
+  if (sessionId && sessions.has(sessionId)) {
+    // Existing session: route to its transport
+    const transport = sessions.get(sessionId);
+    await transport.handleRequest(req, res, req.body);
+  } else if (!sessionId) {
+    // New session: create transport + server, connect them
+    const transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: () => randomUUID(),
+      onsessioninitialized: (id) => {
+        console.log(`MCP session initialized: ${id}`);
+        sessions.set(id, transport);
+      },
     });
 
-    return {
-      content: [
-        {
-          type: "text",
-          text: projectDetails,
-        },
-      ],
-      metadata: {
-        projectName,
-        detailLevel,
-        contextItemsUsed: searchResults.length,
+    transport.onclose = () => {
+      if (transport.sessionId) {
+        console.log(`MCP session closed: ${transport.sessionId}`);
+        sessions.delete(transport.sessionId);
+      }
+    };
+
+    const server = createMcpServer();
+    await server.connect(transport);
+    await transport.handleRequest(req, res, req.body);
+  } else {
+    // Session ID provided but not found
+    res.status(404).json({
+      jsonrpc: "2.0",
+      error: {
+        code: -32001,
+        message:
+          "Session not found. Start a new session without Mcp-Session-Id header.",
       },
-    };
-  } catch (error) {
-    console.error("Error getting project details:", error);
-    return {
-      content: [
-        {
-          type: "text",
-          text: `I encountered an error while retrieving details for ${projectName}. Please try again.`,
-        },
-      ],
-      isError: true,
-    };
+      id: null,
+    });
   }
-}
+});
 
 /**
- * Utility function to send SSE messages
+ * GET /api/mcp-connector
+ * SSE stream endpoint for server-initiated messages.
+ * Requires a valid Mcp-Session-Id header from a previously initialized session.
  */
-function sendSSEMessage(res, event, data) {
-  res.write(`event: ${event}\n`);
-  res.write(`data: ${JSON.stringify(data)}\n\n`);
-}
+router.get("/", async (req, res) => {
+  const sessionId = req.headers["mcp-session-id"];
+
+  if (!sessionId || !sessions.has(sessionId)) {
+    res.status(400).json({
+      jsonrpc: "2.0",
+      error: {
+        code: -32000,
+        message:
+          "Bad Request: valid Mcp-Session-Id header required. Initialize a session first via POST.",
+      },
+      id: null,
+    });
+    return;
+  }
+
+  const transport = sessions.get(sessionId);
+  await transport.handleRequest(req, res);
+});
 
 /**
- * GET /info - Server information endpoint
+ * DELETE /api/mcp-connector
+ * Session cleanup endpoint. Terminates the session and frees resources.
+ */
+router.delete("/", async (req, res) => {
+  const sessionId = req.headers["mcp-session-id"];
+
+  if (!sessionId || !sessions.has(sessionId)) {
+    res.status(404).json({
+      jsonrpc: "2.0",
+      error: { code: -32001, message: "Session not found" },
+      id: null,
+    });
+    return;
+  }
+
+  const transport = sessions.get(sessionId);
+  await transport.handleRequest(req, res);
+  sessions.delete(sessionId);
+  console.log(`MCP session deleted: ${sessionId}`);
+});
+
+/**
+ * GET /api/mcp-connector/info
+ * Human-readable server information endpoint.
  */
 router.get("/info", (req, res) => {
   res.json({
     name: "shreyans-portfolio-mcp",
-    version: "1.0.0",
-    description: "Shreyans Khunteta's AI-powered portfolio intelligence server",
-    protocolVersion: MCP_VERSION,
-    capabilities: {
-      tools: true,
-      logging: false,
-      prompts: false,
-      resources: false,
-    },
-    tools: MCP_TOOLS.map((tool) => ({
-      name: tool.name,
-      description: tool.description,
-    })),
+    version: "2.0.0",
+    description:
+      "Shreyans Khunteta's AI-powered portfolio intelligence server",
+    protocolVersion: "2025-03-26",
+    capabilities: { tools: true },
+    tools: [
+      { name: "portfolio_search", description: "Search portfolio content" },
+      {
+        name: "analyze_portfolio",
+        description: "Analyze portfolio against job requirements",
+      },
+      {
+        name: "get_project_details",
+        description: "Get detailed project information",
+      },
+      {
+        name: "assess_fit",
+        description: "Assess candidate fit for a job description",
+      },
+      {
+        name: "ask_shrey",
+        description:
+          "Ask Shreyans a question grounded in his portfolio data",
+      },
+    ],
     connectionInfo: {
-      sseEndpoint: "/api/mcp-connector/sse",
-      supportedTransports: ["sse", "http"],
-    },
-    usage: {
-              claudeExample: {
+      endpoint: "/api/mcp-connector",
+      transport: "streamable-http",
+      usage: {
+        claudeExample: {
           mcp_servers: [
             {
               type: "url",
@@ -579,12 +487,16 @@ router.get("/info", (req, res) => {
                   "portfolio_search",
                   "analyze_portfolio",
                   "get_project_details",
+                  "assess_fit",
+                  "ask_shrey",
                 ],
               },
             },
           ],
         },
+      },
     },
+    activeSessions: sessions.size,
   });
 });
 

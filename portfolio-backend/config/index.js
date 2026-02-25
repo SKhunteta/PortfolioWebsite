@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 
-dotenv.config();
+dotenv.config({ override: true });
 
 export const config = {
   // API Keys
@@ -10,6 +10,13 @@ export const config = {
     embeddingModel: "text-embedding-3-small",
     maxTokens: 1000,
     temperature: 0.7,
+  },
+
+  // Anthropic Configuration (used by MCP tools)
+  anthropic: {
+    apiKey: process.env.ANTHROPIC_API_KEY,
+    model: "claude-haiku-4-5-20251001",
+    maxTokens: 1000,
   },
 
   // Qdrant Configuration
