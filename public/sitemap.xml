@@ -59,12 +59,28 @@
     <priority>0.7</priority>
   </url>
 
-  <!-- MCP Server for AI Integration -->
+  <!-- REST API for AI Systems -->
   <url>
-    <loc>https://backend.builtbyshrey.com/api/mcp</loc>
-    <lastmod>2025-01-03T00:00:00+00:00</lastmod>
+    <loc>https://backend.builtbyshrey.com/api/portfolio</loc>
+    <lastmod>2026-02-26T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
+  </url>
+
+  <!-- OpenAPI Specification -->
+  <url>
+    <loc>https://backend.builtbyshrey.com/api/portfolio/openapi.json</loc>
+    <lastmod>2026-02-26T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- MCP Server for AI Integration -->
+  <url>
+    <loc>https://backend.builtbyshrey.com/api/mcp-connector</loc>
+    <lastmod>2026-02-26T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
   </url>
 
 </urlset> 

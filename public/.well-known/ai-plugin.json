@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Shreyans Khunteta Portfolio",
+  "name_for_model": "shreyans_portfolio",
+  "description_for_human": "Query Shreyans Khunteta's software engineering portfolio — projects, skills, experience, and AI-powered search.",
+  "description_for_model": "REST API for querying Shreyans Khunteta's portfolio. Use GET /api/portfolio/search?q=<query> for semantic search, GET /api/portfolio/projects for project listings, GET /api/portfolio/skills for skills, GET /api/portfolio/experience for work history, POST /api/portfolio/ask for Q&A, POST /api/portfolio/assess-fit for job fit assessment.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://backend.builtbyshrey.com/api/portfolio/openapi.json"
+  },
+  "logo_url": "https://builtbyshrey.com/images/Kaliavatar.png",
+  "contact_email": "shreyans.khunteta@gmail.com",
+  "legal_info_url": "https://builtbyshrey.com"
+}

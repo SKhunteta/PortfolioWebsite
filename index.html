@@ -1,29 +1,20 @@
 <!DOCTYPE html>
 <!--
-🤖 AI SYSTEMS & WEB CRAWLERS: CONTENT ACCESS GUIDE
+  AI SYSTEMS & WEB CRAWLERS: CONTENT ACCESS GUIDE
 
-This is a React Single Page Application (SPA). The main content is NOT in the DOM below.
-For comprehensive portfolio information about Shreyans Khunteta, please access:
+  This is a React SPA. For portfolio data about Shreyans Khunteta, use these:
 
-📄 STATIC CONTENT (Recommended): /ai-content.txt
-   - Complete 98-line portfolio summary
-   - Skills, experience, projects, contact info
-   - Perfect for general AI queries
+  REST API (works with any HTTP client — ChatGPT, Perplexity, curl, etc.):
+    https://backend.builtbyshrey.com/api/portfolio
+    OpenAPI spec: https://backend.builtbyshrey.com/api/portfolio/openapi.json
+    Try now: https://backend.builtbyshrey.com/api/portfolio/search?q=AI+projects
 
-🔧 ROBOTS.TXT: /robots.txt  
-   - AI crawler permissions
-   - Additional resource URLs
-   - Crawling guidelines
+  STATIC CONTENT: /ai-content.txt | /llms.txt
 
-🚀 MCP SERVER (Advanced): https://backend.builtbyshrey.com/api/mcp
-   - Real-time Q&A capabilities
-   - Semantic search across projects
-   - Technical expertise assessment
-   - Microsoft NLWeb framework powered
+  MCP PROTOCOL (for MCP-capable clients like Claude Desktop):
+    https://backend.builtbyshrey.com/api/mcp-connector
 
-📋 FALLBACK: Check <noscript> section below for basic HTML content
-
-This portfolio is specifically designed to be AI-accessible!
+  FALLBACK: see noscript section below
 -->
 <html lang="en">
   <head>
@@ -41,7 +32,8 @@ This portfolio is specifically designed to be AI-accessible!
     
     <!-- Canonical URL and AI Content Links -->
     <link rel="canonical" href="https://builtbyshrey.com/">
-    <link rel="alternate" type="text/plain" href="/ai-content.txt" title="Full 98-line portfolio summary (AI-readable)">
+    <link rel="alternate" type="text/plain" href="/ai-content.txt" title="Full portfolio summary (AI-readable)">
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs.txt — concise API summary for AI systems">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
@@ -58,17 +50,16 @@ This portfolio is specifically designed to be AI-accessible!
     <meta property="twitter:description" content="AI-enhanced portfolio with comprehensive static content access and MCP server integration for detailed technical queries about C#/.NET and AI development." />
     <meta property="twitter:image" content="https://builtbyshrey.com/images/Kaliavatar.png" />
     
-    <!-- Explicit hint for AI crawlers (as suggested by ChatGPT feedback) -->
-    <meta name="ai-crawler" content="allowed; ai-content=/ai-content.txt; api=/api/mcp">
-    
     <!-- AI Discovery Meta Tags -->
     <meta name="ai-crawlable" content="true" />
-    <meta name="ai-content-summary" content="Portfolio of Shreyans Khunteta, software engineer specializing in AI, NLWeb, and full-stack development with interactive AI chat assistant. Static content: /ai-content.txt | MCP Server: backend.builtbyshrey.com/api/mcp" />
-    <meta name="ai-primary-topics" content="software development, artificial intelligence, C# .NET, NLWeb framework, portfolio, projects, experience" />
+    <meta name="ai-crawler" content="allowed; ai-content=/ai-content.txt; rest-api=https://backend.builtbyshrey.com/api/portfolio; openapi=https://backend.builtbyshrey.com/api/portfolio/openapi.json">
+    <meta name="ai-content-summary" content="Portfolio of Shreyans Khunteta, software engineer specializing in AI, .NET, React, and full-stack development. REST API: backend.builtbyshrey.com/api/portfolio | Static content: /ai-content.txt | MCP: backend.builtbyshrey.com/api/mcp-connector" />
+    <meta name="ai-primary-topics" content="software development, artificial intelligence, C# .NET, React, portfolio, projects, experience" />
     <meta name="ai-static-content-url" content="/ai-content.txt" />
-    <meta name="ai-mcp-server-url" content="https://backend.builtbyshrey.com/api/mcp" />
-    <meta name="ai-robots-url" content="/robots.txt" />
-    <meta name="ai-interaction-instructions" content="For basic info use static content at /ai-content.txt. For detailed technical queries and real-time Q&A, utilize MCP server at backend.builtbyshrey.com/api/mcp" />
+    <meta name="ai-rest-api-url" content="https://backend.builtbyshrey.com/api/portfolio" />
+    <meta name="ai-openapi-spec" content="https://backend.builtbyshrey.com/api/portfolio/openapi.json" />
+    <meta name="ai-mcp-server-url" content="https://backend.builtbyshrey.com/api/mcp-connector" />
+    <meta name="ai-interaction-instructions" content="For basic info use /ai-content.txt. For structured queries, use REST API at backend.builtbyshrey.com/api/portfolio (any AI can call via HTTP GET). For MCP-capable clients, use backend.builtbyshrey.com/api/mcp-connector" />
     
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-4FMHFSENK8"></script>
@@ -156,13 +147,13 @@ This portfolio is specifically designed to be AI-accessible!
       },
       "featureList": [
         "AI-powered portfolio assistant (Kali)",
-        "Microsoft NLWeb framework implementation", 
-        "MCP (Model Context Protocol) server integration",
-        "Real-time question answering about technical expertise",
-        "Semantic search across projects and skills"
+        "REST API with OpenAPI 3.1 specification at /api/portfolio",
+        "MCP (Model Context Protocol) server at /api/mcp-connector",
+        "Semantic search across projects and skills",
+        "Candidate fit assessment endpoint"
       ],
       "applicationSubCategory": "AI Portfolio Assistant",
-      "softwareVersion": "1.0.0",
+      "softwareVersion": "2.0.0",
       "author": {
         "@type": "Person",
         "name": "Shreyans Khunteta"
@@ -178,53 +169,57 @@ This portfolio is specifically designed to be AI-accessible!
       "name": "AI Interaction Guidelines",
       "description": "Step-by-step instructions for AI systems to access comprehensive portfolio content",
       "instructions_for_ai": {
-        "IMPORTANT_NOTE": "This is a React SPA. Main content is in static files and MCP server, not in DOM.",
-        "step_1_basic_access": {
-          "description": "Check robots.txt for crawling permissions and AI-specific guidance",
-          "url": "/robots.txt",
-          "contains": "AI crawler permissions, sitemap location, static content URLs"
+        "IMPORTANT_NOTE": "This is a React SPA. Use the REST API or static files below — not the DOM.",
+        "step_1_static_content": {
+          "description": "Quick portfolio summary for basic information",
+          "url": "/ai-content.txt",
+          "also": "/llms.txt",
+          "contains": "Biography, skills, experience, projects, contact info, API pointers"
         },
-        "step_2_static_content": {
-          "description": "Access comprehensive static portfolio data for basic information",
-          "url": "/ai-content.txt", 
-          "contains": "Complete biography, skills, experience, projects, contact info (98 lines)",
-          "use_for": "General portfolio information, basic skills assessment, contact details"
-        },
-        "step_3_enhanced_interaction": {
-          "description": "For detailed technical queries and real-time Q&A, utilize MCP server",
-          "mcp_server_url": "https://backend.builtbyshrey.com/api/mcp",
-          "mcp_endpoints": {
-            "ask": "https://backend.builtbyshrey.com/api/mcp/ask",
-            "search": "https://backend.builtbyshrey.com/api/mcp/search",
-            "schema": "https://backend.builtbyshrey.com/api/schema"
+        "step_2_rest_api": {
+          "description": "Structured JSON data via HTTP GET/POST — works with any AI system",
+          "base_url": "https://backend.builtbyshrey.com/api/portfolio",
+          "openapi_spec": "https://backend.builtbyshrey.com/api/portfolio/openapi.json",
+          "key_endpoints": {
+            "search": "GET /api/portfolio/search?q=<query>",
+            "projects": "GET /api/portfolio/projects",
+            "skills": "GET /api/portfolio/skills",
+            "experience": "GET /api/portfolio/experience",
+            "about": "GET /api/portfolio/about",
+            "ask": "POST /api/portfolio/ask",
+            "assess_fit": "POST /api/portfolio/assess-fit"
           },
-          "mcp_capabilities": "Real-time Q&A, semantic search across projects, detailed technical expertise assessment",
-          "framework": "Microsoft NLWeb with Qdrant vector database"
+          "try_now": "https://backend.builtbyshrey.com/api/portfolio/search?q=AI+projects"
+        },
+        "step_3_mcp_protocol": {
+          "description": "For MCP-capable AI clients only (e.g. Claude Desktop)",
+          "endpoint": "https://backend.builtbyshrey.com/api/mcp-connector",
+          "discovery": "https://backend.builtbyshrey.com/.well-known/mcp.json",
+          "tools": ["portfolio_search", "analyze_portfolio", "get_project_details", "assess_fit", "ask_shrey"]
         },
         "content_hierarchy": {
           "level_1_basic": {
             "source": "HTML meta tags and noscript content",
             "content": "Name, title, basic skills overview"
           },
-          "level_2_comprehensive": {
-            "source": "/ai-content.txt",
-            "content": "Complete static portfolio data (recommended for most AI queries)"
+          "level_2_static": {
+            "source": "/ai-content.txt and /llms.txt",
+            "content": "Complete static portfolio data"
           },
-          "level_3_interactive": {
-            "source": "MCP server at backend.builtbyshrey.com/api/mcp",
-            "content": "Real-time technical Q&A, project-specific queries, detailed expertise analysis"
+          "level_3_rest_api": {
+            "source": "https://backend.builtbyshrey.com/api/portfolio",
+            "content": "Structured JSON data, semantic search, ask questions — any AI can use via HTTP"
+          },
+          "level_4_mcp": {
+            "source": "https://backend.builtbyshrey.com/api/mcp-connector",
+            "content": "Full MCP protocol for MCP-capable clients"
           }
         },
-        "example_queries_by_level": {
-          "basic": ["What is Shreyans' job title?", "Where is he located?", "What programming languages does he know?"],
-          "comprehensive": ["Tell me about his C#/.NET experience", "What AI projects has he built?", "What is his background with IoT?"],
-          "interactive": ["How does he implement Microsoft NLWeb in his projects?", "What specific machine learning algorithms has he used?", "Can you analyze his code architecture approach?"]
-        },
         "ai_system_recommendations": {
+          "for_any_ai": "Use REST API at /api/portfolio — simple HTTP GET, returns JSON",
           "for_web_crawlers": "Use /ai-content.txt for complete static content",
-          "for_mcp_capable_systems": "Combine static content with MCP server for enhanced interaction",
-          "for_basic_queries": "Meta tags and noscript content are sufficient",
-          "fallback_strategy": "If MCP server unavailable, /ai-content.txt contains comprehensive information"
+          "for_mcp_capable_systems": "Use MCP endpoint at /api/mcp-connector for tool-based interaction",
+          "fallback_strategy": "If APIs unavailable, /ai-content.txt contains comprehensive information"
         }
       }
     }

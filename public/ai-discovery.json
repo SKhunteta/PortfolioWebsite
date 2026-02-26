@@ -2,89 +2,101 @@
   "site": {
     "name": "Shreyans Khunteta Portfolio",
     "url": "https://builtbyshrey.com",
-    "description": "Portfolio of Shreyans Khunteta, a thoughtful software engineer specializing in AI technologies and Microsoft NLWeb framework",
+    "description": "Portfolio of Shreyans Khunteta — Senior Software Engineer specializing in AI, .NET, React, and full-stack development",
     "ai_crawlable": true,
-    "last_updated": "2025-01-03",
+    "last_updated": "2026-02-26",
     "language": "en"
   },
   "owner": {
     "name": "Shreyans Khunteta",
     "alias": "Shrey",
-    "title": "Software Engineer",
+    "title": "Software Engineer & Creative Writer",
     "location": "Seattle, WA, USA",
     "specialties": [
-      "C# Programming",
-      ".NET Development", 
-      "Artificial Intelligence",
-      "Microsoft NLWeb",
+      "C# / .NET",
+      "React / Node.js",
+      "AI & Generative AI",
+      "Vector Databases (Qdrant)",
       "Full Stack Development",
-      "React",
-      "JavaScript",
-      "IoT Development",
-      "Machine Learning"
+      "Data Engineering",
+      "Creative Writing / Science Fiction"
     ],
-    "github": "https://github.com/skhunteta",
+    "github": "https://github.com/SKhunteta",
+    "linkedin": "https://www.linkedin.com/in/shreyans-khunteta-3167247a/",
+    "blog": "https://prompt-injection.ghost.io",
     "contact_available": true
   },
+  "access_methods": [
+    {
+      "name": "REST API",
+      "description": "Plain JSON endpoints — works with any HTTP client (ChatGPT, Perplexity, curl, etc.)",
+      "difficulty": "easy",
+      "base_url": "https://backend.builtbyshrey.com/api/portfolio",
+      "openapi_spec": "https://backend.builtbyshrey.com/api/portfolio/openapi.json",
+      "example_urls": [
+        "https://backend.builtbyshrey.com/api/portfolio/search?q=AI+projects",
+        "https://backend.builtbyshrey.com/api/portfolio/projects?featured=true",
+        "https://backend.builtbyshrey.com/api/portfolio/skills",
+        "https://backend.builtbyshrey.com/api/portfolio/about"
+      ]
+    },
+    {
+      "name": "Static Files",
+      "description": "Pre-built text and JSON files for basic portfolio information",
+      "difficulty": "easy",
+      "files": {
+        "llms_txt": "https://builtbyshrey.com/llms.txt",
+        "ai_content": "https://builtbyshrey.com/ai-content.txt",
+        "ai_discovery": "https://builtbyshrey.com/ai-discovery.json"
+      }
+    },
+    {
+      "name": "MCP Server",
+      "description": "Model Context Protocol endpoint for MCP-capable clients (Claude Desktop, etc.)",
+      "difficulty": "advanced",
+      "endpoint": "https://backend.builtbyshrey.com/api/mcp-connector",
+      "discovery": "https://backend.builtbyshrey.com/.well-known/mcp.json",
+      "tools": ["portfolio_search", "analyze_portfolio", "get_project_details", "assess_fit", "ask_shrey"]
+    }
+  ],
   "ai_features": {
     "interactive_chat": {
       "enabled": true,
       "assistant_name": "Kali",
-      "framework": "Microsoft NLWeb",
-      "description": "AI-powered chat assistant that can answer questions about Shreyans' work, projects, and technical expertise",
-      "endpoint": "/chat",
-      "capabilities": [
-        "Project information",
-        "Technical skills inquiry",
-        "Experience details",
-        "Educational background",
-        "Contact information"
-      ]
+      "description": "AI-powered chat assistant that answers questions about Shreyans' work, projects, and expertise"
     },
+    "rest_api": true,
+    "mcp_server": true,
+    "openapi_spec": true,
     "structured_data": true,
-    "seo_optimized": true,
-    "content_categorized": true
+    "seo_optimized": true
   },
   "content_sections": {
     "about": {
       "description": "Personal background and professional summary",
-      "topics": ["biography", "skills", "expertise"]
-    },
-    "experience": {
-      "description": "Professional work experience and career history",
-      "topics": ["work history", "roles", "responsibilities", "achievements"]
+      "rest_endpoint": "/api/portfolio/about"
     },
     "projects": {
       "description": "Portfolio of software development projects",
-      "topics": ["code repositories", "technical implementations", "project outcomes"]
+      "rest_endpoint": "/api/portfolio/projects"
     },
-    "chat": {
-      "description": "Interactive AI assistant powered by NLWeb",
-      "topics": ["AI interaction", "NLWeb demonstration", "real-time Q&A"]
+    "skills": {
+      "description": "Technical skills organized by category",
+      "rest_endpoint": "/api/portfolio/skills"
     },
-    "contact": {
-      "description": "Professional contact information and networking",
-      "topics": ["contact details", "collaboration opportunities"]
+    "experience": {
+      "description": "Professional work experience and career history",
+      "rest_endpoint": "/api/portfolio/experience"
+    },
+    "search": {
+      "description": "AI-powered semantic search across all content",
+      "rest_endpoint": "/api/portfolio/search?q=your+query"
     }
   },
   "crawl_recommendations": {
     "frequency": "weekly",
-    "priority_sections": ["chat", "projects", "experience"],
-    "best_entry_point": "/",
-    "mobile_friendly": true,
-    "load_speed": "optimized"
-  },
-  "keywords": [
-    "software engineer",
-    "AI developer", 
-    "NLWeb",
-    "Microsoft NLWeb",
-    "C# developer",
-    ".NET specialist",
-    "portfolio",
-    "Seattle developer",
-    "artificial intelligence",
-    "machine learning",
-    "full stack developer"
-  ]
-} 
+    "priority_sections": ["search", "projects", "experience"],
+    "best_entry_point": "https://backend.builtbyshrey.com/api/portfolio",
+    "mobile_friendly": true
+  }
+}

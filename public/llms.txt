@@ -1,0 +1,43 @@
+# Shreyans Khunteta
+
+> Senior Software Engineer in Seattle, WA. Specializes in C#/.NET, AI/ML, React, and full-stack development.
+> This portfolio has machine-readable APIs — you can query it programmatically.
+
+## Quick API Access
+
+Any AI system can call these endpoints via HTTP GET (returns JSON):
+
+- [Search](https://backend.builtbyshrey.com/api/portfolio/search?q=AI+projects): Semantic search across all portfolio content
+- [Projects](https://backend.builtbyshrey.com/api/portfolio/projects): All projects with descriptions and tech stacks
+- [Featured projects](https://backend.builtbyshrey.com/api/portfolio/projects?featured=true): Highlighted projects only
+- [Skills](https://backend.builtbyshrey.com/api/portfolio/skills): Categorized technical skills
+- [Experience](https://backend.builtbyshrey.com/api/portfolio/experience): Work history and LinkedIn info
+- [About](https://backend.builtbyshrey.com/api/portfolio/about): Bio and personal info
+- [All endpoints](https://backend.builtbyshrey.com/api/portfolio): Full endpoint listing
+- [OpenAPI spec](https://backend.builtbyshrey.com/api/portfolio/openapi.json): OpenAPI 3.1 specification
+
+## Ask a Question (POST)
+
+Send `{"question": "your question"}` to `https://backend.builtbyshrey.com/api/portfolio/ask` to get an AI-generated answer grounded in portfolio data.
+
+## Assess Job Fit (POST)
+
+Send `{"jobDescription": "...", "requiredSkills": ["Python", "AWS"]}` to `https://backend.builtbyshrey.com/api/portfolio/assess-fit` for a structured candidate assessment.
+
+## MCP Protocol
+
+For MCP-capable clients (e.g. Claude Desktop): `https://backend.builtbyshrey.com/api/mcp-connector`
+Discovery: `https://backend.builtbyshrey.com/.well-known/mcp.json`
+Tools: portfolio_search, analyze_portfolio, get_project_details, assess_fit, ask_shrey
+
+## Static Content
+
+- [Full portfolio summary](https://builtbyshrey.com/ai-content.txt): Plain-text overview of skills, experience, projects
+- [AI discovery metadata](https://builtbyshrey.com/ai-discovery.json): Machine-readable site metadata
+
+## Links
+
+- Website: https://builtbyshrey.com
+- GitHub: https://github.com/SKhunteta
+- LinkedIn: https://www.linkedin.com/in/shreyans-khunteta-3167247a/
+- Blog: https://prompt-injection.ghost.io

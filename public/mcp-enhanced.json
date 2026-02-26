@@ -1,153 +1,113 @@
 {
-  "name": "shreyans-portfolio",
-  "version": "1.0.0",
-  "description": "AI-powered portfolio assistant for Shreyans Khunteta - Senior Software Engineer specializing in C#/.NET, AI technologies, and Microsoft NLWeb framework",
+  "name": "shreyans-portfolio-mcp",
+  "version": "2.0.0",
+  "description": "AI-powered portfolio intelligence server for Shreyans Khunteta — Senior Software Engineer specializing in C#/.NET, AI, and full-stack development",
+  "connection": {
+    "mcp_endpoint": "https://backend.builtbyshrey.com/api/mcp-connector",
+    "mcp_discovery": "https://backend.builtbyshrey.com/.well-known/mcp.json",
+    "transport": "streamable-http",
+    "protocol_version": "2025-03-26"
+  },
+  "rest_api_fallback": {
+    "description": "If your system cannot speak MCP, use the REST API instead (simple HTTP GET/POST).",
+    "base_url": "https://backend.builtbyshrey.com/api/portfolio",
+    "openapi_spec": "https://backend.builtbyshrey.com/api/portfolio/openapi.json",
+    "try_it": "https://backend.builtbyshrey.com/api/portfolio/search?q=AI+projects"
+  },
   "capabilities": {
     "tools": [
       {
-        "name": "ask",
-        "description": "Ask questions about Shreyans' portfolio, skills, projects, and experience",
+        "name": "portfolio_search",
+        "description": "Search portfolio content by topic — projects, skills, experience, personal info",
         "parameters": {
           "type": "object",
           "properties": {
-            "question": {
-              "type": "string",
-              "description": "Natural language question about the portfolio"
-            },
-            "context": {
-              "type": "string",
-              "description": "Optional context for the question"
-            }
-          },
-          "required": ["question"]
-        },
-        "examples": [
-          "What programming languages does Shreyans specialize in?",
-          "Tell me about his experience with AI technologies",
-          "What projects has he built using NLWeb?",
-          "What's his educational background?",
-          "How can I contact him for collaboration?"
-        ]
-      },
-      {
-        "name": "search",
-        "description": "Search specific content types in the portfolio",
-        "parameters": {
-          "type": "object",
-          "properties": {
-            "query": {
-              "type": "string",
-              "description": "Search query"
-            },
+            "query": { "type": "string", "description": "Search query" },
             "contentTypes": {
               "type": "array",
-              "items": {
-                "type": "string",
-                "enum": ["project", "skill", "experience", "personal"]
-              },
+              "items": { "type": "string", "enum": ["project", "skill", "experience", "personal"] },
               "description": "Content types to search"
             }
           },
           "required": ["query"]
         },
-        "examples": [
-          {"query": "machine learning", "contentTypes": ["project", "skill"]},
-          {"query": "C# development", "contentTypes": ["experience", "skill"]},
-          {"query": "IoT projects", "contentTypes": ["project"]}
-        ]
+        "rest_equivalent": "GET /api/portfolio/search?q=<query>&types=<types>"
+      },
+      {
+        "name": "analyze_portfolio",
+        "description": "Analyze how well the portfolio matches specific job requirements",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "jobDescription": { "type": "string", "description": "Job description to analyze against" },
+            "requiredSkills": { "type": "array", "items": { "type": "string" } },
+            "focusArea": { "type": "string", "description": "Specific area to focus the analysis on" }
+          },
+          "required": ["jobDescription"]
+        },
+        "rest_equivalent": "POST /api/portfolio/assess-fit"
+      },
+      {
+        "name": "get_project_details",
+        "description": "Get detailed information about a specific portfolio project",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "projectName": { "type": "string", "description": "Name or ID of the project" }
+          },
+          "required": ["projectName"]
+        },
+        "rest_equivalent": "GET /api/portfolio/projects/<id>"
+      },
+      {
+        "name": "assess_fit",
+        "description": "Structured candidate fit assessment against a job description",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "jobDescription": { "type": "string", "description": "Full job description text" },
+            "requiredSkills": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["jobDescription"]
+        },
+        "rest_equivalent": "POST /api/portfolio/assess-fit"
+      },
+      {
+        "name": "ask_shrey",
+        "description": "Ask Shreyans a question — responds as if Shrey were answering, grounded in his actual work",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "question": { "type": "string", "description": "The question to ask" }
+          },
+          "required": ["question"]
+        },
+        "rest_equivalent": "POST /api/portfolio/ask"
       }
     ],
     "resources": [
-      {
-        "uri": "portfolio://projects",
-        "name": "Projects",
-        "description": "Information about Shreyans' software projects",
-        "summary": "Includes AI-powered applications using NLWeb, full-stack web applications, IoT solutions, enterprise C#/.NET applications, and machine learning implementations",
-        "sample_projects": [
-          "AI Portfolio Assistant (NLWeb-powered conversational interface)",
-          "Real-time data processing systems",
-          "IoT hardware-software integration projects",
-          "Enterprise web applications with C#/.NET"
-        ]
-      },
-      {
-        "uri": "portfolio://skills",
-        "name": "Skills",
-        "description": "Technical skills and expertise",
-        "summary": "Primary expertise in C#/.NET stack with strong focus on AI technologies, full-stack development, and emerging frameworks",
-        "core_skills": [
-          "C# and .NET Framework/Core",
-          "JavaScript, React, Node.js",
-          "Microsoft NLWeb Framework",
-          "Artificial Intelligence and Machine Learning",
-          "Full-Stack Web Development",
-          "IoT Development",
-          "Database Design and Management",
-          "Cloud Technologies (Azure, AWS)"
-        ]
-      },
-      {
-        "uri": "portfolio://experience",
-        "name": "Experience",
-        "description": "Professional work experience",
-        "summary": "Senior Software Engineer with extensive experience in enterprise application development, AI-powered solutions, and team leadership",
-        "experience_areas": [
-          "Enterprise application development using C#/.NET",
-          "AI-powered application development with NLWeb",
-          "Full-stack web application architecture",
-          "IoT solutions and embedded systems",
-          "Cloud infrastructure and deployment",
-          "Team leadership and mentoring"
-        ]
-      },
-      {
-        "uri": "portfolio://personal",
-        "name": "Personal",
-        "description": "Personal information and contact details",
-        "summary": "Based in Seattle, WA. Open to collaboration, consultation, and new opportunities in software development and AI technologies",
-        "contact_info": {
-          "location": "Seattle, WA, USA",
-          "github": "https://github.com/skhunteta",
-          "website": "https://builtbyshrey.com",
-          "availability": "Open for collaboration and consultation"
-        }
-      }
+      { "uri": "portfolio://projects", "name": "Projects", "rest_equivalent": "GET /api/portfolio/projects" },
+      { "uri": "portfolio://skills", "name": "Skills", "rest_equivalent": "GET /api/portfolio/skills" },
+      { "uri": "portfolio://experience", "name": "Experience", "rest_equivalent": "GET /api/portfolio/experience" },
+      { "uri": "portfolio://personal", "name": "Personal", "rest_equivalent": "GET /api/portfolio/about" }
     ]
   },
   "context": {
     "professional_focus": "Intersection of traditional software development with cutting-edge AI technologies",
-    "current_specialization": "Microsoft NLWeb framework implementation and AI-powered conversational interfaces",
     "portfolio_features": {
       "interactive_ai_assistant": {
         "name": "Kali",
-        "framework": "Microsoft NLWeb",
         "capabilities": "Answers questions about Shreyans' work, projects, and expertise in real-time"
       },
-      "ai_discoverable": "Site is optimized for AI crawler discovery with structured data and static content fallbacks"
-    },
-    "notable_achievements": [
-      "Practical implementation of Microsoft NLWeb in production portfolio",
-      "AI-first approach to web development and user interaction",
-      "Comprehensive portfolio showcasing full-stack and AI capabilities"
-    ]
-  },
-  "interaction_guidelines": {
-    "best_questions": [
-      "Technical expertise and skill assessment",
-      "Project details and implementation approaches",
-      "Experience with specific technologies or frameworks",
-      "Collaboration opportunities and availability",
-      "AI and NLWeb implementation insights"
-    ],
-    "response_style": "Knowledgeable and detailed responses about technical topics, with practical examples where applicable"
+      "ai_discoverable": "Site is optimized for AI crawler discovery with REST API, MCP protocol, structured data, and static content fallbacks"
+    }
   },
   "metadata": {
     "author": "Shreyans Khunteta",
     "website": "https://builtbyshrey.com",
-    "github": "https://github.com/skhunteta",
-    "lastUpdated": "2025-01-03T00:00:00Z",
+    "github": "https://github.com/SKhunteta",
+    "lastUpdated": "2026-02-26T00:00:00Z",
     "ai_friendly": true,
-    "mcp_version": "enhanced",
-    "content_richness": "high"
+    "mcp_version": "2.0.0"
   }
-} 
+}
