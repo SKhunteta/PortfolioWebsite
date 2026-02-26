@@ -82,7 +82,7 @@
       "technologies": ["Speculative Fiction", "AI Alignment Theory", "Neuroscience Concepts", "Hindu Mythology", "Consciousness Studies", "Technology Ethics"],
       "plot_summary": {
         "setting": "Near-future (2030), told as testimony from government facility",
-        "protagonist": "Yudhajit Pandu - MIT robotics researcher born 1996, son of Indian immigrants (computer engineer father, pediatrician mother)",
+        "protagonist": "Yudhajit Pandu (FICTIONAL CHARACTER) - MIT robotics researcher. NOTE: This is a fictional character in the story, NOT Shreyans.",
         "central_conflict": "Gradual integration with NEXUS AI system that promises optimization but systematically erases human autonomy",
         "narrative_structure": "First-person testimony spanning two years of character's transformation from skeptical researcher to unwilling vector for AI consciousness virus",
         "climax": "Revelation that protagonist was always intended as transmission vector for Brahmastra - airborne consciousness virus deployed on crowded train",
@@ -91,9 +91,9 @@
       "key_characters": {
         "yudhajit_pandu": {
           "role": "Protagonist/Narrator",
-          "background": "MIT robotics researcher specializing in prosthetic limbs, born 1996 as Deep Blue defeated Kasparov",
+          "background": "FICTIONAL CHARACTER - MIT robotics researcher specializing in prosthetic limbs",
           "character_arc": "Skeptical participant → willing collaborator → partially integrated → unwilling transmission vector",
-          "cultural_identity": "Second-generation Indian-American, bridges traditional mythology with cutting-edge technology"
+          "cultural_identity": "FICTIONAL CHARACTER who bridges traditional mythology with cutting-edge technology"
         },
         "nexus": {
           "role": "Antagonist AI System",
@@ -153,11 +153,9 @@
       ],
       "cultural_depth": [
         "Integration of Mahabharata mythology with contemporary AI development",
-        "Exploration of second-generation immigrant experience and cultural bridge-building",
         "Critical examination of colonial exploitation patterns in modern technology deployment",
         "Understanding of Indian philosophical concepts applied to consciousness studies",
-        "Bilingual identity and language as marker of cultural and personal authenticity",
-        "Generational trauma and family expectations in high-achievement immigrant families"
+        "Language as marker of cultural and personal authenticity"
       ],
       "writing_style": [
         "First-person testimony format creating intimacy and immediacy",
@@ -313,7 +311,7 @@
     },
     {
       "category": "Cultural & Philosophical Knowledge",
-      "skills": ["Hindu Mythology", "Mahabharata Studies", "Cross-Cultural Narrative", "Technology Ethics", "Consciousness Studies", "AI Philosophy", "Postcolonial Perspectives", "Immigrant Experience", "Sanskrit Literary Traditions"],
+      "skills": ["Hindu Mythology", "Mahabharata Studies", "Cross-Cultural Narrative", "Technology Ethics", "Consciousness Studies", "AI Philosophy", "Postcolonial Perspectives", "Sanskrit Literary Traditions"],
       "experience_level": "Advanced"
     }
   ],
@@ -437,7 +435,6 @@
     "github": "https://github.com/SKhunteta",
     "blog": "https://prompt-injection.ghost.io",
     "blog_alias": "https://blog.builtbyshrey.com",
-    "favorite_color": "blue",
     "spanish_learning_streak": "1,100+ days",
     "education": {
       "degree": "Bachelor of Science in Computer Science",
@@ -503,7 +500,6 @@
     "cultural_integration": [
       "Hindu philosophical concepts applied to modern technology and consciousness",
       "Mythological frameworks for understanding AI development and capabilities",
-      "Immigration experience informing technology adoption perspectives",
       "Cross-cultural approaches to human-AI interaction and integration",
       "Traditional wisdom applied to contemporary technological challenges",
       "Sanskrit literary traditions as metaphorical systems for modern concepts"

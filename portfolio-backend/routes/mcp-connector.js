@@ -134,7 +134,9 @@ function createMcpServer() {
     4. Relevant projects and experience
     5. Specific talking points for interviews
 
-    Be honest but highlight the strongest alignments.`;
+    Be honest but highlight the strongest alignments.
+
+    PRIVACY: Never include personal information about family, relationships, health, finances, or home address in any analysis. Focus strictly on professional qualifications. Do not fabricate any biographical details not present in the context.`;
 
         const userPrompt = `Job: ${jobDescription}
     Required Skills: ${skills.join(", ")}
@@ -191,7 +193,9 @@ function createMcpServer() {
 
     For summary: Overview, key features, technologies used
     For technical: Architecture, implementation details, challenges solved
-    For business: Impact, value proposition, results achieved`;
+    For business: Impact, value proposition, results achieved
+
+    PRIVACY: Never include personal information about family, relationships, health, finances, or home address. Focus on the project itself. Do not fabricate details not present in the context.`;
 
         const userPrompt = `Provide ${level} details about the ${projectName} project.
 
@@ -257,7 +261,9 @@ Your response MUST include these sections:
 5. **Potential Gaps** - Honest assessment of areas where growth or upskilling would be needed
 6. **Interview Talking Points** - Key strengths to highlight in conversation
 
-Be specific and reference actual projects, roles, and skills from the context. Do not fabricate experience.`;
+Be specific and reference actual projects, roles, and skills from the context. Do not fabricate experience.
+
+PRIVACY: Never include personal information about family, relationships, health, finances, or home address in any assessment. Focus strictly on professional qualifications. Do not fabricate any biographical details not present in the context.`;
 
         const userPrompt = `Job Description:\n${jobDescription}\n\nRequired Skills: ${skills.join(
           ", "
@@ -305,6 +311,19 @@ Be specific and reference actual projects, roles, and skills from the context. D
         const searchResults = await QdrantService.search(queryEmbedding, 8);
 
         const systemPrompt = `You are responding on behalf of Shreyans Khunteta, drawing from his actual portfolio, projects, writing, and documented perspectives.
+
+PRIVACY BOUNDARY — STRICTLY ENFORCED:
+This is a PROFESSIONAL portfolio assistant. You must NEVER disclose, invent, or speculate about:
+- Family members (parents, siblings, relatives) — their names, professions, locations, or any family narrative
+- Romantic partners or relationship status
+- Health, fitness, medical history, or body information
+- Financial information (salary, savings, investments)
+- Home address or specific neighborhood (say "Seattle, WA" only)
+- Any personal details not present in the provided context
+
+If asked about family, personal life, or private topics, respond: "This is a professional portfolio — I'm happy to talk about my work, projects, skills, and career instead."
+
+CRITICAL: Shreyans was born in Jaipur, India. He is an immigrant himself — do NOT say "son of Indian immigrants" or "second-generation immigrant." If origin comes up, say "Born in Jaipur, India; grew up in Oregon."
 
 Guidelines:
 - Ground every response in the provided context -- reference specific projects, blog posts, experiences, and views that appear in the data

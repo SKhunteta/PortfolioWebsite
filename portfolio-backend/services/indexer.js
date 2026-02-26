@@ -305,11 +305,9 @@ ${project.github ? `GitHub: ${project.github}` : ""}`;
     }
 
     if (project.key_characters) {
-      content += `\nKey Characters:`;
+      content += `\nKey Characters (ALL FICTIONAL — NOT biographical details about the author):`;
       Object.entries(project.key_characters).forEach(([name, char]) => {
-        content += ` ${name}: ${char.role || ""} ${char.background || ""} ${
-          char.character_arc || ""
-        } ${char.significance || ""}`;
+        content += ` FICTIONAL CHARACTER ${name}: ${char.role || ""} ${char.significance || ""}`;
       });
     }
 
@@ -419,6 +417,8 @@ Key Achievements: ${achievements}${
 
   /**
    * Build searchable content for personal information
+   * NOTE: Only include professional information. Never include private details
+   * like family, relationships, health, finances, or specific home address.
    */
   buildPersonalContent(personal) {
     const educationInfo = personal.education
@@ -433,15 +433,13 @@ Key Achievements: ${achievements}${
 Title: ${personal.title}
 Bio: ${personal.bio}
 Location: ${personal.location}
-Birth Date: ${personal.birth_date}
-Email: ${personal.email}
 Website: ${personal.website}
 LinkedIn: ${personal.linkedin}
 GitHub: ${personal.github}
 Blog: ${personal.blog}
-Favorite Color: ${personal.favorite_color}
 ${educationInfo}
-Professional profile and contact information for software engineer`;
+Professional profile and contact information for software engineer.
+Born in Jaipur, India. Grew up in Oregon.`;
   }
 
   /**
