@@ -196,13 +196,9 @@ const Projects = () => {
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-primary/10 via-accent/10 to-primary/20 flex items-center justify-center">
                     <div className="text-center p-6">
-                      <div className="text-4xl mb-4">🚀</div>
-                      <h4 className="font-bold text-secondary mb-2">
-                        You're Here!
-                      </h4>
-                      <p className="text-gray-600 text-sm">
-                        This is the live demo
-                      </p>
+                      <div className="text-4xl mb-4">
+                        {featuredProject.status === "Coming Soon" ? "📖" : featuredProject.url ? "✍️" : "🚀"}
+                      </div>
                     </div>
                   </div>
                 )}
