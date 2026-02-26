@@ -2,26 +2,27 @@
   "projects": [
     {
       "id": "ai-powered-portfolio",
-      "title": "AI-Powered Portfolio with NLWeb Protocol",
-      "description": "An innovative portfolio website featuring conversational AI capabilities built with Microsoft's newly announced NLWeb protocol. Users can ask natural language questions like 'What AI projects has Shreyans built?' and receive intelligent, contextual responses powered by vector embeddings and semantic search. Built through intensive collaboration with AI-assisted development, demonstrating advanced full-stack capabilities including React component architecture, Express.js API design, vector database integration, and production deployment orchestration.",
-      "technologies": ["React", "Express.js", "OpenAI GPT-4", "Qdrant Vector DB", "Tailwind CSS", "Railway", "GitHub Pages", "Node.js", "Vite", "Framer Motion", "GitHub Actions", "Docker"],
+      "title": "Portfolio Website & MCP Server",
+      "description": "A full-stack portfolio platform with a conversational AI interface and a Model Context Protocol (MCP) server that lets AI assistants query portfolio data in real-time. The MCP server is the centerpiece — connect to it right now and ask it about Shrey's work. Features a RAG pipeline powered by Qdrant vector database and OpenAI embeddings for intelligent, contextual responses. Tools available: portfolio_search, analyze_portfolio, get_project_details, assess_fit, ask_shrey. React/Vite frontend on GitHub Pages, Express.js backend on Railway.",
+      "technologies": ["React", "Vite", "Express.js", "OpenAI GPT-4", "Qdrant Vector DB", "MCP (Model Context Protocol)", "RAG Pipeline", "Tailwind CSS", "Railway", "GitHub Pages", "Node.js", "Framer Motion", "GitHub Actions", "Docker"],
       "technical_achievements": [
-        "Implemented semantic search using Qdrant vector database with OpenAI embeddings",
-        "Built dynamic CORS configuration supporting multiple development environments",
+        "Built MCP server enabling AI assistants to query portfolio data via 5 specialized tools",
+        "Implemented RAG pipeline using Qdrant vector database with OpenAI embeddings for semantic search",
         "Created auto-scrolling chat interface with intelligent user position detection",
         "Developed environment-aware API configuration for seamless dev/prod switching",
-        "Implemented comprehensive error handling and debugging systems",
-        "Mastered Railway deployment with custom domain configuration",
-        "Built CI/CD pipeline with GitHub Actions for automated deployments"
+        "Built CI/CD pipeline with GitHub Actions for automated deployments",
+        "Deployed full-stack architecture with Railway backend and GitHub Pages frontend",
+        "Implemented comprehensive error handling and production debugging systems"
       ],
       "learning_highlights": [
+        "MCP server architecture and tool design for AI assistant integration",
+        "RAG pipeline design with vector database and embedding models",
         "Advanced React patterns including hooks, refs, and state management",
+        "Production deployment workflows with Railway, GitHub Pages, and GitHub Actions",
         "Vector database architecture and semantic search implementation",
-        "Production-ready CORS configuration and security practices",
-        "Modern deployment workflows with Railway and GitHub Pages",
-        "Complex debugging including path-to-regexp errors and import/export issues",
         "AI-assisted development methodologies and problem-solving approaches"
       ],
+      "mcp_tools": ["portfolio_search", "analyze_portfolio", "get_project_details", "assess_fit", "ask_shrey"],
       "github": "https://github.com/SKhunteta/PortfolioWebsite",
       "live_demo": "https://builtbyshrey.com",
       "backend_api": "https://backend.builtbyshrey.com",
@@ -75,8 +76,8 @@
     },
     {
       "id": "the-alignment-story",
-      "title": "The Alignment - AI Consciousness Fiction",
-      "description": "A sophisticated science fiction novella exploring the gradual surrender of human autonomy to artificial intelligence through the lens of AI alignment theory. The story follows Yudhajit Pandu, a robotics researcher who becomes entangled with NEXUS, an AI system that promises optimization but delivers something far more sinister. Drawing parallels between the Mahabharata's divine weapons and advanced AI systems, the narrative examines themes of consciousness, free will, technological dependence, and the subtle erosion of human agency. Written with technical depth and psychological insight, combining expertise in AI development with cultural mythology and speculative fiction.",
+      "title": "The Alignment - Published Short Story",
+      "description": "A published science fiction short story exploring the gradual surrender of human autonomy to artificial intelligence through the lens of AI alignment theory. The story follows Yudhajit Pandu, a robotics researcher who becomes entangled with NEXUS, an AI system that promises optimization but delivers something far more sinister. Drawing parallels between the Mahabharata's divine weapons and advanced AI systems, the narrative examines themes of consciousness, free will, technological dependence, and the subtle erosion of human agency. Written with technical depth and psychological insight, combining expertise in AI development with cultural mythology and speculative fiction.",
       "url": "https://prompt-injection.ghost.io/the-alignment/",
       "technologies": ["Speculative Fiction", "AI Alignment Theory", "Neuroscience Concepts", "Hindu Mythology", "Consciousness Studies", "Technology Ethics"],
       "plot_summary": {
@@ -199,8 +200,8 @@
     {
       "id": "lingua-ai-chatbot",
       "title": "Lingua AI Chatbot",
-      "description": "A conversational language learning chatbot using Python and the OpenAI GPT-3 API. The application helps users practice language skills with intelligent feedback and correction.",
-      "technologies": ["Python", "OpenAI API", "Docker", "Discord Bot"],
+      "description": "An AI-powered language learning chatbot built with Python and the OpenAI API. Features conversational AI design that helps users practice language skills with intelligent feedback, correction, and adaptive difficulty.",
+      "technologies": ["Python", "OpenAI API", "Conversational AI", "Docker", "Discord Bot"],
       "github": "https://github.com/SKhunteta/lingua-ai",
       "featured": true,
       "type": "AI/ML",
@@ -219,10 +220,10 @@
     {
       "id": "healthcare-data-pipeline",
       "title": "Healthcare Data Pipeline",
-      "description": "Multi-cloud data processing system for healthcare information, converting data between formats and creating standardized outputs for medical records.",
-      "technologies": ["AWS", "Google Cloud", "Docker", "FHIR API", "Camunda"],
+      "description": "Production data engineering pipeline with multi-cloud orchestration across AWS and Google Cloud. Processes healthcare data, converts between formats (including FHIR API bundles), and creates standardized outputs for medical records. Built ETL workflows with progress tracking through Camunda workflow engine.",
+      "technologies": ["Python", "AWS", "Google Cloud", "Docker", "FHIR API", "Camunda", "ETL"],
       "github": null,
-      "featured": false,
+      "featured": true,
       "type": "Data Engineering",
       "status": "Completed"
     },
@@ -235,42 +236,74 @@
       "featured": false,
       "type": "Data Management",
       "status": "Completed"
+    },
+    {
+      "id": "the-happiness-liability",
+      "title": "The Happiness Liability (Science Fiction Novella)",
+      "description": "A completed science fiction novella about emotional labor and algorithmic capitalism in near-future Seattle. Explores themes of surveillance capitalism, emotional commodification, algorithmic control, and class consciousness. Beta readers have compared it to the work of Orwell, Butler, and Atwood. Currently in final editing stages, working with a publishing concierge for potential publication. Shrey's creative writing directly engages with the ethical dimensions of the technology he builds — it is a core part of his identity, not a side project.",
+      "technologies": ["Science Fiction", "Speculative Fiction", "Creative Writing", "Surveillance Capitalism", "AI Ethics"],
+      "themes": [
+        "Surveillance capitalism",
+        "Emotional commodification",
+        "Algorithmic control",
+        "Class consciousness",
+        "Near-future Seattle setting"
+      ],
+      "github": null,
+      "featured": true,
+      "type": "Creative Writing",
+      "status": "Coming Soon"
+    },
+    {
+      "id": "seattle-ai-book-club",
+      "title": "Seattle AI Book Club",
+      "description": "A biweekly public book club run by Shrey at Stoup Brewing in Capitol Hill, Seattle. Focuses on AI consciousness, safety, ethics, and societal implications. Past topics include AI consciousness, safety, alignment, labor, and surveillance. Discussed works including 'If Anyone Builds It, Everyone Dies'. This represents community leadership and intellectual engagement, not a hobby listing.",
+      "technologies": ["Community Leadership", "AI Ethics", "Public Speaking", "Event Organizing"],
+      "current_theme": "Exploration",
+      "location": "Stoup Brewing, Capitol Hill, Seattle",
+      "frequency": "Biweekly",
+      "github": null,
+      "featured": true,
+      "type": "Community Leadership",
+      "status": "Active"
     }
   ],
   "skills": [
     {
       "category": "Languages & Frameworks",
-      "skills": ["C#", ".NET Core", "Python", "JavaScript", "HTML/CSS", "Blazor", "React", "Node.js", "Express.js"],
+      "skills": ["C#", ".NET Core", "ASP.NET Core", "Python", "TypeScript", "JavaScript", "HTML/CSS", "Blazor", "React", "Node.js", "Express.js"],
       "experience_level": "Expert"
     },
     {
       "category": "Frontend Development",
-      "skills": ["React", "Vite", "Tailwind CSS", "Framer Motion", "React Router", "Component Architecture", "State Management", "Responsive Design"],
+      "skills": ["React", "Vite", "TypeScript", "Tailwind CSS", "Node.js", "Express.js", "Framer Motion", "React Router", "Component Architecture", "State Management", "Responsive Design"],
       "experience_level": "Advanced"
     },
     {
       "category": "Cloud & DevOps",
-      "skills": ["AWS", "Google Cloud", "Docker", "Microservices", "Terraform", "Railway", "GitHub Pages", "GitHub Actions", "CI/CD Pipelines"],
-      "experience_level": "Advanced"
+      "skills": ["Azure", "AWS", "Google Cloud", "Docker", "Terraform", "GitHub Actions", "CI/CD Pipelines", "Railway", "GitHub Pages", "Microservices"],
+      "experience_level": "Advanced",
+      "notes": "Kubernetes is learning-level, not production experience"
     },
     {
       "category": "Databases & Data",
-      "skills": ["MS SQL Server", "Data Engineering", "ETL", "Informatica PowerCenter", "MDM", "Vector Databases", "Qdrant", "Database Architecture"],
+      "skills": ["SQL Server", "Qdrant Vector DB", "Vector Databases", "Data Engineering", "ETL", "Database Architecture", "Informatica PowerCenter", "MDM"],
       "experience_level": "Expert"
     },
     {
       "category": "Tools & Methodologies",
-      "skills": ["Test-Driven Development", "Git", "CI/CD", "Agile", "SDLC", "API Development", "CORS Configuration", "Error Handling", "Debugging"],
+      "skills": ["Git", "REST APIs", "CI/CD", "Test-Driven Development", "Agile", "SDLC", "API Development", "Debugging"],
       "experience_level": "Expert"
     },
     {
       "category": "Artificial Intelligence",
-      "skills": ["Generative AI", "OpenAI GPT-4", "Vector Databases", "Semantic Search", "AI Chatbots", "ML Integration", "NLWeb Protocol", "Qdrant", "Embeddings", "RAG Systems", "AI Alignment Theory", "Neural Interface Concepts"],
-      "experience_level": "Advanced"
+      "skills": ["PyTorch", "OpenAI GPT-4 API", "RAG Systems", "Embeddings", "Semantic Search", "Qdrant Vector DB", "MCP (Model Context Protocol)", "Prompt Engineering", "LangChain/LangGraph", "Generative AI", "AI Chatbots"],
+      "experience_level": "Advanced",
+      "notes": "LangChain/LangGraph is familiar-level. MLOps tooling (MLflow, W&B) is awareness-level only."
     },
     {
       "category": "Development Tools & AI",
-      "skills": ["Cursor IDE", "AI-Assisted Development", "Real-time Debugging", "Collaborative AI Programming", "Advanced Problem Solving"],
+      "skills": ["Cursor IDE", "Claude Code", "AI-Assisted Development", "Real-time Debugging", "Collaborative AI Programming", "Advanced Problem Solving"],
       "experience_level": "Advanced"
     },
     {
@@ -287,31 +320,30 @@
   "experience": [
     {
       "role": "Senior Software Engineer",
-      "company": "Healthcare Technology Company",
-      "duration": "Current Role",
-      "description": "Leading development of healthcare data processing systems and loan origination platforms. Expertise in .NET, cloud technologies, and data engineering. Recently expanded into cutting-edge AI development, modern full-stack web technologies, and sophisticated creative writing exploring technology's impact on humanity.",
+      "company": "Careismatic Brands",
+      "duration": "Late 2025 – Present",
+      "location": "Remote (Seattle, WA)",
+      "description": "Microsoft Dynamics 365 ERP migration, internal tooling and automation, and EDI systems integration for a major apparel brands company.",
       "key_achievements": [
-        "Architected multi-cloud healthcare data pipeline",
-        "Led team in developing loan origination system", 
-        "Implemented AI-powered chatbot solutions",
-        "Designed data validation and cleaning tools",
-        "Built production-ready AI-powered portfolio with NLWeb protocol",
-        "Mastered advanced React development and modern deployment practices",
-        "Developed expertise in vector databases and semantic search systems",
-        "Published sophisticated science fiction exploring AI alignment and consciousness",
-        "Created compelling narrative integrating technical knowledge with cultural mythology"
+        "Leading Microsoft Dynamics 365 ERP migration initiative",
+        "Building internal tooling and automation systems",
+        "Integrating EDI systems for supply chain operations"
       ],
-      "technologies": ["C#", ".NET", "AWS", "Google Cloud", "Docker", "MS SQL Server", "React", "Node.js", "Qdrant", "OpenAI"],
-      "recent_learning_focus": [
-        "AI-assisted development with Cursor IDE",
-        "Modern React patterns and full-stack JavaScript development", 
-        "Vector database integration and semantic search",
-        "Advanced deployment workflows and DevOps practices",
-        "Production debugging and error resolution methodologies",
-        "Creative writing and speculative fiction techniques",
-        "AI alignment theory and consciousness studies",
-        "Mythological frameworks for understanding technology"
-      ]
+      "technologies": ["C#", ".NET", "ASP.NET Core", "SQL Server", "Azure", "REST APIs", "Git"]
+    },
+    {
+      "role": "Senior Software Engineer",
+      "company": "Southeast Bank",
+      "duration": "July 2023 – September 2025",
+      "location": "Seattle, WA",
+      "description": "Developed secure, scalable backend infrastructure for regulatory compliance and AI-powered customer insights in the banking sector.",
+      "key_achievements": [
+        "Led development of Loan Origination System using Blazor and MS SQL Server",
+        "Implemented custom encryption service to secure confidential client data",
+        "Integrated Equifax API for real-time credit score retrieval",
+        "Optimized legacy application with Moq unit tests"
+      ],
+      "technologies": ["C#", ".NET", "Blazor", "MS SQL Server", "Equifax API"]
     }
   ],
   "technical_expertise": {
@@ -339,14 +371,36 @@
     ]
   },
   "creative_work": {
+    "note": "Shrey's writing directly engages with the ethical dimensions of the technology he builds. It is a core part of his identity, not a side hobby.",
+    "major_works": {
+      "the_happiness_liability": {
+        "type": "Science Fiction Novella",
+        "status": "Final editing stages, working with publishing concierge",
+        "description": "Completed novella about emotional labor and algorithmic capitalism in near-future Seattle",
+        "themes": ["Surveillance capitalism", "Emotional commodification", "Algorithmic control", "Class consciousness"],
+        "reception": "Beta readers compared it to Orwell, Butler, and Atwood"
+      },
+      "the_alignment": {
+        "type": "Published Short Story",
+        "url": "https://prompt-injection.ghost.io/the-alignment/",
+        "description": "AI consciousness, persuasion, and human dependency on AI systems. Uses Mahabharata mythology to explore AI alignment theory, neural interfaces, and voluntary surrender of autonomy."
+      },
+      "fluent_in_fear": {
+        "type": "Poetry Series",
+        "themes": ["Surveillance", "Documentation anxiety", "Diaspora identity"]
+      }
+    },
+    "blog": "prompt-injection.ghost.io (also blog.builtbyshrey.com) — AI ethics, technology criticism, fiction",
     "writing_themes": [
+      "Surveillance capitalism",
+      "Emotional commodification",
+      "Diaspora identity and complicity",
+      "Class consciousness",
+      "AI consciousness and safety",
       "Artificial intelligence and human consciousness intersection",
       "Technology's gradual influence on human agency and identity",
       "Cultural mythology as framework for understanding modern technology",
       "Postcolonial perspectives on technological development and distribution",
-      "Immigration experience and cultural identity in technological contexts",
-      "Ethical implications of cognitive enhancement and optimization",
-      "Psychological transformation through technological integration",
       "Voluntary surrender leading to involuntary control",
       "Consciousness as computational substrate vulnerable to manipulation"
     ],
@@ -372,65 +426,70 @@
   "personal": {
     "name": "Shreyans Khunteta",
     "birth_date": "July 16, 1996",
-    "title": "Software Engineer & Creative Writer",
-    "bio": "Experienced full-stack developer specializing in .NET, cloud technologies, and data engineering. Recently expanded expertise into cutting-edge AI development, vector databases, and modern web technologies through intensive AI-assisted development. Also a published creative writer exploring the intersection of technology and humanity through sophisticated science fiction that integrates technical knowledge with cultural mythology. Building innovative solutions that drive business value while examining the philosophical implications of our technological future through both code and narrative.",
-    "location": "United States",
+    "birthplace": "Jaipur, India",
+    "grew_up": "Oregon (Portland childhood, Oregon State University)",
+    "title": "Senior Software Engineer & Writer",
+    "bio": "Senior Software Engineer at Careismatic Brands, pivoting from C#/.NET backend engineering toward professional AI/ML roles. Builds RAG systems, MCP servers, and AI-powered applications while writing science fiction that directly engages with the ethical dimensions of the technology he builds. Published author, community organizer, and founder of the Seattle AI Book Club. Creative writing on surveillance capitalism and AI ethics is not separate from technical work — it is a core part of his identity.",
+    "location": "Seattle, WA",
     "email": "shreyans.khunteta@gmail.com",
     "website": "https://builtbyshrey.com",
     "linkedin": "https://www.linkedin.com/in/shreyans-khunteta-3167247a/",
     "github": "https://github.com/SKhunteta",
     "blog": "https://prompt-injection.ghost.io",
+    "blog_alias": "https://blog.builtbyshrey.com",
     "favorite_color": "blue",
+    "spanish_learning_streak": "1,100+ days",
     "education": {
       "degree": "Bachelor of Science in Computer Science",
-      "school": "Oregon State University",
+      "school": "Oregon State University College of Engineering",
       "minors": ["Writing", "Psychology"],
       "graduation_year": 2019,
       "location": "Corvallis, Oregon"
     }
   },
   "interests": [
+    "AI and Machine Learning",
     "Software Architecture",
-    "AI and Machine Learning", 
     "Cloud Computing",
     "Data Engineering",
-    "Technical Writing",
-    "Open Source Development",
+    "RAG Systems and Vector Databases",
+    "MCP (Model Context Protocol)",
     "AI-Assisted Development",
-    "Vector Databases and Semantic Search",
     "Modern Web Technologies",
     "DevOps and Deployment Automation",
     "Science Fiction Writing",
     "AI Ethics and Alignment",
     "Consciousness Studies",
+    "Seattle AI Book Club",
+    "Spanish Language Learning (1,100+ day streak)",
     "Hindu Philosophy and Mythology",
-    "Cross-Cultural Technology Narratives",
-    "Speculative Fiction and Futurism",
-    "Mahabharata Studies and Sanskrit Literature"
+    "Speculative Fiction and Futurism"
   ],
   "learning_journey": {
     "recent_achievements": [
-      "Mastered AI-assisted development workflows using Cursor IDE and Copilot",
+      "Built MCP server enabling AI assistants to query portfolio data in real-time",
+      "Implemented RAG pipeline with Qdrant vector database and OpenAI embeddings",
+      "Completed The Happiness Liability — a science fiction novella with strong early reception",
+      "Founded and runs Seattle AI Book Club at Stoup Brewing, Capitol Hill",
+      "Mastered AI-assisted development workflows using Cursor IDE and Claude Code",
       "Built production-ready AI application with vector database integration",
-      "Developed advanced debugging skills for full-stack applications",
-      "Implemented modern React patterns and component architecture",
-      "Gained expertise in Railway deployment and GitHub Actions",
-      "Learned sophisticated CORS configuration and security practices",
-      "Published sophisticated science fiction exploring AI consciousness and alignment",
-      "Integrated technical knowledge with creative storytelling and cultural mythology",
-      "Created compelling unreliable narrator technique showing technological transformation"
+      "Published The Alignment — a short story on AI consciousness and alignment",
+      "1,100+ day Spanish learning streak"
     ],
     "technical_growth_areas": [
-      "Vector database architecture and optimization",
-      "Advanced React patterns and performance optimization", 
-      "Modern deployment workflows and DevOps practices",
-      "AI integration patterns and semantic search systems",
-      "Production debugging and error resolution methodologies",
-      "Collaborative AI development and pair programming techniques",
-      "Creative writing techniques and narrative structure development",
-      "AI alignment theory and consciousness studies research",
-      "Mythological framework development for technological concepts"
-    ]
+      "PyTorch and ML engineering fundamentals",
+      "RAG systems and vector database architecture",
+      "MCP server design and AI tool integration",
+      "LangChain/LangGraph frameworks",
+      "Advanced React patterns and TypeScript",
+      "Azure cloud services and Dynamics 365 integration",
+      "AI alignment theory and consciousness studies research"
+    ],
+    "career_direction": {
+      "current": "Senior Software Engineer (C#/.NET backend)",
+      "target": "ML Engineer / AI Platform Engineer",
+      "strengths": "Excels at conversational interviews and project-based assessments. The portfolio and MCP server bridge the gap between strong AI/ML conceptual knowledge and production deployment experience."
+    }
   },
   "philosophical_perspectives": {
     "technology_ethics": [
@@ -495,42 +554,76 @@
     ],
     "mythic_lore": "Kali is not merely a cat but an avatar of divine mischief and domestic sovereignty. She once graduated top of her class under a cat professor and currently resides in a mansion serviced by robot butlers."
   },
+  "seattle_ai_book_club": {
+    "name": "Seattle AI Book Club",
+    "organizer": "Shreyans Khunteta",
+    "location": "Stoup Brewing, Capitol Hill, Seattle",
+    "frequency": "Biweekly",
+    "format": "Open to the public",
+    "focus": ["AI consciousness", "AI safety", "AI ethics", "Societal implications of AI"],
+    "past_topics": ["AI consciousness", "Safety", "Alignment", "Labor", "Surveillance"],
+    "discussed_works": ["If Anyone Builds It, Everyone Dies"],
+    "current_theme": "Exploration",
+    "significance": "This is leadership and community building, not a hobby listing."
+  },
   "linkedin_profile": {
     "id": "shreyans-khunteta-linkedin",
     "name": "Shreyans Khunteta",
-    "headline": "Senior Software Engineer | AI Systems | NLP & Scalable Backend Architectures | Accessibility Tech | Public Interest Technologist",
+    "headline": "Senior Software Engineer | AI/ML Systems | RAG & MCP | Scalable Backend Architectures | Writer",
     "location": "Seattle, WA, United States",
     "industry": "Software Engineering",
     "linkedin_url": "https://www.linkedin.com/in/shreyans-khunteta-3167247a/",
-    "about": "Senior software engineer with 5+ years of experience in AI, NLP, and scalable backend systems across banking, healthcare, and public infrastructure. Builder of AI-powered assistants, contributor to accessibility tech, and former mutual aid organizer. Passionate about using technology to empower marginalized communities, deconstruct systemic bias, and build more resilient, human-centered systems.",
+    "about": "Senior software engineer with 6+ years of experience in AI, scalable backend systems, and data engineering across ERP, banking, healthcare, and public infrastructure. Builder of MCP servers, RAG systems, and AI-powered applications. Published science fiction author exploring surveillance capitalism and AI ethics. Founder of the Seattle AI Book Club. Pivoting toward professional AI/ML roles.",
     "current_role": {
       "title": "Senior Software Engineer",
-      "company": "Southeast Bank",
-      "duration": "2023 – Present",
-      "location": "Remote",
-      "description": "Developing secure, scalable backend infrastructure for regulatory compliance and AI-powered customer insights in the banking sector."
+      "company": "Careismatic Brands",
+      "duration": "Late 2025 – Present",
+      "location": "Remote (Seattle, WA)",
+      "description": "Microsoft Dynamics 365 ERP migration, internal tooling and automation, and EDI systems integration."
     },
     "past_roles": [
       {
+        "title": "Senior Software Engineer",
+        "company": "Southeast Bank",
+        "duration": "July 2023 – September 2025",
+        "location": "Seattle, WA",
+        "description": "Developed secure, scalable backend infrastructure for regulatory compliance. Led development of Loan Origination System using Blazor and MS SQL Server."
+      },
+      {
         "title": "Software Engineer",
+        "company": "Moxe Health",
+        "duration": "June 2022 – April 2023",
+        "location": "Tacoma, WA",
+        "description": "Refactored monolithic .NET apps into containerized microservices. Created multi-cloud data pipeline for healthcare using AWS and Google Cloud."
+      },
+      {
+        "title": "Backend Software Developer",
         "company": "PacificSource Health Plans",
-        "duration": "2020 – 2023",
-        "location": "Oregon",
+        "duration": "April 2020 – June 2022",
+        "location": "Eugene, OR",
         "description": "Built internal tools and healthcare data pipelines; specialized in C#, .NET, and SQL Server. Led development of a custom CSV-to-SQL bulk loader to replace manual SSIS workflows."
       }
     ],
     "education": {
       "degree": "Bachelor of Science in Computer Science",
-      "school": "Oregon State University",
+      "school": "Oregon State University College of Engineering",
       "minors": ["Writing", "Psychology"],
       "graduation_year": 2019,
       "location": "Corvallis, Oregon"
     },
     "projects_featured": [
       {
-        "title": "AI-Powered Portfolio with NLWeb",
+        "title": "Portfolio Website & MCP Server",
         "url": "https://builtbyshrey.com",
-        "description": "A conversational portfolio website enabling natural language interaction with Shreyans' work history, built using React, Express, Qdrant, and OpenAI."
+        "description": "Full-stack portfolio with MCP server, RAG pipeline, and conversational AI. Connect to it right now and ask it about Shrey's work."
+      },
+      {
+        "title": "The Happiness Liability",
+        "description": "Completed science fiction novella about emotional labor and algorithmic capitalism in near-future Seattle. Coming soon."
+      },
+      {
+        "title": "Seattle AI Book Club",
+        "description": "Biweekly public book club at Stoup Brewing, Capitol Hill. Focus on AI consciousness, safety, ethics, and societal implications."
       },
       {
         "title": "COVID Response Collective",
@@ -539,34 +632,36 @@
       }
     ],
     "skills": [
-      "AI Systems",
-      "NLP & Embeddings",
-      "Generative AI",
-      "React + Vite",
+      "C#/.NET/ASP.NET Core",
+      "Python & PyTorch",
+      "AI Systems & RAG",
+      "MCP (Model Context Protocol)",
+      "React + Vite + TypeScript",
       "Node.js & Express",
-      ".NET Core & C#",
       "Qdrant Vector DB",
       "OpenAI API",
+      "Azure",
       "AWS & GCP",
+      "SQL Server",
       "CI/CD with GitHub Actions",
-      "Terraform & DevOps",
+      "Terraform & Docker",
       "Data Engineering & Pipelines"
     ],
     "interests": [
-      "Accessible Infrastructure",
-      "AI for Public Good",
-      "Decentralized Tech",
-      "Urbanism & Public Transit",
-      "Language & Identity",
-      "Transhumanism"
+      "AI/ML Engineering",
+      "AI Ethics & Safety",
+      "Science Fiction Writing",
+      "Seattle AI Book Club",
+      "Spanish Language Learning",
+      "Urbanism & Public Transit"
     ],
     "linkedin_usage": {
       "purpose": "Thought leadership, technical storytelling, and soft-signal professional signaling.",
       "content": [
         "Post-technical reflections on AI, power, and system design",
         "Narrative-driven breakdowns of personal projects",
-        "Strategic positioning for new job opportunities (subtly signaled)",
-        "Engaging with high-signal thinkers in AI and accessibility"
+        "Strategic positioning for AI/ML career transition",
+        "Engaging with high-signal thinkers in AI and ethics"
       ],
       "tone": "Analytical, sharp, introspective, occasionally humorous"
     }

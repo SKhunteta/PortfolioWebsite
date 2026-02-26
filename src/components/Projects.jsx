@@ -5,60 +5,81 @@ const Projects = () => {
   const projects = [
     {
       id: 0,
-      title: "AI-Powered Portfolio with NLWeb Protocol",
+      title: "Portfolio Website & MCP Server",
       description:
-        "A cutting-edge portfolio website featuring an intelligent conversational AI interface that understands natural language queries about my professional background. Users can ask questions like 'What AI projects has Shreyans built?' and receive contextually-aware responses powered by OpenAI embeddings and vector similarity search. This full-stack application demonstrates modern AI integration patterns, featuring a React frontend with real-time chat capabilities and an Express.js backend handling semantic search operations through Qdrant vector database.",
+        "A full-stack portfolio platform with a conversational AI interface and a Model Context Protocol (MCP) server that lets AI assistants query portfolio data in real-time. The MCP server is the centerpiece — connect to it right now and ask it about my work. Features a RAG pipeline powered by Qdrant vector database and OpenAI embeddings. Tools: portfolio_search, analyze_portfolio, get_project_details, assess_fit, ask_shrey.",
       technologies: [
         "React",
+        "Vite",
         "Express.js",
-        "OpenAI GPT-4o-mini",
+        "OpenAI GPT-4",
         "Qdrant Vector DB",
+        "MCP",
+        "RAG Pipeline",
         "Tailwind CSS",
         "Railway",
         "GitHub Pages",
         "Node.js",
-        "Vite",
-        "Framer Motion",
         "GitHub Actions",
       ],
       github: "https://github.com/SKhunteta/PortfolioWebsite",
       featured: true,
       highlights: [
-        "Semantic search engine using OpenAI text-embedding-3-small with Qdrant vector database for intelligent query processing",
-        "Production-ready full-stack architecture with Express.js API deployed on Railway and React frontend on GitHub Pages",
-        "Real-time conversational interface with streaming responses and dynamic loading states for enhanced UX",
-        "Environment-aware CORS configuration and API routing supporting seamless development-to-production workflows",
-        "Integrated vector search with context-aware response generation combining retrieval and generative AI patterns",
+        "MCP server with 5 specialized tools enabling AI assistants to query portfolio data in real-time",
+        "RAG pipeline using OpenAI embeddings with Qdrant vector database for intelligent semantic search",
+        "Production full-stack architecture with Express.js on Railway and React frontend on GitHub Pages",
+        "Real-time conversational interface with streaming responses and dynamic loading states",
+        "CI/CD pipeline with GitHub Actions for automated deployments across frontend and backend",
       ],
     },
     {
       id: 1,
+      title: "The Happiness Liability",
+      description:
+        "A completed science fiction novella about emotional labor and algorithmic capitalism in near-future Seattle. Explores surveillance capitalism, emotional commodification, algorithmic control, and class consciousness. Beta readers compared it to Orwell, Butler, and Atwood. In final editing stages, working with a publishing concierge.",
+      technologies: ["Science Fiction", "Speculative Fiction", "Creative Writing"],
+      github: null,
+      featured: true,
+      status: "Coming Soon",
+    },
+    {
+      id: 2,
       title: "Lingua AI Chatbot",
       description:
-        "A conversational language learning chatbot using Python and the OpenAI GPT-3 API. The application helps users practice language skills with intelligent feedback and correction.",
+        "An AI-powered language learning chatbot built with Python and the OpenAI API. Features conversational AI design that helps users practice language skills with intelligent feedback and correction.",
       technologies: ["Python", "OpenAI API", "Docker", "Discord Bot"],
       github: "https://github.com/SKhunteta/lingua-ai",
       featured: true,
       video: "/images/LinguaVideo.MOV",
     },
     {
-      id: 2,
+      id: 3,
+      title: "The Alignment (Published Short Story)",
+      description:
+        "A published science fiction short story exploring AI consciousness, persuasion, and human dependency on AI systems. Uses Mahabharata mythology to explore AI alignment theory and voluntary surrender of autonomy.",
+      technologies: ["Science Fiction", "AI Ethics", "Creative Writing"],
+      github: null,
+      featured: true,
+      url: "https://prompt-injection.ghost.io/the-alignment/",
+    },
+    {
+      id: 4,
+      title: "Healthcare Data Pipeline",
+      description:
+        "Production data engineering pipeline with multi-cloud orchestration across AWS and Google Cloud. Processes healthcare data, converts between formats including FHIR API bundles, with ETL workflows.",
+      technologies: ["Python", "AWS", "Google Cloud", "Docker", "FHIR API", "Camunda"],
+      github: null,
+    },
+    {
+      id: 5,
       title: "Loan Origination System",
       description:
-        "Helped lead the development of a comprehensive system for loan applications and processing using Blazor and MS SQL Server. Implemented secure data handling and credit score API integration.",
+        "Led the development of a comprehensive system for loan applications and processing using Blazor and MS SQL Server. Implemented secure data handling and credit score API integration.",
       technologies: ["Blazor", "C#", ".NET", "MS SQL Server", "Equifax API"],
       github: null,
     },
     {
-      id: 3,
-      title: "Healthcare Data Pipeline",
-      description:
-        "Multi-cloud data processing system for healthcare information, converting data between formats and creating standardized outputs for medical records.",
-      technologies: ["AWS", "Google Cloud", "Docker", "FHIR API", "Camunda"],
-      github: null,
-    },
-    {
-      id: 4,
+      id: 6,
       title: "Provider Data Management Tool",
       description:
         "Internal tool to streamline healthcare provider data management with data validation, cleaning, and standardization capabilities.",
@@ -137,15 +158,22 @@ const Projects = () => {
                       <span>Source Code</span>
                     </a>
                   )}
-                  {/* Only show live demo for projects other than the portfolio itself */}
-                  {featuredProject.id !== 0 && (
+                  {/* Show published link for stories, hide demo for portfolio itself */}
+                  {featuredProject.url && (
                     <a
-                      href="#"
+                      href={featuredProject.url}
+                      target="_blank"
+                      rel="noreferrer"
                       className="flex items-center space-x-2 text-primary hover:text-accent transition-colors"
                     >
                       <FaExternalLinkAlt size={16} />
-                      <span>Live Demo</span>
+                      <span>Read It</span>
                     </a>
+                  )}
+                  {featuredProject.status === "Coming Soon" && (
+                    <span className="text-gray-500 text-sm italic">
+                      Coming Soon
+                    </span>
                   )}
                 </div>
               </div>
