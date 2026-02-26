@@ -3,6 +3,29 @@ import { FaPaperPlane, FaUser, FaMagic } from "react-icons/fa";
 import { API_ENDPOINTS } from "../config/api.js";
 import KaliAvatar from "../../images/Kaliavatar.png";
 
+const MAX_EXCHANGES = 5;
+
+/**
+ * Convert the frontend messages array into the backend's expected format.
+ * Excludes the initial greeting (id === 1) and maps type to role.
+ */
+function buildConversationHistory(messages) {
+  const maxMessages = MAX_EXCHANGES * 2;
+
+  const history = messages
+    .filter((msg) => msg.id !== 1)
+    .map((msg) => ({
+      role: msg.type === "user" ? "user" : "assistant",
+      content: msg.content,
+    }));
+
+  if (history.length > maxMessages) {
+    return history.slice(history.length - maxMessages);
+  }
+
+  return history;
+}
+
 const AIChat = () => {
   const [messages, setMessages] = useState([
     {
@@ -50,8 +73,14 @@ const AIChat = () => {
     }
   };
 
+  // Count user exchanges (excluding the initial AI greeting)
+  const exchangeCount = messages.filter(
+    (msg) => msg.type === "user" && msg.id !== 1
+  ).length;
+  const chatLimitReached = exchangeCount >= MAX_EXCHANGES;
+
   const handleSendMessage = async (message = inputMessage) => {
-    if (!message.trim()) {
+    if (!message.trim() || chatLimitReached) {
       return;
     }
 
@@ -75,7 +104,10 @@ const AIChat = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ question: message.trim() }),
+        body: JSON.stringify({
+          question: message.trim(),
+          conversation_history: buildConversationHistory(messages),
+        }),
       });
 
       const data = await response.json();
@@ -89,7 +121,21 @@ const AIChat = () => {
           responseTime: data.responseTime,
           timestamp: new Date(),
         };
-        setMessages((prev) => [...prev, aiMessage]);
+
+        // Check if this was the last allowed exchange
+        const newExchangeCount = exchangeCount + 1;
+        if (newExchangeCount >= MAX_EXCHANGES) {
+          const signOffMessage = {
+            id: Date.now() + 2,
+            type: "ai",
+            content:
+              "That's all the questions I'll take for now — a queen needs her rest. If you want to keep chatting, refresh the page... or better yet, reach out to my human directly!",
+            timestamp: new Date(),
+          };
+          setMessages((prev) => [...prev, aiMessage, signOffMessage]);
+        } else {
+          setMessages((prev) => [...prev, aiMessage]);
+        }
       } else {
         throw new Error(data.message || "Failed to get response");
       }
@@ -260,13 +306,17 @@ const AIChat = () => {
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask me anything about Shreyans' work or experience..."
+                placeholder={
+                  chatLimitReached
+                    ? "Chat limit reached — refresh to start a new conversation"
+                    : "Ask me anything about Shreyans' work or experience..."
+                }
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                disabled={isLoading}
+                disabled={isLoading || chatLimitReached}
               />
               <button
                 onClick={() => handleSendMessage()}
-                disabled={!inputMessage.trim() || isLoading}
+                disabled={!inputMessage.trim() || isLoading || chatLimitReached}
                 className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FaPaperPlane size={16} />

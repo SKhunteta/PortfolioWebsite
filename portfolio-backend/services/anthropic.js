@@ -31,16 +31,22 @@ class AnthropicService {
    * @param {Object} options - Options object
    * @param {string} options.systemPrompt - Custom system prompt
    * @param {string} options.userQuery - User's question
+   * @param {Array<{role: string, content: string}>} [options.conversationHistory=[]] - Prior conversation turns
    * @returns {Promise<string>} - AI response text
    */
-  async generateMCPResponse({ systemPrompt, userQuery }) {
+  async generateMCPResponse({ systemPrompt, userQuery, conversationHistory = [] }) {
     this._ensureClient();
     try {
+      const messages = [
+        ...conversationHistory,
+        { role: "user", content: userQuery },
+      ];
+
       const response = await this.client.messages.create({
         model: config.anthropic.model,
         max_tokens: config.anthropic.maxTokens,
         system: systemPrompt,
-        messages: [{ role: "user", content: userQuery }],
+        messages,
       });
 
       return response.content[0].text;

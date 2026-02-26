@@ -82,20 +82,24 @@ class OpenAIService {
    * Generate AI response based on context and query
    * @param {string} query - User's question
    * @param {Array} context - Relevant content from vector search
+   * @param {Array<{role: string, content: string}>} [conversationHistory=[]] - Prior conversation turns
    * @returns {Promise<Object>} - AI response with answer and metadata
    */
-  async generateResponse(query, context) {
+  async generateResponse(query, context, conversationHistory = []) {
     try {
       const systemPrompt = this.buildSystemPrompt();
       const contextText = this.buildContextText(context);
       const userPrompt = this.buildUserPrompt(query, contextText);
 
+      const messages = [
+        { role: "system", content: systemPrompt },
+        ...conversationHistory,
+        { role: "user", content: userPrompt },
+      ];
+
       const response = await this.client.chat.completions.create({
         model: config.openai.model,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
+        messages,
         max_tokens: config.openai.maxTokens,
         temperature: config.openai.temperature,
       });

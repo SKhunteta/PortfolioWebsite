@@ -6,6 +6,7 @@ import { z } from "zod";
 import AnthropicService from "../services/anthropic.js";
 import OpenAIService from "../services/openai.js";
 import QdrantService from "../services/qdrant.js";
+import { sanitizeConversationHistory } from "../utils/conversation.js";
 
 const router = express.Router();
 
@@ -293,16 +294,29 @@ Be specific and reference actual projects, roles, and skills from the context. D
   // ---- Tool 5: ask_shrey (NEW) ----
   server.tool(
     "ask_shrey",
-    "Ask Shreyans a question -- searches across all portfolio content (projects, writing, experience, interests) and responds as if Shrey were answering, grounded in his actual work and perspectives.",
+    "Ask Shreyans a question -- searches across all portfolio content (projects, writing, experience, interests) and responds as if Shrey were answering, grounded in his actual work and perspectives. Supports multi-turn conversation via optional conversation_history.",
     {
       question: z.string().describe("The question to ask Shreyans"),
+      conversation_history: z
+        .array(
+          z.object({
+            role: z.enum(["user", "assistant"]),
+            content: z.string(),
+          })
+        )
+        .optional()
+        .describe(
+          "Previous conversation turns for multi-turn context. Array of {role, content} objects. Limited to last 5 exchanges."
+        ),
     },
-    async ({ question }) => {
+    async ({ question, conversation_history }) => {
       try {
         // Broad vector search across ALL content types
         const queryEmbedding =
           await OpenAIService.generateEmbedding(question);
         const searchResults = await QdrantService.search(queryEmbedding, 8);
+
+        const history = sanitizeConversationHistory(conversation_history);
 
         const systemPrompt = `You are responding on behalf of Shreyans Khunteta, drawing from his actual portfolio, projects, writing, and documented perspectives.
 
@@ -320,6 +334,7 @@ Guidelines:
         const answer = await AnthropicService.generateMCPResponse({
           systemPrompt,
           userQuery: userPrompt,
+          conversationHistory: history,
         });
 
         return {

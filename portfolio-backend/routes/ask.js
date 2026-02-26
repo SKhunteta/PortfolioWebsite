@@ -5,6 +5,7 @@ import IndexerService from "../services/indexer.js";
 import { config } from "../config/index.js";
 import { v4 as uuidv4 } from "uuid";
 import setup from "../setup.js";
+import { sanitizeConversationHistory } from "../utils/conversation.js";
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.use((req, res, next) => {
  */
 router.post("/", async (req, res) => {
   try {
-    const { question, context } = req.body;
+    const { question, context, conversation_history } = req.body;
 
     if (!question) {
       return res.status(400).json({
@@ -29,7 +30,9 @@ router.post("/", async (req, res) => {
       });
     }
 
-    console.log(`🤖 Question received: "${question}"`);
+    const history = sanitizeConversationHistory(conversation_history);
+
+    console.log(`🤖 Question received: "${question}" (history: ${history.length} messages)`);
 
     // Generate embedding for the question
     const questionEmbedding = await OpenAIService.generateEmbedding(question);
@@ -40,7 +43,8 @@ router.post("/", async (req, res) => {
     // Generate AI response
     const aiResponse = await OpenAIService.generateResponse(
       question,
-      searchResults
+      searchResults,
+      history
     );
 
     // Calculate response time
