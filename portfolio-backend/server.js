@@ -8,6 +8,7 @@ import dotenv from "dotenv";
 import askRoute from "./routes/ask.js";
 import schemaRoute from "./routes/schema.js";
 import mcpConnectorRoute from "./routes/mcp-connector.js";
+import portfolioRoute from "./routes/portfolio.js";
 
 // Service imports
 import QdrantService from "./services/qdrant.js";
@@ -105,6 +106,12 @@ const corsOptions = {
       return callback(null, true);
     }
 
+    // Allow OpenAI / ChatGPT for REST API Actions
+    if (origin.includes("openai.com") || origin.includes("chatgpt.com")) {
+      console.log("Allowing OpenAI/ChatGPT origin for REST API:", origin);
+      return callback(null, true);
+    }
+
     // Production and specific allowed origins
     const allowedOrigins = [
       process.env.FRONTEND_URL || "http://localhost:5173",
@@ -154,9 +161,41 @@ app.get("/health", (req, res) => {
   });
 });
 
+// Well-known MCP discovery endpoint
+app.get("/.well-known/mcp.json", (req, res) => {
+  const baseUrl =
+    process.env.NODE_ENV === "production"
+      ? "https://backend.builtbyshrey.com"
+      : `http://localhost:${process.env.PORT || 3001}`;
+
+  res.json({
+    name: "shreyans-portfolio-mcp",
+    version: "2.0.0",
+    description:
+      "Shreyans Khunteta's AI-powered portfolio intelligence server",
+    protocolVersion: "2025-03-26",
+    endpoints: {
+      mcp: `${baseUrl}/api/mcp-connector`,
+      rest: `${baseUrl}/api/portfolio`,
+      openapi: `${baseUrl}/api/portfolio/openapi.json`,
+    },
+    transport: "streamable-http",
+    capabilities: {
+      tools: [
+        "portfolio_search",
+        "analyze_portfolio",
+        "get_project_details",
+        "assess_fit",
+        "ask_shrey",
+      ],
+    },
+  });
+});
+
 // API routes
 app.use("/api/ask", askRoute);
 app.use("/api/schema", schemaRoute);
+app.use("/api/portfolio", portfolioRoute);
 app.use("/api/mcp-connector", mcpConnectorRoute);
 
 // 404 handler
@@ -184,6 +223,9 @@ app.listen(PORT, async () => {
   console.log(`🚀 Portfolio Backend running on port ${PORT}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/health`);
   console.log(`🧠 Ask endpoint: http://localhost:${PORT}/api/ask`);
+  console.log(`📡 REST API: http://localhost:${PORT}/api/portfolio`);
+  console.log(`📋 OpenAPI spec: http://localhost:${PORT}/api/portfolio/openapi.json`);
+  console.log(`🔍 MCP discovery: http://localhost:${PORT}/.well-known/mcp.json`);
 
   // Run auto-setup check
   await checkAndRunSetup();
