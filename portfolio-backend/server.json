@@ -1,0 +1,12 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
+  "name": "io.github.skhunteta/portfolio-mcp",
+  "description": "AI-powered portfolio intelligence server for Shreyans Khunteta. Semantic search across projects, skills, experience. Candidate fit assessment.",
+  "version": "2.0.0",
+  "remotes": [
+    {
+      "transport_type": "streamable-http",
+      "url": "https://backend.builtbyshrey.com/api/mcp-connector"
+    }
+  ]
+}
