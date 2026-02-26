@@ -4,36 +4,30 @@ const Skills = () => {
   const skillCategories = [
     {
       category: "Languages & Frameworks",
-      skills: ["C#", ".NET Core", "Python", "JavaScript", "HTML/CSS", "Blazor"],
+      skills: ["C#", ".NET / ASP.NET Core", "Python", "TypeScript", "JavaScript", "Blazor"],
+    },
+    {
+      category: "Frontend Development",
+      skills: ["React", "Vite", "TypeScript", "Tailwind CSS", "Node.js", "Express.js"],
     },
     {
       category: "Cloud & DevOps",
-      skills: ["AWS", "Google Cloud", "Docker", "Microservices", "Terraform"],
+      skills: ["Azure", "AWS", "Google Cloud", "Docker", "Terraform", "GitHub Actions"],
     },
     {
       category: "Databases & Data",
       skills: [
-        "MS SQL Server",
+        "SQL Server",
+        "Qdrant Vector DB",
         "Data Engineering",
         "ETL",
-        "Informatica PowerCenter",
-        "MDM",
-      ],
-    },
-    {
-      category: "Tools & Methodologies",
-      skills: [
-        "Test-Driven Development",
-        "Git",
-        "CI/CD",
-        "Agile",
-        "SDLC",
-        "API Development",
+        "REST APIs",
+        "Database Architecture",
       ],
     },
     {
       category: "Artificial Intelligence",
-      skills: ["Generative AI", "OpenAI GPT", "AI Chatbots", "ML Integration"],
+      skills: ["PyTorch", "RAG Systems", "OpenAI GPT-4", "Embeddings", "MCP", "Prompt Engineering"],
     },
   ];
 

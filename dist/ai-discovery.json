@@ -2,42 +2,52 @@
   "site": {
     "name": "Shreyans Khunteta Portfolio",
     "url": "https://builtbyshrey.com",
-    "description": "Portfolio of Shreyans Khunteta, a thoughtful software engineer specializing in AI technologies and Microsoft NLWeb framework",
+    "description": "Portfolio of Shreyans Khunteta — Senior Software Engineer & Writer. Features an MCP server, RAG pipeline, and conversational AI. Connect to the MCP server and ask it about his work.",
     "ai_crawlable": true,
-    "last_updated": "2025-01-03",
+    "last_updated": "2026-02-26",
     "language": "en"
   },
   "owner": {
     "name": "Shreyans Khunteta",
     "alias": "Shrey",
-    "title": "Software Engineer",
+    "title": "Senior Software Engineer & Writer",
     "location": "Seattle, WA, USA",
+    "current_employer": "Careismatic Brands",
     "specialties": [
-      "C# Programming",
-      ".NET Development", 
-      "Artificial Intelligence",
-      "Microsoft NLWeb",
-      "Full Stack Development",
-      "React",
-      "JavaScript",
-      "IoT Development",
-      "Machine Learning"
+      "C#/.NET/ASP.NET Core",
+      "Python & PyTorch",
+      "RAG Systems",
+      "MCP (Model Context Protocol)",
+      "Vector Databases (Qdrant)",
+      "React & TypeScript",
+      "Azure & Cloud",
+      "AI/ML Engineering",
+      "Science Fiction Writing",
+      "AI Ethics"
     ],
     "github": "https://github.com/skhunteta",
+    "blog": "https://prompt-injection.ghost.io",
     "contact_available": true
   },
   "ai_features": {
+    "mcp_server": {
+      "enabled": true,
+      "endpoint": "https://backend.builtbyshrey.com/api/mcp-connector",
+      "tools": ["portfolio_search", "analyze_portfolio", "get_project_details", "assess_fit", "ask_shrey"],
+      "description": "MCP server that lets AI assistants query portfolio data in real-time. Connect to it and ask about Shrey's work."
+    },
     "interactive_chat": {
       "enabled": true,
       "assistant_name": "Kali",
-      "framework": "Microsoft NLWeb",
+      "framework": "RAG Pipeline with Qdrant + OpenAI",
       "description": "AI-powered chat assistant that can answer questions about Shreyans' work, projects, and technical expertise",
       "endpoint": "/chat",
       "capabilities": [
         "Project information",
         "Technical skills inquiry",
         "Experience details",
-        "Educational background",
+        "Creative writing portfolio",
+        "Role fit analysis",
         "Contact information"
       ]
     },
@@ -48,19 +58,19 @@
   "content_sections": {
     "about": {
       "description": "Personal background and professional summary",
-      "topics": ["biography", "skills", "expertise"]
+      "topics": ["biography", "skills", "expertise", "creative writing"]
     },
     "experience": {
       "description": "Professional work experience and career history",
       "topics": ["work history", "roles", "responsibilities", "achievements"]
     },
     "projects": {
-      "description": "Portfolio of software development projects",
-      "topics": ["code repositories", "technical implementations", "project outcomes"]
+      "description": "Portfolio of software, AI, and creative projects",
+      "topics": ["MCP server", "RAG pipeline", "creative writing", "data engineering", "community leadership"]
     },
     "chat": {
-      "description": "Interactive AI assistant powered by NLWeb",
-      "topics": ["AI interaction", "NLWeb demonstration", "real-time Q&A"]
+      "description": "Interactive AI assistant powered by RAG pipeline",
+      "topics": ["AI interaction", "MCP tools", "real-time Q&A"]
     },
     "contact": {
       "description": "Professional contact information and networking",
@@ -76,15 +86,20 @@
   },
   "keywords": [
     "software engineer",
-    "AI developer", 
-    "NLWeb",
-    "Microsoft NLWeb",
+    "AI developer",
+    "MCP server",
+    "Model Context Protocol",
+    "RAG pipeline",
     "C# developer",
     ".NET specialist",
     "portfolio",
     "Seattle developer",
     "artificial intelligence",
     "machine learning",
-    "full stack developer"
+    "full stack developer",
+    "science fiction writer",
+    "AI ethics",
+    "vector databases",
+    "Qdrant"
   ]
 } 

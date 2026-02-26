@@ -37,29 +37,28 @@ const About = () => {
 
           <div className="space-y-3 text-secondary">
             <p>
-              I am a Senior Software Engineer with a deep interest in AI,
-              backend development, and data engineering.
+              I am a Senior Software Engineer pivoting toward AI/ML, with deep
+              experience in backend development, data engineering, and building
+              AI-powered applications.
             </p>
             <p>
-              I thrive on solving complex problems, creating value, and driving
-              impactful solutions. My professional journey has spanned diverse
-              domains, including financial technology, healthcare, and nonprofit
-              leadership, where I've consistently delivered innovative,
-              reliable, and scalable systems.
+              My professional journey has spanned ERP systems, financial
+              technology, healthcare, and nonprofit leadership. I build RAG
+              systems, MCP servers, and production AI applications while writing
+              science fiction that engages with the ethical dimensions of the
+              technology I build.
             </p>
             <p>
-              Currently, I work on the development of a Loan Origination System
-              at Southeast Bank, building dynamic Blazor-based applications
-              integrated with MS SQL Server. I've implemented custom encryption
-              services to ensure data security and compliance while automating
-              credit review workflows through API integrations.
+              Currently at Careismatic Brands, I work on Microsoft Dynamics 365
+              ERP migration, internal tooling, and EDI systems integration.
+              Outside work, I built this portfolio's MCP server — connect to it
+              right now and ask it about my work.
             </p>
             <p>
-              Beyond my technical expertise, I am passionate about using
-              technology to drive societal impact. As the founder of the COVID
-              Response Collective, I led a nonprofit mutual aid network that
-              supported communities through innovative logistics and
-              technology-driven collaboration.
+              I also run the Seattle AI Book Club at Stoup Brewing in Capitol
+              Hill, founded the COVID Response Collective during the pandemic,
+              and am completing a science fiction novella about algorithmic
+              capitalism in near-future Seattle.
             </p>
           </div>
         </div>
