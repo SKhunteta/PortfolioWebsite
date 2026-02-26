@@ -197,7 +197,7 @@ const Projects = () => {
                   <div className="w-full h-full bg-gradient-to-br from-primary/10 via-accent/10 to-primary/20 flex items-center justify-center">
                     <div className="text-center p-6">
                       <div className="text-4xl mb-4">
-                        {featuredProject.status === "Coming Soon" ? "📖" : featuredProject.url ? "✍️" : "🚀"}
+                        {featuredProject.status === "Coming Soon" ? "📖" : featuredProject.url ? "✍️" : ">"}
                       </div>
                     </div>
                   </div>
