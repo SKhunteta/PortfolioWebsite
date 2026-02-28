@@ -101,7 +101,7 @@ export default function useAtlasState() {
         }
         return next;
       });
-    }, 7000);
+    }, 9000);
 
     return () => {
       if (journeyTimerRef.current) {
