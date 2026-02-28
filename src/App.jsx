@@ -11,8 +11,6 @@ import Footer from "./components/Footer";
 import ChatSection from "./components/ChatSection";
 import EmotionalLaborExchange from "./components/EmotionalLaborExchange";
 import ELETeaser from "./components/ELETeaser";
-import AaronWestAtlasTeaser from "./components/AaronWestAtlasTeaser";
-
 const AaronWestAtlas = lazy(() => import("./components/AaronWestAtlas"));
 
 function App() {
@@ -61,9 +59,6 @@ function App() {
                 </div>
                 <div className="bg-gray-light py-8">
                   <ELETeaser />
-                </div>
-                <div className="bg-white py-8">
-                  <AaronWestAtlasTeaser />
                 </div>
                 <div className="bg-gray-light py-8">
                   <Contact />
