@@ -7,7 +7,7 @@ const router = express.Router();
 // In-memory cache for market data (avoids repeated slow API calls)
 let cachedResponse = null;
 let cachedAt = 0;
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 const SYSTEM_PROMPT = `You are the pricing engine for the Emotional Labor Exchange (ELE), a fictional futures market where human emotions are traded as commodities. This is inspired by "The Happiness Liability," a novella about emotional labor and algorithmic capitalism.
 
