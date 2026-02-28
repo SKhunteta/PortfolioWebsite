@@ -55,9 +55,9 @@ const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, can
       <div className="flex items-center justify-between pt-4 border-t border-atlas-border">
         <button
           onClick={() => onNavigate(-1)}
-          disabled={journeyActive || !canNavigatePrev}
+          disabled={!canNavigatePrev}
           className={`text-sm font-sans font-semibold px-4 py-2.5 rounded-lg transition-all duration-150 ${
-            journeyActive || !canNavigatePrev
+            !canNavigatePrev
               ? "text-atlas-border bg-transparent cursor-not-allowed"
               : "text-white bg-atlas-text shadow-md hover:opacity-80 active:scale-95 cursor-pointer"
           }`}
@@ -69,9 +69,9 @@ const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, can
         </span>
         <button
           onClick={() => onNavigate(1)}
-          disabled={journeyActive || !canNavigateNext}
+          disabled={!canNavigateNext}
           className={`text-sm font-sans font-semibold px-4 py-2.5 rounded-lg transition-all duration-150 ${
-            journeyActive || !canNavigateNext
+            !canNavigateNext
               ? "text-atlas-border bg-transparent cursor-not-allowed"
               : "text-white bg-atlas-text shadow-md hover:opacity-80 active:scale-95 cursor-pointer"
           }`}
