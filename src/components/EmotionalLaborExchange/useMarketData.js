@@ -29,6 +29,8 @@ export default function useMarketData() {
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
 
+  const hasData = useRef(!!cached.current);
+
   // Shared fetch logic. When `silent` is true the existing UI stays untouched
   // until new data arrives (no loading spinner, no error flash).
   const fetchMarketData = useCallback(async (silent = false) => {
@@ -61,6 +63,7 @@ export default function useMarketData() {
       setMarketData(data);
       setLastUpdate(new Date());
       writeCache(data);
+      hasData.current = true;
 
       // Append new prices to history
       setPriceHistory((prev) => {
@@ -104,12 +107,19 @@ export default function useMarketData() {
     };
   }, [fetchMarketData]);
 
+  // Manual refresh: silent when we already have data so failures never
+  // flash "Exchange Temporarily Closed" over a perfectly good screen.
+  const refreshMarket = useCallback(
+    () => fetchMarketData(hasData.current),
+    [fetchMarketData],
+  );
+
   return {
     marketData,
     priceHistory,
     loading,
     error,
     lastUpdate,
-    refreshMarket: fetchMarketData,
+    refreshMarket,
   };
 }

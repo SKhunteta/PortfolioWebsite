@@ -136,6 +136,10 @@ router.post("/market-data", async (req, res) => {
         "ELE: Could not parse JSON from response. Block types:",
         response.content.map((b) => b.type)
       );
+      if (cachedResponse) {
+        console.log("📊 ELE: Parse failed, serving stale cache");
+        return res.json(cachedResponse);
+      }
       return res.status(500).json({
         error: "Failed to parse market data",
         message: "The pricing engine returned data in an unexpected format.",
@@ -144,6 +148,10 @@ router.post("/market-data", async (req, res) => {
 
     // Validate structure
     if (!jsonData.emotions || typeof jsonData.emotions !== "object") {
+      if (cachedResponse) {
+        console.log("📊 ELE: Invalid structure, serving stale cache");
+        return res.json(cachedResponse);
+      }
       return res.status(500).json({
         error: "Invalid market data structure",
         message: "Response missing required emotions data.",
@@ -165,6 +173,12 @@ router.post("/market-data", async (req, res) => {
     res.json(payload);
   } catch (error) {
     console.error("ELE API Error:", error.message || error);
+
+    // If we have any previous data, serve it instead of an error
+    if (cachedResponse) {
+      console.log("📊 ELE: API call failed, serving stale cache");
+      return res.json(cachedResponse);
+    }
 
     if (error.status === 429) {
       return res.status(429).json({
