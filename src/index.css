@@ -12,6 +12,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fix Tailwind preflight breaking Leaflet tile images */
+.leaflet-container img {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
