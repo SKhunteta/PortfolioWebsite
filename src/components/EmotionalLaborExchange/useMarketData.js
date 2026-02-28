@@ -1,12 +1,29 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { API_ENDPOINTS } from "../../config/api";
 
 const MAX_HISTORY = 12;
+const CACHE_KEY = "ele_market_cache";
+
+function readCache() {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(data) {
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
+  } catch { /* quota exceeded — ignore */ }
+}
 
 export default function useMarketData() {
-  const [marketData, setMarketData] = useState(null);
+  const cached = useRef(readCache());
+  const [marketData, setMarketData] = useState(cached.current);
   const [priceHistory, setPriceHistory] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cached.current);
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
 
@@ -37,6 +54,7 @@ export default function useMarketData() {
       const data = result.data;
       setMarketData(data);
       setLastUpdate(new Date());
+      writeCache(data);
 
       // Append new prices to history
       setPriceHistory((prev) => {

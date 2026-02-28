@@ -4,6 +4,11 @@ import { config } from "../config/index.js";
 
 const router = express.Router();
 
+// In-memory cache for market data (avoids repeated slow API calls)
+let cachedResponse = null;
+let cachedAt = 0;
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 const SYSTEM_PROMPT = `You are the pricing engine for the Emotional Labor Exchange (ELE), a fictional futures market where human emotions are traded as commodities. This is inspired by "The Happiness Liability," a novella about emotional labor and algorithmic capitalism.
 
 In this world, emotional laborers wear neural interfaces that stream their authentic feelings to AI systems. Emotions trade on futures markets. You analyze real breaking news to determine current market prices.
@@ -49,6 +54,12 @@ The "change" field is the dollar change since the previous close. Signal is BUY,
  */
 router.post("/market-data", async (req, res) => {
   try {
+    // Serve cached data if fresh enough
+    if (cachedResponse && Date.now() - cachedAt < CACHE_TTL_MS) {
+      console.log("📊 ELE: Serving cached market data");
+      return res.json(cachedResponse);
+    }
+
     if (!config.anthropic.apiKey) {
       return res.status(500).json({
         error: "API key not configured",
@@ -141,11 +152,17 @@ router.post("/market-data", async (req, res) => {
 
     console.log("📊 ELE: Market data fetched successfully");
 
-    res.json({
+    const payload = {
       success: true,
       data: jsonData,
       fetchedAt: new Date().toISOString(),
-    });
+    };
+
+    // Cache the successful response
+    cachedResponse = payload;
+    cachedAt = Date.now();
+
+    res.json(payload);
   } catch (error) {
     console.error("ELE API Error:", error.message || error);
 
