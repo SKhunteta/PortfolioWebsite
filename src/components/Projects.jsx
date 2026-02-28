@@ -64,27 +64,6 @@ const Projects = () => {
       url: "https://prompt-injection.ghost.io/the-alignment/",
     },
     {
-      id: 7,
-      title: "The Aaron West Lyric Atlas",
-      description:
-        "An interactive map plotting every geographic reference across the Aaron West & The Roaring Twenties discography — 41 locations across three albums, one EP, and one single. Features album-filtered pins, lyric cards with narrative context, and a 'Play the Journey' mode that animates through all stops chronologically, drawing Aaron's route across America and the UK.",
-      technologies: [
-        "React",
-        "Leaflet.js",
-        "React-Leaflet",
-        "Framer Motion",
-        "Tailwind CSS",
-      ],
-      github: null,
-      featured: true,
-      highlights: [
-        "Interactive Leaflet map with 41 color-coded pins across 5 album releases",
-        "'Play the Journey' animation with map flyTo transitions and connecting polyline",
-        "Responsive sidebar (desktop) / bottom sheet (mobile) with lyric cards and narrative navigation",
-      ],
-      url: "/aaron-west-atlas",
-    },
-    {
       id: 4,
       title: "Healthcare Data Pipeline",
       description:
