@@ -56,24 +56,24 @@ const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, can
         <button
           onClick={() => onNavigate(-1)}
           disabled={journeyActive || !canNavigatePrev}
-          className={`text-sm font-sans px-3 py-1.5 rounded-md transition-all duration-150 ${
+          className={`text-sm font-sans font-medium px-4 py-2 rounded-lg transition-all duration-150 border ${
             journeyActive || !canNavigatePrev
-              ? "text-atlas-text-muted opacity-40 cursor-not-allowed"
-              : "text-atlas-text-secondary hover:text-atlas-text hover:bg-atlas-border/60 active:scale-95 cursor-pointer"
+              ? "text-atlas-text-muted/50 border-atlas-border/50 bg-transparent cursor-not-allowed"
+              : "text-atlas-text border-atlas-text/20 bg-white shadow-sm hover:bg-atlas-text hover:text-white hover:border-atlas-text active:scale-95 cursor-pointer"
           }`}
         >
-          &larr; Previous
+          &larr; Prev
         </button>
         <span className="text-xs text-atlas-text-muted font-sans">
-          Stop {location.narrativeOrder} of {totalLocations}
+          {location.narrativeOrder} / {totalLocations}
         </span>
         <button
           onClick={() => onNavigate(1)}
           disabled={journeyActive || !canNavigateNext}
-          className={`text-sm font-sans px-3 py-1.5 rounded-md transition-all duration-150 ${
+          className={`text-sm font-sans font-medium px-4 py-2 rounded-lg transition-all duration-150 border ${
             journeyActive || !canNavigateNext
-              ? "text-atlas-text-muted opacity-40 cursor-not-allowed"
-              : "text-atlas-text-secondary hover:text-atlas-text hover:bg-atlas-border/60 active:scale-95 cursor-pointer"
+              ? "text-atlas-text-muted/50 border-atlas-border/50 bg-transparent cursor-not-allowed"
+              : "text-atlas-text border-atlas-text/20 bg-white shadow-sm hover:bg-atlas-text hover:text-white hover:border-atlas-text active:scale-95 cursor-pointer"
           }`}
         >
           Next &rarr;
