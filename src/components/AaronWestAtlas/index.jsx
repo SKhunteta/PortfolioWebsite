@@ -33,6 +33,8 @@ const AaronWestAtlas = () => {
               onNavigate={atlas.navigateLocation}
               journeyActive={atlas.journeyActive}
               totalLocations={atlas.totalLocations}
+              canNavigatePrev={atlas.canNavigatePrev}
+              canNavigateNext={atlas.canNavigateNext}
             />
           </div>
           <JourneyControls
@@ -77,6 +79,8 @@ const AaronWestAtlas = () => {
         onClose={atlas.clearSelection}
         journeyActive={atlas.journeyActive}
         totalLocations={atlas.totalLocations}
+        canNavigatePrev={atlas.canNavigatePrev}
+        canNavigateNext={atlas.canNavigateNext}
       />
 
       <TimelineBar

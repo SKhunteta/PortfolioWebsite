@@ -2,7 +2,7 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ALBUMS } from "./constants";
 
-const LyricContent = ({ location, onNavigate, journeyActive, totalLocations }) => {
+const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, canNavigatePrev, canNavigateNext }) => {
   const album = ALBUMS[location.album];
 
   return (
@@ -55,8 +55,12 @@ const LyricContent = ({ location, onNavigate, journeyActive, totalLocations }) =
       <div className="flex items-center justify-between pt-4 border-t border-atlas-border">
         <button
           onClick={() => onNavigate(-1)}
-          disabled={journeyActive}
-          className="text-sm text-atlas-text-secondary hover:text-atlas-text disabled:opacity-30 transition-colors font-sans"
+          disabled={journeyActive || !canNavigatePrev}
+          className={`text-sm font-sans px-3 py-1.5 rounded-md transition-all duration-150 ${
+            journeyActive || !canNavigatePrev
+              ? "text-atlas-text-muted opacity-40 cursor-not-allowed"
+              : "text-atlas-text-secondary hover:text-atlas-text hover:bg-atlas-border/60 active:scale-95 cursor-pointer"
+          }`}
         >
           &larr; Previous
         </button>
@@ -65,8 +69,12 @@ const LyricContent = ({ location, onNavigate, journeyActive, totalLocations }) =
         </span>
         <button
           onClick={() => onNavigate(1)}
-          disabled={journeyActive}
-          className="text-sm text-atlas-text-secondary hover:text-atlas-text disabled:opacity-30 transition-colors font-sans"
+          disabled={journeyActive || !canNavigateNext}
+          className={`text-sm font-sans px-3 py-1.5 rounded-md transition-all duration-150 ${
+            journeyActive || !canNavigateNext
+              ? "text-atlas-text-muted opacity-40 cursor-not-allowed"
+              : "text-atlas-text-secondary hover:text-atlas-text hover:bg-atlas-border/60 active:scale-95 cursor-pointer"
+          }`}
         >
           Next &rarr;
         </button>
@@ -88,7 +96,7 @@ const EmptyState = () => (
 );
 
 // Desktop sidebar version
-export const DesktopSidebar = ({ location, onNavigate, journeyActive, totalLocations }) => {
+export const DesktopSidebar = ({ location, onNavigate, journeyActive, totalLocations, canNavigatePrev, canNavigateNext }) => {
   if (!location) return <EmptyState />;
   return (
     <LyricContent
@@ -96,12 +104,14 @@ export const DesktopSidebar = ({ location, onNavigate, journeyActive, totalLocat
       onNavigate={onNavigate}
       journeyActive={journeyActive}
       totalLocations={totalLocations}
+      canNavigatePrev={canNavigatePrev}
+      canNavigateNext={canNavigateNext}
     />
   );
 };
 
 // Mobile bottom sheet version
-export const MobileBottomSheet = ({ location, onNavigate, onClose, journeyActive, totalLocations }) => {
+export const MobileBottomSheet = ({ location, onNavigate, onClose, journeyActive, totalLocations, canNavigatePrev, canNavigateNext }) => {
   return (
     <AnimatePresence>
       {location && (
@@ -125,6 +135,8 @@ export const MobileBottomSheet = ({ location, onNavigate, onClose, journeyActive
             onNavigate={onNavigate}
             journeyActive={journeyActive}
             totalLocations={totalLocations}
+            canNavigatePrev={canNavigatePrev}
+            canNavigateNext={canNavigateNext}
           />
         </motion.div>
       )}
