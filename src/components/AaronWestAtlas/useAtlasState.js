@@ -114,6 +114,10 @@ export default function useAtlasState() {
     activeAlbums.has(loc.album)
   );
 
+  const currentSortedIndex = selectedLocation
+    ? sorted.findIndex((l) => l.id === selectedLocation.id)
+    : -1;
+
   return {
     selectedLocation,
     selectLocation,
@@ -131,5 +135,7 @@ export default function useAtlasState() {
     mapRef,
     totalLocations: LOCATIONS.length,
     sortedLocations: sorted,
+    canNavigatePrev: currentSortedIndex > 0,
+    canNavigateNext: currentSortedIndex >= 0 && currentSortedIndex < sorted.length - 1,
   };
 }
