@@ -60,6 +60,30 @@ export const EMOTION_ORDER = [
   "outrage",
 ];
 
+// Static seed data so the page renders instantly on first visit.
+// Silently replaced by live API data once it arrives.
+export const FALLBACK_MARKET_DATA = {
+  emotions: {
+    joy:     { price: 42.10, change:  2.80, signal: "BUY",  reason: "mild optimism in consumer sentiment surveys" },
+    grief:   { price: 61.50, change:  4.20, signal: "HOLD", reason: "steady institutional demand from therapy networks" },
+    rage:    { price: 18.30, change: -1.40, signal: "SELL", reason: "outrage fatigue after prolonged news cycle" },
+    hope:    { price: 29.70, change: -5.10, signal: "SELL", reason: "oversupply — too many feel-good headlines at once" },
+    anxiety: { price: 78.90, change:  9.60, signal: "BUY",  reason: "uncertainty premium on mixed economic signals" },
+    empathy: { price: 52.40, change:  1.00, signal: "HOLD", reason: "stable futures, locked-in care-industry contracts" },
+    apathy:  { price:  8.20, change: -0.50, signal: "SELL", reason: "hard to stay indifferent in the current climate" },
+    outrage: { price: 31.60, change:  6.30, signal: "BUY",  reason: "social media amplification keeping demand elevated" },
+  },
+  headlines: [
+    { text: "Markets waver as investors parse mixed jobs data",          emotion: "anxiety", impact: "up"   },
+    { text: "Community rallies around local disaster relief effort",     emotion: "empathy", impact: "up"   },
+    { text: "Tech layoffs continue amid restructuring wave",            emotion: "grief",   impact: "up"   },
+    { text: "Viral social media post reignites policy debate",          emotion: "outrage", impact: "up"   },
+    { text: "Scientists announce promising breakthrough in renewables", emotion: "hope",    impact: "down" },
+  ],
+  market_mood: "A sideways session — traders hedging on uncertainty while the algorithms wait for a catalyst.",
+  volatility_index: 58,
+};
+
 export function getSignalStyle(signal) {
   switch (signal?.toUpperCase()) {
     case "BUY":

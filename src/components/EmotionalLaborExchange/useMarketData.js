@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { API_ENDPOINTS } from "../../config/api";
+import { FALLBACK_MARKET_DATA } from "./constants";
 
 const MAX_HISTORY = 12;
 const CACHE_KEY = "ele_market_cache";
@@ -22,14 +23,15 @@ function writeCache(data) {
 }
 
 export default function useMarketData() {
-  const cached = useRef(readCache());
-  const [marketData, setMarketData] = useState(cached.current);
+  // Instant data: sessionStorage cache → hardcoded fallback. Never null.
+  const initial = useRef(readCache() || FALLBACK_MARKET_DATA);
+  const [marketData, setMarketData] = useState(initial.current);
   const [priceHistory, setPriceHistory] = useState({});
-  const [loading, setLoading] = useState(!cached.current);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
 
-  const hasData = useRef(!!cached.current);
+  const hasData = useRef(true);
 
   // Shared fetch logic. When `silent` is true the existing UI stays untouched
   // until new data arrives (no loading spinner, no error flash).
@@ -86,9 +88,9 @@ export default function useMarketData() {
     }
   }, []);
 
-  // Initial fetch on mount
+  // Initial fetch on mount — always silent since we have data from the start
   useEffect(() => {
-    fetchMarketData();
+    fetchMarketData(true);
   }, [fetchMarketData]);
 
   // Background refresh: 20s after mount, then every 10 minutes
