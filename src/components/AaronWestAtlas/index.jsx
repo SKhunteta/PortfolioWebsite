@@ -24,9 +24,9 @@ const AaronWestAtlas = () => {
       />
 
       {/* Main content: Map + Sidebar */}
-      <div className="flex-1 flex flex-col lg:flex-row relative" style={{ minHeight: "60vh" }}>
+      <div className="flex-1 flex flex-col lg:flex-row relative overflow-hidden" style={{ height: "calc(100vh - 160px)" }}>
         {/* Desktop sidebar */}
-        <div className="hidden lg:flex lg:flex-col w-96 border-r border-atlas-border overflow-y-auto bg-atlas-bg">
+        <div className="hidden lg:flex lg:flex-col w-96 shrink-0 border-r border-atlas-border bg-atlas-bg">
           <div className="flex-1 overflow-y-auto">
             <DesktopSidebar
               location={atlas.selectedLocation}
@@ -45,7 +45,7 @@ const AaronWestAtlas = () => {
         </div>
 
         {/* Map */}
-        <div className="flex-1 relative" style={{ minHeight: "400px" }}>
+        <div className="flex-1 relative h-full">
           <AtlasMap
             selectedLocation={atlas.selectedLocation}
             activeAlbums={atlas.activeAlbums}
@@ -71,13 +71,15 @@ const AaronWestAtlas = () => {
       </div>
 
       {/* Mobile bottom sheet */}
-      <MobileBottomSheet
-        location={atlas.selectedLocation}
-        onNavigate={atlas.navigateLocation}
-        onClose={atlas.clearSelection}
-        journeyActive={atlas.journeyActive}
-        totalLocations={atlas.totalLocations}
-      />
+      <div className="lg:hidden">
+        <MobileBottomSheet
+          location={atlas.selectedLocation}
+          onNavigate={atlas.navigateLocation}
+          onClose={atlas.clearSelection}
+          journeyActive={atlas.journeyActive}
+          totalLocations={atlas.totalLocations}
+        />
+      </div>
 
       <TimelineBar
         selectedLocation={atlas.selectedLocation}

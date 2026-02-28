@@ -31,7 +31,7 @@ const AtlasMap = ({
       zoom={config.zoom}
       minZoom={config.minZoom}
       maxZoom={config.maxZoom}
-      className="w-full h-full z-0"
+      style={{ width: "100%", height: "100%", minHeight: "400px" }}
       zoomControl={true}
       scrollWheelZoom={true}
     >
