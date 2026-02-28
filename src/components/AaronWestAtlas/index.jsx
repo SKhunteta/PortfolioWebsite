@@ -24,9 +24,9 @@ const AaronWestAtlas = () => {
       />
 
       {/* Main content: Map + Sidebar */}
-      <div className="flex-1 flex flex-col lg:flex-row relative overflow-hidden" style={{ height: "calc(100vh - 160px)" }}>
+      <div className="lg:flex lg:flex-row" style={{ height: "calc(100vh - 110px)" }}>
         {/* Desktop sidebar */}
-        <div className="hidden lg:flex lg:flex-col w-96 shrink-0 border-r border-atlas-border bg-atlas-bg">
+        <div className="hidden lg:flex lg:flex-col w-96 shrink-0 border-r border-atlas-border bg-atlas-bg h-full">
           <div className="flex-1 overflow-y-auto">
             <DesktopSidebar
               location={atlas.selectedLocation}
@@ -45,8 +45,7 @@ const AaronWestAtlas = () => {
         </div>
 
         {/* Map */}
-        <div className="flex-1 relative">
-          <div className="absolute inset-0">
+        <div className="relative lg:flex-1" style={{ height: "calc(100vh - 110px)" }}>
           <AtlasMap
             selectedLocation={atlas.selectedLocation}
             activeAlbums={atlas.activeAlbums}
@@ -55,7 +54,6 @@ const AaronWestAtlas = () => {
             mapRef={atlas.mapRef}
             config={MAP_CONFIG}
           />
-          </div>
 
           {/* Mobile journey controls - floating overlay */}
           <div className="lg:hidden absolute bottom-4 left-4 right-4 z-[999]">
