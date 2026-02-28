@@ -11,14 +11,26 @@ export default function useAtlasState() {
   const [journeyPath, setJourneyPath] = useState([]);
   const journeyTimerRef = useRef(null);
   const mapRef = useRef(null);
+  const selectedLocationRef = useRef(null);
+
+  // Keep ref in sync so navigateLocation always has the latest value
+  useEffect(() => {
+    selectedLocationRef.current = selectedLocation;
+  }, [selectedLocation]);
+
+  const flyTo = useCallback((lat, lng, zoom = 10) => {
+    if (mapRef.current) {
+      mapRef.current.flyTo([lat, lng], zoom, { duration: 1.5 });
+    }
+  }, []);
 
   const selectLocation = useCallback((locationId) => {
     const loc = LOCATIONS.find((l) => l.id === locationId) || null;
     setSelectedLocation(loc);
-    if (loc && mapRef.current) {
-      mapRef.current.flyTo([loc.lat, loc.lng], 10, { duration: 1.5 });
+    if (loc) {
+      flyTo(loc.lat, loc.lng, 10);
     }
-  }, []);
+  }, [flyTo]);
 
   const clearSelection = useCallback(() => {
     setSelectedLocation(null);
@@ -42,19 +54,18 @@ export default function useAtlasState() {
 
   const navigateLocation = useCallback(
     (direction) => {
-      if (!selectedLocation) {
+      const current = selectedLocationRef.current;
+      if (!current) {
         selectLocation(sorted[0].id);
         return;
       }
-      const currentIdx = sorted.findIndex(
-        (l) => l.id === selectedLocation.id
-      );
+      const currentIdx = sorted.findIndex((l) => l.id === current.id);
       const nextIdx = currentIdx + direction;
       if (nextIdx >= 0 && nextIdx < sorted.length) {
         selectLocation(sorted[nextIdx].id);
       }
     },
-    [selectedLocation, selectLocation]
+    [selectLocation]
   );
 
   const stopJourney = useCallback(() => {

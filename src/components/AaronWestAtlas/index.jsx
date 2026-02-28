@@ -45,7 +45,8 @@ const AaronWestAtlas = () => {
         </div>
 
         {/* Map */}
-        <div className="flex-1 relative h-full">
+        <div className="flex-1 relative">
+          <div className="absolute inset-0">
           <AtlasMap
             selectedLocation={atlas.selectedLocation}
             activeAlbums={atlas.activeAlbums}
@@ -54,6 +55,7 @@ const AaronWestAtlas = () => {
             mapRef={atlas.mapRef}
             config={MAP_CONFIG}
           />
+          </div>
 
           {/* Mobile journey controls - floating overlay */}
           <div className="lg:hidden absolute bottom-4 left-4 right-4 z-[999]">
