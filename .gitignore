@@ -23,6 +23,7 @@ build/
 # Cache
 .cache/
 .npm/
+portfolio-backend/data/ele-cache.json
 
 # Vector database data
 qdrant_data/

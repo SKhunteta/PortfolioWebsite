@@ -1,13 +1,33 @@
 import express from "express";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import Anthropic from "@anthropic-ai/sdk";
 import { config } from "../config/index.js";
 
 const router = express.Router();
 
+// Persistent cache file — survives server restarts
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const CACHE_FILE = path.join(__dirname, "..", "data", "ele-cache.json");
+
 // In-memory cache for market data (avoids repeated slow API calls)
 let cachedResponse = null;
 let cachedAt = 0;
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+
+// Seed in-memory cache from disk on startup
+try {
+  const raw = fs.readFileSync(CACHE_FILE, "utf-8");
+  const persisted = JSON.parse(raw);
+  if (persisted?.success && persisted?.data?.emotions) {
+    cachedResponse = persisted;
+    cachedAt = persisted.persistedAt ? new Date(persisted.persistedAt).getTime() : 0;
+    console.log("📊 ELE: Loaded cached market data from disk");
+  }
+} catch {
+  // No cache file yet — first run
+}
 
 const SYSTEM_PROMPT = `You are the pricing engine for the Emotional Labor Exchange (ELE), a fictional futures market where human emotions are traded as commodities. This is inspired by "The Happiness Liability," a novella about emotional labor and algorithmic capitalism.
 
@@ -172,9 +192,14 @@ router.post("/market-data", async (req, res) => {
       fetchedAt: new Date().toISOString(),
     };
 
-    // Cache the successful response
+    // Cache the successful response (memory + disk)
     cachedResponse = payload;
     cachedAt = Date.now();
+    fs.writeFile(
+      CACHE_FILE,
+      JSON.stringify({ ...payload, persistedAt: new Date().toISOString() }),
+      () => {},
+    );
 
     res.json(payload);
   } catch (error) {
