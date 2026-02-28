@@ -110,7 +110,7 @@ export const MobileBottomSheet = ({ location, onNavigate, onClose, journeyActive
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="fixed bottom-0 left-0 right-0 bg-atlas-bg border-t border-atlas-border rounded-t-2xl shadow-custom-2xl z-[1001] max-h-[60vh] overflow-y-auto"
+          className="fixed bottom-0 left-0 right-0 bg-atlas-bg border-t border-atlas-border rounded-t-2xl shadow-custom-2xl z-[1001] max-h-[40vh] overflow-y-auto"
         >
           {/* Drag handle */}
           <div className="flex justify-center py-2 sticky top-0 bg-atlas-bg rounded-t-2xl">
