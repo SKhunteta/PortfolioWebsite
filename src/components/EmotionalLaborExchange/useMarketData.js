@@ -3,6 +3,8 @@ import { API_ENDPOINTS } from "../../config/api";
 
 const MAX_HISTORY = 12;
 const CACHE_KEY = "ele_market_cache";
+const INITIAL_REFRESH_MS = 20 * 1000; // first background refresh after 20s
+const INTERVAL_REFRESH_MS = 10 * 60 * 1000; // then every 10 minutes
 
 function readCache() {
   try {
@@ -27,9 +29,13 @@ export default function useMarketData() {
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
 
-  const fetchMarketData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  // Shared fetch logic. When `silent` is true the existing UI stays untouched
+  // until new data arrives (no loading spinner, no error flash).
+  const fetchMarketData = useCallback(async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
 
     try {
       const response = await fetch(API_ENDPOINTS.ele, {
@@ -67,15 +73,35 @@ export default function useMarketData() {
         }
         return updated;
       });
+
+      if (!silent) setError(null);
     } catch (err) {
-      setError(err.message);
+      // Silent fetches fail quietly — don't disturb what's on screen
+      if (!silent) setError(err.message);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
+  // Initial fetch on mount
   useEffect(() => {
     fetchMarketData();
+  }, [fetchMarketData]);
+
+  // Background refresh: 20s after mount, then every 10 minutes
+  useEffect(() => {
+    const initialTimer = setTimeout(() => {
+      fetchMarketData(true);
+    }, INITIAL_REFRESH_MS);
+
+    const interval = setInterval(() => {
+      fetchMarketData(true);
+    }, INTERVAL_REFRESH_MS);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
   }, [fetchMarketData]);
 
   return {
