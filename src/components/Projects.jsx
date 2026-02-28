@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { FaGithub, FaExternalLinkAlt } from "react-icons/fa";
 
 const Projects = () => {
@@ -61,6 +62,27 @@ const Projects = () => {
       github: null,
       featured: true,
       url: "https://prompt-injection.ghost.io/the-alignment/",
+    },
+    {
+      id: 7,
+      title: "The Aaron West Lyric Atlas",
+      description:
+        "An interactive map plotting every geographic reference across the Aaron West & The Roaring Twenties discography — 41 locations across three albums, one EP, and one single. Features album-filtered pins, lyric cards with narrative context, and a 'Play the Journey' mode that animates through all stops chronologically, drawing Aaron's route across America and the UK.",
+      technologies: [
+        "React",
+        "Leaflet.js",
+        "React-Leaflet",
+        "Framer Motion",
+        "Tailwind CSS",
+      ],
+      github: null,
+      featured: true,
+      highlights: [
+        "Interactive Leaflet map with 41 color-coded pins across 5 album releases",
+        "'Play the Journey' animation with map flyTo transitions and connecting polyline",
+        "Responsive sidebar (desktop) / bottom sheet (mobile) with lyric cards and narrative navigation",
+      ],
+      url: "/aaron-west-atlas",
     },
     {
       id: 4,
@@ -158,18 +180,27 @@ const Projects = () => {
                       <span>Source Code</span>
                     </a>
                   )}
-                  {/* Show published link for stories, hide demo for portfolio itself */}
-                  {featuredProject.url && (
-                    <a
-                      href={featuredProject.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center space-x-2 text-primary hover:text-accent transition-colors"
-                    >
-                      <FaExternalLinkAlt size={16} />
-                      <span>Read It</span>
-                    </a>
-                  )}
+                  {/* Show published link for stories or internal link for projects */}
+                  {featuredProject.url &&
+                    (featuredProject.url.startsWith("/") ? (
+                      <Link
+                        to={featuredProject.url}
+                        className="flex items-center space-x-2 text-primary hover:text-accent transition-colors"
+                      >
+                        <FaExternalLinkAlt size={16} />
+                        <span>Explore It</span>
+                      </Link>
+                    ) : (
+                      <a
+                        href={featuredProject.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center space-x-2 text-primary hover:text-accent transition-colors"
+                      >
+                        <FaExternalLinkAlt size={16} />
+                        <span>Read It</span>
+                      </a>
+                    ))}
                   {featuredProject.status === "Coming Soon" && (
                     <span className="text-gray-500 text-sm italic">
                       Coming Soon

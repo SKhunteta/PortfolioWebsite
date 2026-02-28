@@ -30,6 +30,17 @@ export default {
         "ele-outrage": "#DC2626",
         "ele-up": "#059669",
         "ele-down": "#DC2626",
+        // Atlas (Aaron West Lyric Atlas)
+        "atlas-bg": "#FAF6F0",
+        "atlas-text": "#2C2C2C",
+        "atlas-text-secondary": "#6B6358",
+        "atlas-text-muted": "#9A9189",
+        "atlas-border": "#E6DFD6",
+        "atlas-steel": "#2D5F8A",
+        "atlas-brown": "#8B6E4E",
+        "atlas-green": "#4A7C59",
+        "atlas-amber": "#D4813B",
+        "atlas-purple": "#7B4B6A",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
@@ -37,6 +48,7 @@ export default {
         serif: ['"DM Serif Display"', "Georgia", "serif"],
         mono: ['"JetBrains Mono"', "monospace"],
         "sans-ele": ['"DM Sans"', "system-ui", "sans-serif"],
+        "serif-atlas": ['"Libre Baskerville"', "Georgia", "serif"],
       },
       boxShadow: {
         custom: "0 4px 6px rgba(0, 0, 0, 0.1)",

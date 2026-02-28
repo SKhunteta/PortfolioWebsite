@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar";
 import Hero from "./components/Hero";
@@ -11,12 +11,31 @@ import Footer from "./components/Footer";
 import ChatSection from "./components/ChatSection";
 import EmotionalLaborExchange from "./components/EmotionalLaborExchange";
 import ELETeaser from "./components/ELETeaser";
+import AaronWestAtlasTeaser from "./components/AaronWestAtlasTeaser";
+
+const AaronWestAtlas = lazy(() => import("./components/AaronWestAtlas"));
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/ele" element={<EmotionalLaborExchange />} />
+        <Route
+          path="/aaron-west-atlas"
+          element={
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center bg-[#FAF6F0]">
+                  <p className="text-[#9A9189] italic" style={{ fontFamily: '"Libre Baskerville", Georgia, serif' }}>
+                    Loading the atlas...
+                  </p>
+                </div>
+              }
+            >
+              <AaronWestAtlas />
+            </Suspense>
+          }
+        />
         <Route
           path="/"
           element={
@@ -42,6 +61,9 @@ function App() {
                 </div>
                 <div className="bg-gray-light py-8">
                   <ELETeaser />
+                </div>
+                <div className="bg-white py-8">
+                  <AaronWestAtlasTeaser />
                 </div>
                 <div className="bg-gray-light py-8">
                   <Contact />
