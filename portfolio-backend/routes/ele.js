@@ -97,44 +97,50 @@ router.post("/market-data", async (req, res) => {
     // We need the text block with our JSON.
     let jsonData = null;
 
+    // Helper: try every strategy to extract JSON from a string
+    function tryParseJSON(text) {
+      const trimmed = text.trim();
+      // 1. Direct parse
+      try { return JSON.parse(trimmed); } catch { /* continue */ }
+      // 2. Strip markdown code fences
+      const fenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (fenceMatch) {
+        try { return JSON.parse(fenceMatch[1].trim()); } catch { /* continue */ }
+      }
+      // 3. Extract outermost { … }
+      const objectMatch = trimmed.match(/\{[\s\S]*\}/);
+      if (objectMatch) {
+        try { return JSON.parse(objectMatch[0]); } catch { /* continue */ }
+      }
+      return null;
+    }
+
+    // Try each text block individually
     for (const block of response.content) {
       if (block.type === "text") {
-        const text = block.text.trim();
-
-        // Try direct JSON parse
-        try {
-          jsonData = JSON.parse(text);
-          break;
-        } catch {
-          // Try stripping markdown code fences
-          const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-          if (fenceMatch) {
-            try {
-              jsonData = JSON.parse(fenceMatch[1].trim());
-              break;
-            } catch {
-              // continue
-            }
-          }
-
-          // Try extracting outermost JSON object
-          const objectMatch = text.match(/\{[\s\S]*\}/);
-          if (objectMatch) {
-            try {
-              jsonData = JSON.parse(objectMatch[0]);
-              break;
-            } catch {
-              // continue
-            }
-          }
-        }
+        jsonData = tryParseJSON(block.text);
+        if (jsonData) break;
       }
     }
 
+    // Fallback: concatenate ALL text blocks and try again
+    // (handles cases where the model's JSON is split across blocks)
     if (!jsonData) {
+      const allText = response.content
+        .filter((b) => b.type === "text")
+        .map((b) => b.text)
+        .join("");
+      if (allText) jsonData = tryParseJSON(allText);
+    }
+
+    if (!jsonData) {
+      const textBlocks = response.content
+        .filter((b) => b.type === "text")
+        .map((b) => b.text.slice(0, 200));
       console.error(
-        "ELE: Could not parse JSON from response. Block types:",
-        response.content.map((b) => b.type)
+        "ELE: Could not parse JSON from response.",
+        "Block types:", response.content.map((b) => b.type),
+        "Text previews:", textBlocks,
       );
       if (cachedResponse) {
         console.log("📊 ELE: Parse failed, serving stale cache");
