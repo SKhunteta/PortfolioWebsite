@@ -26,7 +26,7 @@ const JourneyControls = ({
           </div>
           <button
             onClick={onStop}
-            className="w-full px-4 py-2.5 rounded-md text-sm font-sans font-medium border border-atlas-text text-atlas-text hover:bg-atlas-text hover:text-atlas-bg transition-colors"
+            className="w-full px-4 py-2.5 rounded-lg text-sm font-sans font-semibold bg-atlas-text text-white shadow-md hover:opacity-80 active:scale-95 transition-all duration-150 cursor-pointer"
           >
             Stop Journey
           </button>
@@ -34,7 +34,7 @@ const JourneyControls = ({
       ) : (
         <button
           onClick={onStart}
-          className="w-full px-4 py-2.5 rounded-md text-sm font-sans font-medium bg-atlas-text text-atlas-bg hover:bg-atlas-text/90 transition-colors"
+          className="w-full px-4 py-2.5 rounded-lg text-sm font-sans font-semibold bg-atlas-text text-white shadow-md hover:opacity-80 active:scale-95 transition-all duration-150 cursor-pointer"
         >
           Play the Journey
         </button>
