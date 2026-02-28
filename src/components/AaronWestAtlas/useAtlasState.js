@@ -52,9 +52,20 @@ export default function useAtlasState() {
       const nextIdx = currentIdx + direction;
       if (nextIdx >= 0 && nextIdx < sorted.length) {
         selectLocation(sorted[nextIdx].id);
+        // Sync journey state so auto-advance continues from the new position
+        if (journeyActive) {
+          if (journeyTimerRef.current) {
+            clearTimeout(journeyTimerRef.current);
+            journeyTimerRef.current = null;
+          }
+          setJourneyIndex(nextIdx);
+          setJourneyPath(
+            sorted.slice(0, nextIdx + 1).map((l) => [l.lat, l.lng])
+          );
+        }
       }
     },
-    [selectedLocation, selectLocation]
+    [selectedLocation, selectLocation, journeyActive]
   );
 
   const stopJourney = useCallback(() => {

@@ -55,25 +55,25 @@ const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, can
       <div className="flex items-center justify-between pt-4 border-t border-atlas-border">
         <button
           onClick={() => onNavigate(-1)}
-          disabled={journeyActive || !canNavigatePrev}
-          className={`text-sm font-sans px-3 py-1.5 rounded-md transition-all duration-150 ${
-            journeyActive || !canNavigatePrev
-              ? "text-atlas-text-muted opacity-40 cursor-not-allowed"
-              : "text-atlas-text-secondary hover:text-atlas-text hover:bg-atlas-border/60 active:scale-95 cursor-pointer"
+          disabled={!canNavigatePrev}
+          className={`text-sm font-sans font-semibold px-4 py-2.5 rounded-lg transition-all duration-150 ${
+            !canNavigatePrev
+              ? "text-atlas-border bg-transparent cursor-not-allowed"
+              : "text-white bg-atlas-text shadow-md hover:opacity-80 active:scale-95 cursor-pointer"
           }`}
         >
-          &larr; Previous
+          &larr; Prev
         </button>
         <span className="text-xs text-atlas-text-muted font-sans">
-          Stop {location.narrativeOrder} of {totalLocations}
+          {location.narrativeOrder} / {totalLocations}
         </span>
         <button
           onClick={() => onNavigate(1)}
-          disabled={journeyActive || !canNavigateNext}
-          className={`text-sm font-sans px-3 py-1.5 rounded-md transition-all duration-150 ${
-            journeyActive || !canNavigateNext
-              ? "text-atlas-text-muted opacity-40 cursor-not-allowed"
-              : "text-atlas-text-secondary hover:text-atlas-text hover:bg-atlas-border/60 active:scale-95 cursor-pointer"
+          disabled={!canNavigateNext}
+          className={`text-sm font-sans font-semibold px-4 py-2.5 rounded-lg transition-all duration-150 ${
+            !canNavigateNext
+              ? "text-atlas-border bg-transparent cursor-not-allowed"
+              : "text-white bg-atlas-text shadow-md hover:opacity-80 active:scale-95 cursor-pointer"
           }`}
         >
           Next &rarr;
