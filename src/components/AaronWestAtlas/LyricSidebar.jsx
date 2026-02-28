@@ -56,10 +56,10 @@ const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, can
         <button
           onClick={() => onNavigate(-1)}
           disabled={journeyActive || !canNavigatePrev}
-          className={`text-sm font-sans font-medium px-4 py-2 rounded-lg transition-all duration-150 border ${
+          className={`text-sm font-sans font-semibold px-4 py-2.5 rounded-lg transition-all duration-150 ${
             journeyActive || !canNavigatePrev
-              ? "text-atlas-text-muted/50 border-atlas-border/50 bg-transparent cursor-not-allowed"
-              : "text-atlas-text border-atlas-text/20 bg-white shadow-sm hover:bg-atlas-text hover:text-white hover:border-atlas-text active:scale-95 cursor-pointer"
+              ? "text-atlas-border bg-transparent cursor-not-allowed"
+              : "text-white bg-atlas-text shadow-md hover:opacity-80 active:scale-95 cursor-pointer"
           }`}
         >
           &larr; Prev
@@ -70,10 +70,10 @@ const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, can
         <button
           onClick={() => onNavigate(1)}
           disabled={journeyActive || !canNavigateNext}
-          className={`text-sm font-sans font-medium px-4 py-2 rounded-lg transition-all duration-150 border ${
+          className={`text-sm font-sans font-semibold px-4 py-2.5 rounded-lg transition-all duration-150 ${
             journeyActive || !canNavigateNext
-              ? "text-atlas-text-muted/50 border-atlas-border/50 bg-transparent cursor-not-allowed"
-              : "text-atlas-text border-atlas-text/20 bg-white shadow-sm hover:bg-atlas-text hover:text-white hover:border-atlas-text active:scale-95 cursor-pointer"
+              ? "text-atlas-border bg-transparent cursor-not-allowed"
+              : "text-white bg-atlas-text shadow-md hover:opacity-80 active:scale-95 cursor-pointer"
           }`}
         >
           Next &rarr;
