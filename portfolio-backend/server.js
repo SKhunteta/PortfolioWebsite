@@ -9,6 +9,7 @@ import askRoute from "./routes/ask.js";
 import schemaRoute from "./routes/schema.js";
 import mcpConnectorRoute from "./routes/mcp-connector.js";
 import portfolioRoute from "./routes/portfolio.js";
+import eleRoute from "./routes/ele.js";
 
 // Service imports
 import QdrantService from "./services/qdrant.js";
@@ -197,6 +198,7 @@ app.use("/api/ask", askRoute);
 app.use("/api/schema", schemaRoute);
 app.use("/api/portfolio", portfolioRoute);
 app.use("/api/mcp-connector", mcpConnectorRoute);
+app.use("/api/ele", eleRoute);
 
 // 404 handler
 app.use((req, res) => {

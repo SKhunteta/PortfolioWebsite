@@ -14,10 +14,29 @@ export default {
         "gray-light": "#EDF2F7",
         "bg-gradient-start": "#D6EAF8",
         "bg-gradient-end": "#FFFFFF",
+        "ele-bg": "#FAF8F5",
+        "ele-surface": "#FFFFFF",
+        "ele-text": "#1A1A1A",
+        "ele-text-secondary": "#6B6B6B",
+        "ele-text-tertiary": "#9A9A9A",
+        "ele-border": "#E8E4DF",
+        "ele-joy": "#F59E0B",
+        "ele-grief": "#3B82F6",
+        "ele-rage": "#EF4444",
+        "ele-hope": "#10B981",
+        "ele-anxiety": "#F97316",
+        "ele-empathy": "#8B5CF6",
+        "ele-apathy": "#9CA3AF",
+        "ele-outrage": "#DC2626",
+        "ele-up": "#059669",
+        "ele-down": "#DC2626",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
         display: ["Poppins", "sans-serif"],
+        serif: ['"DM Serif Display"', "Georgia", "serif"],
+        mono: ['"JetBrains Mono"', "monospace"],
+        "sans-ele": ['"DM Sans"', "system-ui", "sans-serif"],
       },
       boxShadow: {
         custom: "0 4px 6px rgba(0, 0, 0, 0.1)",
@@ -35,8 +54,13 @@ export default {
           "reveal-left 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards",
         "reveal-right":
           "reveal-right 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "ticker-scroll": "ticker-scroll 40s linear infinite",
       },
       keyframes: {
+        "ticker-scroll": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
         blob: {
           "0%": {
             transform: "translate(0px, 0px) scale(1)",
