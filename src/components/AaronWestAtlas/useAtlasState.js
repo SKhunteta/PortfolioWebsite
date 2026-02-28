@@ -82,6 +82,10 @@ export default function useAtlasState() {
   useEffect(() => {
     if (!journeyActive) return;
 
+    // Mobile bottom sheet requires scrolling; give extra reading time
+    const isMobile = window.matchMedia("(max-width: 1023px)").matches;
+    const delay = isMobile ? 11000 : 7000;
+
     journeyTimerRef.current = setTimeout(() => {
       setJourneyIndex((prev) => {
         const next = prev + 1;
@@ -101,7 +105,7 @@ export default function useAtlasState() {
         }
         return next;
       });
-    }, 7000);
+    }, delay);
 
     return () => {
       if (journeyTimerRef.current) {
