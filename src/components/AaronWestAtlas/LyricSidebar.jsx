@@ -85,23 +85,10 @@ const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, can
         </p>
       )}
 
-      {/* Spotify — link in compact, embed in full */}
-      {compact ? (
-        trackId && (
-          <a
-            href={`https://open.spotify.com/track/${trackId}`}
-            target="_blank"
-            rel="noreferrer"
-            className="text-xs text-atlas-text-muted hover:text-atlas-text transition-colors font-sans inline-flex items-center gap-1"
-          >
-            Listen on Spotify &rarr;
-          </a>
-        )
-      ) : (
-        <div className="pt-1">
-          <SpotifyPlayer trackId={trackId} />
-        </div>
-      )}
+      {/* Spotify Player */}
+      <div className={compact ? "" : "pt-1"}>
+        <SpotifyPlayer trackId={trackId} />
+      </div>
 
       {/* Navigation */}
       <div className={`flex items-center justify-between ${compact ? "pt-2" : "pt-4"} border-t border-atlas-border`}>
