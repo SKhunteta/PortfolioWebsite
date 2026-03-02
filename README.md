@@ -1,4 +1,4 @@
-# 🚀 Shreyans Khunteta - Portfolio Website
+# Shreyans Khunteta - Portfolio Website
 
 <!-- Trigger deployment 2025-05-23 -->
 

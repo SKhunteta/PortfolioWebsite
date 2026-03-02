@@ -50,7 +50,7 @@ const Contact = () => {
               </p>
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-start">
-                  <span className="text-xl mr-3">🚀</span>
+                  <span className="text-xl mr-3">💡</span>
                   <span>New projects or collaborations</span>
                 </li>
                 <li className="flex items-start">

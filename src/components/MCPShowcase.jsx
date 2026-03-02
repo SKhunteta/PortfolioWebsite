@@ -5,7 +5,7 @@ const MCPShowcase = () => {
   return (
     <div id="mcp" className="section-container py-12 md:py-16">
       <div className="text-center mb-12">
-        <h2 className="section-title mx-auto">🚀 Claude MCP Connector Ready</h2>
+        <h2 className="section-title mx-auto">Claude MCP Connector Ready</h2>
         <p className="section-subtitle">
           Connect Claude directly to my portfolio using Anthropic's MCP
           Connector
