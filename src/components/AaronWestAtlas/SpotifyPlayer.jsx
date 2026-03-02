@@ -46,6 +46,7 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
   const wantsAutoPlayRef = useRef(false);
   const observerRef = useRef(null);
   const [loading, setLoading] = useState(true);
+  const [trackLoading, setTrackLoading] = useState(false);
   const [failed, setFailed] = useState(false);
 
   const tryPlay = useCallback(() => {
@@ -118,17 +119,25 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
           controllerRef.current = controller;
           currentTrackRef.current = trackId;
           setLoading(false);
+          setTrackLoading(true);
 
           controller.addListener("playback_update", (e) => {
-            const { isPaused, isBuffering, position } = e.data;
+            const { isPaused, isBuffering, position, duration } = e.data;
 
-            // Event-driven autoplay: when the embed reports a paused,
-            // non-buffering state and we want to autoplay, trigger play.
-            // This is the reliable mechanism that replaces the old fixed
-            // 300ms timeout — it waits for Spotify to signal the track
-            // is actually loaded before attempting playback.
+            // A track is genuinely ready when the embed reports a
+            // positive duration and is not buffering — duration > 0
+            // confirms the track metadata has loaded.
+            const trackReady = duration > 0 && !isBuffering;
+
+            if (trackReady) {
+              setTrackLoading(false);
+            }
+
+            // Event-driven autoplay: when the track is ready and paused,
+            // trigger play. This replaces the old premature timeout
+            // approach — it waits for Spotify to truly finish loading.
             if (wantsAutoPlayRef.current) {
-              if (isPaused && !isBuffering) {
+              if (trackReady && isPaused) {
                 tryPlay();
               }
               if (!isPaused) {
@@ -137,9 +146,9 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
             }
 
             // User-pause detection: only flag as user-paused when we are
-            // NOT in the middle of an autoplay attempt and the track has
-            // progressed past the start
-            if (isPaused && !isBuffering && position > 0 && !wantsAutoPlayRef.current) {
+            // NOT in the middle of an autoplay attempt, the track is
+            // ready, and playback has progressed past the start
+            if (isPaused && trackReady && position > 0 && !wantsAutoPlayRef.current) {
               userPausedRef.current = true;
             }
             if (!isPaused) {
@@ -147,12 +156,9 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
             }
           });
 
-          // If autoplay was requested while controller was initializing,
-          // make an optimistic first attempt — the listener above will
-          // keep retrying on subsequent playback_update events
-          if (wantsAutoPlayRef.current) {
-            setTimeout(tryPlay, 200);
-          }
+          // wantsAutoPlayRef is already set if autoplay was requested
+          // while controller was initializing — the playback_update
+          // listener will handle it once the track is ready
         }
       );
     } catch {
@@ -173,6 +179,7 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
       trackId &&
       currentTrackRef.current !== trackId
     ) {
+      setTrackLoading(true);
       controllerRef.current.loadUri(`spotify:track:${trackId}`);
       currentTrackRef.current = trackId;
     }
@@ -197,15 +204,18 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
       wantsAutoPlayRef.current = true;
 
       if (controllerRef.current) {
-        // Optimistic first attempt — the playback_update listener is the
-        // reliable fallback that retries until the track plays
-        const timer = setTimeout(tryPlay, 200);
-        // Safety: clear autoplay flag after 5s to prevent stale state
+        // The playback_update listener will call tryPlay() once the
+        // track reports duration > 0 and !isBuffering — no premature
+        // timeout needed.
+
+        // Safety: clear autoplay flag after 15s to prevent stale state.
+        // 15s is generous enough for slow connections while still
+        // providing a cleanup backstop.
         const safety = setTimeout(() => {
           wantsAutoPlayRef.current = false;
-        }, 5000);
+          setTrackLoading(false);
+        }, 15000);
         return () => {
-          clearTimeout(timer);
           clearTimeout(safety);
         };
       }
@@ -253,8 +263,26 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
       className="rounded-lg overflow-hidden relative"
       style={{ minHeight: 80 }}
     >
-      {loading && (
-        <div className="absolute inset-0 bg-atlas-border/20 animate-pulse rounded-lg" />
+      {(loading || trackLoading) && (
+        <div className="absolute inset-0 bg-atlas-bg/60 rounded-lg flex items-center justify-center z-10 pointer-events-none">
+          <div className="flex items-center gap-1.5">
+            <span
+              className="block w-1.5 h-1.5 rounded-full bg-atlas-text-muted animate-bounce"
+              style={{ animationDelay: "0ms" }}
+            />
+            <span
+              className="block w-1.5 h-1.5 rounded-full bg-atlas-text-muted animate-bounce"
+              style={{ animationDelay: "150ms" }}
+            />
+            <span
+              className="block w-1.5 h-1.5 rounded-full bg-atlas-text-muted animate-bounce"
+              style={{ animationDelay: "300ms" }}
+            />
+            <span className="text-xs text-atlas-text-muted font-sans ml-2">
+              Loading track&hellip;
+            </span>
+          </div>
+        </div>
       )}
     </div>
   );
