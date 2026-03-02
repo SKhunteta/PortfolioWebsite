@@ -124,18 +124,22 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
           controller.addListener("playback_update", (e) => {
             const { isPaused, isBuffering, position } = e.data;
 
-            // Dismiss loading overlay once the embed stops buffering
-            // or playback begins — this is a reliable "track loaded" signal
-            if (!isBuffering) {
+            // Dismiss loading overlay once the embed stops buffering,
+            // but only when we're NOT in an autoplay sequence — during
+            // autoplay the overlay stays visible until playback genuinely
+            // starts (handled by the !isPaused branch below).
+            if (!isBuffering && !wantsAutoPlayRef.current) {
               setTrackLoading(false);
             }
 
-            // Event-driven autoplay: when the embed reports paused
-            // and not buffering, the track is ready to play.
+            // Event-driven autoplay: when the embed reports playback
+            // has started, clear the autoplay flag and dismiss the
+            // loading overlay. We intentionally do NOT call tryPlay()
+            // here on isPaused && !isBuffering — that fires too early
+            // and causes sputter. Instead, the 1-second delayed retries
+            // (in initController and the autoPlaySignal effect) handle
+            // triggering playback after the audio buffer has filled.
             if (wantsAutoPlayRef.current) {
-              if (isPaused && !isBuffering) {
-                tryPlay();
-              }
               if (!isPaused) {
                 wantsAutoPlayRef.current = false;
                 setTrackLoading(false);
