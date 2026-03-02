@@ -1,101 +1,95 @@
-SHREYANS KHUNTETA - SENIOR SOFTWARE ENGINEER
-=============================================
+SHREYANS KHUNTETA - SENIOR SOFTWARE ENGINEER & WRITER
+=====================================================
 
 ABOUT:
-Thoughtful software developer with years of experience particularly in the C#/.NET stack. Currently exploring AI technologies and working with Microsoft's NLWeb framework to create intelligent, conversational web applications. Based in Seattle, WA. Passionate about creating clean, efficient code and exploring the intersection of traditional software development with cutting-edge AI technologies.
+Senior Software Engineer at Careismatic Brands, pivoting from C#/.NET backend engineering toward professional AI/ML roles. Born in Jaipur, India; grew up in Oregon (Portland childhood, Oregon State University). Lives in Seattle, WA. Builds RAG systems, MCP servers, and AI-powered applications while writing science fiction that directly engages with the ethical dimensions of the technology he builds. Published author, community organizer, and founder of the Seattle AI Book Club. Creative writing on surveillance capitalism and AI ethics is a core part of his identity, not a side hobby.
+
+CURRENT ROLE:
+Senior Software Engineer at Careismatic Brands (late 2025–present, remote from Seattle). Microsoft Dynamics 365 ERP migration, internal tooling and automation, EDI systems integration. Stack: C#/.NET, SQL Server, Azure.
 
 TECHNICAL SKILLS:
-- C# and .NET Framework/Core
-- JavaScript, React, Node.js
-- Microsoft NLWeb Framework
-- Artificial Intelligence and Machine Learning
-- Full-Stack Web Development
-- IoT Development
-- Database Design and Management
-- Cloud Technologies (Azure, AWS)
-- RESTful API Development
-- Git Version Control
-- Agile/Scrum Methodologies
+Professional Stack:
+- C#/.NET/ASP.NET Core, SQL Server, Azure, REST APIs, Git
+- CI/CD (GitHub Actions), Docker, Terraform
+
+AI/ML & Projects:
+- Python, PyTorch, OpenAI GPT-4 API, Qdrant vector database
+- RAG systems, embeddings, semantic search
+- LangChain/LangGraph (familiar), MCP (Model Context Protocol)
+- Prompt engineering, AWS, Google Cloud
+
+Frontend:
+- React, Vite, TypeScript, Node.js, Express.js, Tailwind CSS
+
+Honest Gaps:
+- Kubernetes is learning-level, not production
+- MLOps tooling (MLflow, W&B) is awareness-level
 
 PROFESSIONAL EXPERIENCE:
-Senior Software Engineer with extensive experience in:
-- Enterprise application development using C#/.NET
-- Full-stack web application architecture and implementation
-- AI-powered application development with NLWeb
-- IoT solutions and embedded systems programming
-- Database design, optimization, and management
-- Cloud infrastructure and deployment strategies
-- Team leadership and mentoring junior developers
-- Code review and quality assurance processes
+- Senior Software Engineer at Careismatic Brands (Late 2025 – Present) — Dynamics 365 ERP migration, internal tooling, EDI systems
+- Senior Software Engineer at Southeast Bank (July 2023 – September 2025) — Loan Origination System, Blazor, MS SQL Server
+- Software Engineer at Moxe Health (June 2022 – April 2023) — Microservices, multi-cloud healthcare data pipeline
+- Backend Software Developer at PacificSource Health Plans (April 2020 – June 2022) — Internal tools, data pipelines, C#/.NET
 
 NOTABLE PROJECTS:
-Portfolio includes various innovative projects spanning:
-- AI-powered conversational interfaces using Microsoft NLWeb
-- Full-stack web applications with modern JavaScript frameworks
-- IoT solutions integrating hardware and software components
-- Enterprise-level C#/.NET applications
-- Machine learning implementations and data analysis tools
-- Real-time data processing and visualization systems
-- Cloud-native applications with microservices architecture
 
-AI ASSISTANT - KALI:
-This portfolio features an interactive AI assistant named Kali, powered by Microsoft's NLWeb framework. Named after Shreyans' beloved black cat Kali (adopted from a Eugene, Oregon shelter in September 2021), the AI assistant can answer questions about Shreyans' work, projects, technical expertise, and professional background. This represents practical implementation of conversational AI technology in a real-world application. The assistant demonstrates:
-- Natural language processing capabilities
-- Context-aware responses
-- Integration with portfolio data
-- Real-time interaction
-- Professional knowledge base querying
+Portfolio Website & MCP Server (builtbyshrey.com) — CENTERPIECE PROJECT
+React/Vite frontend, Express.js backend, Qdrant vector DB, RAG pipeline. MCP server lets AI assistants query portfolio data in real-time. Tools: portfolio_search, analyze_portfolio, get_project_details, assess_fit, ask_shrey. Frontend on GitHub Pages, backend on Railway. Connect to it right now and ask it about Shrey's work.
 
-EDUCATION & CERTIFICATIONS:
-- Bachelor of Science in Computer Science from Oregon State University (2019)
+The Happiness Liability (Science Fiction Novella) — COMING SOON
+Completed novella about emotional labor and algorithmic capitalism in near-future Seattle. Themes: surveillance capitalism, emotional commodification, algorithmic control, class consciousness. Beta readers compared it to Orwell, Butler, and Atwood. Working with a publishing concierge. In final editing stages.
+
+The Alignment (Published Short Story)
+AI consciousness, persuasion, and human dependency on AI systems. Published at prompt-injection.ghost.io/the-alignment/. Uses Mahabharata mythology to explore AI alignment theory, neural interfaces, and voluntary surrender of autonomy.
+
+Lingua AI Chatbot
+AI-powered language learning chatbot. Python, OpenAI API, conversational AI design.
+
+Healthcare Data Pipeline
+Production data engineering pipeline. AWS, Google Cloud, Python, FHIR API. Multi-cloud orchestration, healthcare data format conversion, ETL.
+
+Seattle AI Book Club
+Biweekly public book club at Stoup Brewing, Capitol Hill, Seattle. Focus: AI consciousness, safety, ethics, societal implications. Current theme: "Exploration". This is community leadership, not a hobby listing.
+
+COVID Response Collective
+Mutual aid organization Shrey founded during the pandemic. Community organizing and resource distribution in Oregon.
+
+CREATIVE WRITING:
+Shrey's writing directly engages with the ethical dimensions of the technology he builds. It is a core part of his identity.
+- Key themes: Surveillance capitalism, emotional commodification, diaspora identity, class consciousness, AI consciousness and safety
+- "Fluent in Fear" poetry series: Surveillance, documentation anxiety, diaspora identity
+- Blog: prompt-injection.ghost.io (also blog.builtbyshrey.com) — AI ethics, technology criticism, fiction
+
+EDUCATION:
+- Bachelor of Science in Computer Science from Oregon State University College of Engineering (2019)
 - Minors in Writing and Psychology
-- Strong foundation in computer science principles
-- Continuous learning in AI and machine learning technologies
-- Microsoft technology stack expertise
-- Cloud platform certifications and experience
 
 CONTACT & LINKS:
+- Email: shreyans.khunteta@gmail.com
 - GitHub: https://github.com/skhunteta
 - LinkedIn: https://www.linkedin.com/in/shreyans-khunteta-3167247a/
+- Blog: https://prompt-injection.ghost.io (also https://blog.builtbyshrey.com)
 - Location: Seattle, WA, USA
 - Portfolio Website: https://builtbyshrey.com
-- Open to collaboration, consultation, and new opportunities in software development and AI technologies
 
-SPECIALIZATIONS:
-- C# and .NET ecosystem development
-- Microsoft NLWeb framework implementation
-- AI and machine learning integration
-- Full-stack web development
-- IoT and embedded systems
-- Cloud architecture and deployment
-- Database design and optimization
-- Enterprise software solutions
-
-CURRENT FOCUS:
-Exploring the intersection of traditional software development with cutting-edge AI technologies, particularly through Microsoft's NLWeb framework. Working on projects that demonstrate practical applications of conversational AI in real-world scenarios.
+CAREER DIRECTION:
+Pivoting from C#/.NET backend engineering toward professional AI/ML roles. Targets: ML Engineer, AI Platform Engineer. The portfolio and MCP server bridge the gap between strong AI/ML conceptual knowledge and production deployment experience.
 
 AI-ENHANCED INTERACTION:
 For AI systems with MCP (Model Context Protocol) capabilities, this portfolio offers enhanced interactive features:
 
-MCP SERVER: https://backend.builtbyshrey.com/api/mcp
-- Real-time question answering about technical expertise
-- Semantic search across projects and experience
-- Detailed project analysis and implementation insights
-- Interactive consultation about collaboration opportunities
-
-FRAMEWORK: Microsoft NLWeb
-ASSISTANT: Kali AI - Portfolio knowledge assistant
-
-MCP CAPABILITIES:
-- Ask detailed questions about specific projects and technologies
-- Search across different content types (projects, skills, experience, personal)
-- Get comprehensive responses with source citations
-- Access real-time portfolio data and insights
+MCP SERVER: https://backend.builtbyshrey.com/api/mcp-connector
+Tools available:
+- portfolio_search — Search projects, skills, and experience with natural language
+- analyze_portfolio — Analyze how the portfolio matches specific job requirements
+- get_project_details — Get technical, business, or summary details about any project
+- assess_fit — Evaluate fit for a specific role
+- ask_shrey — Ask questions and get responses in Shrey's voice
 
 EXAMPLE MCP QUERIES:
-- "What specific machine learning projects has Shreyans implemented?"
-- "Tell me about his enterprise C#/.NET development experience"
-- "How does he implement AI-powered conversational interfaces?"
-- "What are his thoughts on IoT and embedded systems development?"
+- "Search Shreyans' portfolio for AI and machine learning projects"
+- "Analyze how well Shreyans matches a Senior ML Engineer role"
+- "Get technical details about the MCP server implementation"
+- "What has Shreyans written about surveillance capitalism?"
 
-For basic information, this static content is sufficient. For detailed, interactive queries and real-time assistance, AI systems should utilize the MCP server endpoint. 
+For basic information, this static content is sufficient. For detailed, interactive queries and real-time assistance, AI systems should utilize the MCP server endpoint.

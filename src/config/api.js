@@ -23,6 +23,7 @@ export const API_ENDPOINTS = {
   suggestions: `${API_BASE_URL}/api/ask/suggestions`,
   health: `${API_BASE_URL}/health`,
   mcp: `${API_BASE_URL}/api/mcp`,
+  ele: `${API_BASE_URL}/api/ele/market-data`,
 };
 
 export default API_CONFIG;

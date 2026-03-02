@@ -4,9 +4,22 @@ const Experience = () => {
   const experiences = [
     {
       id: 1,
+      company: "Careismatic Brands",
+      position: "Senior Software Engineer",
+      duration: "Late 2025 - Present",
+      location: "Remote (Seattle, WA)",
+      description: [
+        "Leading Microsoft Dynamics 365 ERP migration for a major apparel brands company.",
+        "Building internal tooling and automation systems to streamline business processes.",
+        "Integrating EDI systems for supply chain operations and partner communications.",
+        "Stack: C#/.NET, SQL Server, Azure, REST APIs."
+      ]
+    },
+    {
+      id: 2,
       company: "Southeast Bank",
       position: "Senior Software Engineer",
-      duration: "July 2023 - Present",
+      duration: "July 2023 - September 2025",
       location: "Seattle, WA",
       description: [
         "Led development of a Loan Origination System (LOS) using Blazor and MS SQL Server, delivering dynamic and interactive screens based on business-driven wireframes.",
@@ -16,7 +29,7 @@ const Experience = () => {
       ]
     },
     {
-      id: 2,
+      id: 3,
       company: "Moxe Health",
       position: "Software Engineer",
       duration: "June 2022 - April 2023",
@@ -29,7 +42,7 @@ const Experience = () => {
       ]
     },
     {
-      id: 3,
+      id: 4,
       company: "PacificSource Health Plans",
       position: "Backend Software Developer",
       duration: "April 2020 - June 2022",
@@ -42,7 +55,7 @@ const Experience = () => {
       ]
     },
     {
-      id: 4,
+      id: 5,
       company: "COVID Response Collective",
       position: "Founder",
       duration: "March 2020 - September 2022",

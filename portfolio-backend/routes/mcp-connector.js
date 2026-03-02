@@ -394,27 +394,55 @@ router.post("/", async (req, res) => {
 
 /**
  * GET /api/mcp-connector
- * SSE stream endpoint for server-initiated messages.
- * Requires a valid Mcp-Session-Id header from a previously initialized session.
+ * If the request includes a valid Mcp-Session-Id, open an SSE stream.
+ * Otherwise, return server capabilities so discovery clients (ChatGPT, curl, browsers)
+ * get a useful response instead of a 400.
  */
 router.get("/", async (req, res) => {
   const sessionId = req.headers["mcp-session-id"];
 
-  if (!sessionId || !sessions.has(sessionId)) {
-    res.status(400).json({
-      jsonrpc: "2.0",
-      error: {
-        code: -32000,
-        message:
-          "Bad Request: valid Mcp-Session-Id header required. Initialize a session first via POST.",
-      },
-      id: null,
-    });
+  if (sessionId && sessions.has(sessionId)) {
+    // Existing session — open SSE stream
+    const transport = sessions.get(sessionId);
+    await transport.handleRequest(req, res);
     return;
   }
 
-  const transport = sessions.get(sessionId);
-  await transport.handleRequest(req, res);
+  // No session — return discovery / capabilities info
+  res.json({
+    name: "shreyans-portfolio-mcp",
+    version: "2.0.0",
+    description:
+      "Shreyans Khunteta's AI-powered portfolio intelligence server",
+    protocolVersion: "2025-03-26",
+    transport: "streamable-http",
+    capabilities: { tools: true },
+    tools: [
+      { name: "portfolio_search", description: "Search portfolio content" },
+      {
+        name: "analyze_portfolio",
+        description: "Analyze portfolio against job requirements",
+      },
+      {
+        name: "get_project_details",
+        description: "Get detailed project information",
+      },
+      {
+        name: "assess_fit",
+        description: "Assess candidate fit for a job description",
+      },
+      {
+        name: "ask_shrey",
+        description:
+          "Ask Shreyans a question grounded in his portfolio data",
+      },
+    ],
+    usage: {
+      mcp: "POST to this endpoint with a JSON-RPC initialize request to start a session.",
+      rest: "For simple REST access, use /api/portfolio instead. See /api/portfolio/openapi.json for the OpenAPI spec.",
+    },
+    activeSessions: sessions.size,
+  });
 });
 
 /**
