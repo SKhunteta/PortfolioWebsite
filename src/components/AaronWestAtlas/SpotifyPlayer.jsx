@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 
 const SPOTIFY_IFRAME_API_URL = "https://open.spotify.com/embed/iframe-api/v1";
 const SPOTIFY_ARTIST_URL = "https://open.spotify.com/artist/59cc2f0IvGu6YVEtY4cS0p";
-const AUTOPLAY_GRACE_MS = 300;
+const AUTOPLAY_GRACE_MS = 800;
 
 // Singleton: track whether the API script has been loaded
 let apiScriptLoaded = false;
