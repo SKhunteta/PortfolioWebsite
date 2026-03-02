@@ -44,6 +44,7 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
   const lastAutoPlaySignalRef = useRef(0);
   const lastPlayedTrackRef = useRef(null);
   const wantsAutoPlayRef = useRef(false);
+  const autoPlayAtRef = useRef(0);
   const observerRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [trackLoading, setTrackLoading] = useState(false);
@@ -132,14 +133,19 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
               setTrackLoading(false);
             }
 
-            // Event-driven autoplay: when the embed reports playback
-            // has started, clear the autoplay flag and dismiss the
-            // loading overlay. We intentionally do NOT call tryPlay()
-            // here on isPaused && !isBuffering — that fires too early
-            // and causes sputter. Instead, the 1-second delayed retries
-            // (in initController and the autoPlaySignal effect) handle
-            // triggering playback after the audio buffer has filled.
+            // Event-driven autoplay: once the embed reports the track
+            // is ready (isPaused && !isBuffering) AND at least 800ms
+            // have passed since the autoplay was requested, trigger
+            // playback. The grace period lets the audio buffer fill
+            // so the song starts cleanly without sputtering.
             if (wantsAutoPlayRef.current) {
+              if (
+                isPaused &&
+                !isBuffering &&
+                Date.now() - autoPlayAtRef.current >= 800
+              ) {
+                tryPlay();
+              }
               if (!isPaused) {
                 wantsAutoPlayRef.current = false;
                 setTrackLoading(false);
@@ -211,6 +217,8 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
       // Reset user-paused state on navigation so new tracks auto-play
       userPausedRef.current = false;
       wantsAutoPlayRef.current = true;
+      autoPlayAtRef.current = Date.now();
+      setTrackLoading(true);
 
       if (controllerRef.current) {
         // Delayed retry at 1s — long enough for the track to buffer
