@@ -1,8 +1,28 @@
 import express from "express";
+import rateLimit from "express-rate-limit";
 import Anthropic from "@anthropic-ai/sdk";
 import { config } from "../config/index.js";
 
 const router = express.Router();
+
+// --- Cache & request coalescing state ---
+const CACHE_TTL_MS = 3 * 60 * 1000; // 3 minutes
+let cachedData = null;
+let cacheTimestamp = 0;
+let inflightRequest = null;
+
+// --- Rate limiter (safety net against abuse) ---
+const eleLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // 10 requests per IP per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: "Rate limited",
+    message:
+      "The emotional markets are overwhelmed by your enthusiasm. Please wait a moment.",
+  },
+});
 
 const SYSTEM_PROMPT = `You are the pricing engine for the Emotional Labor Exchange (ELE), a fictional futures market where human emotions are traded as commodities. This is inspired by "The Happiness Liability," a novella about emotional labor and algorithmic capitalism.
 
@@ -44,10 +64,128 @@ Respond ONLY with valid JSON. No markdown, no backticks, no explanation. Use thi
 The "change" field is the dollar change since the previous close. Signal is BUY, SELL, or HOLD. Headlines MUST be from real current news found via web search. Impact is whether the headline pushes that emotion's price "up" or "down". Include 5–7 headlines.`;
 
 /**
- * POST /api/ele/market-data
- * Fetches real-time emotion market data by analyzing breaking news via Anthropic API with web search
+ * Calls the Anthropic API to fetch fresh market data.
+ * Returns the parsed JSON data or throws on failure.
  */
-router.post("/market-data", async (req, res) => {
+async function fetchMarketDataFromAPI() {
+  const client = new Anthropic({ apiKey: config.anthropic.apiKey });
+
+  console.log(
+    "📊 ELE: Fetching market data via Anthropic API with web search..."
+  );
+
+  const response = await client.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 16000,
+    system: SYSTEM_PROMPT,
+    tools: [
+      {
+        type: "web_search_20250305",
+        name: "web_search",
+        max_uses: 5,
+      },
+    ],
+    messages: [
+      {
+        role: "user",
+        content:
+          "Analyze today's top breaking news stories and price the emotional labor market accordingly. Search for the latest news headlines from today and use them to determine emotion prices.",
+      },
+    ],
+  });
+
+  // Parse the response — with web_search tool, response.content contains
+  // multiple block types (server_tool_use, web_search_tool_result, text).
+  // We need the text block with our JSON.
+  let jsonData = null;
+
+  for (const block of response.content) {
+    if (block.type === "text") {
+      const text = block.text.trim();
+
+      // Try direct JSON parse
+      try {
+        jsonData = JSON.parse(text);
+        break;
+      } catch {
+        // Try stripping markdown code fences
+        const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (fenceMatch) {
+          try {
+            jsonData = JSON.parse(fenceMatch[1].trim());
+            break;
+          } catch {
+            // continue
+          }
+        }
+
+        // Try extracting outermost JSON object
+        const objectMatch = text.match(/\{[\s\S]*\}/);
+        if (objectMatch) {
+          try {
+            jsonData = JSON.parse(objectMatch[0]);
+            break;
+          } catch {
+            // continue
+          }
+        }
+      }
+    }
+  }
+
+  if (!jsonData) {
+    console.error(
+      "ELE: Could not parse JSON from response. Block types:",
+      response.content.map((b) => b.type)
+    );
+    throw new Error("Failed to parse market data from API response");
+  }
+
+  if (!jsonData.emotions || typeof jsonData.emotions !== "object") {
+    throw new Error("Invalid market data structure — missing emotions");
+  }
+
+  console.log("📊 ELE: Market data fetched successfully");
+  return jsonData;
+}
+
+/**
+ * Returns market data, using cache when fresh and coalescing concurrent
+ * requests so only one API call is in-flight at a time.
+ */
+async function getMarketData() {
+  // 1. Return cached data if still fresh
+  if (cachedData && Date.now() - cacheTimestamp < CACHE_TTL_MS) {
+    console.log("📊 ELE: Serving cached market data");
+    return cachedData;
+  }
+
+  // 2. If an API call is already in-flight, wait for it
+  if (inflightRequest) {
+    console.log("📊 ELE: Waiting for in-flight request");
+    return inflightRequest;
+  }
+
+  // 3. Start a new API call and store the promise so others can join
+  inflightRequest = fetchMarketDataFromAPI()
+    .then((data) => {
+      cachedData = data;
+      cacheTimestamp = Date.now();
+      return data;
+    })
+    .finally(() => {
+      inflightRequest = null;
+    });
+
+  return inflightRequest;
+}
+
+/**
+ * POST /api/ele/market-data
+ * Fetches real-time emotion market data by analyzing breaking news via Anthropic API with web search.
+ * Responses are cached for 3 minutes. Concurrent requests are coalesced into a single API call.
+ */
+router.post("/market-data", eleLimiter, async (req, res) => {
   try {
     if (!config.anthropic.apiKey) {
       return res.status(500).json({
@@ -57,94 +195,12 @@ router.post("/market-data", async (req, res) => {
       });
     }
 
-    const client = new Anthropic({ apiKey: config.anthropic.apiKey });
-
-    console.log("📊 ELE: Fetching market data via Anthropic API with web search...");
-
-    const response = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 16000,
-      system: SYSTEM_PROMPT,
-      tools: [
-        {
-          type: "web_search_20250305",
-          name: "web_search",
-          max_uses: 5,
-        },
-      ],
-      messages: [
-        {
-          role: "user",
-          content:
-            "Analyze today's top breaking news stories and price the emotional labor market accordingly. Search for the latest news headlines from today and use them to determine emotion prices.",
-        },
-      ],
-    });
-
-    // Parse the response — with web_search tool, response.content contains
-    // multiple block types (server_tool_use, web_search_tool_result, text).
-    // We need the text block with our JSON.
-    let jsonData = null;
-
-    for (const block of response.content) {
-      if (block.type === "text") {
-        const text = block.text.trim();
-
-        // Try direct JSON parse
-        try {
-          jsonData = JSON.parse(text);
-          break;
-        } catch {
-          // Try stripping markdown code fences
-          const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-          if (fenceMatch) {
-            try {
-              jsonData = JSON.parse(fenceMatch[1].trim());
-              break;
-            } catch {
-              // continue
-            }
-          }
-
-          // Try extracting outermost JSON object
-          const objectMatch = text.match(/\{[\s\S]*\}/);
-          if (objectMatch) {
-            try {
-              jsonData = JSON.parse(objectMatch[0]);
-              break;
-            } catch {
-              // continue
-            }
-          }
-        }
-      }
-    }
-
-    if (!jsonData) {
-      console.error(
-        "ELE: Could not parse JSON from response. Block types:",
-        response.content.map((b) => b.type)
-      );
-      return res.status(500).json({
-        error: "Failed to parse market data",
-        message: "The pricing engine returned data in an unexpected format.",
-      });
-    }
-
-    // Validate structure
-    if (!jsonData.emotions || typeof jsonData.emotions !== "object") {
-      return res.status(500).json({
-        error: "Invalid market data structure",
-        message: "Response missing required emotions data.",
-      });
-    }
-
-    console.log("📊 ELE: Market data fetched successfully");
+    const data = await getMarketData();
 
     res.json({
       success: true,
-      data: jsonData,
-      fetchedAt: new Date().toISOString(),
+      data,
+      fetchedAt: new Date(cacheTimestamp).toISOString(),
     });
   } catch (error) {
     console.error("ELE API Error:", error.message || error);
