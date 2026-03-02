@@ -305,7 +305,7 @@ describe("useAtlasState", () => {
       expect(result.current.journeyActive).toBe(false);
     });
 
-    it("auto-advances after 7 seconds", () => {
+    it("auto-advances after 30 seconds", () => {
       const { result } = renderHook(() => useAtlasState());
 
       act(() => {
@@ -315,7 +315,7 @@ describe("useAtlasState", () => {
       const firstLocation = result.current.selectedLocation;
 
       act(() => {
-        vi.advanceTimersByTime(7000);
+        vi.advanceTimersByTime(30000);
       });
 
       expect(result.current.journeyIndex).toBe(1);
@@ -333,7 +333,7 @@ describe("useAtlasState", () => {
       const totalLocations = result.current.sortedLocations.length;
       for (let i = 0; i < totalLocations; i++) {
         act(() => {
-          vi.advanceTimersByTime(7000);
+          vi.advanceTimersByTime(30000);
         });
       }
 

@@ -33,13 +33,27 @@ function loadSpotifyIFrameAPI() {
   return apiReadyPromise;
 }
 
+// Eagerly preload the Spotify IFrame API so it's ready before any track is needed
+loadSpotifyIFrameAPI();
+
 const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
   const containerRef = useRef(null);
   const controllerRef = useRef(null);
   const currentTrackRef = useRef(null);
   const userPausedRef = useRef(false);
   const lastAutoPlaySignalRef = useRef(autoPlaySignal);
+  const pendingPlayRef = useRef(false);
   const [failed, setFailed] = useState(false);
+
+  const tryPlay = useCallback(() => {
+    if (controllerRef.current && !userPausedRef.current) {
+      try {
+        controllerRef.current.play();
+      } catch {
+        // browser autoplay policy — fail silently
+      }
+    }
+  }, []);
 
   const initController = useCallback(async () => {
     if (!trackId || !containerRef.current) return;
@@ -57,6 +71,10 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
         if (currentTrackRef.current !== trackId) {
           controllerRef.current.loadUri(`spotify:track:${trackId}`);
           currentTrackRef.current = trackId;
+          if (pendingPlayRef.current) {
+            pendingPlayRef.current = false;
+            setTimeout(tryPlay, 50);
+          }
         }
         return;
       }
@@ -79,12 +97,17 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
               userPausedRef.current = false;
             }
           });
+          // If play was requested while controller was initializing, play now
+          if (pendingPlayRef.current) {
+            pendingPlayRef.current = false;
+            setTimeout(tryPlay, 50);
+          }
         }
       );
     } catch {
       setFailed(true);
     }
-  }, [trackId]);
+  }, [trackId, tryPlay]);
 
   // Init on mount
   useEffect(() => {
@@ -107,24 +130,23 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
   useEffect(() => {
     if (
       autoPlaySignal > 0 &&
-      autoPlaySignal !== lastAutoPlaySignalRef.current &&
-      controllerRef.current &&
-      !userPausedRef.current
+      autoPlaySignal !== lastAutoPlaySignalRef.current
     ) {
-      const timer = setTimeout(() => {
-        if (controllerRef.current && !userPausedRef.current) {
-          try {
-            controllerRef.current.play();
-          } catch {
-            // browser autoplay policy — fail silently
-          }
-        }
-      }, 300);
-      lastAutoPlaySignalRef.current = autoPlaySignal;
-      return () => clearTimeout(timer);
+      // Reset user-paused state on navigation so new tracks auto-play
+      userPausedRef.current = false;
+
+      if (controllerRef.current) {
+        // Controller ready — play with minimal delay for track load
+        const timer = setTimeout(tryPlay, 50);
+        lastAutoPlaySignalRef.current = autoPlaySignal;
+        return () => clearTimeout(timer);
+      } else {
+        // Controller still initializing — queue play for when it's ready
+        pendingPlayRef.current = true;
+      }
     }
     lastAutoPlaySignalRef.current = autoPlaySignal;
-  }, [autoPlaySignal]);
+  }, [autoPlaySignal, tryPlay]);
 
   // Cleanup on unmount
   useEffect(() => {
