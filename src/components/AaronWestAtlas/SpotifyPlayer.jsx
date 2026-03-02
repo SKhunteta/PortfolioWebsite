@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 
 const SPOTIFY_IFRAME_API_URL = "https://open.spotify.com/embed/iframe-api/v1";
 const SPOTIFY_ARTIST_URL = "https://open.spotify.com/artist/59cc2f0IvGu6YVEtY4cS0p";
-const AUTOPLAY_GRACE_MS = 1500;
 
 // Singleton: track whether the API script has been loaded
 let apiScriptLoaded = false;
@@ -44,24 +43,11 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal, onPlaybackStarted }) => {
   const userPausedRef = useRef(false);
   const lastAutoPlaySignalRef = useRef(0);
   const lastPlayedTrackRef = useRef(null);
-  const wantsAutoPlayRef = useRef(false);
-  const autoPlayAtRef = useRef(0);
   const observerRef = useRef(null);
   const onPlaybackStartedRef = useRef(onPlaybackStarted);
   onPlaybackStartedRef.current = onPlaybackStarted;
   const [loading, setLoading] = useState(true);
-  const [trackLoading, setTrackLoading] = useState(false);
   const [failed, setFailed] = useState(false);
-
-  const tryPlay = useCallback(() => {
-    if (controllerRef.current && !userPausedRef.current) {
-      try {
-        controllerRef.current.play();
-      } catch {
-        // browser autoplay policy — fail silently
-      }
-    }
-  }, []);
 
   const initController = useCallback(async () => {
     if (!trackId || !containerRef.current) return;
@@ -123,84 +109,28 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal, onPlaybackStarted }) => {
           controllerRef.current = controller;
           currentTrackRef.current = trackId;
           setLoading(false);
-          setTrackLoading(true);
-
-          // Reset the grace-period clock so the buffer gets a full
-          // grace period from when the embed is actually ready, not
-          // from the original autoplay request (which may be seconds
-          // old if the controller was still initializing).
-          if (wantsAutoPlayRef.current) {
-            autoPlayAtRef.current = Date.now();
-          }
 
           controller.addListener("playback_update", (e) => {
-            const { isPaused, isBuffering, position } = e.data;
+            const { isPaused, position } = e.data;
 
-            // Dismiss loading overlay once the embed stops buffering,
-            // but only when we're NOT in an autoplay sequence — during
-            // autoplay the overlay stays visible until playback genuinely
-            // starts (handled by the !isPaused branch below).
-            if (!isBuffering && !wantsAutoPlayRef.current) {
-              setTrackLoading(false);
-            }
-
-            // Event-driven autoplay: once the embed reports the track
-            // is ready (isPaused && !isBuffering) AND the grace period
-            // has passed since the autoplay was requested, trigger
-            // playback. The grace period lets the audio buffer fill
-            // so the song starts cleanly without sputtering.
-            if (wantsAutoPlayRef.current) {
-              if (
-                isPaused &&
-                !isBuffering &&
-                Date.now() - autoPlayAtRef.current >= AUTOPLAY_GRACE_MS
-              ) {
-                tryPlay();
-              }
-              if (!isPaused) {
-                wantsAutoPlayRef.current = false;
-                setTrackLoading(false);
-                if (onPlaybackStartedRef.current) onPlaybackStartedRef.current();
-              }
-            }
-
-            // User-pause detection: only flag as user-paused when we are
-            // NOT in the middle of an autoplay attempt and the track has
-            // progressed past the start
-            if (isPaused && !isBuffering && position > 0 && !wantsAutoPlayRef.current) {
-              userPausedRef.current = true;
-            }
+            // Notify parent when playback starts (used for journey timing)
             if (!isPaused) {
+              if (onPlaybackStartedRef.current) onPlaybackStartedRef.current();
               userPausedRef.current = false;
             }
-          });
 
-          // Polling retry: if autoplay was requested while the
-          // controller was initializing, keep trying every 500ms
-          // (after the grace period) until playback starts.
-          // The playback_update listener clears wantsAutoPlayRef
-          // once !isPaused, which stops the loop.
-          if (wantsAutoPlayRef.current) {
-            const retryId = setInterval(() => {
-              if (!wantsAutoPlayRef.current) {
-                clearInterval(retryId);
-              } else if (Date.now() - autoPlayAtRef.current >= AUTOPLAY_GRACE_MS) {
-                tryPlay();
-              }
-            }, 500);
-            setTimeout(() => {
-              clearInterval(retryId);
-              wantsAutoPlayRef.current = false;
-              setTrackLoading(false);
-            }, 15000);
-          }
+            // User-pause detection
+            if (isPaused && position > 0) {
+              userPausedRef.current = true;
+            }
+          });
         }
       );
     } catch {
       setLoading(false);
       setFailed(true);
     }
-  }, [trackId, tryPlay]);
+  }, [trackId]);
 
   // Init controller (re-runs on trackId change but returns early if already initialized)
   useEffect(() => {
@@ -214,69 +144,33 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal, onPlaybackStarted }) => {
       trackId &&
       currentTrackRef.current !== trackId
     ) {
-      setTrackLoading(true);
       controllerRef.current.loadUri(`spotify:track:${trackId}`);
       currentTrackRef.current = trackId;
     }
   }, [trackId]);
 
-  // Auto-play when signal changes (journey or prev/next navigation)
+  // Auto-play: only when two consecutive slides share the same song —
+  // let it keep playing seamlessly. No auto-play for new/different songs.
   useEffect(() => {
     if (
       autoPlaySignal > 0 &&
       autoPlaySignal !== lastAutoPlaySignalRef.current
     ) {
-      // Same track as the last auto-played track — let it keep playing
-      // seamlessly instead of restarting the song.
       const sameTrack = lastPlayedTrackRef.current === trackId;
       lastAutoPlaySignalRef.current = autoPlaySignal;
       lastPlayedTrackRef.current = trackId;
 
-      if (sameTrack) return;
-
-      // Reset user-paused state on navigation so new tracks auto-play
-      userPausedRef.current = false;
-      wantsAutoPlayRef.current = true;
-      autoPlayAtRef.current = Date.now();
-      setTrackLoading(true);
-
-      if (controllerRef.current) {
-        // Polling retry: try play() every 500ms after the grace
-        // period until the playback_update listener confirms the track
-        // is playing (clears wantsAutoPlayRef). This is more robust
-        // than a single-shot timeout since play() can silently fail
-        // if the track is still buffering.
-        const retryId = setInterval(() => {
-          if (!wantsAutoPlayRef.current) {
-            clearInterval(retryId);
-          } else if (Date.now() - autoPlayAtRef.current >= AUTOPLAY_GRACE_MS) {
-            tryPlay();
-          }
-        }, 500);
-
-        // Safety: clear autoplay flag after 15s to prevent stale state
-        const safety = setTimeout(() => {
-          clearInterval(retryId);
-          wantsAutoPlayRef.current = false;
-          setTrackLoading(false);
-        }, 15000);
-        return () => {
-          clearInterval(retryId);
-          clearTimeout(safety);
-        };
+      if (sameTrack) {
+        // Same song — just let it keep playing, nothing to do.
+        return;
       }
-      // Controller still initializing — wantsAutoPlayRef is set,
-      // the playback_update listener will handle it once active.
-      // Add a safety timeout so the loading overlay can't persist
-      // forever if autoplay never succeeds.
-      const safety = setTimeout(() => {
-        wantsAutoPlayRef.current = false;
-        setTrackLoading(false);
-      }, 15000);
-      return () => clearTimeout(safety);
+
+      // Different song — reset user-paused so if they manually press play
+      // it works, but do NOT auto-play.
+      userPausedRef.current = false;
     }
     lastAutoPlaySignalRef.current = autoPlaySignal;
-  }, [autoPlaySignal, trackId, tryPlay]);
+  }, [autoPlaySignal, trackId]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -318,6 +212,7 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal, onPlaybackStarted }) => {
       {/* Spotify API target — kept separate so createController's DOM
           mutations don't destroy the React-managed loading overlay. */}
       <div ref={containerRef} />
+      {/* Loading animation — commented out, autoplay grace period removed.
       {(loading || trackLoading) && (
         <div className="absolute inset-0 bg-atlas-bg/90 rounded-lg flex items-center justify-center z-20 pointer-events-none">
           <div className="flex items-center gap-2">
@@ -339,6 +234,7 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal, onPlaybackStarted }) => {
           </div>
         </div>
       )}
+      */}
     </div>
   );
 };
