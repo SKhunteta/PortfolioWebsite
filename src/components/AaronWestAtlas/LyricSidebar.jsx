@@ -85,7 +85,7 @@ const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, can
 
 const EmptyState = () => (
   <div className="p-6 h-full flex flex-col items-center justify-center text-center">
-    <div className="text-3xl mb-3 opacity-40">&#x1F5FA;</div>
+    <div className="text-5xl mb-3 opacity-40">&#x1F5FA;</div>
     <p className="text-atlas-text-muted italic text-sm font-serif-atlas">
       Select a pin on the map to see its lyric and story.
     </p>
