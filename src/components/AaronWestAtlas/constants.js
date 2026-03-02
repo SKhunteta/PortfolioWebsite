@@ -82,7 +82,7 @@ export const SPOTIFY_TRACK_IDS = {
   "Monongahela Park": "1Xkt5JZieZSvISKQgLSCSs",
   "Alone At St. Luke's / Monongahela Park": "1OXKFNcihpAC6XZxVlQW09",
   "Alone At St. Luke's": "1OXKFNcihpAC6XZxVlQW09",
-  "Spitting In The Wind": null, // TODO: add track ID once available
+  "Spitting In The Wind": "3Lu7oymnqlIGUxcHgNShsK",
   "I'm An Albatross": "5ve2Ek57WT8qInD6zlElsC",
   "Runnin' Out Of Excuses": "23U3Ot7sX68cCQ1DNZNYHl",
   "In Lieu Of Flowers": "5GpbzkD4BhgTLOABvZv9E6",
