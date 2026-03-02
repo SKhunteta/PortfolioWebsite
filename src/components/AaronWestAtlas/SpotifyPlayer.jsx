@@ -42,6 +42,7 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
   const currentTrackRef = useRef(null);
   const userPausedRef = useRef(false);
   const lastAutoPlaySignalRef = useRef(0);
+  const lastPlayedTrackRef = useRef(null);
   const pendingPlayRef = useRef(false);
   const [failed, setFailed] = useState(false);
 
@@ -79,6 +80,25 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
         return;
       }
 
+      // Observe the container so we can add allow="autoplay" to the iframe
+      // before it loads its content — this lets the browser permit playback
+      // after the user clicks "Start the Journey".
+      const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+          for (const node of mutation.addedNodes) {
+            if (node.nodeName === "IFRAME") {
+              node.allow = "autoplay; encrypted-media; clipboard-write";
+              observer.disconnect();
+              return;
+            }
+          }
+        }
+      });
+      observer.observe(containerRef.current, {
+        childList: true,
+        subtree: true,
+      });
+
       IFrameAPI.createController(
         containerRef.current,
         {
@@ -87,6 +107,7 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
           height: 80,
         },
         (controller) => {
+          observer.disconnect();
           controllerRef.current = controller;
           currentTrackRef.current = trackId;
           controller.addListener("playback_update", (e) => {
@@ -100,7 +121,7 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
           // If play was requested while controller was initializing, play now
           if (pendingPlayRef.current) {
             pendingPlayRef.current = false;
-            setTimeout(tryPlay, 50);
+            setTimeout(tryPlay, 300);
           }
         }
       );
@@ -132,19 +153,23 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
       autoPlaySignal > 0 &&
       autoPlaySignal !== lastAutoPlaySignalRef.current
     ) {
-      // Same track already loaded — let it keep playing seamlessly
-      if (currentTrackRef.current === trackId) {
-        lastAutoPlaySignalRef.current = autoPlaySignal;
-        return;
-      }
+      // Same track as the last auto-played track — let it keep playing
+      // seamlessly instead of restarting the song.
+      // NOTE: we use a dedicated ref here (not currentTrackRef) because the
+      // track-switch effect above already updated currentTrackRef for this
+      // render, which would make every track look like "same track".
+      const sameTrack = lastPlayedTrackRef.current === trackId;
+      lastAutoPlaySignalRef.current = autoPlaySignal;
+      lastPlayedTrackRef.current = trackId;
+
+      if (sameTrack) return;
 
       // Reset user-paused state on navigation so new tracks auto-play
       userPausedRef.current = false;
 
       if (controllerRef.current) {
-        // Controller ready — play with minimal delay for track load
-        const timer = setTimeout(tryPlay, 50);
-        lastAutoPlaySignalRef.current = autoPlaySignal;
+        // Controller ready — give loadUri time to load the new track
+        const timer = setTimeout(tryPlay, 300);
         return () => clearTimeout(timer);
       } else {
         // Controller still initializing — queue play for when it's ready
