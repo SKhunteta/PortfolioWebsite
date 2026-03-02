@@ -25,6 +25,13 @@ describe("AtlasFooter", () => {
     expect(instaLink.closest("a")).toHaveAttribute("target", "_blank");
   });
 
+  it("renders a link to Apple Music", () => {
+    render(<AtlasFooter />);
+    const appleMusicLink = screen.getByText("Apple Music");
+    expect(appleMusicLink).toBeInTheDocument();
+    expect(appleMusicLink.closest("a")).toHaveAttribute("target", "_blank");
+  });
+
   it("renders a link to Hopeless Records", () => {
     render(<AtlasFooter />);
     const label = screen.getByText("Hopeless Records");

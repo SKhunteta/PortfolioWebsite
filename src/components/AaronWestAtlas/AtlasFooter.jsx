@@ -11,7 +11,7 @@ const AtlasFooter = () => {
           <p className="text-xs text-atlas-text-secondary font-sans">
             An interactive map of every place in the{" "}
             <a
-              href="https://open.spotify.com/artist/1xBZMJQnVfqYjOhLhjihs7"
+              href="https://open.spotify.com/artist/59cc2f0IvGu6YVEtY4cS0p?si=lGaPfWNiR9mxWia7y6qKVA"
               target="_blank"
               rel="noreferrer"
               className="underline hover:text-atlas-text transition-colors"
@@ -31,7 +31,7 @@ const AtlasFooter = () => {
           </p>
           <div className="flex items-center justify-center gap-4 text-xs text-atlas-text-muted font-sans">
             <a
-              href="https://open.spotify.com/artist/1xBZMJQnVfqYjOhLhjihs7"
+              href="https://open.spotify.com/artist/59cc2f0IvGu6YVEtY4cS0p?si=lGaPfWNiR9mxWia7y6qKVA"
               target="_blank"
               rel="noreferrer"
               className="hover:text-atlas-text transition-colors"
@@ -40,12 +40,21 @@ const AtlasFooter = () => {
             </a>
             <span className="text-atlas-border">|</span>
             <a
-              href="https://www.instagram.com/aaronwestband/"
+              href="https://www.instagram.com/thisisaaronwest?igsh=MWo1ZWpmd2k3c3NzZA=="
               target="_blank"
               rel="noreferrer"
               className="hover:text-atlas-text transition-colors"
             >
               Instagram
+            </a>
+            <span className="text-atlas-border">|</span>
+            <a
+              href="https://music.apple.com/us/artist/aaron-west-and-the-roaring-twenties/867040082"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-atlas-text transition-colors"
+            >
+              Apple Music
             </a>
             <span className="text-atlas-border">|</span>
             <a
