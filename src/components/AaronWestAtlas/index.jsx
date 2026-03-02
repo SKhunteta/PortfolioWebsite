@@ -35,6 +35,7 @@ const AaronWestAtlas = () => {
               totalLocations={atlas.totalLocations}
               canNavigatePrev={atlas.canNavigatePrev}
               canNavigateNext={atlas.canNavigateNext}
+              autoPlaySignal={atlas.autoPlaySignal}
             />
           </div>
           <JourneyControls
@@ -81,6 +82,7 @@ const AaronWestAtlas = () => {
         totalLocations={atlas.totalLocations}
         canNavigatePrev={atlas.canNavigatePrev}
         canNavigateNext={atlas.canNavigateNext}
+        autoPlaySignal={atlas.autoPlaySignal}
       />
 
       <TimelineBar

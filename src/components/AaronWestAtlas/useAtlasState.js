@@ -9,6 +9,7 @@ export default function useAtlasState() {
   const [journeyActive, setJourneyActive] = useState(false);
   const [journeyIndex, setJourneyIndex] = useState(0);
   const [journeyPath, setJourneyPath] = useState([]);
+  const [autoPlaySignal, setAutoPlaySignal] = useState(0);
   const journeyTimerRef = useRef(null);
   const mapRef = useRef(null);
 
@@ -52,6 +53,7 @@ export default function useAtlasState() {
       const nextIdx = currentIdx + direction;
       if (nextIdx >= 0 && nextIdx < sorted.length) {
         selectLocation(sorted[nextIdx].id);
+        setAutoPlaySignal((s) => s + 1);
         // Sync journey state so auto-advance continues from the new position
         if (journeyActive) {
           if (journeyTimerRef.current) {
@@ -83,6 +85,7 @@ export default function useAtlasState() {
     setActiveAlbums(new Set(ALBUM_ORDER));
     const first = sorted[0];
     setSelectedLocation(first);
+    setAutoPlaySignal((s) => s + 1);
     setJourneyPath([[first.lat, first.lng]]);
     if (mapRef.current) {
       mapRef.current.flyTo([first.lat, first.lng], 6, { duration: 1.5 });
@@ -102,6 +105,7 @@ export default function useAtlasState() {
         }
         const loc = sorted[next];
         setSelectedLocation(loc);
+        setAutoPlaySignal((s) => s + 1);
         setJourneyPath((p) => [...p, [loc.lat, loc.lng]]);
         if (mapRef.current) {
           // Zoom closer for nearby points, wider for distant ones
@@ -148,5 +152,6 @@ export default function useAtlasState() {
     sortedLocations: sorted,
     canNavigatePrev: currentSortedIndex > 0,
     canNavigateNext: currentSortedIndex >= 0 && currentSortedIndex < sorted.length - 1,
+    autoPlaySignal,
   };
 }
