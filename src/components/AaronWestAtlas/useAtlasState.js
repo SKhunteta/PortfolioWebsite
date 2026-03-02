@@ -16,8 +16,11 @@ export default function useAtlasState() {
   const selectLocation = useCallback((locationId) => {
     const loc = LOCATIONS.find((l) => l.id === locationId) || null;
     setSelectedLocation(loc);
-    if (loc && mapRef.current) {
-      mapRef.current.flyTo([loc.lat, loc.lng], 10, { duration: 1.5 });
+    if (loc) {
+      setAutoPlaySignal((s) => s + 1);
+      if (mapRef.current) {
+        mapRef.current.flyTo([loc.lat, loc.lng], 10, { duration: 1.5 });
+      }
     }
   }, []);
 
@@ -53,7 +56,6 @@ export default function useAtlasState() {
       const nextIdx = currentIdx + direction;
       if (nextIdx >= 0 && nextIdx < sorted.length) {
         selectLocation(sorted[nextIdx].id);
-        setAutoPlaySignal((s) => s + 1);
         // Sync journey state so auto-advance continues from the new position
         if (journeyActive) {
           if (journeyTimerRef.current) {
@@ -92,38 +94,53 @@ export default function useAtlasState() {
     }
   }, []);
 
-  // Auto-advance journey
+  // Shared logic to advance the journey to the next stop
+  const advanceJourney = useCallback(() => {
+    setJourneyIndex((prev) => {
+      const next = prev + 1;
+      if (next >= sorted.length) {
+        stopJourney();
+        return prev;
+      }
+      const loc = sorted[next];
+      setSelectedLocation(loc);
+      setAutoPlaySignal((s) => s + 1);
+      setJourneyPath((p) => [...p, [loc.lat, loc.lng]]);
+      if (mapRef.current) {
+        const prevLoc = sorted[prev];
+        const dist = Math.abs(loc.lat - prevLoc.lat) + Math.abs(loc.lng - prevLoc.lng);
+        const zoom = dist > 10 ? 5 : dist > 3 ? 7 : 10;
+        mapRef.current.flyTo([loc.lat, loc.lng], zoom, { duration: 1.5 });
+      }
+      return next;
+    });
+  }, [stopJourney]);
+
+  // Called by SpotifyPlayer when a song starts playing.
+  // Replaces the fallback timer with a precise 30s-from-playback timer
+  // so the fan gets a full 30 seconds of music at every stop.
+  const onPlaybackStarted = useCallback(() => {
+    if (!journeyActive) return;
+    if (journeyTimerRef.current) {
+      clearTimeout(journeyTimerRef.current);
+      journeyTimerRef.current = null;
+    }
+    journeyTimerRef.current = setTimeout(advanceJourney, 30000);
+  }, [journeyActive, advanceJourney]);
+
+  // Fallback auto-advance: if playback never starts (e.g. Spotify fails),
+  // advance after 35s so the journey doesn't get stuck.
   useEffect(() => {
     if (!journeyActive) return;
 
-    journeyTimerRef.current = setTimeout(() => {
-      setJourneyIndex((prev) => {
-        const next = prev + 1;
-        if (next >= sorted.length) {
-          stopJourney();
-          return prev;
-        }
-        const loc = sorted[next];
-        setSelectedLocation(loc);
-        setAutoPlaySignal((s) => s + 1);
-        setJourneyPath((p) => [...p, [loc.lat, loc.lng]]);
-        if (mapRef.current) {
-          // Zoom closer for nearby points, wider for distant ones
-          const prevLoc = sorted[prev];
-          const dist = Math.abs(loc.lat - prevLoc.lat) + Math.abs(loc.lng - prevLoc.lng);
-          const zoom = dist > 10 ? 5 : dist > 3 ? 7 : 10;
-          mapRef.current.flyTo([loc.lat, loc.lng], zoom, { duration: 1.5 });
-        }
-        return next;
-      });
-    }, 30000);
+    journeyTimerRef.current = setTimeout(advanceJourney, 35000);
 
     return () => {
       if (journeyTimerRef.current) {
         clearTimeout(journeyTimerRef.current);
       }
     };
-  }, [journeyActive, journeyIndex, stopJourney]);
+  }, [journeyActive, journeyIndex, advanceJourney]);
 
   const filteredLocations = LOCATIONS.filter((loc) =>
     activeAlbums.has(loc.album)
@@ -153,5 +170,6 @@ export default function useAtlasState() {
     canNavigatePrev: currentSortedIndex > 0,
     canNavigateNext: currentSortedIndex >= 0 && currentSortedIndex < sorted.length - 1,
     autoPlaySignal,
+    onPlaybackStarted,
   };
 }

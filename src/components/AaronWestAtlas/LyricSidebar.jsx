@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ALBUMS, SPOTIFY_TRACK_IDS } from "./constants";
 import SpotifyPlayer from "./SpotifyPlayer";
 
-const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, canNavigatePrev, canNavigateNext, autoPlaySignal, compact = false }) => {
+const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, canNavigatePrev, canNavigateNext, autoPlaySignal, onPlaybackStarted, compact = false }) => {
   const [showContext, setShowContext] = useState(false);
   const album = ALBUMS[location.album];
   const trackId = SPOTIFY_TRACK_IDS[location.song] || null;
@@ -87,7 +87,7 @@ const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, can
 
       {/* Spotify embed */}
       <div className="pt-1">
-        <SpotifyPlayer trackId={trackId} autoPlaySignal={autoPlaySignal} />
+        <SpotifyPlayer trackId={trackId} autoPlaySignal={autoPlaySignal} onPlaybackStarted={onPlaybackStarted} />
       </div>
 
       {/* Navigation */}
@@ -135,7 +135,7 @@ const EmptyState = () => (
 );
 
 // Desktop sidebar version
-export const DesktopSidebar = ({ location, onNavigate, journeyActive, totalLocations, canNavigatePrev, canNavigateNext, autoPlaySignal }) => {
+export const DesktopSidebar = ({ location, onNavigate, journeyActive, totalLocations, canNavigatePrev, canNavigateNext, autoPlaySignal, onPlaybackStarted }) => {
   if (!location) return <EmptyState />;
   return (
     <LyricContent
@@ -146,12 +146,13 @@ export const DesktopSidebar = ({ location, onNavigate, journeyActive, totalLocat
       canNavigatePrev={canNavigatePrev}
       canNavigateNext={canNavigateNext}
       autoPlaySignal={autoPlaySignal}
+      onPlaybackStarted={onPlaybackStarted}
     />
   );
 };
 
 // Mobile bottom sheet version
-export const MobileBottomSheet = ({ location, onNavigate, onClose, journeyActive, totalLocations, canNavigatePrev, canNavigateNext, autoPlaySignal }) => {
+export const MobileBottomSheet = ({ location, onNavigate, onClose, journeyActive, totalLocations, canNavigatePrev, canNavigateNext, autoPlaySignal, onPlaybackStarted }) => {
   return (
     <AnimatePresence>
       {location && (
@@ -178,6 +179,7 @@ export const MobileBottomSheet = ({ location, onNavigate, onClose, journeyActive
             canNavigatePrev={canNavigatePrev}
             canNavigateNext={canNavigateNext}
             autoPlaySignal={autoPlaySignal}
+            onPlaybackStarted={onPlaybackStarted}
             compact
           />
         </motion.div>
