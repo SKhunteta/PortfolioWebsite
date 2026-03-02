@@ -1,9 +1,11 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ALBUMS } from "./constants";
+import { ALBUMS, SPOTIFY_TRACK_IDS } from "./constants";
+import SpotifyPlayer from "./SpotifyPlayer";
 
 const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, canNavigatePrev, canNavigateNext }) => {
   const album = ALBUMS[location.album];
+  const trackId = SPOTIFY_TRACK_IDS[location.song] || null;
 
   return (
     <div className="p-6 space-y-4">
@@ -50,6 +52,11 @@ const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, can
       <p className="text-sm text-atlas-text-secondary leading-relaxed font-sans">
         {location.context}
       </p>
+
+      {/* Spotify Player */}
+      <div className="pt-1">
+        <SpotifyPlayer trackId={trackId} />
+      </div>
 
       {/* Navigation */}
       <div className="flex items-center justify-between pt-4 border-t border-atlas-border">

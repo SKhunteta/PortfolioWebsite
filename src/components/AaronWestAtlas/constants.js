@@ -55,6 +55,40 @@ export const MAP_CONFIG = {
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
 };
 
+// Spotify track IDs for each unique song (used by SpotifyPlayer)
+// Maps song title (as it appears in LOCATIONS) → Spotify track ID
+export const SPOTIFY_TRACK_IDS = {
+  "Our Apartment": "2WDDYXPJNud2KTQLE5tc8H",
+  "St. Joe Keeps Us Safe": "1ye2Byl30hIQqcrcs6wM13",
+  "Runnin' Scared": "7jGWnxigTDTEGM0klfyN2i",
+  "Divorce And The American South": "0e2ulqf6A054t1PdNVrpOX",
+  "The Thunderbird Inn": "1PrC9aKVYMoAffOcn7Khmp",
+  "Get Me Out Of Here Alive": "35D3DRNeHxqHIBPnjqaFyY",
+  "Carolina Coast": "1mPudXE5Mu88VIXY5YqGrT",
+  "67, Cherry Red": "1pY9wnxEmAy0XF0jCnMnq6",
+  "Goodbye, Carolina Blues": "5YBmhHjUYOaqbWtE6EH68p",
+  "Green Like The G Train, Green Like Sea Foam": "6VIJcOO6chakOofKNkvLMS",
+  "Orchard Park": "0tqt8LzuoU3LBiMsebPL79",
+  "Lead Paint & Salt Air": "46eLQ7SwbuFlbO9RSKaAUb",
+  "Just Sign The Papers": "4WehJP3doBqv3zwLxomkx7",
+  "Bloodied Up In A Bar Fight": "47yxs4t0QGxvDMKxCh0ng5",
+  "Bury Me Anywhere Else": "1zEcaiEpTx7SyY7oPahOyV",
+  "Rosa & Reseda": "3YpDEZfvBeWPyUknph25O2",
+  "Wildflower Honey": "7H2mwTfzWXa3AAUQDzZ491",
+  "God & The Billboards": "7jj8eBQTEQEFaeXd82dicU",
+  "Routine Maintenance": "7inrVAQdmvl8tRUUoPBi60",
+  "Roman Candles": "7d3UPWqiHLpqMWU0lAJVpN",
+  "Paying Bills At The End Of The World": "1yTcddgdL6hdXUzx8rKi4l",
+  "Monongahela Park": "1Xkt5JZieZSvISKQgLSCSs",
+  "Alone At St. Luke's / Monongahela Park": "1OXKFNcihpAC6XZxVlQW09",
+  "Alone At St. Luke's": "1OXKFNcihpAC6XZxVlQW09",
+  "Spitting In The Wind": null, // TODO: add track ID once available
+  "I'm An Albatross": "5ve2Ek57WT8qInD6zlElsC",
+  "Runnin' Out Of Excuses": "23U3Ot7sX68cCQ1DNZNYHl",
+  "In Lieu Of Flowers": "5GpbzkD4BhgTLOABvZv9E6",
+  "Dead Leaves": "3844ad10ky8mdnCjUbS8qY",
+};
+
 // All 41 location entries, ordered by narrativeOrder
 export const LOCATIONS = [
   // ── We Don't Have Each Other (2014) ──
