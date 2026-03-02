@@ -85,23 +85,10 @@ const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, can
         </p>
       )}
 
-      {/* Spotify — link in compact, embed in full */}
-      {compact ? (
-        trackId && (
-          <a
-            href={`https://open.spotify.com/track/${trackId}`}
-            target="_blank"
-            rel="noreferrer"
-            className="text-xs text-atlas-text-muted hover:text-atlas-text transition-colors font-sans inline-flex items-center gap-1"
-          >
-            Listen on Spotify &rarr;
-          </a>
-        )
-      ) : (
-        <div className="pt-1">
-          <SpotifyPlayer trackId={trackId} />
-        </div>
-      )}
+      {/* Spotify embed */}
+      <div className="pt-1">
+        <SpotifyPlayer trackId={trackId} />
+      </div>
 
       {/* Navigation */}
       <div className={`flex items-center justify-between ${compact ? "pt-2" : "pt-4"} border-t border-atlas-border`}>
@@ -172,7 +159,7 @@ export const MobileBottomSheet = ({ location, onNavigate, onClose, journeyActive
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="fixed bottom-0 left-0 right-0 bg-atlas-bg border-t border-atlas-border rounded-t-2xl shadow-custom-2xl z-[1001] max-h-[35vh] overflow-y-auto"
+          className="fixed bottom-0 left-0 right-0 bg-atlas-bg border-t border-atlas-border rounded-t-2xl shadow-custom-2xl z-[1001] max-h-[50vh] overflow-y-auto"
         >
           {/* Drag handle */}
           <div className="flex justify-center py-2 sticky top-0 bg-atlas-bg rounded-t-2xl">
