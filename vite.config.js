@@ -10,4 +10,10 @@ export default defineConfig({
     assetsDir: "assets",
     emptyOutDir: true,
   },
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: "./src/test/setup.js",
+    css: false,
+  },
 });
