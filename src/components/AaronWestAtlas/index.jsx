@@ -36,6 +36,7 @@ const AaronWestAtlas = () => {
               canNavigatePrev={atlas.canNavigatePrev}
               canNavigateNext={atlas.canNavigateNext}
               autoPlaySignal={atlas.autoPlaySignal}
+              onPlaybackStarted={atlas.onPlaybackStarted}
             />
           </div>
           <JourneyControls
@@ -73,17 +74,20 @@ const AaronWestAtlas = () => {
         </div>
       </div>
 
-      {/* Mobile bottom sheet */}
-      <MobileBottomSheet
-        location={atlas.selectedLocation}
-        onNavigate={atlas.navigateLocation}
-        onClose={atlas.clearSelection}
-        journeyActive={atlas.journeyActive}
-        totalLocations={atlas.totalLocations}
-        canNavigatePrev={atlas.canNavigatePrev}
-        canNavigateNext={atlas.canNavigateNext}
-        autoPlaySignal={atlas.autoPlaySignal}
-      />
+      {/* Mobile bottom sheet — hidden on desktop where sidebar is visible */}
+      <div className="lg:hidden">
+        <MobileBottomSheet
+          location={atlas.selectedLocation}
+          onNavigate={atlas.navigateLocation}
+          onClose={atlas.clearSelection}
+          journeyActive={atlas.journeyActive}
+          totalLocations={atlas.totalLocations}
+          canNavigatePrev={atlas.canNavigatePrev}
+          canNavigateNext={atlas.canNavigateNext}
+          autoPlaySignal={atlas.autoPlaySignal}
+          onPlaybackStarted={atlas.onPlaybackStarted}
+        />
+      </div>
 
       <TimelineBar
         selectedLocation={atlas.selectedLocation}

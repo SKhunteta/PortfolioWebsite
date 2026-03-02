@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 
 const SPOTIFY_IFRAME_API_URL = "https://open.spotify.com/embed/iframe-api/v1";
 const SPOTIFY_ARTIST_URL = "https://open.spotify.com/artist/59cc2f0IvGu6YVEtY4cS0p";
+const AUTOPLAY_GRACE_MS = 300;
 
 // Singleton: track whether the API script has been loaded
 let apiScriptLoaded = false;
@@ -36,7 +37,7 @@ function loadSpotifyIFrameAPI() {
 // Eagerly preload the Spotify IFrame API so it's ready before any track is needed
 loadSpotifyIFrameAPI();
 
-const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
+const SpotifyPlayer = ({ trackId, autoPlaySignal, onPlaybackStarted }) => {
   const containerRef = useRef(null);
   const controllerRef = useRef(null);
   const currentTrackRef = useRef(null);
@@ -46,6 +47,8 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
   const wantsAutoPlayRef = useRef(false);
   const autoPlayAtRef = useRef(0);
   const observerRef = useRef(null);
+  const onPlaybackStartedRef = useRef(onPlaybackStarted);
+  onPlaybackStartedRef.current = onPlaybackStarted;
   const [loading, setLoading] = useState(true);
   const [trackLoading, setTrackLoading] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -123,9 +126,9 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
           setTrackLoading(true);
 
           // Reset the grace-period clock so the buffer gets a full
-          // 800 ms from when the embed is actually ready, not from
-          // the original autoplay request (which may be seconds old
-          // if the controller was still initializing).
+          // grace period from when the embed is actually ready, not
+          // from the original autoplay request (which may be seconds
+          // old if the controller was still initializing).
           if (wantsAutoPlayRef.current) {
             autoPlayAtRef.current = Date.now();
           }
@@ -142,21 +145,22 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
             }
 
             // Event-driven autoplay: once the embed reports the track
-            // is ready (isPaused && !isBuffering) AND at least 800ms
-            // have passed since the autoplay was requested, trigger
+            // is ready (isPaused && !isBuffering) AND the grace period
+            // has passed since the autoplay was requested, trigger
             // playback. The grace period lets the audio buffer fill
             // so the song starts cleanly without sputtering.
             if (wantsAutoPlayRef.current) {
               if (
                 isPaused &&
                 !isBuffering &&
-                Date.now() - autoPlayAtRef.current >= 800
+                Date.now() - autoPlayAtRef.current >= AUTOPLAY_GRACE_MS
               ) {
                 tryPlay();
               }
               if (!isPaused) {
                 wantsAutoPlayRef.current = false;
                 setTrackLoading(false);
+                if (onPlaybackStartedRef.current) onPlaybackStartedRef.current();
               }
             }
 
@@ -173,14 +177,14 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
 
           // Polling retry: if autoplay was requested while the
           // controller was initializing, keep trying every 500ms
-          // (after the 800ms grace period) until playback starts.
+          // (after the grace period) until playback starts.
           // The playback_update listener clears wantsAutoPlayRef
           // once !isPaused, which stops the loop.
           if (wantsAutoPlayRef.current) {
             const retryId = setInterval(() => {
               if (!wantsAutoPlayRef.current) {
                 clearInterval(retryId);
-              } else if (Date.now() - autoPlayAtRef.current >= 800) {
+              } else if (Date.now() - autoPlayAtRef.current >= AUTOPLAY_GRACE_MS) {
                 tryPlay();
               }
             }, 500);
@@ -237,7 +241,7 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
       setTrackLoading(true);
 
       if (controllerRef.current) {
-        // Polling retry: try play() every 500ms after the 800ms grace
+        // Polling retry: try play() every 500ms after the grace
         // period until the playback_update listener confirms the track
         // is playing (clears wantsAutoPlayRef). This is more robust
         // than a single-shot timeout since play() can silently fail
@@ -245,7 +249,7 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
         const retryId = setInterval(() => {
           if (!wantsAutoPlayRef.current) {
             clearInterval(retryId);
-          } else if (Date.now() - autoPlayAtRef.current >= 800) {
+          } else if (Date.now() - autoPlayAtRef.current >= AUTOPLAY_GRACE_MS) {
             tryPlay();
           }
         }, 500);
