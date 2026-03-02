@@ -33,10 +33,12 @@ function loadSpotifyIFrameAPI() {
   return apiReadyPromise;
 }
 
-const SpotifyPlayer = ({ trackId }) => {
+const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
   const containerRef = useRef(null);
   const controllerRef = useRef(null);
   const currentTrackRef = useRef(null);
+  const userPausedRef = useRef(false);
+  const lastAutoPlaySignalRef = useRef(autoPlaySignal);
   const [failed, setFailed] = useState(false);
 
   const initController = useCallback(async () => {
@@ -69,6 +71,14 @@ const SpotifyPlayer = ({ trackId }) => {
         (controller) => {
           controllerRef.current = controller;
           currentTrackRef.current = trackId;
+          controller.addListener("playback_update", (e) => {
+            if (e.data.isPaused && !e.data.isBuffering && e.data.position > 0) {
+              userPausedRef.current = true;
+            }
+            if (!e.data.isPaused) {
+              userPausedRef.current = false;
+            }
+          });
         }
       );
     } catch {
@@ -92,6 +102,29 @@ const SpotifyPlayer = ({ trackId }) => {
       currentTrackRef.current = trackId;
     }
   }, [trackId]);
+
+  // Auto-play when signal changes (journey or prev/next navigation)
+  useEffect(() => {
+    if (
+      autoPlaySignal > 0 &&
+      autoPlaySignal !== lastAutoPlaySignalRef.current &&
+      controllerRef.current &&
+      !userPausedRef.current
+    ) {
+      const timer = setTimeout(() => {
+        if (controllerRef.current && !userPausedRef.current) {
+          try {
+            controllerRef.current.play();
+          } catch {
+            // browser autoplay policy — fail silently
+          }
+        }
+      }, 300);
+      lastAutoPlaySignalRef.current = autoPlaySignal;
+      return () => clearTimeout(timer);
+    }
+    lastAutoPlaySignalRef.current = autoPlaySignal;
+  }, [autoPlaySignal]);
 
   // Cleanup on unmount
   useEffect(() => {

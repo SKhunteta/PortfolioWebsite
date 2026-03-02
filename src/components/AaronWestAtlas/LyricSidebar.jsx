@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ALBUMS, SPOTIFY_TRACK_IDS } from "./constants";
 import SpotifyPlayer from "./SpotifyPlayer";
 
-const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, canNavigatePrev, canNavigateNext, compact = false }) => {
+const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, canNavigatePrev, canNavigateNext, autoPlaySignal, compact = false }) => {
   const [showContext, setShowContext] = useState(false);
   const album = ALBUMS[location.album];
   const trackId = SPOTIFY_TRACK_IDS[location.song] || null;
@@ -87,7 +87,7 @@ const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, can
 
       {/* Spotify embed */}
       <div className="pt-1">
-        <SpotifyPlayer trackId={trackId} />
+        <SpotifyPlayer trackId={trackId} autoPlaySignal={autoPlaySignal} />
       </div>
 
       {/* Navigation */}
@@ -135,7 +135,7 @@ const EmptyState = () => (
 );
 
 // Desktop sidebar version
-export const DesktopSidebar = ({ location, onNavigate, journeyActive, totalLocations, canNavigatePrev, canNavigateNext }) => {
+export const DesktopSidebar = ({ location, onNavigate, journeyActive, totalLocations, canNavigatePrev, canNavigateNext, autoPlaySignal }) => {
   if (!location) return <EmptyState />;
   return (
     <LyricContent
@@ -145,12 +145,13 @@ export const DesktopSidebar = ({ location, onNavigate, journeyActive, totalLocat
       totalLocations={totalLocations}
       canNavigatePrev={canNavigatePrev}
       canNavigateNext={canNavigateNext}
+      autoPlaySignal={autoPlaySignal}
     />
   );
 };
 
 // Mobile bottom sheet version
-export const MobileBottomSheet = ({ location, onNavigate, onClose, journeyActive, totalLocations, canNavigatePrev, canNavigateNext }) => {
+export const MobileBottomSheet = ({ location, onNavigate, onClose, journeyActive, totalLocations, canNavigatePrev, canNavigateNext, autoPlaySignal }) => {
   return (
     <AnimatePresence>
       {location && (
@@ -176,6 +177,7 @@ export const MobileBottomSheet = ({ location, onNavigate, onClose, journeyActive
             totalLocations={totalLocations}
             canNavigatePrev={canNavigatePrev}
             canNavigateNext={canNavigateNext}
+            autoPlaySignal={autoPlaySignal}
             compact
           />
         </motion.div>
