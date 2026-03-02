@@ -41,7 +41,7 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
   const controllerRef = useRef(null);
   const currentTrackRef = useRef(null);
   const userPausedRef = useRef(false);
-  const lastAutoPlaySignalRef = useRef(autoPlaySignal);
+  const lastAutoPlaySignalRef = useRef(0);
   const pendingPlayRef = useRef(false);
   const [failed, setFailed] = useState(false);
 
@@ -132,6 +132,12 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
       autoPlaySignal > 0 &&
       autoPlaySignal !== lastAutoPlaySignalRef.current
     ) {
+      // Same track already loaded — let it keep playing seamlessly
+      if (currentTrackRef.current === trackId) {
+        lastAutoPlaySignalRef.current = autoPlaySignal;
+        return;
+      }
+
       // Reset user-paused state on navigation so new tracks auto-play
       userPausedRef.current = false;
 
@@ -146,7 +152,7 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
       }
     }
     lastAutoPlaySignalRef.current = autoPlaySignal;
-  }, [autoPlaySignal, tryPlay]);
+  }, [autoPlaySignal, trackId, tryPlay]);
 
   // Cleanup on unmount
   useEffect(() => {
