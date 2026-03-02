@@ -122,6 +122,14 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
           setLoading(false);
           setTrackLoading(true);
 
+          // Reset the grace-period clock so the buffer gets a full
+          // 800 ms from when the embed is actually ready, not from
+          // the original autoplay request (which may be seconds old
+          // if the controller was still initializing).
+          if (wantsAutoPlayRef.current) {
+            autoPlayAtRef.current = Date.now();
+          }
+
           controller.addListener("playback_update", (e) => {
             const { isPaused, isBuffering, position } = e.data;
 
@@ -134,7 +142,7 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
             }
 
             // Event-driven autoplay: once the embed reports the track
-            // is ready (isPaused && !isBuffering) AND at least 300ms
+            // is ready (isPaused && !isBuffering) AND at least 800ms
             // have passed since the autoplay was requested, trigger
             // playback. The grace period lets the audio buffer fill
             // so the song starts cleanly without sputtering.
@@ -142,7 +150,7 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
               if (
                 isPaused &&
                 !isBuffering &&
-                Date.now() - autoPlayAtRef.current >= 300
+                Date.now() - autoPlayAtRef.current >= 800
               ) {
                 tryPlay();
               }
@@ -165,18 +173,22 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
 
           // Polling retry: if autoplay was requested while the
           // controller was initializing, keep trying every 500ms
-          // (after the 300ms grace period) until playback starts.
+          // (after the 800ms grace period) until playback starts.
           // The playback_update listener clears wantsAutoPlayRef
           // once !isPaused, which stops the loop.
           if (wantsAutoPlayRef.current) {
             const retryId = setInterval(() => {
               if (!wantsAutoPlayRef.current) {
                 clearInterval(retryId);
-              } else if (Date.now() - autoPlayAtRef.current >= 300) {
+              } else if (Date.now() - autoPlayAtRef.current >= 800) {
                 tryPlay();
               }
             }, 500);
-            setTimeout(() => clearInterval(retryId), 15000);
+            setTimeout(() => {
+              clearInterval(retryId);
+              wantsAutoPlayRef.current = false;
+              setTrackLoading(false);
+            }, 15000);
           }
         }
       );
@@ -225,7 +237,7 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
       setTrackLoading(true);
 
       if (controllerRef.current) {
-        // Polling retry: try play() every 500ms after the 300ms grace
+        // Polling retry: try play() every 500ms after the 800ms grace
         // period until the playback_update listener confirms the track
         // is playing (clears wantsAutoPlayRef). This is more robust
         // than a single-shot timeout since play() can silently fail
@@ -233,7 +245,7 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
         const retryId = setInterval(() => {
           if (!wantsAutoPlayRef.current) {
             clearInterval(retryId);
-          } else if (Date.now() - autoPlayAtRef.current >= 300) {
+          } else if (Date.now() - autoPlayAtRef.current >= 800) {
             tryPlay();
           }
         }, 500);
@@ -250,7 +262,14 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
         };
       }
       // Controller still initializing — wantsAutoPlayRef is set,
-      // the playback_update listener will handle it once active
+      // the playback_update listener will handle it once active.
+      // Add a safety timeout so the loading overlay can't persist
+      // forever if autoplay never succeeds.
+      const safety = setTimeout(() => {
+        wantsAutoPlayRef.current = false;
+        setTrackLoading(false);
+      }, 15000);
+      return () => clearTimeout(safety);
     }
     lastAutoPlaySignalRef.current = autoPlaySignal;
   }, [autoPlaySignal, trackId, tryPlay]);
