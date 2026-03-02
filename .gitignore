@@ -31,6 +31,9 @@ qdrant_data/
 *.key
 *.pem
 
+#Stories
+*TheHappinessLiability.pdf
+
 # Temporary files
 tmp/
 temp/ 
