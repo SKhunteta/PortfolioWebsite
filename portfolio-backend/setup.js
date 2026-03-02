@@ -9,7 +9,7 @@ import AnthropicService from "./services/anthropic.js";
 // Load environment variables
 dotenv.config();
 
-console.log("🚀 Setting up Portfolio AI Backend...\n");
+console.log("Setting up Portfolio AI Backend...\n");
 
 async function setup() {
   try {

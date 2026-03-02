@@ -2,7 +2,7 @@
 
 A modern, AI-enhanced portfolio website built with React and Express.js, featuring natural language interaction capabilities powered by OpenAI and vector search.
 
-## 🚀 Features
+## Features
 
 - **🎨 Modern Portfolio Interface**: Clean, responsive design built with React and Tailwind CSS
 - **🤖 AI Chat Assistant**: Interactive chatbot that can answer questions about skills, projects, and experience
@@ -174,7 +174,7 @@ After editing, run `npm run setup` to reindex the content.
 - Update components in `shreyans-portfolio/src/components/`
 - Customize colors and themes in the CSS files
 
-## 🚀 Deployment
+## Deployment
 
 ### Frontend (Netlify/Vercel)
 

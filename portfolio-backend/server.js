@@ -222,7 +222,7 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(PORT, async () => {
-  console.log(`🚀 Portfolio Backend running on port ${PORT}`);
+  console.log(`Portfolio Backend running on port ${PORT}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/health`);
   console.log(`🧠 Ask endpoint: http://localhost:${PORT}/api/ask`);
   console.log(`📡 REST API: http://localhost:${PORT}/api/portfolio`);

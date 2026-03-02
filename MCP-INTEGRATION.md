@@ -1,4 +1,4 @@
-# 🚀 Claude MCP Connector Integration
+# Claude MCP Connector Integration
 
 ## Overview
 

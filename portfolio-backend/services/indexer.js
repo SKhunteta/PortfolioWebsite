@@ -18,7 +18,7 @@ class IndexerService {
    */
   async initialize() {
     try {
-      console.log("🚀 Initializing indexer service...");
+      console.log("Initializing indexer service...");
 
       // Initialize Qdrant collection
       await QdrantService.initializeCollection();
