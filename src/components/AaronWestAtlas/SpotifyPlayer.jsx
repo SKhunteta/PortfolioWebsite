@@ -163,16 +163,20 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
             }
           });
 
-          // Delayed retry: if autoplay was requested while controller
-          // was initializing, wait 1s then try — long enough for the
-          // track to buffer (avoids sputter) but catches the case
-          // where playback_update events already settled.
+          // Polling retry: if autoplay was requested while the
+          // controller was initializing, keep trying every 500ms
+          // (after the 800ms grace period) until playback starts.
+          // The playback_update listener clears wantsAutoPlayRef
+          // once !isPaused, which stops the loop.
           if (wantsAutoPlayRef.current) {
-            setTimeout(() => {
-              if (wantsAutoPlayRef.current) {
+            const retryId = setInterval(() => {
+              if (!wantsAutoPlayRef.current) {
+                clearInterval(retryId);
+              } else if (Date.now() - autoPlayAtRef.current >= 800) {
                 tryPlay();
               }
-            }, 1000);
+            }, 500);
+            setTimeout(() => clearInterval(retryId), 15000);
           }
         }
       );
@@ -221,24 +225,27 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
       setTrackLoading(true);
 
       if (controllerRef.current) {
-        // Delayed retry at 1s — long enough for the track to buffer
-        // (avoids the start-stop sputter that happened at 200ms) but
-        // catches the case where playback_update events already settled
-        // before wantsAutoPlayRef was set. The guard ensures this is
-        // a no-op if the event-driven approach already succeeded.
-        const retry = setTimeout(() => {
-          if (wantsAutoPlayRef.current) {
+        // Polling retry: try play() every 500ms after the 800ms grace
+        // period until the playback_update listener confirms the track
+        // is playing (clears wantsAutoPlayRef). This is more robust
+        // than a single-shot timeout since play() can silently fail
+        // if the track is still buffering.
+        const retryId = setInterval(() => {
+          if (!wantsAutoPlayRef.current) {
+            clearInterval(retryId);
+          } else if (Date.now() - autoPlayAtRef.current >= 800) {
             tryPlay();
           }
-        }, 1000);
+        }, 500);
 
         // Safety: clear autoplay flag after 15s to prevent stale state
         const safety = setTimeout(() => {
+          clearInterval(retryId);
           wantsAutoPlayRef.current = false;
           setTrackLoading(false);
         }, 15000);
         return () => {
-          clearTimeout(retry);
+          clearInterval(retryId);
           clearTimeout(safety);
         };
       }
@@ -282,10 +289,12 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal }) => {
 
   return (
     <div
-      ref={containerRef}
       className="rounded-lg overflow-hidden relative"
       style={{ minHeight: 80 }}
     >
+      {/* Spotify API target — kept separate so createController's DOM
+          mutations don't destroy the React-managed loading overlay. */}
+      <div ref={containerRef} />
       {(loading || trackLoading) && (
         <div className="absolute inset-0 bg-atlas-bg/90 rounded-lg flex items-center justify-center z-20 pointer-events-none">
           <div className="flex items-center gap-2">
