@@ -59,7 +59,8 @@ class HeadlineStore:
         """Insert a headline, skipping if URL already exists. Returns True if inserted."""
         conn = self._get_conn()
         try:
-            count_before = conn.execute("SELECT COUNT(*) FROM headlines").fetchone()[0]
+            row_before = conn.execute("SELECT COUNT(*) FROM headlines").fetchone()
+            count_before: int = row_before[0] if row_before else 0
             conn.execute(
                 """
                 INSERT INTO headlines (id, title, source, language, url, published_at, fetched_at)
@@ -76,7 +77,8 @@ class HeadlineStore:
                     headline.fetched_at,
                 ],
             )
-            count_after = conn.execute("SELECT COUNT(*) FROM headlines").fetchone()[0]
+            row_after = conn.execute("SELECT COUNT(*) FROM headlines").fetchone()
+            count_after: int = row_after[0] if row_after else 0
             return count_after > count_before
         finally:
             conn.close()
