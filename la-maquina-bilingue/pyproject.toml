@@ -3,7 +3,6 @@ name = "la-maquina-bilingue"
 version = "0.1.0"
 description = "Cross-lingual emotion analysis: how EN and ES news frame the same stories differently"
 authors = [{ name = "Shreyans Khunteta", email = "shreyans@builtbyshrey.com" }]
-readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 
@@ -63,6 +62,7 @@ ci = [
     "uvicorn[standard]>=0.29",
     "ruff>=0.4",
     "mypy>=1.10",
+    "types-PyYAML>=6.0",
     "pytest>=8.2",
     "pytest-cov>=5.0",
     "pytest-asyncio>=0.23",

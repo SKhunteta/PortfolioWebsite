@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from time import mktime
 
@@ -33,10 +33,10 @@ def load_feeds(config_path: str | None = None) -> list[dict]:
 def parse_published_date(entry: dict) -> datetime:
     """Extract publication date from an RSS entry."""
     if hasattr(entry, "published_parsed") and entry.published_parsed:
-        return datetime.fromtimestamp(mktime(entry.published_parsed), tz=timezone.utc)
+        return datetime.fromtimestamp(mktime(entry.published_parsed), tz=UTC)
     if hasattr(entry, "updated_parsed") and entry.updated_parsed:
-        return datetime.fromtimestamp(mktime(entry.updated_parsed), tz=timezone.utc)
-    return datetime.now(timezone.utc)
+        return datetime.fromtimestamp(mktime(entry.updated_parsed), tz=UTC)
+    return datetime.now(UTC)
 
 
 def fetch_feed(feed_config: dict) -> list[Headline]:
@@ -58,7 +58,7 @@ def fetch_feed(feed_config: dict) -> list[Headline]:
         return []
 
     headlines = []
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     for entry in parsed.entries:
         title = entry.get("title", "").strip()

@@ -4,14 +4,13 @@ from __future__ import annotations
 
 import os
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from src.ingestion.headline_store import Headline, HeadlineStore
 from src.ingestion.rss_fetcher import fetch_feed, load_feeds, parse_published_date
-
 
 # --- Fixtures ---
 
@@ -40,8 +39,8 @@ def sample_headline():
         source="BBC World",
         language="en",
         url="https://example.com/article-001",
-        published_at=datetime(2024, 1, 15, 12, 0, 0, tzinfo=timezone.utc),
-        fetched_at=datetime.now(timezone.utc),
+        published_at=datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC),
+        fetched_at=datetime.now(UTC),
     )
 
 
@@ -54,8 +53,8 @@ def sample_headline_es():
         source="BBC Mundo",
         language="es",
         url="https://example.com/articulo-002",
-        published_at=datetime(2024, 1, 15, 13, 0, 0, tzinfo=timezone.utc),
-        fetched_at=datetime.now(timezone.utc),
+        published_at=datetime(2024, 1, 15, 13, 0, 0, tzinfo=UTC),
+        fetched_at=datetime.now(UTC),
     )
 
 
@@ -79,8 +78,8 @@ class TestHeadlineStore:
             source="Different source",
             language="en",
             url=sample_headline.url,  # Same URL
-            published_at=datetime.now(timezone.utc),
-            fetched_at=datetime.now(timezone.utc),
+            published_at=datetime.now(UTC),
+            fetched_at=datetime.now(UTC),
         )
         store.upsert(duplicate)
         assert store.count() == 1
@@ -115,8 +114,8 @@ class TestHeadlineStore:
                 source="Test",
                 language="en",
                 url=f"https://example.com/batch-{i}",
-                published_at=datetime.now(timezone.utc),
-                fetched_at=datetime.now(timezone.utc),
+                published_at=datetime.now(UTC),
+                fetched_at=datetime.now(UTC),
             )
             for i in range(5)
         ]
@@ -132,7 +131,10 @@ class TestHeadlineStore:
     def test_update_emotions(self, store, sample_headline):
         """Emotion scores can be updated."""
         store.upsert(sample_headline)
-        emotions = {"anger": 0.1, "joy": 0.05, "fear": 0.6, "sadness": 0.15, "surprise": 0.05, "disgust": 0.05}
+        emotions = {
+            "anger": 0.1, "joy": 0.05, "fear": 0.6,
+            "sadness": 0.15, "surprise": 0.05, "disgust": 0.05,
+        }
         store.update_emotions(sample_headline.id, emotions)
 
     def test_update_match(self, store, sample_headline, sample_headline_es):

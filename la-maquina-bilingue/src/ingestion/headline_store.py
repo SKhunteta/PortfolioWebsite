@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-import duckdb
 from dataclasses import dataclass
 from datetime import datetime
+
+import duckdb
 
 from src.config import config
 
@@ -110,7 +111,7 @@ class HeadlineStore:
                 "id", "title", "source", "language", "url", "published_at",
                 "fetched_at", "emotions", "matched_id", "match_score",
             ]
-            return [dict(zip(columns, row)) for row in rows]
+            return [dict(zip(columns, row, strict=False)) for row in rows]
         finally:
             conn.close()
 
@@ -139,7 +140,7 @@ class HeadlineStore:
                 "es_id", "es_title", "es_source", "es_emotions", "es_published",
                 "match_score",
             ]
-            return [dict(zip(columns, row)) for row in rows]
+            return [dict(zip(columns, row, strict=False)) for row in rows]
         finally:
             conn.close()
 
@@ -200,6 +201,6 @@ class HeadlineStore:
                 "id", "title", "source", "language", "url", "published_at",
                 "fetched_at", "emotions", "matched_id", "match_score",
             ]
-            return [dict(zip(columns, row)) for row in rows]
+            return [dict(zip(columns, row, strict=False)) for row in rows]
         finally:
             conn.close()
