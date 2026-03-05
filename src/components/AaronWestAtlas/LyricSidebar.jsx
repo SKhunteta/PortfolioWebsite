@@ -1,15 +1,51 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useRef, useCallback } from "react";
+import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 import { ALBUMS, SPOTIFY_TRACK_IDS } from "./constants";
 import SpotifyPlayer from "./SpotifyPlayer";
 
+const SWIPE_THRESHOLD = 50;
+
+const slideVariants = {
+  enter: (direction) => ({ x: direction > 0 ? 200 : -200, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (direction) => ({ x: direction > 0 ? -200 : 200, opacity: 0 }),
+};
+
 const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, canNavigatePrev, canNavigateNext, autoPlaySignal, onPlaybackStarted, compact = false }) => {
   const [showContext, setShowContext] = useState(false);
+  const [slideDirection, setSlideDirection] = useState(0);
   const album = ALBUMS[location.album];
   const trackId = SPOTIFY_TRACK_IDS[location.song] || null;
+  const dragX = useMotionValue(0);
+
+  const handleDragEnd = useCallback((_, info) => {
+    const swipe = info.offset.x;
+    if (swipe < -SWIPE_THRESHOLD && canNavigateNext) {
+      setSlideDirection(1);
+      onNavigate(1);
+    } else if (swipe > SWIPE_THRESHOLD && canNavigatePrev) {
+      setSlideDirection(-1);
+      onNavigate(-1);
+    }
+  }, [onNavigate, canNavigatePrev, canNavigateNext]);
 
   return (
-    <div className={compact ? "p-4 space-y-2" : "p-6 space-y-4"}>
+    <AnimatePresence mode="wait" custom={slideDirection}>
+    <motion.div
+      key={location.id}
+      custom={slideDirection}
+      variants={slideVariants}
+      initial="enter"
+      animate="center"
+      exit="exit"
+      transition={{ duration: 0.25, ease: "easeInOut" }}
+      drag="x"
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.3}
+      onDragEnd={handleDragEnd}
+      style={{ x: dragX, touchAction: "pan-y" }}
+      className={compact ? "p-4 space-y-2" : "p-6 space-y-4"}
+    >
       {/* Album badge with cover */}
       <div className={`flex items-center ${compact ? "gap-2" : "gap-3"}`}>
         <img
@@ -118,7 +154,8 @@ const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, can
           Next &rarr;
         </button>
       </div>
-    </div>
+    </motion.div>
+    </AnimatePresence>
   );
 };
 
@@ -161,7 +198,7 @@ export const MobileBottomSheet = ({ location, onNavigate, onClose, journeyActive
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="fixed bottom-0 left-0 right-0 bg-atlas-bg border-t border-atlas-border rounded-t-2xl shadow-custom-2xl z-[1001] max-h-[50vh] overflow-y-auto"
+          className="fixed bottom-0 left-0 right-0 bg-atlas-bg border-t border-atlas-border rounded-t-2xl shadow-custom-2xl z-[1001] max-h-[50vh] overflow-y-auto overflow-x-hidden"
         >
           {/* Drag handle */}
           <div className="flex justify-center py-2 sticky top-0 bg-atlas-bg rounded-t-2xl">
