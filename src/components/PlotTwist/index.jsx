@@ -8,7 +8,7 @@ import SavedDrawer from "./SavedDrawer";
 import { STORAGE_KEYS } from "./constants";
 
 const WelcomeCard = ({ onStart }) => (
-  <div className="h-screen w-full snap-start flex items-center justify-center bg-gradient-to-b from-pt-accent/20 via-pt-bg to-pt-bg px-6">
+  <div className="h-dvh w-full snap-start flex items-center justify-center bg-gradient-to-b from-pt-accent/20 via-pt-bg to-pt-bg px-6">
     <div className="max-w-md text-center">
       <motion.h1
         initial={{ opacity: 0, y: 30 }}
@@ -67,7 +67,7 @@ const WelcomeCard = ({ onStart }) => (
 );
 
 const LoadingCard = () => (
-  <div className="h-screen w-full snap-start flex items-center justify-center bg-pt-bg px-6">
+  <div className="h-dvh w-full snap-start flex items-center justify-center bg-pt-bg px-6">
     <div className="text-center">
       <motion.p
         initial={{ opacity: 0 }}
@@ -149,7 +149,7 @@ const PlotTwist = () => {
   }, [handleScroll]);
 
   return (
-    <div className="h-screen bg-pt-bg relative overflow-hidden">
+    <div className="h-dvh bg-pt-bg relative overflow-hidden">
       {/* Floating header */}
       <div className="absolute top-0 left-0 right-0 z-30 pointer-events-none">
         <div className="flex items-center justify-between px-4 sm:px-6 py-3">
@@ -238,7 +238,7 @@ const PlotTwist = () => {
 
         {/* Error state */}
         {error && !loading && stories.length === 0 && (
-          <div className="h-screen w-full snap-start flex items-center justify-center bg-pt-bg px-6">
+          <div className="h-dvh w-full snap-start flex items-center justify-center bg-pt-bg px-6">
             <div className="text-center max-w-md">
               <p
                 className="text-pt-text text-2xl mb-3"
