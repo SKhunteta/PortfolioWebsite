@@ -1,0 +1,36 @@
+# La Máquina Bilingüe — RSS Feed Sources
+# EN and ES feeds covering international news
+
+english:
+  - name: "BBC World"
+    url: "http://feeds.bbci.co.uk/news/world/rss.xml"
+    language: "en"
+
+  - name: "NPR News"
+    url: "https://feeds.npr.org/1001/rss.xml"
+    language: "en"
+
+  - name: "Reuters"
+    url: "https://www.reutersagency.com/feed/"
+    language: "en"
+
+  - name: "AP News"
+    url: "https://rsshub.app/apnews/topics/apf-topnews"
+    language: "en"
+
+spanish:
+  - name: "BBC Mundo"
+    url: "https://feeds.bbci.co.uk/mundo/rss.xml"
+    language: "es"
+
+  - name: "El País"
+    url: "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada"
+    language: "es"
+
+  - name: "CNN en Español"
+    url: "https://cnnespanol.cnn.com/feed/"
+    language: "es"
+
+  - name: "EFE (via Google News)"
+    url: "https://news.google.com/rss/search?q=site:efe.com&hl=es"
+    language: "es"

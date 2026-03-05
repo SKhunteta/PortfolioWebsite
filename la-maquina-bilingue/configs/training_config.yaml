@@ -1,0 +1,60 @@
+# La Máquina Bilingüe — Training Configuration
+
+model:
+  base_model: "xlm-roberta-base"
+  num_labels: 7  # Ekman 6 + neutral
+  max_length: 128
+
+training:
+  learning_rate: 2e-5
+  batch_size: 32
+  epochs: 5
+  warmup_ratio: 0.1
+  weight_decay: 0.01
+  fp16: true
+  gradient_accumulation_steps: 1
+
+data:
+  # GoEmotions → Ekman 6 mapping
+  emotion_mapping:
+    anger: ["anger", "annoyance", "disapproval"]
+    disgust: ["disgust"]
+    fear: ["fear", "nervousness"]
+    joy: ["joy", "amusement", "approval", "excitement", "gratitude", "love", "optimism", "relief", "pride", "admiration", "desire", "caring"]
+    sadness: ["sadness", "disappointment", "embarrassment", "grief", "remorse"]
+    surprise: ["surprise", "realization", "confusion", "curiosity"]
+    neutral: ["neutral"]
+
+  # Labels
+  labels:
+    - anger
+    - disgust
+    - fear
+    - joy
+    - sadness
+    - surprise
+    - neutral
+
+  # Split ratios
+  train_ratio: 0.8
+  val_ratio: 0.1
+  test_ratio: 0.1
+
+sweep:
+  # W&B sweep configuration
+  method: "bayes"
+  parameters:
+    learning_rate:
+      values: [1e-5, 2e-5, 3e-5, 5e-5]
+    batch_size:
+      values: [16, 32]
+    epochs:
+      values: [3, 5, 8]
+    warmup_ratio:
+      values: [0.0, 0.1, 0.2]
+
+monitoring:
+  # Evidently config
+  reference_window_days: 30
+  drift_threshold: 0.1
+  report_format: "html"

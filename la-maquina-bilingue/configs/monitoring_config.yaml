@@ -1,0 +1,41 @@
+# La Máquina Bilingüe — Monitoring Configuration
+
+drift_detection:
+  # Reference data window
+  reference_window_days: 30
+
+  # Features to monitor for data drift
+  input_features:
+    - headline_length
+    - vocabulary_diversity
+    - language_mix_ratio
+
+  # Prediction monitoring
+  prediction_drift:
+    emotions:
+      - anger
+      - disgust
+      - fear
+      - joy
+      - sadness
+      - surprise
+      - neutral
+    confidence_threshold: 0.5
+
+  # Per-language monitoring (the novel angle)
+  per_language:
+    enabled: true
+    languages: ["en", "es"]
+
+  # Thresholds
+  data_drift_threshold: 0.1
+  prediction_drift_threshold: 0.15
+
+reporting:
+  format: "html"
+  output_dir: "data/monitoring_reports"
+  schedule: "weekly"  # Monday 9am UTC
+
+alerts:
+  github_issue: true
+  wandb_log: true

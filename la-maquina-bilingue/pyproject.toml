@@ -1,0 +1,77 @@
+[project]
+name = "la-maquina-bilingue"
+version = "0.1.0"
+description = "Cross-lingual emotion analysis: how EN and ES news frame the same stories differently"
+authors = [{ name = "Shreyans Khunteta", email = "shreyans@builtbyshrey.com" }]
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+
+dependencies = [
+    # Data pipeline
+    "feedparser>=6.0",
+    "duckdb>=1.0",
+    "dvc>=3.0",
+    "pyyaml>=6.0",
+    "httpx>=0.27",
+
+    # ML / NLP
+    "torch>=2.0",
+    "transformers>=4.40",
+    "sentence-transformers>=3.0",
+    "datasets>=2.19",
+    "accelerate>=0.30",
+
+    # Experiment tracking
+    "mlflow>=2.13",
+    "wandb>=0.17",
+
+    # Monitoring
+    "evidently>=0.4",
+
+    # Vector DB
+    "qdrant-client>=1.9",
+
+    # Model optimization
+    "onnx>=1.16",
+    "onnxruntime>=1.18",
+    "optimum>=1.19",
+
+    # API
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.29",
+
+    # Orchestration
+    "prefect>=3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.4",
+    "mypy>=1.10",
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+    "pytest-asyncio>=0.23",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]

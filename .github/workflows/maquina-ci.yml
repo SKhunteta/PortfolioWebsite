@@ -1,0 +1,38 @@
+name: "La Máquina Bilingüe CI"
+
+on:
+  push:
+    paths:
+      - "la-maquina-bilingue/**"
+  pull_request:
+    paths:
+      - "la-maquina-bilingue/**"
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: la-maquina-bilingue
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install ".[dev]"
+
+      - name: Lint with ruff
+        run: ruff check src/ tests/
+
+      - name: Type check with mypy
+        run: mypy src/ --ignore-missing-imports
+
+      - name: Run tests
+        run: pytest tests/ -v --tb=short

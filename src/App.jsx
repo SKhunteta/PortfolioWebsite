@@ -12,14 +12,32 @@ import ChatSection from "./components/ChatSection";
 import EmotionalLaborExchange from "./components/EmotionalLaborExchange";
 import ELETeaser from "./components/ELETeaser";
 import AaronWestAtlasTeaser from "./components/AaronWestAtlasTeaser";
+import MaquinaTeaser from "./components/MaquinaTeaser";
 
 const AaronWestAtlas = lazy(() => import("./components/AaronWestAtlas"));
+const LaMaquinaBilingue = lazy(() => import("./components/LaMaquinaBilingue"));
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/ele" element={<EmotionalLaborExchange />} />
+        <Route
+          path="/la-maquina-bilingue"
+          element={
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center bg-maq-bg">
+                  <p className="text-maq-text-secondary" style={{ fontFamily: '"IBM Plex Mono", monospace' }}>
+                    Cargando la máquina...
+                  </p>
+                </div>
+              }
+            >
+              <LaMaquinaBilingue />
+            </Suspense>
+          }
+        />
         <Route
           path="/aaron-west-atlas"
           element={
@@ -64,6 +82,9 @@ function App() {
                 </div>
                 <div className="bg-white py-8">
                   <AaronWestAtlasTeaser />
+                </div>
+                <div className="bg-gray-light py-8">
+                  <MaquinaTeaser />
                 </div>
                 <div className="bg-gray-light py-8">
                   <Contact />
