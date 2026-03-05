@@ -78,3 +78,11 @@ def trigger_ingest() -> dict[str, Any]:
 
     counts = ingest()
     return {"status": "ok", "inserted": counts}
+
+
+@app.post("/pipeline")
+def trigger_pipeline() -> dict[str, Any]:
+    """Run full pipeline: ingest -> classify -> match -> monitor."""
+    from src.pipeline import run_all
+
+    return run_all()
