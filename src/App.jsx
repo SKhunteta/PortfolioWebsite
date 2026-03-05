@@ -12,14 +12,32 @@ import ChatSection from "./components/ChatSection";
 import EmotionalLaborExchange from "./components/EmotionalLaborExchange";
 import ELETeaser from "./components/ELETeaser";
 import AaronWestAtlasTeaser from "./components/AaronWestAtlasTeaser";
+import PlotTwistTeaser from "./components/PlotTwistTeaser";
 
 const AaronWestAtlas = lazy(() => import("./components/AaronWestAtlas"));
+const PlotTwist = lazy(() => import("./components/PlotTwist"));
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/ele" element={<EmotionalLaborExchange />} />
+        <Route
+          path="/plot-twist"
+          element={
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center bg-[#0F0F1A]">
+                  <p className="text-[#6B6B80] italic" style={{ fontFamily: '"DM Serif Display", Georgia, serif' }}>
+                    Loading stories...
+                  </p>
+                </div>
+              }
+            >
+              <PlotTwist />
+            </Suspense>
+          }
+        />
         <Route
           path="/aaron-west-atlas"
           element={
@@ -64,6 +82,9 @@ function App() {
                 </div>
                 <div className="bg-white py-8">
                   <AaronWestAtlasTeaser />
+                </div>
+                <div className="bg-gray-light py-8">
+                  <PlotTwistTeaser />
                 </div>
                 <div className="bg-gray-light py-8">
                   <Contact />
