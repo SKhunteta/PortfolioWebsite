@@ -20,8 +20,10 @@ def temp_db():
     """Create a temporary DuckDB database for testing."""
     with tempfile.NamedTemporaryFile(suffix=".duckdb", delete=False) as f:
         db_path = f.name
+    os.unlink(db_path)  # DuckDB needs a non-existent path to create a fresh database
     yield db_path
-    os.unlink(db_path)
+    if os.path.exists(db_path):
+        os.unlink(db_path)
 
 
 @pytest.fixture
