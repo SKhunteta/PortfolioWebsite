@@ -26,8 +26,8 @@ const AaronWestAtlas = () => {
       {/* Main content: Map + Sidebar */}
       <div className="flex-1 flex flex-col lg:flex-row relative" style={{ minHeight: "60vh" }}>
         {/* Desktop sidebar */}
-        <div className="hidden lg:flex lg:flex-col w-96 border-r border-atlas-border overflow-y-auto bg-atlas-bg">
-          <div className="flex-1 overflow-y-auto">
+        <div className="hidden lg:flex lg:flex-col w-96 border-r border-atlas-border overflow-hidden bg-atlas-bg">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden">
             <DesktopSidebar
               location={atlas.selectedLocation}
               onNavigate={atlas.navigateLocation}
