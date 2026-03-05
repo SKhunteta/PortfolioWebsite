@@ -148,26 +148,34 @@ const FeedControls = ({
         </div>
       )}
 
-      {/* Remix button */}
+      {/* Remix button — labeled pill */}
       {onRemix && (
-        <ControlButton
+        <motion.button
+          whileTap={{ scale: 1.15 }}
           onClick={onRemix}
-          ariaLabel="Remix this story"
-          size="w-10 h-10"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/10 text-white/70 hover:text-white hover:bg-white/20 border border-white/10 transition-colors text-xs font-medium"
+          aria-label="Remix this story"
         >
-          <FaDice size={14} />
-        </ControlButton>
+          <FaDice size={12} />
+          <span style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}>
+            Remix
+          </span>
+        </motion.button>
       )}
 
-      {/* Share button */}
+      {/* Share button — labeled pill */}
       {onShare && (
-        <ControlButton
+        <motion.button
+          whileTap={{ scale: 1.15 }}
           onClick={onShare}
-          ariaLabel="Share this story"
-          size="w-10 h-10"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/10 text-white/70 hover:text-white hover:bg-white/20 border border-white/10 transition-colors text-xs font-medium"
+          aria-label="Share this story"
         >
-          <FaShareAlt size={14} />
-        </ControlButton>
+          <FaShareAlt size={12} />
+          <span style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}>
+            Share
+          </span>
+        </motion.button>
       )}
     </div>
   );

@@ -257,17 +257,19 @@ export default function useStoryFeed() {
         }
 
         const data = await response.json();
-        if (data.success && data.story) {
-          // Insert remixed story right after the original
-          setStories((prev) => {
-            const idx = prev.findIndex((s) => s.id === story.id);
-            if (idx === -1) return [...prev, data.story];
-            const next = [...prev];
-            next.splice(idx + 1, 0, data.story);
-            return next;
-          });
-          return data.story;
+        if (!data.success || !data.story) {
+          throw new Error("The remix came back empty. Try a different genre.");
         }
+
+        // Insert remixed story right after the original
+        setStories((prev) => {
+          const idx = prev.findIndex((s) => s.id === story.id);
+          if (idx === -1) return [...prev, data.story];
+          const next = [...prev];
+          next.splice(idx + 1, 0, data.story);
+          return next;
+        });
+        return data.story;
       } catch (err) {
         console.error("Remix error:", err);
         throw err;

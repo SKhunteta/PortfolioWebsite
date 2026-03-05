@@ -299,6 +299,7 @@ const PlotTwist = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [remixTarget, setRemixTarget] = useState(null);
   const [remixLoading, setRemixLoading] = useState(false);
+  const [remixError, setRemixError] = useState(null);
   const [shareTarget, setShareTarget] = useState(null);
   const [milestoneMsg, setMilestoneMsg] = useState(null);
   const shownMilestones = useRef(new Set());
@@ -338,11 +339,12 @@ const PlotTwist = () => {
     async (targetGenre) => {
       if (!remixTarget || remixLoading) return;
       setRemixLoading(true);
+      setRemixError(null);
       try {
         await remixStory(remixTarget, targetGenre);
         setRemixTarget(null);
-      } catch {
-        // error handled in hook
+      } catch (err) {
+        setRemixError(err.message || "Remix failed. Try again.");
       } finally {
         setRemixLoading(false);
       }
@@ -609,10 +611,12 @@ const PlotTwist = () => {
         onClose={() => {
           setRemixTarget(null);
           setRemixLoading(false);
+          setRemixError(null);
         }}
         onSelect={handleRemix}
         originalGenre={remixTarget?.genre}
         loading={remixLoading}
+        error={remixError}
       />
 
       <ShareCard
