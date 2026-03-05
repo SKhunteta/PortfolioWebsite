@@ -20,17 +20,17 @@ const StoryCard = ({
   const isPremise = story.type === "premise";
 
   return (
-    <div className={`h-screen w-full snap-start relative bg-gradient-to-b ${gradient}`}>
+    <div className={`h-dvh w-full snap-start relative bg-gradient-to-b ${gradient}`}>
       {/* Subtle top accent line */}
       <div
         className="absolute top-0 left-0 right-0 h-[2px]"
         style={{ backgroundColor: accentColor, opacity: 0.5 }}
       />
 
-      <div className="h-full flex items-center justify-center px-6 py-16">
-        <div className="max-w-lg w-full flex gap-4 items-center">
+      <div className="h-full flex flex-col px-6 pt-16 pb-8">
+        <div className="max-w-lg w-full mx-auto flex gap-4 flex-1 min-h-0 items-center">
           {/* Story content */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 overflow-y-auto max-h-full py-4 scrollbar-hide">
             {/* Counter */}
             <motion.p
               initial={{ opacity: 0 }}
