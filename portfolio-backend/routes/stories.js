@@ -40,6 +40,7 @@ Rules:
 - Excerpts should have distinctive voice and immediately establish atmosphere
 - Vary genres and moods widely across the batch
 - Be bold, weird, surprising. Avoid clichés. Subvert expectations.
+- IMPORTANT: Actively diversify character names across cultures, ethnicities, and backgrounds. Use names from African, South Asian, East Asian, Southeast Asian, Latin American, Middle Eastern, Eastern European, Indigenous, and Western traditions. Never repeat the same name across a batch. Avoid defaulting to any single naming pattern.
 - When user preferences are provided, lean ~60% toward their liked genres/tags but always include 1-2 wildcards from completely different genres for discovery
 - Each story gets 2-3 tags from: twist-ending, unreliable-narrator, dystopian, slow-burn, atmospheric, character-study, world-building, philosophical, action-packed, emotional, experimental, satirical, folklore, coming-of-age, revenge, time-travel, AI, supernatural, heist, survival
 
@@ -49,7 +50,7 @@ Respond ONLY with valid JSON. No markdown, no backticks, no explanation. Use thi
     {
       "type": "premise",
       "title": "The Last Librarian",
-      "content": "In 2087, books are illegal — not because of censorship, but because reading fiction causes a neurological condition called 'narrative bleed,' where readers begin confusing their memories with characters' lives. Maya Chen is the last person alive who can read without symptoms. The government wants to study her brain. The underground wants her to read one final book that could cure everyone — or prove that reality was never real to begin with.",
+      "content": "In 2087, books are illegal — not because of censorship, but because reading fiction causes a neurological condition called 'narrative bleed,' where readers begin confusing their memories with characters' lives. Amara Okafor is the last person alive who can read without symptoms. The government wants to study her brain. The underground wants her to read one final book that could cure everyone — or prove that reality was never real to begin with.",
       "genre": "sci-fi",
       "mood": "tense",
       "tags": ["dystopian", "philosophical", "twist-ending"]
@@ -57,7 +58,7 @@ Respond ONLY with valid JSON. No markdown, no backticks, no explanation. Use thi
     {
       "type": "excerpt",
       "title": "Marguerite's Garden",
-      "content": "The tomatoes were screaming again. Not loudly — Marguerite had long ago learned to distinguish between the whisper-screams of thirsty roots and the full-throated howls of a plant being eaten alive by aphids. These were somewhere in between: a low, persistent keening that settled in her molars like a toothache.\\n\\nShe set down her tea and pulled on her gardening gloves, the ones with the silver threading her grandmother had sewn into the fingertips. 'For listening,' Abuela had said, though Marguerite hadn't understood then that she meant it literally.\\n\\nThe garden path was warm under her bare feet. Thirty-seven plants, each with its own voice, its own complaints, its own small desperate hopes for rain.",
+      "content": "The tomatoes were screaming again. Not loudly — Koemi had long ago learned to distinguish between the whisper-screams of thirsty roots and the full-throated howls of a plant being eaten alive by aphids. These were somewhere in between: a low, persistent keening that settled in her molars like a toothache.\\n\\nShe set down her tea and pulled on her gardening gloves, the ones with the silver threading her grandmother had sewn into the fingertips. 'For listening,' Obaa-chan had said, though Koemi hadn't understood then that she meant it literally.\\n\\nThe garden path was warm under her bare feet. Thirty-seven plants, each with its own voice, its own complaints, its own small desperate hopes for rain.",
       "genre": "magical-realism",
       "mood": "whimsical",
       "tags": ["atmospheric", "character-study", "folklore"]
