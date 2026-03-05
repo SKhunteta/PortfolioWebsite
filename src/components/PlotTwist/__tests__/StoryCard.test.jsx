@@ -4,6 +4,18 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import StoryCard from "../StoryCard";
 
+// Mock TypewriterText to render plain text in tests
+vi.mock("../TypewriterText", () => ({
+  default: ({ text, className, style }) => (
+    <div className={className} style={style}>{text}</div>
+  ),
+}));
+
+// Mock MoodEffect to avoid rendering in tests
+vi.mock("../MoodEffect", () => ({
+  default: () => null,
+}));
+
 // Mock framer-motion to avoid animation issues in tests
 vi.mock("framer-motion", () => ({
   motion: {
@@ -56,6 +68,9 @@ vi.mock("framer-motion", () => ({
     }),
   },
   AnimatePresence: ({ children }) => <>{children}</>,
+  useMotionValue: () => ({ get: () => 0, set: () => {} }),
+  useTransform: () => 0,
+  useScroll: () => ({ scrollYProgress: { get: () => 0.5 } }),
 }));
 
 const mockStory = {
@@ -78,7 +93,12 @@ const defaultProps = {
   onLike: vi.fn(),
   onDislike: vi.fn(),
   onSave: vi.fn(),
+  onContinue: vi.fn(),
+  onShare: vi.fn(),
+  onRemix: vi.fn(),
+  continuation: null,
   showScrollCue: false,
+  scrollContainerRef: { current: null },
 };
 
 describe("StoryCard", () => {

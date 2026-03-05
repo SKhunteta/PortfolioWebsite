@@ -25,6 +25,8 @@ export const API_ENDPOINTS = {
   mcp: `${API_BASE_URL}/api/mcp`,
   ele: `${API_BASE_URL}/api/ele/market-data`,
   stories: `${API_BASE_URL}/api/stories/generate`,
+  storiesContinue: `${API_BASE_URL}/api/stories/continue`,
+  storiesRemix: `${API_BASE_URL}/api/stories/remix`,
 };
 
 export default API_CONFIG;

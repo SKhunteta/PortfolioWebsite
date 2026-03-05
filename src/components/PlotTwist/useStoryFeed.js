@@ -42,6 +42,7 @@ export default function useStoryFeed() {
   const [reactions, setReactions] = useState({}); // storyId → 'liked' | 'disliked'
   const [genreFilter, setGenreFilter] = useState("all");
   const [sessionLikes, setSessionLikes] = useState(0);
+  const [continuations, setContinuations] = useState({}); // storyId → { text, loading, error }
   const fetchingRef = useRef(false);
 
   // Load initial stories on mount
@@ -166,6 +167,94 @@ export default function useStoryFeed() {
     saveToStorage(STORAGE_KEYS.saved, []);
   }, []);
 
+  // --- Continue a story ---
+  const continueStory = useCallback(async (story) => {
+    if (continuations[story.id]?.text || continuations[story.id]?.loading) return;
+
+    setContinuations((prev) => ({
+      ...prev,
+      [story.id]: { text: null, loading: true, error: null },
+    }));
+
+    try {
+      const response = await fetch(API_ENDPOINTS.storiesContinue, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: story.title,
+          content: story.content,
+          genre: story.genre,
+          mood: story.mood,
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to continue story");
+      }
+
+      const data = await response.json();
+      if (data.success && data.continuation) {
+        setContinuations((prev) => ({
+          ...prev,
+          [story.id]: { text: data.continuation, loading: false, error: null },
+        }));
+      }
+    } catch (err) {
+      setContinuations((prev) => ({
+        ...prev,
+        [story.id]: { text: null, loading: false, error: err.message },
+      }));
+    }
+  }, [continuations]);
+
+  // --- Remix a story ---
+  const remixStory = useCallback(
+    async (story, targetGenre) => {
+      try {
+        const response = await fetch(API_ENDPOINTS.storiesRemix, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: story.title,
+            content: story.content,
+            originalGenre: story.genre,
+            targetGenre,
+            mood: story.mood,
+          }),
+        });
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err.message || "Failed to remix story");
+        }
+
+        const data = await response.json();
+        if (data.success && data.story) {
+          // Insert remixed story right after the original
+          setStories((prev) => {
+            const idx = prev.findIndex((s) => s.id === story.id);
+            if (idx === -1) return [...prev, data.story];
+            const next = [...prev];
+            next.splice(idx + 1, 0, data.story);
+            return next;
+          });
+          return data.story;
+        }
+      } catch (err) {
+        console.error("Remix error:", err);
+        throw err;
+      }
+    },
+    []
+  );
+
+  // --- Reset preferences ---
+  const resetPreferences = useCallback(() => {
+    setPreferences(DEFAULT_PREFERENCES);
+    saveToStorage(STORAGE_KEYS.preferences, DEFAULT_PREFERENCES);
+  }, []);
+
   return {
     stories,
     loading,
@@ -174,6 +263,8 @@ export default function useStoryFeed() {
     savedStories,
     sessionLikes,
     genreFilter,
+    preferences,
+    continuations,
     setGenreFilter,
     loadMore,
     likeStory,
@@ -181,5 +272,8 @@ export default function useStoryFeed() {
     saveStory,
     isStorySaved,
     clearSaved,
+    continueStory,
+    remixStory,
+    resetPreferences,
   };
 }
