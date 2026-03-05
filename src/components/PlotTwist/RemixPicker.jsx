@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
 import { GENRES, GENRE_LABELS, GENRE_ACCENT_COLORS } from "./constants";
 
-const RemixPicker = ({ isOpen, onClose, onSelect, originalGenre, loading }) => {
+const RemixPicker = ({ isOpen, onClose, onSelect, originalGenre, loading, error }) => {
   const [selected, setSelected] = useState(null);
   const genres = GENRES.filter((g) => g !== "all" && g !== originalGenre);
 
@@ -56,6 +56,12 @@ const RemixPicker = ({ isOpen, onClose, onSelect, originalGenre, loading }) => {
                   &#9881;
                 </motion.span>
                 Remixing as {GENRE_LABELS[selected]}...
+              </div>
+            )}
+
+            {error && (
+              <div className="mb-4 text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2 border border-red-400/20">
+                {error}
               </div>
             )}
 
