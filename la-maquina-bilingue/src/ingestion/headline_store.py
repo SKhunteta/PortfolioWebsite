@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -58,6 +59,7 @@ class HeadlineStore:
         """Insert a headline, skipping if URL already exists. Returns True if inserted."""
         conn = self._get_conn()
         try:
+            count_before = conn.execute("SELECT COUNT(*) FROM headlines").fetchone()[0]
             conn.execute(
                 """
                 INSERT INTO headlines (id, title, source, language, url, published_at, fetched_at)
@@ -74,11 +76,8 @@ class HeadlineStore:
                     headline.fetched_at,
                 ],
             )
-            # Check if the row was actually inserted
-            result = conn.execute(
-                "SELECT id FROM headlines WHERE id = ?", [headline.id]
-            ).fetchone()
-            return result is not None
+            count_after = conn.execute("SELECT COUNT(*) FROM headlines").fetchone()[0]
+            return count_after > count_before
         finally:
             conn.close()
 
@@ -150,7 +149,7 @@ class HeadlineStore:
         try:
             conn.execute(
                 "UPDATE headlines SET emotions = ?::JSON WHERE id = ?",
-                [str(emotions), headline_id],
+                [json.dumps(emotions), headline_id],
             )
         finally:
             conn.close()
