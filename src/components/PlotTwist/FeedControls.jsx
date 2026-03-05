@@ -120,25 +120,31 @@ const FeedControls = ({
       {/* Divider */}
       <div className="w-6 h-px bg-white/10" />
 
-      {/* Continue button */}
+      {/* Continue button — prominent with label */}
       {onContinue && (
-        <div className="relative">
-          <ControlButton
+        <div className="relative flex flex-col items-center">
+          <motion.button
+            whileTap={continuationLoading ? {} : { scale: 1.15 }}
             onClick={onContinue}
             disabled={continuationLoading}
-            active={continuationCount > 0}
-            activeClass="bg-pt-accent/20 text-pt-accent"
-            dimmed={continuationLoading}
-            ariaLabel="Continue this story"
-            size="w-10 h-10"
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-full transition-colors text-xs font-medium ${
+              continuationLoading
+                ? "opacity-40 cursor-not-allowed bg-white/5 text-white/40"
+                : continuationCount > 0
+                ? "bg-pt-accent/20 text-pt-accent border border-pt-accent/30 hover:bg-pt-accent/30"
+                : "bg-white/10 text-white/70 hover:text-white hover:bg-white/20 border border-white/10"
+            }`}
+            aria-label="Continue this story"
           >
-            <FaMagic size={14} />
-          </ControlButton>
-          {continuationCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-pt-accent text-white text-[10px] flex items-center justify-center font-bold">
-              {continuationCount}
+            <FaMagic size={12} />
+            <span style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}>
+              {continuationLoading
+                ? "Writing..."
+                : continuationCount > 0
+                ? `More (${continuationCount})`
+                : "Continue"}
             </span>
-          )}
+          </motion.button>
         </div>
       )}
 

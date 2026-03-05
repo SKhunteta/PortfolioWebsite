@@ -43,6 +43,8 @@ export default function useStoryFeed() {
   const [genreFilter, setGenreFilter] = useState("all");
   const [sessionLikes, setSessionLikes] = useState(0);
   const [continuations, setContinuations] = useState({}); // storyId → { texts: [], loading, error }
+  const continuationsRef = useRef(continuations);
+  continuationsRef.current = continuations;
   const fetchingRef = useRef(false);
 
   // Load initial stories on mount
@@ -169,9 +171,10 @@ export default function useStoryFeed() {
 
   // --- Continue a story (supports multiple continuations) ---
   const continueStory = useCallback(async (story) => {
-    if (continuations[story.id]?.loading) return;
+    const current = continuationsRef.current;
+    if (current[story.id]?.loading) return;
 
-    const existingTexts = continuations[story.id]?.texts || [];
+    const existingTexts = current[story.id]?.texts || [];
 
     setContinuations((prev) => ({
       ...prev,
@@ -230,7 +233,7 @@ export default function useStoryFeed() {
         [story.id]: { texts: existingTexts, loading: false, error: err.message },
       }));
     }
-  }, [continuations]);
+  }, []);
 
   // --- Remix a story ---
   const remixStory = useCallback(
