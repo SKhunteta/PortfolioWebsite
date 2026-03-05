@@ -193,7 +193,7 @@ const StoryCard = ({
       return "flex-1 min-w-0 overflow-y-auto max-h-full py-4 scrollbar-hide border-l border-white/10 pl-4 max-w-md";
     }
     if (layoutMode === "quote") {
-      return "flex-1 min-w-0 overflow-y-auto max-h-full py-4 scrollbar-hide flex flex-col items-center justify-center";
+      return "flex-1 min-w-0 overflow-y-auto max-h-full py-4 scrollbar-hide flex flex-col items-center";
     }
     return "flex-1 min-w-0 overflow-y-auto max-h-full py-4 scrollbar-hide";
   })();
@@ -287,7 +287,7 @@ const StoryCard = ({
         }}
         className="h-full flex flex-col px-6 pt-16 pb-8 relative z-[2]"
       >
-        <div className="max-w-lg w-full mx-auto flex gap-4 flex-1 min-h-0 items-start pt-4">
+        <div className="max-w-lg w-full mx-auto flex gap-4 flex-1 min-h-0 pt-4">
           {/* Story content */}
           <div className={contentWrapperClasses}>
             {/* Staggered entry container */}
@@ -464,7 +464,7 @@ const StoryCard = ({
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
             viewport={{ once: true }}
-            className="flex-shrink-0"
+            className="flex-shrink-0 flex items-center"
           >
             <FeedControls
               onLike={onLike}
