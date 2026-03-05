@@ -13,3 +13,5 @@ data/raw/
 data/processed/
 models/*.onnx
 .env
+node_modules/
+frontend/dist/

@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 
 from src.ingestion.headline_store import HeadlineStore
 
@@ -12,6 +13,13 @@ app = FastAPI(
     title="La Máquina Bilingüe",
     description="Cross-lingual emotion analysis of EN/ES news headlines",
     version="0.1.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 _store: HeadlineStore | None = None
