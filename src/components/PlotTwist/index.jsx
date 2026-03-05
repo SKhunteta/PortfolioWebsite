@@ -655,6 +655,7 @@ const PlotTwist = () => {
         story={shareTarget}
         isOpen={!!shareTarget}
         onClose={() => setShareTarget(null)}
+        continuationTexts={shareTarget ? continuations[shareTarget.id]?.texts : undefined}
       />
     </div>
   );
