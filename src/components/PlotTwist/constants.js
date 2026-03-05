@@ -105,3 +105,22 @@ export const DEFAULT_PREFERENCES = {
   likedTags: {},
   dislikedTags: {},
 };
+
+export const SWIPE_STAMPS = {
+  default: { like: "HOOKED", dislike: "NEXT" },
+  noir: { like: "CASE OPEN", dislike: "COLD CASE" },
+  horror: { like: "CHILLING", dislike: "MEH" },
+  romance: { like: "SWOON", dislike: "PASS" },
+  humor: { like: "LOL", dislike: "MEH" },
+  thriller: { like: "GRIPPING", dislike: "SKIP" },
+  "sci-fi": { like: "INTRIGUING", dislike: "NEXT" },
+  fantasy: { like: "ENCHANTING", dislike: "NEXT" },
+  mystery: { like: "COMPELLING", dislike: "SKIP" },
+};
+
+export const MILESTONES = [
+  { count: 5, message: "Plot Twist Fan!" },
+  { count: 10, message: "You've Got Taste!" },
+  { count: 25, message: "Bibliophile Detected!" },
+  { count: 50, message: "Plot Twist Master!" },
+];

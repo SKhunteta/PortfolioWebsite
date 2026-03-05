@@ -8,12 +8,12 @@ import React, { useMemo } from "react";
 const RainEffect = () => {
   const streaks = useMemo(
     () =>
-      Array.from({ length: 18 }, (_, i) => ({
+      Array.from({ length: 24 }, (_, i) => ({
         id: i,
-        left: `${(i / 18) * 100 + Math.random() * 5}%`,
+        left: `${(i / 24) * 100 + Math.random() * 4}%`,
         delay: `${Math.random() * 3}s`,
         duration: `${1.5 + Math.random() * 1.5}s`,
-        opacity: 0.03 + Math.random() * 0.04,
+        opacity: 0.07 + Math.random() * 0.08,
         height: `${30 + Math.random() * 40}px`,
       })),
     []
@@ -39,7 +39,7 @@ const RainEffect = () => {
   );
 };
 
-const FloatingParticles = ({ color = "255,255,255", count = 8, direction = "up" }) => {
+const FloatingParticles = ({ color = "255,255,255", count = 12, direction = "up" }) => {
   const particles = useMemo(
     () =>
       Array.from({ length: count }, (_, i) => ({
@@ -47,8 +47,8 @@ const FloatingParticles = ({ color = "255,255,255", count = 8, direction = "up" 
         left: `${10 + Math.random() * 80}%`,
         delay: `${Math.random() * 4}s`,
         duration: `${4 + Math.random() * 4}s`,
-        size: `${2 + Math.random() * 3}px`,
-        opacity: 0.04 + Math.random() * 0.06,
+        size: `${3 + Math.random() * 4}px`,
+        opacity: 0.08 + Math.random() * 0.12,
         sway: `${(Math.random() - 0.5) * 40}px`,
       })),
     [count]
@@ -84,7 +84,7 @@ const VignettePulse = ({ intensity = "normal" }) => (
     className="absolute inset-0 animate-pt-vignette-pulse"
     style={{
       background:
-        "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.4) 100%)",
+        "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.5) 100%)",
       animationDuration: intensity === "strong" ? "3s" : "5s",
     }}
   />
@@ -99,7 +99,7 @@ const Flicker = () => (
 
 const ScanLines = () => (
   <div
-    className="absolute inset-0 animate-pt-scanline opacity-[0.03]"
+    className="absolute inset-0 animate-pt-scanline opacity-[0.07]"
     style={{
       backgroundImage:
         "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.5) 2px, rgba(255,255,255,0.5) 3px)",
@@ -111,7 +111,7 @@ const ScanLines = () => (
 const Shimmer = () => (
   <div
     className="absolute inset-0 overflow-hidden"
-    style={{ opacity: 0.06 }}
+    style={{ opacity: 0.12 }}
   >
     <div
       className="absolute w-[200%] h-full animate-pt-shimmer"
@@ -126,7 +126,7 @@ const Shimmer = () => (
 const FogDrift = () => (
   <div className="absolute inset-0 overflow-hidden">
     <div
-      className="absolute inset-0 animate-pt-fog opacity-[0.04]"
+      className="absolute inset-0 animate-pt-fog opacity-[0.10]"
       style={{
         background:
           "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 20%, transparent 40%, rgba(255,255,255,0.2) 60%, transparent 80%)",
@@ -139,7 +139,7 @@ const FogDrift = () => (
 const GradientBlob = () => (
   <div className="absolute inset-0 overflow-hidden">
     <div
-      className="absolute w-[60%] h-[60%] rounded-full blur-3xl animate-pt-morph opacity-[0.06]"
+      className="absolute w-[60%] h-[60%] rounded-full blur-3xl animate-pt-morph opacity-[0.14]"
       style={{
         background: "radial-gradient(circle, rgba(139,92,246,0.5), rgba(6,182,212,0.3), transparent)",
         top: "20%",
@@ -151,17 +151,17 @@ const GradientBlob = () => (
 
 const MOOD_EFFECTS = {
   melancholy: () => <RainEffect />,
-  hopeful: () => <FloatingParticles color="255,220,150" count={8} direction="up" />,
+  hopeful: () => <FloatingParticles color="255,220,150" count={12} direction="up" />,
   tense: () => <VignettePulse intensity="strong" />,
-  whimsical: () => <FloatingParticles color="200,180,255" count={6} direction="drift" />,
+  whimsical: () => <FloatingParticles color="200,180,255" count={10} direction="drift" />,
   dark: () => (
     <>
       <Flicker />
       <VignettePulse />
     </>
   ),
-  warm: () => <FloatingParticles color="255,180,80" count={5} direction="up" />,
-  cozy: () => <FloatingParticles color="255,180,80" count={5} direction="up" />,
+  warm: () => <FloatingParticles color="255,180,80" count={8} direction="up" />,
+  cozy: () => <FloatingParticles color="255,180,80" count={8} direction="up" />,
   surreal: () => <GradientBlob />,
   eerie: () => (
     <>
@@ -180,7 +180,7 @@ const MOOD_EFFECTS = {
   electric: () => <Shimmer />,
   bittersweet: () => (
     <>
-      <FloatingParticles color="255,200,200" count={4} direction="up" />
+      <FloatingParticles color="255,200,200" count={7} direction="up" />
       <VignettePulse />
     </>
   ),

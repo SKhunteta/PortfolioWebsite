@@ -9,25 +9,7 @@ import {
   FaShareAlt,
   FaDice,
 } from "react-icons/fa";
-
-const FloatingHeart = ({ id, onComplete }) => (
-  <motion.div
-    key={id}
-    initial={{ opacity: 1, y: 0, scale: 0.5 }}
-    animate={{
-      opacity: 0,
-      y: -80,
-      scale: 1.2,
-      x: (Math.random() - 0.5) * 60,
-    }}
-    transition={{ duration: 0.8, ease: "easeOut" }}
-    onAnimationComplete={onComplete}
-    className="absolute text-pt-like pointer-events-none"
-    style={{ bottom: "100%" }}
-  >
-    <FaHeart size={16} />
-  </motion.div>
-);
+import LikeBurst from "./LikeBurst";
 
 const ControlButton = ({
   onClick,
@@ -64,21 +46,22 @@ const FeedControls = ({
   onRemix,
   isSaved,
   reaction,
-  sessionLikes,
-  hasContinuation,
+  continuationCount,
   continuationLoading,
+  accentColor,
+  isMilestone,
 }) => {
-  const [hearts, setHearts] = useState([]);
+  const [burstKey, setBurstKey] = useState(0);
+  const [showBurst, setShowBurst] = useState(false);
   const isLiked = reaction === "liked";
   const isDisliked = reaction === "disliked";
   const hasReacted = !!reaction;
 
   const handleLike = () => {
     if (hasReacted) return;
-    const newHearts = Array.from({ length: 4 }, (_, i) => ({
-      id: Date.now() + i,
-    }));
-    setHearts((prev) => [...prev, ...newHearts]);
+    setBurstKey((k) => k + 1);
+    setShowBurst(true);
+    setTimeout(() => setShowBurst(false), 800);
     onLike();
   };
 
@@ -87,22 +70,18 @@ const FeedControls = ({
     onDislike();
   };
 
-  const removeHeart = (heartId) => {
-    setHearts((prev) => prev.filter((h) => h.id !== heartId));
-  };
-
   return (
     <div className="flex flex-col items-center gap-4">
       {/* Like button */}
       <div className="relative flex flex-col items-center">
         <AnimatePresence>
-          {hearts.map((heart) => (
-            <FloatingHeart
-              key={heart.id}
-              id={heart.id}
-              onComplete={() => removeHeart(heart.id)}
+          {showBurst && (
+            <LikeBurst
+              key={burstKey}
+              accentColor={accentColor}
+              isMilestone={isMilestone}
             />
-          ))}
+          )}
         </AnimatePresence>
         <ControlButton
           onClick={handleLike}
@@ -114,11 +93,6 @@ const FeedControls = ({
         >
           <FaHeart size={20} />
         </ControlButton>
-        {sessionLikes > 0 && (
-          <span className="text-xs text-pt-text-muted mt-1 font-mono">
-            {sessionLikes}
-          </span>
-        )}
       </div>
 
       {/* Dislike button */}
@@ -148,17 +122,24 @@ const FeedControls = ({
 
       {/* Continue button */}
       {onContinue && (
-        <ControlButton
-          onClick={onContinue}
-          disabled={hasContinuation || continuationLoading}
-          active={hasContinuation}
-          activeClass="bg-pt-accent/20 text-pt-accent"
-          dimmed={continuationLoading}
-          ariaLabel="Continue this story"
-          size="w-10 h-10"
-        >
-          <FaMagic size={14} />
-        </ControlButton>
+        <div className="relative">
+          <ControlButton
+            onClick={onContinue}
+            disabled={continuationLoading}
+            active={continuationCount > 0}
+            activeClass="bg-pt-accent/20 text-pt-accent"
+            dimmed={continuationLoading}
+            ariaLabel="Continue this story"
+            size="w-10 h-10"
+          >
+            <FaMagic size={14} />
+          </ControlButton>
+          {continuationCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-pt-accent text-white text-[10px] flex items-center justify-center font-bold">
+              {continuationCount}
+            </span>
+          )}
+        </div>
       )}
 
       {/* Remix button */}

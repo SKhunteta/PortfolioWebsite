@@ -42,7 +42,7 @@ export default function useStoryFeed() {
   const [reactions, setReactions] = useState({}); // storyId → 'liked' | 'disliked'
   const [genreFilter, setGenreFilter] = useState("all");
   const [sessionLikes, setSessionLikes] = useState(0);
-  const [continuations, setContinuations] = useState({}); // storyId → { text, loading, error }
+  const [continuations, setContinuations] = useState({}); // storyId → { texts: [], loading, error }
   const fetchingRef = useRef(false);
 
   // Load initial stories on mount
@@ -167,14 +167,33 @@ export default function useStoryFeed() {
     saveToStorage(STORAGE_KEYS.saved, []);
   }, []);
 
-  // --- Continue a story ---
+  // --- Continue a story (supports multiple continuations) ---
   const continueStory = useCallback(async (story) => {
-    if (continuations[story.id]?.text || continuations[story.id]?.loading) return;
+    if (continuations[story.id]?.loading) return;
+
+    const existingTexts = continuations[story.id]?.texts || [];
 
     setContinuations((prev) => ({
       ...prev,
-      [story.id]: { text: null, loading: true, error: null },
+      [story.id]: { texts: existingTexts, loading: true, error: null },
     }));
+
+    // Continuing is a strong interest signal (2x weight)
+    setPreferences((prev) => {
+      const next = {
+        ...prev,
+        likedGenres: {
+          ...prev.likedGenres,
+          [story.genre]: (prev.likedGenres[story.genre] || 0) + 2,
+        },
+        likedTags: { ...prev.likedTags },
+      };
+      (story.tags || []).forEach((tag) => {
+        next.likedTags[tag] = (next.likedTags[tag] || 0) + 2;
+      });
+      saveToStorage(STORAGE_KEYS.preferences, next);
+      return next;
+    });
 
     try {
       const response = await fetch(API_ENDPOINTS.storiesContinue, {
@@ -185,6 +204,7 @@ export default function useStoryFeed() {
           content: story.content,
           genre: story.genre,
           mood: story.mood,
+          previousContinuations: existingTexts,
         }),
       });
 
@@ -197,13 +217,17 @@ export default function useStoryFeed() {
       if (data.success && data.continuation) {
         setContinuations((prev) => ({
           ...prev,
-          [story.id]: { text: data.continuation, loading: false, error: null },
+          [story.id]: {
+            texts: [...existingTexts, data.continuation],
+            loading: false,
+            error: null,
+          },
         }));
       }
     } catch (err) {
       setContinuations((prev) => ({
         ...prev,
-        [story.id]: { text: null, loading: false, error: err.message },
+        [story.id]: { texts: existingTexts, loading: false, error: err.message },
       }));
     }
   }, [continuations]);
