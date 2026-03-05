@@ -259,23 +259,30 @@ router.post("/continue", continueLimiter, async (req, res) => {
       });
     }
 
-    const { title, content, genre, mood } = req.body;
+    const { title, content, genre, mood, previousContinuations } = req.body;
     if (!content) {
       return res.status(400).json({ error: "Missing story content" });
     }
 
     const client = new Anthropic({ apiKey: config.anthropic.apiKey });
 
-    console.log("📖 PlotTwist: Continuing story...");
+    const continuationNum = (previousContinuations?.length || 0) + 1;
+    console.log(`📖 PlotTwist: Continuing story (continuation #${continuationNum})...`);
+
+    // Build the full story text including previous continuations
+    let fullStory = content;
+    if (previousContinuations?.length > 0) {
+      fullStory += "\n\n" + previousContinuations.join("\n\n");
+    }
 
     const response = await client.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 2000,
-      system: `You are continuing a short story. Maintain the same voice, style, genre (${genre || "literary"}), and mood (${mood || "atmospheric"}). Write 2-3 paragraphs that continue naturally from where the story left off. End at another moment of tension, intrigue, or emotional resonance. Return ONLY the continuation text — no titles, labels, or JSON.`,
+      system: `You are continuing a short story. Maintain the same voice, style, genre (${genre || "literary"}), and mood (${mood || "atmospheric"}). Write 2-3 paragraphs that continue naturally from where the story left off. ${previousContinuations?.length > 0 ? "This story has been continued " + previousContinuations.length + " time(s) already — escalate the tension, deepen the mystery, or introduce a new development. Don't repeat what came before." : ""} End at another moment of tension, intrigue, or emotional resonance. Return ONLY the continuation text — no titles, labels, or JSON.`,
       messages: [
         {
           role: "user",
-          content: `Continue this story titled "${title || "Untitled"}":\n\n${content}`,
+          content: `Continue this story titled "${title || "Untitled"}":\n\n${fullStory}`,
         },
       ],
     });

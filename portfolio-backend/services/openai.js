@@ -4,12 +4,20 @@ import { config } from "../config/index.js";
 class OpenAIService {
   constructor() {
     if (!config.openai.apiKey) {
-      throw new Error("OpenAI API key is required");
+      console.warn("⚠️  OpenAI API key not configured — embedding/search features will be unavailable");
+      this.client = null;
+      return;
     }
 
     this.client = new OpenAI({
       apiKey: config.openai.apiKey,
     });
+  }
+
+  _ensureClient() {
+    if (!this.client) {
+      throw new Error("OpenAI API key is not configured. Set OPENAI_API_KEY to enable this feature.");
+    }
   }
 
   /**
@@ -18,6 +26,7 @@ class OpenAIService {
    * @returns {Promise<number[]>} - Embedding vector
    */
   async generateEmbedding(text) {
+    this._ensureClient();
     try {
       const response = await this.client.embeddings.create({
         model: config.openai.embeddingModel,
@@ -37,6 +46,7 @@ class OpenAIService {
    * @returns {Promise<number[][]>} - Array of embedding vectors
    */
   async generateBatchEmbeddings(texts) {
+    this._ensureClient();
     try {
       const cleanTexts = texts.map((text) => text.replace(/\n/g, " ").trim());
 
@@ -60,6 +70,7 @@ class OpenAIService {
    * @returns {Promise<string>} - AI response text
    */
   async generateMCPResponse({ systemPrompt, userQuery }) {
+    this._ensureClient();
     try {
       const response = await this.client.chat.completions.create({
         model: config.openai.model,
@@ -85,6 +96,7 @@ class OpenAIService {
    * @returns {Promise<Object>} - AI response with answer and metadata
    */
   async generateResponse(query, context) {
+    this._ensureClient();
     try {
       const systemPrompt = this.buildSystemPrompt();
       const contextText = this.buildContextText(context);
