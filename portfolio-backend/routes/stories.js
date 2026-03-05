@@ -238,4 +238,196 @@ router.post("/generate", storiesLimiter, async (req, res) => {
   }
 });
 
+// --- Continue story ---
+const continueLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: "Rate limited",
+    message: "Give the muse a moment to catch their breath.",
+  },
+});
+
+router.post("/continue", continueLimiter, async (req, res) => {
+  try {
+    if (!config.anthropic.apiKey) {
+      return res.status(500).json({
+        error: "API key not configured",
+        message: "ANTHROPIC_API_KEY is required.",
+      });
+    }
+
+    const { title, content, genre, mood } = req.body;
+    if (!content) {
+      return res.status(400).json({ error: "Missing story content" });
+    }
+
+    const client = new Anthropic({ apiKey: config.anthropic.apiKey });
+
+    console.log("📖 PlotTwist: Continuing story...");
+
+    const response = await client.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 2000,
+      system: `You are continuing a short story. Maintain the same voice, style, genre (${genre || "literary"}), and mood (${mood || "atmospheric"}). Write 2-3 paragraphs that continue naturally from where the story left off. End at another moment of tension, intrigue, or emotional resonance. Return ONLY the continuation text — no titles, labels, or JSON.`,
+      messages: [
+        {
+          role: "user",
+          content: `Continue this story titled "${title || "Untitled"}":\n\n${content}`,
+        },
+      ],
+    });
+
+    let continuation = "";
+    for (const block of response.content) {
+      if (block.type === "text") {
+        continuation += block.text;
+      }
+    }
+
+    console.log("📖 PlotTwist: Story continued successfully");
+    res.json({ success: true, continuation: continuation.trim() });
+  } catch (error) {
+    console.error("PlotTwist Continue Error:", error.message || error);
+    if (error.status === 429) {
+      return res.status(429).json({
+        error: "Rate limited",
+        message: "The muse is overwhelmed. Please wait a moment.",
+      });
+    }
+    res.status(500).json({
+      error: "Failed to continue story",
+      message:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "The muse stumbled. Try again shortly.",
+    });
+  }
+});
+
+// --- Remix story ---
+const remixLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: "Rate limited",
+    message: "The remix machine needs a cooldown.",
+  },
+});
+
+router.post("/remix", remixLimiter, async (req, res) => {
+  try {
+    if (!config.anthropic.apiKey) {
+      return res.status(500).json({
+        error: "API key not configured",
+        message: "ANTHROPIC_API_KEY is required.",
+      });
+    }
+
+    const { title, content, originalGenre, targetGenre, mood } = req.body;
+    if (!content || !targetGenre) {
+      return res
+        .status(400)
+        .json({ error: "Missing content or targetGenre" });
+    }
+
+    const client = new Anthropic({ apiKey: config.anthropic.apiKey });
+
+    console.log(
+      `📖 PlotTwist: Remixing from ${originalGenre} to ${targetGenre}...`
+    );
+
+    const response = await client.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 4000,
+      system: `You are remixing a story from one genre to another. Take the core concept/premise and reimagine it completely in the target genre. Transform setting, tone, character archetypes, and narrative style to authentically fit the new genre while preserving the fundamental story idea.
+
+Available genres: sci-fi, fantasy, horror, literary, humor, thriller, magical-realism, mystery, romance, dystopian, historical, absurdist, noir, fable
+Available moods: dark, hopeful, eerie, whimsical, tense, melancholy, witty, surreal, cozy, unsettling, bittersweet, electric
+
+Respond ONLY with valid JSON:
+{
+  "title": "New Title",
+  "content": "The remixed story...",
+  "genre": "${targetGenre}",
+  "mood": "appropriate mood for new genre",
+  "tags": ["tag1", "tag2", "tag3"]
+}`,
+      messages: [
+        {
+          role: "user",
+          content: `Remix this ${originalGenre || "literary"} story as ${targetGenre}:\n\nTitle: ${title}\n\n${content}`,
+        },
+      ],
+    });
+
+    let jsonData = null;
+    for (const block of response.content) {
+      if (block.type === "text") {
+        const text = block.text.trim();
+        try {
+          jsonData = JSON.parse(text);
+          break;
+        } catch {
+          const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+          if (fenceMatch) {
+            try {
+              jsonData = JSON.parse(fenceMatch[1].trim());
+              break;
+            } catch {
+              /* continue */
+            }
+          }
+          const objectMatch = text.match(/\{[\s\S]*\}/);
+          if (objectMatch) {
+            try {
+              jsonData = JSON.parse(objectMatch[0]);
+              break;
+            } catch {
+              /* continue */
+            }
+          }
+        }
+      }
+    }
+
+    if (!jsonData || !jsonData.content) {
+      throw new Error("Failed to parse remixed story");
+    }
+
+    const remixedStory = {
+      id: uuidv4(),
+      type: "excerpt",
+      title: jsonData.title || `${title} (Remixed)`,
+      content: jsonData.content,
+      genre: targetGenre,
+      mood: jsonData.mood || mood || "surreal",
+      tags: jsonData.tags || [],
+      remixedFrom: title,
+    };
+
+    console.log("📖 PlotTwist: Story remixed successfully");
+    res.json({ success: true, story: remixedStory });
+  } catch (error) {
+    console.error("PlotTwist Remix Error:", error.message || error);
+    if (error.status === 429) {
+      return res.status(429).json({
+        error: "Rate limited",
+        message: "The remix machine is overwhelmed. Please wait.",
+      });
+    }
+    res.status(500).json({
+      error: "Failed to remix story",
+      message:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "The remix failed. Try again shortly.",
+    });
+  }
+});
+
 export default router;

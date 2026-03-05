@@ -89,6 +89,16 @@ export const STORAGE_KEYS = {
   visited: "plottwist-visited",
 };
 
+export const LOADING_MESSAGES = [
+  "Imagining new worlds",
+  "Brewing plot twists",
+  "Casting characters",
+  "Weaving narratives",
+  "Bending timelines",
+  "Summoning muses",
+  "Turning pages",
+];
+
 export const DEFAULT_PREFERENCES = {
   likedGenres: {},
   dislikedGenres: {},

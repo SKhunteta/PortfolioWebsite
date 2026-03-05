@@ -1,11 +1,14 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaBookmark, FaFilter } from "react-icons/fa";
+import { FaBookmark, FaFilter, FaChartPie } from "react-icons/fa";
 import useStoryFeed from "./useStoryFeed";
 import StoryCard from "./StoryCard";
 import GenreFilter from "./GenreFilter";
 import SavedDrawer from "./SavedDrawer";
-import { STORAGE_KEYS } from "./constants";
+import RemixPicker from "./RemixPicker";
+import ShareCard from "./ShareCard";
+import TasteProfile from "./TasteProfile";
+import { STORAGE_KEYS, LOADING_MESSAGES } from "./constants";
 
 const WelcomeCard = ({ onStart }) => (
   <div className="h-dvh w-full snap-start flex items-center justify-center bg-gradient-to-b from-pt-accent/20 via-pt-bg to-pt-bg px-6">
@@ -66,26 +69,76 @@ const WelcomeCard = ({ onStart }) => (
   </div>
 );
 
-const LoadingCard = () => (
-  <div className="h-dvh w-full snap-start flex items-center justify-center bg-pt-bg px-6">
-    <div className="text-center">
+const RotatingMessage = () => {
+  const [index, setIndex] = React.useState(0);
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((i) => (i + 1) % LOADING_MESSAGES.length);
+    }, 2200);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <AnimatePresence mode="wait">
       <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="text-pt-text-secondary text-xl mb-4"
-        style={{ fontFamily: '"DM Serif Display", Georgia, serif' }}
+        key={index}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.3 }}
+        className="text-pt-text-secondary text-sm"
+        style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}
       >
-        Conjuring more stories
+        {LOADING_MESSAGES[index]}...
       </motion.p>
-      <div className="flex justify-center gap-1">
-        {[0, 1, 2].map((i) => (
-          <motion.span
-            key={i}
-            animate={{ opacity: [0.2, 1, 0.2] }}
-            transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }}
-            className="w-2 h-2 rounded-full bg-pt-accent"
-          />
-        ))}
+    </AnimatePresence>
+  );
+};
+
+const LoadingCard = () => (
+  <div className="h-dvh w-full snap-start flex items-center justify-center bg-gradient-to-b from-pt-accent/10 via-pt-bg to-pt-bg px-6">
+    <div className="max-w-sm w-full">
+      {/* Skeleton story card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-4 mb-8"
+      >
+        <div className="w-16 h-5 rounded-full bg-white/5 animate-pulse" />
+        <div className="space-y-2">
+          <div className="w-3/4 h-7 rounded bg-white/[0.07] animate-pulse" />
+          <div className="w-1/2 h-7 rounded bg-white/5 animate-pulse" />
+        </div>
+        <div className="space-y-2.5 pt-2">
+          <div className="w-full h-4 rounded bg-white/5 animate-pulse" />
+          <div className="w-full h-4 rounded bg-white/[0.04] animate-pulse" />
+          <div className="w-5/6 h-4 rounded bg-white/[0.04] animate-pulse" />
+          <div className="w-full h-4 rounded bg-white/[0.03] animate-pulse" />
+          <div className="w-2/3 h-4 rounded bg-white/[0.03] animate-pulse" />
+        </div>
+        <div className="flex gap-2 pt-2">
+          <div className="w-14 h-5 rounded bg-white/[0.04] animate-pulse" />
+          <div className="w-20 h-5 rounded bg-white/[0.04] animate-pulse" />
+          <div className="w-12 h-5 rounded bg-white/[0.04] animate-pulse" />
+        </div>
+      </motion.div>
+
+      <div className="text-center">
+        <RotatingMessage />
+        <div className="flex justify-center gap-1.5 mt-3">
+          {[0, 1, 2].map((i) => (
+            <motion.span
+              key={i}
+              animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1, 0.8] }}
+              transition={{
+                repeat: Infinity,
+                duration: 1.4,
+                delay: i * 0.2,
+              }}
+              className="w-1.5 h-1.5 rounded-full bg-pt-accent"
+            />
+          ))}
+        </div>
       </div>
     </div>
   </div>
@@ -100,6 +153,8 @@ const PlotTwist = () => {
     savedStories,
     sessionLikes,
     genreFilter,
+    preferences,
+    continuations,
     setGenreFilter,
     loadMore,
     likeStory,
@@ -107,6 +162,9 @@ const PlotTwist = () => {
     saveStory,
     isStorySaved,
     clearSaved,
+    continueStory,
+    remixStory,
+    resetPreferences,
   } = useStoryFeed();
 
   const [showWelcome, setShowWelcome] = useState(() => {
@@ -118,6 +176,10 @@ const PlotTwist = () => {
   });
   const [showFilter, setShowFilter] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [remixTarget, setRemixTarget] = useState(null); // story being remixed
+  const [remixLoading, setRemixLoading] = useState(false);
+  const [shareTarget, setShareTarget] = useState(null); // story being shared
   const scrollRef = useRef(null);
 
   const handleStart = () => {
@@ -129,13 +191,28 @@ const PlotTwist = () => {
     }
   };
 
-  // Infinite scroll — load more when near the end
+  const handleRemix = useCallback(
+    async (targetGenre) => {
+      if (!remixTarget || remixLoading) return;
+      setRemixLoading(true);
+      try {
+        await remixStory(remixTarget, targetGenre);
+        setRemixTarget(null);
+      } catch {
+        // error handled in hook
+      } finally {
+        setRemixLoading(false);
+      }
+    },
+    [remixTarget, remixLoading, remixStory]
+  );
+
+  // Infinite scroll
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el || loading) return;
 
     const scrollBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-    // When within 2 viewport-heights of the bottom, load more
     if (scrollBottom < el.clientHeight * 2) {
       loadMore();
     }
@@ -162,6 +239,14 @@ const PlotTwist = () => {
             </h1>
           </div>
           <div className="flex items-center gap-2 pointer-events-auto">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setShowProfile(true)}
+              className="w-9 h-9 rounded-full bg-white/10 text-white/60 hover:text-white flex items-center justify-center transition-colors"
+              aria-label="View taste profile"
+            >
+              <FaChartPie size={13} />
+            </motion.button>
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setShowFilter((f) => !f)}
@@ -226,10 +311,15 @@ const PlotTwist = () => {
             reaction={reactions[story.id]}
             isSaved={isStorySaved(story.id)}
             sessionLikes={sessionLikes}
+            continuation={continuations[story.id]}
             onLike={() => likeStory(story)}
             onDislike={() => dislikeStory(story)}
             onSave={() => saveStory(story)}
+            onContinue={() => continueStory(story)}
+            onShare={() => setShareTarget(story)}
+            onRemix={() => setRemixTarget(story)}
             showScrollCue={i === 0 && !showWelcome}
+            scrollContainerRef={scrollRef}
           />
         ))}
 
@@ -258,12 +348,36 @@ const PlotTwist = () => {
         )}
       </div>
 
-      {/* Saved stories drawer */}
+      {/* Overlays */}
       <SavedDrawer
         isOpen={showSaved}
         onClose={() => setShowSaved(false)}
         savedStories={savedStories}
         onClearAll={clearSaved}
+      />
+
+      <TasteProfile
+        isOpen={showProfile}
+        onClose={() => setShowProfile(false)}
+        preferences={preferences}
+        onReset={resetPreferences}
+      />
+
+      <RemixPicker
+        isOpen={!!remixTarget}
+        onClose={() => {
+          setRemixTarget(null);
+          setRemixLoading(false);
+        }}
+        onSelect={handleRemix}
+        originalGenre={remixTarget?.genre}
+        loading={remixLoading}
+      />
+
+      <ShareCard
+        story={shareTarget}
+        isOpen={!!shareTarget}
+        onClose={() => setShareTarget(null)}
       />
     </div>
   );

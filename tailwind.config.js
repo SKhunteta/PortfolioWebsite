@@ -83,6 +83,16 @@ export default {
         "reveal-right":
           "reveal-right 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards",
         "ticker-scroll": "ticker-scroll 40s linear infinite",
+        // Plot Twist mood effects
+        "pt-rain": "pt-rain 2s linear infinite",
+        "pt-float-up": "pt-float-up 6s ease-in-out infinite",
+        "pt-drift": "pt-drift 8s ease-in-out infinite",
+        "pt-vignette-pulse": "pt-vignette-pulse 5s ease-in-out infinite",
+        "pt-flicker": "pt-flicker 3s steps(4) infinite",
+        "pt-scanline": "pt-scanline 8s linear infinite",
+        "pt-shimmer": "pt-shimmer 4s ease-in-out infinite",
+        "pt-fog": "pt-fog 10s ease-in-out infinite",
+        "pt-morph": "pt-morph 12s ease-in-out infinite",
       },
       keyframes: {
         "ticker-scroll": {
@@ -132,6 +142,53 @@ export default {
             opacity: "1",
             transform: "translateX(0)",
           },
+        },
+        // Plot Twist mood keyframes
+        "pt-rain": {
+          from: { transform: "translateY(-100%)" },
+          to: { transform: "translateY(calc(100vh + 100%))" },
+        },
+        "pt-float-up": {
+          "0%": { transform: "translateY(0) translateX(0)", opacity: "0" },
+          "10%": { opacity: "1" },
+          "90%": { opacity: "1" },
+          "100%": { transform: "translateY(-100vh) translateX(var(--sway, 20px))", opacity: "0" },
+        },
+        "pt-drift": {
+          "0%": { transform: "translate(0, 0)", opacity: "0" },
+          "20%": { opacity: "1" },
+          "80%": { opacity: "1" },
+          "100%": { transform: "translate(var(--sway, 30px), -30px)", opacity: "0" },
+        },
+        "pt-vignette-pulse": {
+          "0%, 100%": { opacity: "0.3" },
+          "50%": { opacity: "0.6" },
+        },
+        "pt-flicker": {
+          "0%, 100%": { opacity: "0.03" },
+          "25%": { opacity: "0.08" },
+          "50%": { opacity: "0.02" },
+          "75%": { opacity: "0.1" },
+        },
+        "pt-scanline": {
+          from: { backgroundPosition: "0% 0%" },
+          to: { backgroundPosition: "100% 100%" },
+        },
+        "pt-shimmer": {
+          "0%": { transform: "translateX(-100%)" },
+          "50%": { transform: "translateX(0%)" },
+          "100%": { transform: "translateX(-100%)" },
+        },
+        "pt-fog": {
+          "0%": { backgroundPosition: "0% 0%" },
+          "50%": { backgroundPosition: "100% 0%" },
+          "100%": { backgroundPosition: "0% 0%" },
+        },
+        "pt-morph": {
+          "0%": { transform: "translate(0, 0) scale(1)" },
+          "33%": { transform: "translate(20%, -10%) scale(1.2)" },
+          "66%": { transform: "translate(-15%, 15%) scale(0.9)" },
+          "100%": { transform: "translate(0, 0) scale(1)" },
         },
       },
     },

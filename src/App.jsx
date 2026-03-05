@@ -27,10 +27,32 @@ function App() {
           element={
             <Suspense
               fallback={
-                <div className="min-h-screen flex items-center justify-center bg-[#0F0F1A]">
-                  <p className="text-[#6B6B80] italic" style={{ fontFamily: '"DM Serif Display", Georgia, serif' }}>
-                    Loading stories...
+                <div className="min-h-screen flex flex-col items-center justify-center bg-[#0F0F1A] relative overflow-hidden">
+                  {/* Floating ambient orbs */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    <div className="absolute w-64 h-64 rounded-full bg-[#8B5CF6]/[0.06] blur-3xl top-1/4 -left-20 animate-pulse" style={{ animationDuration: '4s' }} />
+                    <div className="absolute w-48 h-48 rounded-full bg-[#06B6D4]/[0.05] blur-3xl bottom-1/3 right-0 animate-pulse" style={{ animationDuration: '5s', animationDelay: '1s' }} />
+                    <div className="absolute w-56 h-56 rounded-full bg-[#EF4444]/[0.04] blur-3xl top-1/2 left-1/3 animate-pulse" style={{ animationDuration: '6s', animationDelay: '2s' }} />
+                  </div>
+                  {/* Content */}
+                  <h1
+                    className="text-4xl font-bold text-[#F0F0F0]/90 mb-2 animate-[fadeIn_0.6s_ease-out]"
+                    style={{ fontFamily: '"DM Serif Display", Georgia, serif' }}
+                  >
+                    Plot Twist
+                  </h1>
+                  <p className="text-[#6B6B80] text-sm mb-6 animate-[fadeIn_0.8s_ease-out]" style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}>
+                    Preparing your stories...
                   </p>
+                  <div className="flex gap-1.5">
+                    {[0, 1, 2].map((i) => (
+                      <span
+                        key={i}
+                        className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6] animate-pulse"
+                        style={{ animationDelay: `${i * 200}ms`, animationDuration: '1.2s' }}
+                      />
+                    ))}
+                  </div>
                 </div>
               }
             >
