@@ -21,11 +21,13 @@ const GENRE_CANVAS_COLORS = {
   fable: ["#0e2e1a", "#1a2e0e"],
 };
 
-function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxY = Infinity) {
   const paragraphs = text.split("\n");
   let currentY = y;
+  let truncated = false;
 
   for (const para of paragraphs) {
+    if (truncated) break;
     const words = para.split(" ");
     let line = "";
 
@@ -33,6 +35,11 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
       const testLine = line + word + " ";
       const metrics = ctx.measureText(testLine);
       if (metrics.width > maxWidth && line !== "") {
+        if (currentY + lineHeight > maxY) {
+          ctx.fillText(line.trim() + "...", x, currentY);
+          truncated = true;
+          break;
+        }
         ctx.fillText(line.trim(), x, currentY);
         line = word + " ";
         currentY += lineHeight;
@@ -40,13 +47,19 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
         line = testLine;
       }
     }
-    ctx.fillText(line.trim(), x, currentY);
-    currentY += lineHeight * 1.4; // paragraph spacing
+    if (!truncated) {
+      if (currentY > maxY) {
+        truncated = true;
+        break;
+      }
+      ctx.fillText(line.trim(), x, currentY);
+      currentY += lineHeight * 1.4;
+    }
   }
-  return currentY;
+  return { y: currentY, truncated };
 }
 
-function generateShareImage(canvas, story) {
+function generateShareImage(canvas, story, continuationTexts) {
   const ctx = canvas.getContext("2d");
   const W = 1080;
   const H = 1350;
@@ -71,6 +84,8 @@ function generateShareImage(canvas, story) {
   ctx.fillRect(0, 0, W, 4);
 
   const PAD = 80;
+  // Reserve space at bottom for tags + watermark
+  const FOOTER_ZONE = H - 200;
 
   // Genre badge
   ctx.font = '500 28px "DM Sans", system-ui, sans-serif';
@@ -94,7 +109,7 @@ function generateShareImage(canvas, story) {
   // Title
   ctx.font = 'bold 56px "Georgia", serif';
   ctx.fillStyle = "#F0F0F0";
-  const titleY = wrapText(ctx, story.title, PAD, PAD + 120, W - PAD * 2, 68);
+  const titleResult = wrapText(ctx, story.title, PAD, PAD + 120, W - PAD * 2, 68, FOOTER_ZONE);
 
   // Content
   const isPremise = story.type === "premise";
@@ -102,10 +117,47 @@ function generateShareImage(canvas, story) {
     ? '32px "DM Sans", system-ui, sans-serif'
     : '28px "Georgia", serif';
   ctx.fillStyle = "rgba(160,160,184,0.9)";
+  const contentLineH = isPremise ? 48 : 44;
 
-  // Truncate content for the card
-  const maxContent = isPremise ? story.content : story.content.slice(0, 500);
-  wrapText(ctx, maxContent, PAD, titleY + 40, W - PAD * 2, isPremise ? 48 : 44);
+  const contentResult = wrapText(
+    ctx, story.content, PAD, titleResult.y + 40,
+    W - PAD * 2, contentLineH, FOOTER_ZONE
+  );
+
+  // Continuations (if room remains)
+  if (!contentResult.truncated && continuationTexts?.length > 0) {
+    let contY = contentResult.y + 20;
+
+    for (let i = 0; i < continuationTexts.length; i++) {
+      if (contY > FOOTER_ZONE - 60) break;
+
+      // Divider line
+      ctx.fillStyle = accentColor;
+      ctx.globalAlpha = 0.25;
+      ctx.fillRect(PAD, contY, W - PAD * 2, 1);
+      ctx.globalAlpha = 1;
+      contY += 30;
+
+      // Label
+      ctx.font = '500 20px "DM Sans", system-ui, sans-serif';
+      ctx.fillStyle = "rgba(160,160,184,0.5)";
+      ctx.fillText(
+        continuationTexts.length > 1 ? `CONTINUED (${i + 1})` : "CONTINUED",
+        PAD, contY
+      );
+      contY += 30;
+
+      // Text
+      ctx.font = '28px "Georgia", serif';
+      ctx.fillStyle = "rgba(160,160,184,0.9)";
+      const contResult = wrapText(
+        ctx, continuationTexts[i], PAD, contY,
+        W - PAD * 2, 44, FOOTER_ZONE
+      );
+      contY = contResult.y + 10;
+      if (contResult.truncated) break;
+    }
+  }
 
   // Tags
   if (story.tags && story.tags.length > 0) {
@@ -127,17 +179,17 @@ function generateShareImage(canvas, story) {
   ctx.globalAlpha = 1;
 }
 
-const ShareCard = ({ story, isOpen, onClose }) => {
+const ShareCard = ({ story, isOpen, onClose, continuationTexts }) => {
   const canvasRef = useRef(null);
   const [imageUrl, setImageUrl] = useState(null);
   const canShare = typeof navigator.share === "function";
 
   useEffect(() => {
     if (isOpen && story && canvasRef.current) {
-      generateShareImage(canvasRef.current, story);
+      generateShareImage(canvasRef.current, story, continuationTexts);
       setImageUrl(canvasRef.current.toDataURL("image/png"));
     }
-  }, [isOpen, story]);
+  }, [isOpen, story, continuationTexts]);
 
   const handleDownload = () => {
     if (!imageUrl) return;
