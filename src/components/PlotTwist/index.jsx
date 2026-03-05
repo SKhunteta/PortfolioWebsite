@@ -300,6 +300,7 @@ const PlotTwist = () => {
   const [remixTarget, setRemixTarget] = useState(null);
   const [remixLoading, setRemixLoading] = useState(false);
   const [remixError, setRemixError] = useState(null);
+  const [remixReady, setRemixReady] = useState(false); // pulse cue after remix
   const [shareTarget, setShareTarget] = useState(null);
   const [milestoneMsg, setMilestoneMsg] = useState(null);
   const shownMilestones = useRef(new Set());
@@ -343,6 +344,15 @@ const PlotTwist = () => {
       try {
         await remixStory(remixTarget, targetGenre);
         setRemixTarget(null);
+        // Show scroll-down cue and auto-scroll after a brief pause
+        setRemixReady(true);
+        setTimeout(() => {
+          const el = scrollRef.current;
+          if (el) {
+            el.scrollBy({ top: el.clientHeight, behavior: "smooth" });
+          }
+          setTimeout(() => setRemixReady(false), 2500);
+        }, 600);
       } catch (err) {
         setRemixError(err.message || "Remix failed. Try again.");
       } finally {
@@ -459,6 +469,28 @@ const PlotTwist = () => {
             message={milestoneMsg}
             onDone={() => setMilestoneMsg(null)}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Remix scroll cue */}
+      <AnimatePresence>
+        {remixReady && (
+          <motion.div
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 40, opacity: 0 }}
+            transition={{ type: "spring", damping: 20, stiffness: 300 }}
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-1"
+          >
+            <motion.div
+              animate={{ scale: [1, 1.05, 1], boxShadow: ["0 0 0 0 rgba(139,92,246,0.4)", "0 0 0 12px rgba(139,92,246,0)", "0 0 0 0 rgba(139,92,246,0)"] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+              className="bg-pt-accent text-white px-5 py-2.5 rounded-full font-semibold text-sm shadow-lg shadow-pt-accent/25"
+              style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}
+            >
+              Remix ready below &#8595;
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 

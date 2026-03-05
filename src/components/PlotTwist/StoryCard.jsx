@@ -287,7 +287,7 @@ const StoryCard = ({
         }}
         className="h-full flex flex-col px-6 pt-16 pb-8 relative z-[2]"
       >
-        <div className="max-w-lg w-full mx-auto flex gap-4 flex-1 min-h-0 items-center">
+        <div className="max-w-lg w-full mx-auto flex gap-4 flex-1 min-h-0 items-start pt-4">
           {/* Story content */}
           <div className={contentWrapperClasses}>
             {/* Staggered entry container */}
