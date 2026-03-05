@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 const PREVIEW_STORIES = [
   {
@@ -26,14 +27,44 @@ const PREVIEW_STORIES = [
 ];
 
 const PlotTwistTeaser = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((i) => (i + 1) % PREVIEW_STORIES.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentStory = PREVIEW_STORIES[currentIndex];
+
   return (
     <div className="section-container py-12 md:py-16">
       <div className="max-w-4xl mx-auto">
         <div
-          className="rounded-xl overflow-hidden shadow-custom-lg"
+          className="rounded-xl overflow-hidden shadow-custom-lg relative"
           style={{ backgroundColor: "#0F0F1A" }}
         >
-          <div className="p-6 sm:p-8 md:p-10">
+          {/* Subtle ambient particles */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {Array.from({ length: 6 }, (_, i) => (
+              <div
+                key={i}
+                className="absolute rounded-full"
+                style={{
+                  width: `${3 + Math.random() * 3}px`,
+                  height: `${3 + Math.random() * 3}px`,
+                  left: `${15 + Math.random() * 70}%`,
+                  top: `${20 + Math.random() * 60}%`,
+                  backgroundColor: `${currentStory.color}15`,
+                  animation: `pt-float-up ${5 + Math.random() * 4}s ease-in-out infinite`,
+                  animationDelay: `${Math.random() * 3}s`,
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="p-6 sm:p-8 md:p-10 relative">
             {/* Header */}
             <div className="flex items-start justify-between mb-6">
               <div>
@@ -79,14 +110,18 @@ const PlotTwistTeaser = () => {
               </span>
             </div>
 
-            {/* Preview stories */}
-            <div className="space-y-3 mb-6">
-              {PREVIEW_STORIES.map((story) => (
-                <div
-                  key={story.title}
-                  className="rounded-lg p-4 border-l-[3px] transition-colors"
+            {/* Auto-cycling story card */}
+            <div className="mb-4 min-h-[120px] relative">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentIndex}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.4 }}
+                  className="rounded-lg p-4 border-l-[3px]"
                   style={{
-                    borderLeftColor: story.color,
+                    borderLeftColor: currentStory.color,
                     backgroundColor: "rgba(255,255,255,0.03)",
                   }}
                 >
@@ -98,16 +133,22 @@ const PlotTwistTeaser = () => {
                         color: "#F0F0F0",
                       }}
                     >
-                      {story.title}
+                      {currentStory.title}
                     </p>
                     <span
                       className="text-[10px] px-1.5 py-0.5 rounded-full"
                       style={{
-                        color: story.color,
-                        backgroundColor: `${story.color}15`,
+                        color: currentStory.color,
+                        backgroundColor: `${currentStory.color}15`,
                       }}
                     >
-                      {story.genre}
+                      {currentStory.genre}
+                    </span>
+                    <span
+                      className="text-[10px] italic"
+                      style={{ color: "#6B6B80" }}
+                    >
+                      {currentStory.mood}
                     </span>
                   </div>
                   <p
@@ -117,9 +158,26 @@ const PlotTwistTeaser = () => {
                       color: "#A0A0B8",
                     }}
                   >
-                    {story.snippet}
+                    {currentStory.snippet}
                   </p>
-                </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Dot indicators */}
+            <div className="flex justify-center gap-2 mb-6">
+              {PREVIEW_STORIES.map((story, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentIndex(i)}
+                  className="w-2 h-2 rounded-full transition-all duration-300"
+                  style={{
+                    backgroundColor:
+                      i === currentIndex ? story.color : "rgba(255,255,255,0.15)",
+                    transform: i === currentIndex ? "scale(1.3)" : "scale(1)",
+                  }}
+                  aria-label={`View story ${i + 1}`}
+                />
               ))}
             </div>
 
@@ -137,7 +195,7 @@ const PlotTwistTeaser = () => {
               </p>
               <Link
                 to="/plot-twist"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-medium transition-colors shrink-0"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-medium transition-colors shrink-0 hover:opacity-90"
                 style={{
                   fontFamily: '"DM Sans", system-ui, sans-serif',
                   backgroundColor: "#8B5CF6",

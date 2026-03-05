@@ -8,66 +8,187 @@ import SavedDrawer from "./SavedDrawer";
 import RemixPicker from "./RemixPicker";
 import ShareCard from "./ShareCard";
 import TasteProfile from "./TasteProfile";
-import { STORAGE_KEYS, LOADING_MESSAGES } from "./constants";
+import {
+  STORAGE_KEYS,
+  LOADING_MESSAGES,
+  GENRES,
+  GENRE_LABELS,
+  GENRE_ACCENT_COLORS,
+  MILESTONES,
+} from "./constants";
 
-const WelcomeCard = ({ onStart }) => (
-  <div className="h-dvh w-full snap-start flex items-center justify-center bg-gradient-to-b from-pt-accent/20 via-pt-bg to-pt-bg px-6">
-    <div className="max-w-md text-center">
-      <motion.h1
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.6 }}
-        className="text-5xl sm:text-6xl font-bold text-pt-text mb-3"
-        style={{ fontFamily: '"DM Serif Display", Georgia, serif' }}
-      >
-        Plot Twist
-      </motion.h1>
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="text-pt-accent text-sm font-medium tracking-widest uppercase mb-8"
-      >
-        Swipe through the multiverse of stories
-      </motion.p>
-      <motion.p
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-        className="text-pt-text-secondary text-lg mb-10 leading-relaxed"
-        style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}
-      >
-        AI-generated story ideas and excerpts, served up fresh. Like what hooks
-        you, skip what doesn&apos;t. Your taste shapes the feed.
-      </motion.p>
-      <motion.button
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 1 }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={onStart}
-        className="px-8 py-3 rounded-full bg-pt-accent text-white font-semibold text-lg transition-shadow hover:shadow-lg hover:shadow-pt-accent/25"
-      >
-        Start Reading
-      </motion.button>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-        className="mt-12"
-      >
-        <motion.span
-          animate={{ y: [0, 6, 0] }}
-          transition={{ repeat: Infinity, duration: 1.5 }}
-          className="text-pt-text-muted text-2xl inline-block"
+// --- Interactive "Pick Your Vibe" Welcome ---
+const WelcomeCard = ({ onStart, onStartWithGenres }) => {
+  const [selectedGenres, setSelectedGenres] = useState([]);
+  const genreOptions = GENRES.filter((g) => g !== "all");
+
+  const toggleGenre = (genre) => {
+    setSelectedGenres((prev) =>
+      prev.includes(genre)
+        ? prev.filter((g) => g !== genre)
+        : prev.length < 3
+        ? [...prev, genre]
+        : prev
+    );
+  };
+
+  const handleStart = () => {
+    if (selectedGenres.length > 0) {
+      onStartWithGenres(selectedGenres);
+    } else {
+      onStart();
+    }
+  };
+
+  return (
+    <div className="h-dvh w-full snap-start flex items-center justify-center bg-gradient-to-b from-pt-accent/20 via-pt-bg to-pt-bg px-6">
+      <div className="max-w-lg text-center">
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="text-5xl sm:text-6xl font-bold text-pt-text mb-3"
+          style={{ fontFamily: '"DM Serif Display", Georgia, serif' }}
         >
-          &#8964;
-        </motion.span>
-      </motion.div>
+          Plot Twist
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="text-pt-accent text-sm font-medium tracking-widest uppercase mb-6"
+        >
+          Swipe through the multiverse of stories
+        </motion.p>
+
+        {/* Pick Your Vibe genre grid */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+        >
+          <p
+            className="text-pt-text-secondary text-sm mb-4"
+            style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}
+          >
+            Pick up to 3 vibes to start
+          </p>
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-6">
+            {genreOptions.map((genre) => {
+              const isSelected = selectedGenres.includes(genre);
+              const color = GENRE_ACCENT_COLORS[genre] || "#8B5CF6";
+              return (
+                <motion.button
+                  key={genre}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => toggleGenre(genre)}
+                  className="px-2 py-2.5 rounded-lg text-xs font-medium transition-all border"
+                  style={{
+                    borderColor: isSelected ? color : "rgba(255,255,255,0.1)",
+                    backgroundColor: isSelected ? `${color}20` : "rgba(255,255,255,0.03)",
+                    color: isSelected ? color : "#A0A0B8",
+                    boxShadow: isSelected ? `0 0 16px ${color}20` : "none",
+                  }}
+                >
+                  {GENRE_LABELS[genre] || genre}
+                </motion.button>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1 }}
+          className="flex flex-col sm:flex-row gap-3 justify-center"
+        >
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleStart}
+            className="px-8 py-3 rounded-full bg-pt-accent text-white font-semibold text-lg transition-shadow hover:shadow-lg hover:shadow-pt-accent/25"
+          >
+            {selectedGenres.length > 0 ? "Start Reading" : "Surprise Me"}
+          </motion.button>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
+          className="mt-10"
+        >
+          <motion.span
+            animate={{ y: [0, 6, 0] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+            className="text-pt-text-muted text-2xl inline-block"
+          >
+            &#8964;
+          </motion.span>
+        </motion.div>
+      </div>
     </div>
-  </div>
+  );
+};
+
+// --- Milestone Toast ---
+const MilestoneToast = ({ message, onDone }) => (
+  <motion.div
+    initial={{ y: -60, opacity: 0 }}
+    animate={{ y: 0, opacity: 1 }}
+    exit={{ y: -60, opacity: 0 }}
+    transition={{ type: "spring", damping: 20, stiffness: 300 }}
+    onAnimationComplete={(def) => {
+      if (def === "exit") return;
+      setTimeout(onDone, 3000);
+    }}
+    className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-pt-surface border border-pt-accent/30 rounded-full px-6 py-2.5 shadow-lg shadow-pt-accent/10"
+  >
+    <p
+      className="text-pt-accent font-semibold text-sm whitespace-nowrap"
+      style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}
+    >
+      {message}
+    </p>
+  </motion.div>
 );
+
+// --- Keyboard Hint ---
+const KeyboardHint = () => {
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Only show on desktop (hover-capable devices)
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    setIsDesktop(window.matchMedia("(hover: hover)").matches);
+  }, []);
+
+  if (!isDesktop) return null;
+
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 0.5 }}
+          exit={{ opacity: 0 }}
+          className="fixed bottom-4 left-4 z-30 bg-pt-surface/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-pt-border text-pt-text-muted text-xs"
+          style={{ fontFamily: '"JetBrains Mono", monospace' }}
+        >
+          <span className="opacity-70">
+            ↑↓ navigate &middot; L like &middot; D dislike &middot; S save &middot; C continue
+          </span>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
 
 const RotatingMessage = () => {
   const [index, setIndex] = React.useState(0);
@@ -98,7 +219,6 @@ const RotatingMessage = () => {
 const LoadingCard = () => (
   <div className="h-dvh w-full snap-start flex items-center justify-center bg-gradient-to-b from-pt-accent/10 via-pt-bg to-pt-bg px-6">
     <div className="max-w-sm w-full">
-      {/* Skeleton story card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -177,9 +297,11 @@ const PlotTwist = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [remixTarget, setRemixTarget] = useState(null); // story being remixed
+  const [remixTarget, setRemixTarget] = useState(null);
   const [remixLoading, setRemixLoading] = useState(false);
-  const [shareTarget, setShareTarget] = useState(null); // story being shared
+  const [shareTarget, setShareTarget] = useState(null);
+  const [milestoneMsg, setMilestoneMsg] = useState(null);
+  const shownMilestones = useRef(new Set());
   const scrollRef = useRef(null);
 
   const handleStart = () => {
@@ -190,6 +312,27 @@ const PlotTwist = () => {
       // ignore
     }
   };
+
+  const handleStartWithGenres = (genres) => {
+    // Pre-seed preferences with selected genres
+    if (genres.length > 0) {
+      setGenreFilter(genres[0]);
+    }
+    handleStart();
+  };
+
+  // --- Milestone detection ---
+  useEffect(() => {
+    const milestone = MILESTONES.find(
+      (m) => sessionLikes === m.count && !shownMilestones.current.has(m.count)
+    );
+    if (milestone) {
+      shownMilestones.current.add(milestone.count);
+      setMilestoneMsg(milestone.message);
+    }
+  }, [sessionLikes]);
+
+  const isMilestoneCount = MILESTONES.some((m) => sessionLikes + 1 === m.count);
 
   const handleRemix = useCallback(
     async (targetGenre) => {
@@ -225,8 +368,101 @@ const PlotTwist = () => {
     return () => el.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
+  // --- Keyboard navigation ---
+  useEffect(() => {
+    const getCurrentIndex = () => {
+      const el = scrollRef.current;
+      if (!el) return -1;
+      return Math.round(el.scrollTop / el.clientHeight) + (showWelcome ? -1 : 0);
+    };
+
+    const handleKeyDown = (e) => {
+      // Don't intercept if modals are open
+      if (showSaved || showProfile || remixTarget || shareTarget) return;
+      // Don't intercept if user is in an input
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+
+      const el = scrollRef.current;
+      if (!el) return;
+
+      switch (e.key) {
+        case "ArrowDown":
+        case "j":
+          e.preventDefault();
+          el.scrollBy({ top: el.clientHeight, behavior: "smooth" });
+          break;
+        case "ArrowUp":
+        case "k":
+          e.preventDefault();
+          el.scrollBy({ top: -el.clientHeight, behavior: "smooth" });
+          break;
+        case "l":
+        case "L": {
+          const idx = getCurrentIndex();
+          if (idx >= 0 && idx < stories.length && !reactions[stories[idx].id]) {
+            likeStory(stories[idx]);
+          }
+          break;
+        }
+        case "d":
+        case "D": {
+          const idx = getCurrentIndex();
+          if (idx >= 0 && idx < stories.length && !reactions[stories[idx].id]) {
+            dislikeStory(stories[idx]);
+          }
+          break;
+        }
+        case "s":
+        case "S": {
+          const idx = getCurrentIndex();
+          if (idx >= 0 && idx < stories.length) {
+            saveStory(stories[idx]);
+          }
+          break;
+        }
+        case "c":
+        case "C": {
+          const idx = getCurrentIndex();
+          if (idx >= 0 && idx < stories.length) {
+            continueStory(stories[idx]);
+          }
+          break;
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [
+    stories,
+    reactions,
+    showWelcome,
+    showSaved,
+    showProfile,
+    remixTarget,
+    shareTarget,
+    likeStory,
+    dislikeStory,
+    saveStory,
+    continueStory,
+  ]);
+
   return (
     <div className="h-dvh bg-pt-bg relative overflow-hidden">
+      {/* Milestone toast */}
+      <AnimatePresence>
+        {milestoneMsg && (
+          <MilestoneToast
+            key={milestoneMsg}
+            message={milestoneMsg}
+            onDone={() => setMilestoneMsg(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Keyboard hint */}
+      {!showWelcome && <KeyboardHint />}
+
       {/* Floating header */}
       <div className="absolute top-0 left-0 right-0 z-30 pointer-events-none">
         <div className="flex items-center justify-between px-4 sm:px-6 py-3">
@@ -299,7 +535,12 @@ const PlotTwist = () => {
         className="h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
       >
         {/* Welcome card */}
-        {showWelcome && <WelcomeCard onStart={handleStart} />}
+        {showWelcome && (
+          <WelcomeCard
+            onStart={handleStart}
+            onStartWithGenres={handleStartWithGenres}
+          />
+        )}
 
         {/* Story cards */}
         {stories.map((story, i) => (
@@ -310,7 +551,6 @@ const PlotTwist = () => {
             totalCount={stories.length}
             reaction={reactions[story.id]}
             isSaved={isStorySaved(story.id)}
-            sessionLikes={sessionLikes}
             continuation={continuations[story.id]}
             onLike={() => likeStory(story)}
             onDislike={() => dislikeStory(story)}
@@ -320,6 +560,7 @@ const PlotTwist = () => {
             onRemix={() => setRemixTarget(story)}
             showScrollCue={i === 0 && !showWelcome}
             scrollContainerRef={scrollRef}
+            isMilestone={isMilestoneCount}
           />
         ))}
 
