@@ -67,8 +67,8 @@ const InvoiceDisplay = forwardRef(function InvoiceDisplay({ invoice }, ref) {
             </div>
           </div>
 
-          {/* Line Items Header */}
-          <div className="border-b-2 border-inv-text pb-2 mb-0">
+          {/* Line Items Header — hidden on small screens, shown as table header on sm+ */}
+          <div className="border-b-2 border-inv-text pb-2 mb-0 hidden sm:block">
             <div className="grid grid-cols-12 gap-2 font-invoice text-[10px] uppercase tracking-[0.15em] text-ele-text-secondary">
               <div className="col-span-6">Description</div>
               <div className="col-span-2 text-right">Qty</div>
@@ -76,28 +76,46 @@ const InvoiceDisplay = forwardRef(function InvoiceDisplay({ invoice }, ref) {
               <div className="col-span-2 text-right">Amount</div>
             </div>
           </div>
+          {/* Mobile-only header line */}
+          <div className="border-b-2 border-inv-text pb-2 mb-0 sm:hidden">
+            <p className="font-invoice text-[10px] uppercase tracking-[0.15em] text-ele-text-secondary">
+              Services Rendered
+            </p>
+          </div>
 
           {/* Line Items */}
           <div className="divide-y divide-inv-border">
             {invoice.line_items.map((item, i) => (
               <div
                 key={i}
-                className={`grid grid-cols-12 gap-2 py-4 ${
-                  i % 2 === 1 ? "bg-inv-band" : ""
-                }`}
-                style={i % 2 === 1 ? { margin: "0 -2rem", padding: "1rem 2rem" } : undefined}
+                className={`py-4 ${i % 2 === 1 ? "bg-inv-band -mx-4 px-4 sm:-mx-8 sm:px-8" : ""}`}
               >
-                <div className="col-span-6 font-sans-ele text-sm text-inv-text leading-relaxed whitespace-pre-line">
-                  {item.description}
+                {/* Desktop: grid layout */}
+                <div className="hidden sm:grid grid-cols-12 gap-2">
+                  <div className="col-span-6 font-sans-ele text-sm text-inv-text leading-relaxed whitespace-pre-line">
+                    {item.description}
+                  </div>
+                  <div className="col-span-2 text-right font-mono text-xs text-ele-text-secondary self-start pt-0.5">
+                    {item.quantity}
+                  </div>
+                  <div className="col-span-2 text-right font-mono text-xs text-ele-text-secondary self-start pt-0.5">
+                    ${typeof item.rate === "number" ? item.rate.toFixed(2) : item.rate}
+                  </div>
+                  <div className="col-span-2 text-right font-mono text-sm font-medium text-inv-text self-start pt-0.5">
+                    ${typeof item.amount === "number" ? item.amount.toFixed(2) : item.amount}
+                  </div>
                 </div>
-                <div className="col-span-2 text-right font-mono text-xs text-ele-text-secondary self-start pt-0.5">
-                  {item.quantity}
-                </div>
-                <div className="col-span-2 text-right font-mono text-xs text-ele-text-secondary self-start pt-0.5">
-                  ${typeof item.rate === "number" ? item.rate.toFixed(2) : item.rate}
-                </div>
-                <div className="col-span-2 text-right font-mono text-sm font-medium text-inv-text self-start pt-0.5">
-                  ${typeof item.amount === "number" ? item.amount.toFixed(2) : item.amount}
+                {/* Mobile: stacked layout */}
+                <div className="sm:hidden space-y-1.5">
+                  <p className="font-sans-ele text-sm text-inv-text leading-relaxed whitespace-pre-line">
+                    {item.description}
+                  </p>
+                  <div className="flex items-center justify-between font-mono text-xs text-ele-text-secondary">
+                    <span>{item.quantity} @ ${typeof item.rate === "number" ? item.rate.toFixed(2) : item.rate}</span>
+                    <span className="text-sm font-medium text-inv-text">
+                      ${typeof item.amount === "number" ? item.amount.toFixed(2) : item.amount}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}

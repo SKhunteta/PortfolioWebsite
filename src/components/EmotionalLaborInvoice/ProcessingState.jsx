@@ -51,7 +51,7 @@ export default function ProcessingState() {
       </motion.p>
 
       {/* Progress bar */}
-      <div className="mt-6 w-64 h-1 bg-inv-border rounded-full overflow-hidden">
+      <div className="mt-6 w-48 sm:w-64 h-1 bg-inv-border rounded-full overflow-hidden">
         <motion.div
           className="h-full bg-inv-gold rounded-full"
           initial={{ width: "0%" }}

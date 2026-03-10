@@ -75,10 +75,11 @@ export default function IntakeForm({ emotionPrices, onSubmit }) {
 
       {/* Client */}
       <div className="mb-6">
-        <label className="block font-invoice text-xs font-medium text-inv-text uppercase tracking-widest mb-2">
+        <label htmlFor="inv-client" className="block font-invoice text-xs font-medium text-inv-text uppercase tracking-widest mb-2">
           Bill To (Client)
         </label>
         <input
+          id="inv-client"
           type="text"
           value={client}
           onChange={(e) => setClient(e.target.value)}
@@ -89,10 +90,11 @@ export default function IntakeForm({ emotionPrices, onSubmit }) {
 
       {/* Service Description */}
       <div className="mb-6">
-        <label className="block font-invoice text-xs font-medium text-inv-text uppercase tracking-widest mb-2">
+        <label htmlFor="inv-description" className="block font-invoice text-xs font-medium text-inv-text uppercase tracking-widest mb-2">
           Service Rendered
         </label>
         <textarea
+          id="inv-description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder={SERVICE_GHOST_TEXT}
@@ -103,10 +105,11 @@ export default function IntakeForm({ emotionPrices, onSubmit }) {
 
       {/* Duration */}
       <div className="mb-8">
-        <label className="block font-invoice text-xs font-medium text-inv-text uppercase tracking-widest mb-2">
+        <label htmlFor="inv-duration" className="block font-invoice text-xs font-medium text-inv-text uppercase tracking-widest mb-2">
           Duration
         </label>
         <select
+          id="inv-duration"
           value={duration}
           onChange={(e) => setDuration(e.target.value)}
           className="w-full px-4 py-3 bg-white border border-inv-border rounded-md font-sans-ele text-inv-text text-sm focus:outline-none focus:border-inv-gold focus:ring-1 focus:ring-inv-gold/30 transition-colors appearance-none cursor-pointer"
@@ -144,7 +147,9 @@ export default function IntakeForm({ emotionPrices, onSubmit }) {
                 key={key}
                 type="button"
                 onClick={() => toggleEmotion(key)}
-                className={`relative flex flex-col items-center px-3 py-3 rounded-md border text-sm transition-all duration-200 cursor-pointer ${
+                aria-pressed={isSelected}
+                aria-label={`${emotion.name}${price != null ? `, $${price.toFixed(2)}` : ""}`}
+                className={`relative flex flex-col items-center px-3 py-3 sm:px-3 sm:py-3 min-h-[48px] rounded-md border text-sm transition-all duration-200 cursor-pointer ${
                   isSelected
                     ? "border-transparent text-white shadow-sm"
                     : "border-inv-border bg-white text-inv-text hover:border-ele-text-tertiary"

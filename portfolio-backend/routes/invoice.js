@@ -154,14 +154,15 @@ Price the line items using rates that feel proportional to a base rate of ~$${ba
         try {
           invoiceData = JSON.parse(text);
           break;
-        } catch {
+        } catch (parseErr) {
+          console.warn("Invoice: Direct JSON parse failed:", parseErr.message);
           const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
           if (fenceMatch) {
             try {
               invoiceData = JSON.parse(fenceMatch[1].trim());
               break;
-            } catch {
-              // continue
+            } catch (fenceErr) {
+              console.warn("Invoice: Fence JSON parse failed:", fenceErr.message);
             }
           }
           const objectMatch = text.match(/\{[\s\S]*\}/);
@@ -169,21 +170,29 @@ Price the line items using rates that feel proportional to a base rate of ~$${ba
             try {
               invoiceData = JSON.parse(objectMatch[0]);
               break;
-            } catch {
-              // continue
+            } catch (objErr) {
+              console.warn("Invoice: Object extraction parse failed:", objErr.message);
             }
           }
         }
       }
     }
 
-    if (!invoiceData || !invoiceData.line_items) {
-      console.error("Invoice: Could not parse Claude response");
+    if (!invoiceData || !Array.isArray(invoiceData.line_items) || invoiceData.line_items.length === 0) {
+      console.error("Invoice: Could not parse Claude response or missing line_items");
       return res.status(500).json({
         error: "Generation failed",
         message:
           "The billing department is experiencing technical difficulties. Please try again.",
       });
+    }
+
+    // Ensure subtotal is a valid number
+    if (typeof invoiceData.subtotal !== "number" || isNaN(invoiceData.subtotal)) {
+      invoiceData.subtotal = invoiceData.line_items.reduce(
+        (sum, item) => sum + (typeof item.amount === "number" ? item.amount : 0),
+        0
+      );
     }
 
     // Calculate surcharges from modifiers

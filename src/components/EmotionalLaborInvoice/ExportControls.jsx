@@ -3,10 +3,12 @@ import { motion } from "framer-motion";
 
 export default function ExportControls({ invoiceRef, onReset }) {
   const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState(null);
 
   const handleDownloadPDF = async () => {
     if (!invoiceRef?.current || exporting) return;
     setExporting(true);
+    setExportError(null);
 
     try {
       const html2canvas = (await import("html2canvas")).default;
@@ -36,6 +38,7 @@ export default function ExportControls({ invoiceRef, onReset }) {
       pdf.save("emotional-labor-invoice.pdf");
     } catch (err) {
       console.error("PDF export failed:", err);
+      setExportError("PDF export failed. Please try again.");
     } finally {
       setExporting(false);
     }
@@ -44,6 +47,7 @@ export default function ExportControls({ invoiceRef, onReset }) {
   const handleDownloadImage = async () => {
     if (!invoiceRef?.current || exporting) return;
     setExporting(true);
+    setExportError(null);
 
     try {
       const html2canvas = (await import("html2canvas")).default;
@@ -60,6 +64,7 @@ export default function ExportControls({ invoiceRef, onReset }) {
       link.click();
     } catch (err) {
       console.error("Image export failed:", err);
+      setExportError("Image export failed. Please try again.");
     } finally {
       setExporting(false);
     }
@@ -70,12 +75,16 @@ export default function ExportControls({ invoiceRef, onReset }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4, duration: 0.4 }}
-      className="w-full max-w-2xl mx-auto mt-8 flex flex-wrap items-center justify-center gap-3"
+      className="w-full max-w-2xl mx-auto mt-8 flex flex-col items-center gap-3"
     >
+      {exportError && (
+        <p className="font-sans-ele text-xs text-red-600 mb-1">{exportError}</p>
+      )}
+      <div className="flex flex-wrap items-center justify-center gap-3">
       <button
         onClick={handleDownloadPDF}
         disabled={exporting}
-        className="px-6 py-2.5 bg-inv-text text-inv-bg font-invoice text-xs font-semibold uppercase tracking-widest rounded-md hover:bg-inv-text/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        className="px-4 sm:px-6 py-2.5 bg-inv-text text-inv-bg font-invoice text-xs font-semibold uppercase tracking-widest rounded-md hover:bg-inv-text/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       >
         {exporting ? "Exporting\u2026" : "Download PDF"}
       </button>
@@ -83,17 +92,18 @@ export default function ExportControls({ invoiceRef, onReset }) {
       <button
         onClick={handleDownloadImage}
         disabled={exporting}
-        className="px-6 py-2.5 border border-inv-text text-inv-text font-invoice text-xs font-semibold uppercase tracking-widest rounded-md hover:bg-inv-text/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        className="px-4 sm:px-6 py-2.5 border border-inv-text text-inv-text font-invoice text-xs font-semibold uppercase tracking-widest rounded-md hover:bg-inv-text/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       >
         Save as Image
       </button>
 
       <button
         onClick={onReset}
-        className="px-6 py-2.5 border border-inv-border text-ele-text-secondary font-invoice text-xs font-semibold uppercase tracking-widest rounded-md hover:border-inv-text/30 hover:text-inv-text transition-colors cursor-pointer"
+        className="px-4 sm:px-6 py-2.5 border border-inv-border text-ele-text-secondary font-invoice text-xs font-semibold uppercase tracking-widest rounded-md hover:border-inv-text/30 hover:text-inv-text transition-colors cursor-pointer"
       >
         File Another
       </button>
+      </div>
     </motion.div>
   );
 }
