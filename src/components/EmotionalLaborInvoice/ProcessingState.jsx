@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 const MESSAGES = [
-  "Calculating the value of your unpaid labor\u2026",
-  "Cross-referencing emotional market rates\u2026",
-  "Itemizing invisible work\u2026",
-  "Applying surcharges for systemic inequity\u2026",
-  "Formatting grief into billable hours\u2026",
+  "Retrieving current market rates\u2026",
+  "Cross-referencing service categories\u2026",
+  "Itemizing billable services\u2026",
+  "Calculating applicable surcharges\u2026",
+  "Generating invoice\u2026",
 ];
 
 export default function ProcessingState() {

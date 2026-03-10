@@ -49,9 +49,9 @@ export const MODIFIERS = [
   },
   {
     key: "unacknowledged",
-    label: "No one will ever thank you for this",
+    label: "Service was not acknowledged by recipient",
     multiplier: 1.25,
-    surchargeLabel: "Zero-recognition surcharge (1.25\u00d7)",
+    surchargeLabel: "Non-acknowledgment adjustment (1.25\u00d7)",
   },
 ];
 

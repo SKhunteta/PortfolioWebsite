@@ -42,7 +42,7 @@ const InvoiceDisplay = forwardRef(function InvoiceDisplay({ invoice }, ref) {
                 {invoice.date}
               </p>
               <p className="text-inv-gold font-medium">
-                Due: Upon receipt (overdue since always)
+                Terms: Net 0 — Due upon receipt
               </p>
             </div>
           </div>
