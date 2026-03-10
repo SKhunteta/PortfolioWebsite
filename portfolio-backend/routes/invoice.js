@@ -46,7 +46,7 @@ const MODIFIER_MULTIPLIERS = {
   },
   unacknowledged: {
     multiplier: 1.25,
-    label: "Zero-recognition surcharge (1.25×)",
+    label: "Non-acknowledgment adjustment (1.25×)",
   },
 };
 
@@ -229,18 +229,18 @@ Price the line items using rates that feel proportional to a base rate of ~$${ba
       invoice_number: invoiceNumber,
       date: dateStr,
       client,
-      from: "The Person Who Held It Together",
+      from: "Service Provider",
       line_items: invoiceData.line_items,
       subtotal: invoiceData.subtotal,
       surcharges,
       total,
       payment_terms:
-        "This invoice will never be paid. It is presented as evidence that the work was real.",
+        "Payment not expected. This document is filed for recordkeeping purposes only.",
       notes:
         invoiceData.notes ||
         "Market rates sourced from the Emotional Labor Exchange.",
       footer_note:
-        "Thank you for your business. Or rather, thank you for nothing, which is what you paid.",
+        "Thank you for your continued service.",
     };
 
     res.json({ success: true, invoice });
