@@ -57,6 +57,12 @@ export default {
         "pt-literary": "#F59E0B",
         "pt-humor": "#10B981",
         "pt-thriller": "#F97316",
+        // Invoice Generator
+        "inv-bg": "#FAFAF7",
+        "inv-gold": "#C49A3C",
+        "inv-text": "#1A1A1A",
+        "inv-band": "#F5F5F0",
+        "inv-border": "#E8E4DF",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
@@ -65,6 +71,7 @@ export default {
         mono: ['"JetBrains Mono"', "monospace"],
         "sans-ele": ['"DM Sans"', "system-ui", "sans-serif"],
         "serif-atlas": ['"Libre Baskerville"', "Georgia", "serif"],
+        invoice: ['"IBM Plex Mono"', '"JetBrains Mono"', "monospace"],
       },
       boxShadow: {
         custom: "0 4px 6px rgba(0, 0, 0, 0.1)",

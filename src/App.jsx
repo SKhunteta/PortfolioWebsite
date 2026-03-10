@@ -16,12 +16,32 @@ import PlotTwistTeaser from "./components/PlotTwistTeaser";
 
 const AaronWestAtlas = lazy(() => import("./components/AaronWestAtlas"));
 const PlotTwist = lazy(() => import("./components/PlotTwist"));
+const EmotionalLaborInvoice = lazy(() => import("./components/EmotionalLaborInvoice"));
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/ele" element={<EmotionalLaborExchange />} />
+        <Route
+          path="/invoice"
+          element={
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex flex-col items-center justify-center bg-[#FAFAF7]">
+                  <p
+                    className="text-[#9A9A9A] text-sm"
+                    style={{ fontFamily: '"IBM Plex Mono", "JetBrains Mono", monospace' }}
+                  >
+                    Preparing your invoice...
+                  </p>
+                </div>
+              }
+            >
+              <EmotionalLaborInvoice />
+            </Suspense>
+          }
+        />
         <Route
           path="/plot-twist"
           element={

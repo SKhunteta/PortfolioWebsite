@@ -223,4 +223,5 @@ router.post("/market-data", eleLimiter, async (req, res) => {
   }
 });
 
+export { getMarketData };
 export default router;

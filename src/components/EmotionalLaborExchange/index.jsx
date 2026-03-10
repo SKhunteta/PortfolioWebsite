@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import useMarketData from "./useMarketData";
 import { EMOTIONS, EMOTION_ORDER } from "./constants";
 import EmotionCard from "./EmotionCard";
@@ -125,13 +126,21 @@ const EmotionalLaborExchange = () => {
       {/* Footer */}
       <footer className="border-t border-ele-border mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <button
-            onClick={refreshMarket}
-            disabled={loading}
-            className="font-sans-ele text-sm font-medium px-5 py-2.5 rounded-md border border-ele-border text-ele-text hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? "Refreshing..." : "Refresh Market"}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={refreshMarket}
+              disabled={loading}
+              className="font-sans-ele text-sm font-medium px-5 py-2.5 rounded-md border border-ele-border text-ele-text hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {loading ? "Refreshing..." : "Refresh Market"}
+            </button>
+            <Link
+              to="/invoice"
+              className="font-sans-ele text-sm font-medium px-5 py-2.5 rounded-md bg-ele-text text-white hover:bg-ele-text/90 transition-colors"
+            >
+              Generate Invoice
+            </Link>
+          </div>
           <p className="font-sans-ele text-xs text-ele-text-tertiary text-center sm:text-right max-w-lg">
             ELE v0.1 — Fictional market. Prices derived from real news via AI
             analysis. From the world of{" "}
