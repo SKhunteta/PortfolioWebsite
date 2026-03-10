@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
 import { GENRES, GENRE_LABELS, GENRE_ACCENT_COLORS } from "./constants";
@@ -6,6 +6,22 @@ import { GENRES, GENRE_LABELS, GENRE_ACCENT_COLORS } from "./constants";
 const RemixPicker = ({ isOpen, onClose, onSelect, originalGenre, loading, error }) => {
   const [selected, setSelected] = useState(null);
   const genres = GENRES.filter((g) => g !== "all" && g !== originalGenre);
+
+  // Reset selected genre when picker opens for a new story
+  useEffect(() => {
+    if (isOpen) setSelected(null);
+  }, [isOpen, originalGenre]);
+
+  // Escape key to close
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === "Escape") onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, handleKeyDown]);
 
   const handleSelect = (genre) => {
     setSelected(genre);
@@ -24,6 +40,9 @@ const RemixPicker = ({ isOpen, onClose, onSelect, originalGenre, loading, error 
             className="fixed inset-0 bg-black/60 z-40"
           />
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Remix genre picker"
             initial={{ y: "100%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0 }}

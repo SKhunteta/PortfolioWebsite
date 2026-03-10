@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes, FaTrash } from "react-icons/fa";
 import { GENRE_ACCENT_COLORS, GENRE_LABELS } from "./constants";
@@ -128,6 +128,17 @@ const StatCard = ({ label, value, color }) => (
 );
 
 const TasteProfile = ({ isOpen, onClose, preferences, onReset }) => {
+  // Escape key to close
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === "Escape") onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, handleKeyDown]);
+
   const stats = useMemo(() => {
     const likedGenres = preferences.likedGenres || {};
     const dislikedGenres = preferences.dislikedGenres || {};
@@ -165,6 +176,9 @@ const TasteProfile = ({ isOpen, onClose, preferences, onReset }) => {
             className="fixed inset-0 bg-black/60 z-40"
           />
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Taste profile"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}

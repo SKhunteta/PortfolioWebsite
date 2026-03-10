@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 import {
   motion,
   useMotionValue,
@@ -68,6 +68,13 @@ const StoryCard = ({
   // --- Double-tap ---
   const [showDoubleTapHeart, setShowDoubleTapHeart] = useState(false);
   const lastTapRef = useRef(0);
+  const doubleTapTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (doubleTapTimerRef.current) clearTimeout(doubleTapTimerRef.current);
+    };
+  }, []);
 
   const handleTap = useCallback(() => {
     const now = Date.now();
@@ -76,7 +83,8 @@ const StoryCard = ({
       if (!hasReacted) {
         onLike();
         setShowDoubleTapHeart(true);
-        setTimeout(() => setShowDoubleTapHeart(false), 1000);
+        if (doubleTapTimerRef.current) clearTimeout(doubleTapTimerRef.current);
+        doubleTapTimerRef.current = setTimeout(() => setShowDoubleTapHeart(false), 1000);
       }
       lastTapRef.current = 0;
     } else {
@@ -111,6 +119,13 @@ const StoryCard = ({
     [0, 0.2, 0.8, 1],
     [2, 0, 0, 2]
   );
+  const contentFilter = useTransform(contentBlur, (v) => `blur(${v}px)`);
+
+  // --- Detect hover-capable (desktop) device ---
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    setIsDesktop(window.matchMedia("(hover: hover)").matches);
+  }, []);
 
   // --- Swipe gesture ---
   const dragX = useMotionValue(0);
@@ -271,7 +286,7 @@ const StoryCard = ({
 
       {/* Swipeable + parallax content wrapper */}
       <motion.div
-        drag={hasReacted ? false : "x"}
+        drag={hasReacted || isDesktop ? false : "x"}
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.6}
         dragDirectionLock
@@ -283,7 +298,8 @@ const StoryCard = ({
           opacity: contentOpacity,
           scale: contentScale,
           y: contentY,
-          filter: useTransform(contentBlur, (v) => `blur(${v}px)`),
+          filter: contentFilter,
+          touchAction: "pan-y",
         }}
         className="h-full flex flex-col px-6 pt-16 pb-8 relative z-[2]"
       >
@@ -436,6 +452,13 @@ const StoryCard = ({
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* Continuation error */}
+            {continuation?.error && !continuation?.loading && (
+              <p className="mt-3 text-red-400 text-xs bg-red-400/10 rounded-lg px-3 py-2 border border-red-400/20">
+                {continuation.error}
+              </p>
+            )}
 
             {/* Tags */}
             {story.tags && story.tags.length > 0 && (
