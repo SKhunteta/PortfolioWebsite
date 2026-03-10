@@ -21,8 +21,8 @@ describe("Projects", () => {
   it("renders project titles", () => {
     renderWithRouter(<Projects />);
     expect(
-      screen.getByText("Portfolio Website & MCP Server")
-    ).toBeInTheDocument();
+      screen.getAllByText("Portfolio Website & MCP Server").length
+    ).toBeGreaterThan(0);
     expect(screen.getByText("Lingua AI Chatbot")).toBeInTheDocument();
   });
 

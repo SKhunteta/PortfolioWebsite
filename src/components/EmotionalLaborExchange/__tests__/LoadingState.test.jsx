@@ -4,29 +4,29 @@ import { render, screen } from "@testing-library/react";
 import LoadingState from "../LoadingState";
 
 describe("LoadingState", () => {
-  it("renders the scanning message", () => {
+  it("renders a status message from the rotation", () => {
     render(<LoadingState />);
-    expect(screen.getByText(/Scanning news feeds/)).toBeInTheDocument();
-  });
-
-  it("renders the analyzing message", () => {
-    render(<LoadingState />);
+    // The component starts at index 0: "Connecting to neural feeds"
     expect(
-      screen.getByText("Analyzing the emotional markets")
+      screen.getByText("Connecting to neural feeds", { exact: false })
     ).toBeInTheDocument();
   });
 
-  it("renders 8 skeleton cards", () => {
-    const { container } = render(<LoadingState />);
-    // The grid has 8 skeleton card wrappers with border-l-4
-    const skeletonCards = container.querySelectorAll(".border-l-4");
-    expect(skeletonCards.length).toBe(8);
+  it("renders the terminal version label", () => {
+    render(<LoadingState />);
+    expect(screen.getByText("ELE Terminal v0.1")).toBeInTheDocument();
   });
 
-  it("renders animated dots", () => {
+  it("renders orbiting emotion icons", () => {
     const { container } = render(<LoadingState />);
-    const dots = container.querySelectorAll(".animate-pulse");
-    // 3 dots + 8 skeleton cards = 11 animated elements
-    expect(dots.length).toBeGreaterThanOrEqual(8);
+    // Each emotion gets an orbiting icon wrapper with the orbit animation
+    const orbitingIcons = container.querySelectorAll(".rounded-full.bg-white");
+    expect(orbitingIcons.length).toBeGreaterThan(0);
+  });
+
+  it("renders the progress bar", () => {
+    const { container } = render(<LoadingState />);
+    const progressBar = container.querySelector(".transition-all.duration-300");
+    expect(progressBar).toBeInTheDocument();
   });
 });
