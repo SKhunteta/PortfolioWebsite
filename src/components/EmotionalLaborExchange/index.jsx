@@ -37,6 +37,12 @@ const EmotionalLaborExchange = () => {
               </p>
             </div>
             <div className="flex items-center gap-3 text-xs text-ele-text-tertiary font-sans-ele">
+              <Link
+                to="/"
+                className="text-sm text-ele-text-secondary hover:text-ele-text transition-colors font-sans-ele"
+              >
+                &larr; Back
+              </Link>
               {loading && (
                 <span className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-ele-anxiety animate-pulse" />

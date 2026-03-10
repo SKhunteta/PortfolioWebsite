@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaBookmark, FaFilter, FaChartPie } from "react-icons/fa";
 import useStoryFeed from "./useStoryFeed";
@@ -522,7 +523,14 @@ const PlotTwist = () => {
       {/* Floating header */}
       <div className="absolute top-0 left-0 right-0 z-30 pointer-events-none">
         <div className="flex items-center justify-between px-4 sm:px-6 py-3">
-          <div className="pointer-events-auto">
+          <div className="pointer-events-auto flex items-center gap-3">
+            <Link
+              to="/"
+              className="text-sm text-pt-text-muted hover:text-pt-text transition-colors"
+              style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}
+            >
+              &larr;
+            </Link>
             <h1
               className="text-xl font-bold text-pt-text/80"
               style={{ fontFamily: '"DM Serif Display", Georgia, serif' }}

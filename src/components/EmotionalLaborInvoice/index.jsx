@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import { Link } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import useInvoiceGenerator from "./useInvoiceGenerator";
 import IntakeForm from "./IntakeForm";
@@ -13,7 +14,15 @@ export default function EmotionalLaborInvoice() {
 
   return (
     <div className="min-h-screen bg-inv-bg">
-      <div className="px-4 sm:px-6 py-12 sm:py-16">
+      <div className="px-4 sm:px-6 pt-4">
+        <Link
+          to="/"
+          className="inline-block text-sm text-inv-text/60 hover:text-inv-text transition-colors font-invoice"
+        >
+          &larr; Back
+        </Link>
+      </div>
+      <div className="px-4 sm:px-6 py-8 sm:py-12">
         <AnimatePresence mode="wait">
           {status === "form" && (
             <IntakeForm
