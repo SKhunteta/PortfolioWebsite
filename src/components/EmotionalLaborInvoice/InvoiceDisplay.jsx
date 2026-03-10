@@ -129,7 +129,7 @@ const InvoiceDisplay = forwardRef(function InvoiceDisplay({ invoice }, ref) {
                 Subtotal
               </span>
               <span className="font-mono text-sm text-inv-text">
-                ${invoice.subtotal.toFixed(2)}
+                ${Number(invoice.subtotal || 0).toFixed(2)}
               </span>
             </div>
 
@@ -143,7 +143,7 @@ const InvoiceDisplay = forwardRef(function InvoiceDisplay({ invoice }, ref) {
                   {surcharge.label}
                 </span>
                 <span className="font-mono text-sm text-inv-gold">
-                  ${surcharge.amount.toFixed(2)}
+                  ${Number(surcharge.amount || 0).toFixed(2)}
                 </span>
               </div>
             ))}
@@ -154,7 +154,7 @@ const InvoiceDisplay = forwardRef(function InvoiceDisplay({ invoice }, ref) {
                 Total
               </span>
               <span className="font-mono text-lg font-bold text-inv-text">
-                ${invoice.total.toFixed(2)}
+                ${Number(invoice.total || 0).toFixed(2)}
               </span>
             </div>
           </div>
