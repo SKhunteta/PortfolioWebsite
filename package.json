@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "autoprefixer": "^10.4.21",
+    "dompurify": "^3.3.2",
     "framer-motion": "^12.4.7",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.0",
