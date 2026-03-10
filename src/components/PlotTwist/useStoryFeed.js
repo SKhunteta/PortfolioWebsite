@@ -46,12 +46,24 @@ export default function useStoryFeed() {
   const continuationsRef = useRef(continuations);
   continuationsRef.current = continuations;
   const fetchingRef = useRef(false);
+  const prevGenreRef = useRef(genreFilter);
 
   // Load initial stories on mount
   useEffect(() => {
     loadMore();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // When genre filter changes after mount, clear stories and refetch
+  useEffect(() => {
+    if (prevGenreRef.current === genreFilter) return;
+    prevGenreRef.current = genreFilter;
+    setStories([]);
+    setError(null);
+    fetchingRef.current = false; // allow a new fetch
+    loadMore();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [genreFilter]);
 
   const loadMore = useCallback(async () => {
     if (fetchingRef.current) return;
@@ -96,9 +108,16 @@ export default function useStoryFeed() {
 
   const likeStory = useCallback(
     (story) => {
-      if (reactions[story.id]) return; // Already reacted
+      let alreadyReacted = false;
+      setReactions((prev) => {
+        if (prev[story.id]) {
+          alreadyReacted = true;
+          return prev;
+        }
+        return { ...prev, [story.id]: "liked" };
+      });
+      if (alreadyReacted) return;
 
-      setReactions((prev) => ({ ...prev, [story.id]: "liked" }));
       setSessionLikes((prev) => prev + 1);
 
       setPreferences((prev) => {
@@ -117,14 +136,20 @@ export default function useStoryFeed() {
         return next;
       });
     },
-    [reactions]
+    []
   );
 
   const dislikeStory = useCallback(
     (story) => {
-      if (reactions[story.id]) return;
-
-      setReactions((prev) => ({ ...prev, [story.id]: "disliked" }));
+      let alreadyReacted = false;
+      setReactions((prev) => {
+        if (prev[story.id]) {
+          alreadyReacted = true;
+          return prev;
+        }
+        return { ...prev, [story.id]: "disliked" };
+      });
+      if (alreadyReacted) return;
 
       setPreferences((prev) => {
         const next = {
@@ -142,7 +167,7 @@ export default function useStoryFeed() {
         return next;
       });
     },
-    [reactions]
+    []
   );
 
   const saveStory = useCallback(
@@ -181,23 +206,6 @@ export default function useStoryFeed() {
       [story.id]: { texts: existingTexts, loading: true, error: null },
     }));
 
-    // Continuing is a strong interest signal (2x weight)
-    setPreferences((prev) => {
-      const next = {
-        ...prev,
-        likedGenres: {
-          ...prev.likedGenres,
-          [story.genre]: (prev.likedGenres[story.genre] || 0) + 2,
-        },
-        likedTags: { ...prev.likedTags },
-      };
-      (story.tags || []).forEach((tag) => {
-        next.likedTags[tag] = (next.likedTags[tag] || 0) + 2;
-      });
-      saveToStorage(STORAGE_KEYS.preferences, next);
-      return next;
-    });
-
     try {
       const response = await fetch(API_ENDPOINTS.storiesContinue, {
         method: "POST",
@@ -226,6 +234,23 @@ export default function useStoryFeed() {
             error: null,
           },
         }));
+
+        // Boost preferences only on success (2x weight)
+        setPreferences((prev) => {
+          const next = {
+            ...prev,
+            likedGenres: {
+              ...prev.likedGenres,
+              [story.genre]: (prev.likedGenres[story.genre] || 0) + 2,
+            },
+            likedTags: { ...prev.likedTags },
+          };
+          (story.tags || []).forEach((tag) => {
+            next.likedTags[tag] = (next.likedTags[tag] || 0) + 2;
+          });
+          saveToStorage(STORAGE_KEYS.preferences, next);
+          return next;
+        });
       }
     } catch (err) {
       setContinuations((prev) => ({
@@ -278,6 +303,18 @@ export default function useStoryFeed() {
     []
   );
 
+  // --- Seed genre preferences (e.g. from welcome card) ---
+  const seedGenres = useCallback((genres) => {
+    setPreferences((prev) => {
+      const next = { ...prev, likedGenres: { ...prev.likedGenres } };
+      genres.forEach((g) => {
+        next.likedGenres[g] = (next.likedGenres[g] || 0) + 2;
+      });
+      saveToStorage(STORAGE_KEYS.preferences, next);
+      return next;
+    });
+  }, []);
+
   // --- Reset preferences ---
   const resetPreferences = useCallback(() => {
     setPreferences(DEFAULT_PREFERENCES);
@@ -303,6 +340,7 @@ export default function useStoryFeed() {
     clearSaved,
     continueStory,
     remixStory,
+    seedGenres,
     resetPreferences,
   };
 }

@@ -6,10 +6,24 @@ import { config } from "../config/index.js";
 
 const router = express.Router();
 
-// --- Cache state ---
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
-const cache = new Map(); // key: preference hash → { data, timestamp }
-const MAX_CACHE_ENTRIES = 50;
+// --- Input limits ---
+const MAX_CONTENT_LENGTH = 10000; // characters
+const MAX_TITLE_LENGTH = 200;
+const MAX_CONTINUATIONS = 10;
+const VALID_GENRES = new Set([
+  "sci-fi", "fantasy", "horror", "literary", "humor", "thriller",
+  "magical-realism", "mystery", "romance", "dystopian", "historical",
+  "absurdist", "noir", "fable",
+]);
+
+function sanitizeText(str, maxLen) {
+  if (typeof str !== "string") return "";
+  return str.slice(0, maxLen);
+}
+
+function validateGenre(genre) {
+  return VALID_GENRES.has(genre) ? genre : null;
+}
 
 // --- Rate limiter ---
 const storiesLimiter = rateLimit({
@@ -66,38 +80,7 @@ Respond ONLY with valid JSON. No markdown, no backticks, no explanation. Use thi
   ]
 }`;
 
-/**
- * Create a simple hash from preferences to use as cache key.
- */
-function hashPreferences(preferences, genreFilter) {
-  const key = JSON.stringify({ preferences, genreFilter });
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-    const char = key.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return String(hash);
-}
-
-/**
- * Evict stale cache entries.
- */
-function evictStaleCache() {
-  const now = Date.now();
-  for (const [key, entry] of cache) {
-    if (now - entry.timestamp > CACHE_TTL_MS) {
-      cache.delete(key);
-    }
-  }
-  // If still too many, remove oldest
-  if (cache.size > MAX_CACHE_ENTRIES) {
-    const oldest = [...cache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp);
-    for (let i = 0; i < oldest.length - MAX_CACHE_ENTRIES; i++) {
-      cache.delete(oldest[i][0]);
-    }
-  }
-}
+// No cache — each generate call produces fresh stories to avoid duplicate batches.
 
 /**
  * Fetch stories from Anthropic API.
@@ -107,7 +90,7 @@ async function fetchStoriesFromAPI(preferences, count, genreFilter) {
 
   let userMessage = `Generate ${count} unique, compelling story ideas/excerpts.`;
 
-  if (genreFilter && genreFilter !== "all") {
+  if (genreFilter) {
     userMessage += ` Focus primarily on the "${genreFilter}" genre.`;
   }
 
@@ -195,24 +178,9 @@ router.post("/generate", storiesLimiter, async (req, res) => {
 
     const { preferences, count = 5, genreFilter } = req.body;
     const storyCount = Math.min(Math.max(1, count), 10); // Clamp 1-10
+    const validatedFilter = genreFilter && genreFilter !== "all" ? validateGenre(genreFilter) : undefined;
 
-    // Check cache
-    evictStaleCache();
-    const cacheKey = hashPreferences(preferences, genreFilter);
-    const cached = cache.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
-      console.log("📖 PlotTwist: Serving cached stories");
-      return res.json({
-        success: true,
-        ...cached.data,
-        cached: true,
-      });
-    }
-
-    const data = await fetchStoriesFromAPI(preferences, storyCount, genreFilter);
-
-    // Cache the result
-    cache.set(cacheKey, { data, timestamp: Date.now() });
+    const data = await fetchStoriesFromAPI(preferences, storyCount, validatedFilter);
 
     res.json({
       success: true,
@@ -265,25 +233,34 @@ router.post("/continue", continueLimiter, async (req, res) => {
       return res.status(400).json({ error: "Missing story content" });
     }
 
+    const safeTitle = sanitizeText(title, MAX_TITLE_LENGTH) || "Untitled";
+    const safeContent = sanitizeText(content, MAX_CONTENT_LENGTH);
+    const safeGenre = validateGenre(genre) || "literary";
+    const VALID_MOODS = ["dark", "hopeful", "eerie", "whimsical", "tense", "melancholy", "witty", "surreal", "cozy", "unsettling", "bittersweet", "electric"];
+    const safeMood = VALID_MOODS.includes(mood) ? mood : "atmospheric";
+    const safePrevious = Array.isArray(previousContinuations)
+      ? previousContinuations.slice(0, MAX_CONTINUATIONS).map((t) => sanitizeText(t, MAX_CONTENT_LENGTH))
+      : [];
+
     const client = new Anthropic({ apiKey: config.anthropic.apiKey });
 
-    const continuationNum = (previousContinuations?.length || 0) + 1;
+    const continuationNum = safePrevious.length + 1;
     console.log(`📖 PlotTwist: Continuing story (continuation #${continuationNum})...`);
 
     // Build the full story text including previous continuations
-    let fullStory = content;
-    if (previousContinuations?.length > 0) {
-      fullStory += "\n\n" + previousContinuations.join("\n\n");
+    let fullStory = safeContent;
+    if (safePrevious.length > 0) {
+      fullStory += "\n\n" + safePrevious.join("\n\n");
     }
 
     const response = await client.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 2000,
-      system: `You are continuing a short story. Maintain the same voice, style, genre (${genre || "literary"}), and mood (${mood || "atmospheric"}). Write 2-3 paragraphs that continue naturally from where the story left off. ${previousContinuations?.length > 0 ? "This story has been continued " + previousContinuations.length + " time(s) already — escalate the tension, deepen the mystery, or introduce a new development. Don't repeat what came before." : ""} End at another moment of tension, intrigue, or emotional resonance. Return ONLY the continuation text — no titles, labels, or JSON.`,
+      system: `You are continuing a short story. Maintain the same voice, style, genre (${safeGenre}), and mood (${safeMood}). Write 2-3 paragraphs that continue naturally from where the story left off. ${safePrevious.length > 0 ? "This story has been continued " + safePrevious.length + " time(s) already — escalate the tension, deepen the mystery, or introduce a new development. Don't repeat what came before." : ""} End at another moment of tension, intrigue, or emotional resonance. Return ONLY the continuation text — no titles, labels, or JSON.`,
       messages: [
         {
           role: "user",
-          content: `Continue this story titled "${title || "Untitled"}":\n\n${fullStory}`,
+          content: `Continue this story titled "${safeTitle}":\n\n${fullStory}`,
         },
       ],
     });
@@ -343,10 +320,18 @@ router.post("/remix", remixLimiter, async (req, res) => {
         .json({ error: "Missing content or targetGenre" });
     }
 
+    const safeTargetGenre = validateGenre(targetGenre);
+    if (!safeTargetGenre) {
+      return res.status(400).json({ error: "Invalid target genre" });
+    }
+    const safeOriginalGenre = validateGenre(originalGenre) || "literary";
+    const safeTitle = sanitizeText(title, MAX_TITLE_LENGTH) || "Untitled";
+    const safeContent = sanitizeText(content, MAX_CONTENT_LENGTH);
+
     const client = new Anthropic({ apiKey: config.anthropic.apiKey });
 
     console.log(
-      `📖 PlotTwist: Remixing from ${originalGenre} to ${targetGenre}...`
+      `📖 PlotTwist: Remixing from ${safeOriginalGenre} to ${safeTargetGenre}...`
     );
 
     const response = await client.messages.create({
@@ -361,14 +346,14 @@ Respond ONLY with valid JSON:
 {
   "title": "New Title",
   "content": "The remixed story...",
-  "genre": "${targetGenre}",
+  "genre": "${safeTargetGenre}",
   "mood": "appropriate mood for new genre",
   "tags": ["tag1", "tag2", "tag3"]
 }`,
       messages: [
         {
           role: "user",
-          content: `Remix this ${originalGenre || "literary"} story as ${targetGenre}:\n\nTitle: ${title}\n\n${content}`,
+          content: `Remix this ${safeOriginalGenre} story as ${safeTargetGenre}:\n\nTitle: ${safeTitle}\n\n${safeContent}`,
         },
       ],
     });
@@ -410,12 +395,12 @@ Respond ONLY with valid JSON:
     const remixedStory = {
       id: uuidv4(),
       type: "excerpt",
-      title: jsonData.title || `${title} (Remixed)`,
+      title: jsonData.title || `${safeTitle} (Remixed)`,
       content: jsonData.content,
-      genre: targetGenre,
+      genre: safeTargetGenre,
       mood: jsonData.mood || mood || "surreal",
       tags: jsonData.tags || [],
-      remixedFrom: title,
+      remixedFrom: safeTitle,
     };
 
     console.log("📖 PlotTwist: Story remixed successfully");

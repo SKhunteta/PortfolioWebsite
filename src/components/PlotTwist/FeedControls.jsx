@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaHeart,
@@ -53,15 +53,23 @@ const FeedControls = ({
 }) => {
   const [burstKey, setBurstKey] = useState(0);
   const [showBurst, setShowBurst] = useState(false);
+  const burstTimerRef = useRef(null);
   const isLiked = reaction === "liked";
   const isDisliked = reaction === "disliked";
   const hasReacted = !!reaction;
+
+  useEffect(() => {
+    return () => {
+      if (burstTimerRef.current) clearTimeout(burstTimerRef.current);
+    };
+  }, []);
 
   const handleLike = () => {
     if (hasReacted) return;
     setBurstKey((k) => k + 1);
     setShowBurst(true);
-    setTimeout(() => setShowBurst(false), 800);
+    if (burstTimerRef.current) clearTimeout(burstTimerRef.current);
+    burstTimerRef.current = setTimeout(() => setShowBurst(false), 800);
     onLike();
   };
 

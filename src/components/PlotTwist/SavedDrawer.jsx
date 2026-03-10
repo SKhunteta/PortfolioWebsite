@@ -1,9 +1,36 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes, FaTrash, FaBookmark } from "react-icons/fa";
 import { GENRE_LABELS, GENRE_ACCENT_COLORS } from "./constants";
 
 const SavedDrawer = ({ isOpen, onClose, savedStories, onClearAll }) => {
+  const [confirmClear, setConfirmClear] = useState(false);
+
+  // Reset confirmation when drawer closes
+  useEffect(() => {
+    if (!isOpen) setConfirmClear(false);
+  }, [isOpen]);
+
+  // Escape key to close
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === "Escape") onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, handleKeyDown]);
+
+  const handleClearAll = () => {
+    if (!confirmClear) {
+      setConfirmClear(true);
+      return;
+    }
+    onClearAll();
+    setConfirmClear(false);
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -19,6 +46,9 @@ const SavedDrawer = ({ isOpen, onClose, savedStories, onClearAll }) => {
 
           {/* Drawer */}
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Saved stories"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
@@ -39,11 +69,15 @@ const SavedDrawer = ({ isOpen, onClose, savedStories, onClearAll }) => {
               <div className="flex items-center gap-3">
                 {savedStories.length > 0 && (
                   <button
-                    onClick={onClearAll}
-                    className="text-pt-text-muted hover:text-pt-like text-xs flex items-center gap-1 transition-colors"
+                    onClick={handleClearAll}
+                    className={`text-xs flex items-center gap-1 transition-colors ${
+                      confirmClear
+                        ? "text-pt-like font-semibold"
+                        : "text-pt-text-muted hover:text-pt-like"
+                    }`}
                   >
                     <FaTrash size={10} />
-                    Clear all
+                    {confirmClear ? "Tap again to confirm" : "Clear all"}
                   </button>
                 )}
                 <button

@@ -133,26 +133,36 @@ const WelcomeCard = ({ onStart, onStartWithGenres }) => {
 };
 
 // --- Milestone Toast ---
-const MilestoneToast = ({ message, onDone }) => (
-  <motion.div
-    initial={{ y: -60, opacity: 0 }}
-    animate={{ y: 0, opacity: 1 }}
-    exit={{ y: -60, opacity: 0 }}
-    transition={{ type: "spring", damping: 20, stiffness: 300 }}
-    onAnimationComplete={(def) => {
-      if (def === "exit") return;
-      setTimeout(onDone, 3000);
-    }}
-    className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-pt-surface border border-pt-accent/30 rounded-full px-6 py-2.5 shadow-lg shadow-pt-accent/10"
-  >
-    <p
-      className="text-pt-accent font-semibold text-sm whitespace-nowrap"
-      style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}
+const MilestoneToast = ({ message, onDone }) => {
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ y: -60, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: -60, opacity: 0 }}
+      transition={{ type: "spring", damping: 20, stiffness: 300 }}
+      onAnimationComplete={(def) => {
+        if (def === "exit") return;
+        timerRef.current = setTimeout(onDone, 3000);
+      }}
+      className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-pt-surface border border-pt-accent/30 rounded-full px-6 py-2.5 shadow-lg shadow-pt-accent/10"
     >
-      {message}
-    </p>
-  </motion.div>
-);
+      <p
+        className="text-pt-accent font-semibold text-sm whitespace-nowrap"
+        style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}
+      >
+        {message}
+      </p>
+    </motion.div>
+  );
+};
 
 // --- Keyboard Hint ---
 const KeyboardHint = () => {
@@ -284,6 +294,7 @@ const PlotTwist = () => {
     clearSaved,
     continueStory,
     remixStory,
+    seedGenres,
     resetPreferences,
   } = useStoryFeed();
 
@@ -316,8 +327,10 @@ const PlotTwist = () => {
   };
 
   const handleStartWithGenres = (genres) => {
-    // Pre-seed preferences with selected genres
     if (genres.length > 0) {
+      // Boost all selected genres in preferences so the API favors them
+      seedGenres(genres);
+      // Use first selected genre as the active filter
       setGenreFilter(genres[0]);
     }
     handleStart();
@@ -336,6 +349,11 @@ const PlotTwist = () => {
 
   const isMilestoneCount = MILESTONES.some((m) => sessionLikes + 1 === m.count);
 
+  const remixTimersRef = useRef([]);
+  useEffect(() => {
+    return () => remixTimersRef.current.forEach((t) => clearTimeout(t));
+  }, []);
+
   const handleRemix = useCallback(
     async (targetGenre) => {
       if (!remixTarget || remixLoading) return;
@@ -346,13 +364,17 @@ const PlotTwist = () => {
         setRemixTarget(null);
         // Show scroll-down cue and auto-scroll after a brief pause
         setRemixReady(true);
-        setTimeout(() => {
+        remixTimersRef.current.forEach((t) => clearTimeout(t));
+        remixTimersRef.current = [];
+        const t1 = setTimeout(() => {
           const el = scrollRef.current;
           if (el) {
             el.scrollBy({ top: el.clientHeight, behavior: "smooth" });
           }
-          setTimeout(() => setRemixReady(false), 2500);
+          const t2 = setTimeout(() => setRemixReady(false), 2500);
+          remixTimersRef.current.push(t2);
         }, 600);
+        remixTimersRef.current.push(t1);
       } catch (err) {
         setRemixError(err.message || "Remix failed. Try again.");
       } finally {
@@ -391,8 +413,8 @@ const PlotTwist = () => {
     const handleKeyDown = (e) => {
       // Don't intercept if modals are open
       if (showSaved || showProfile || remixTarget || shareTarget) return;
-      // Don't intercept if user is in an input
-      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      // Don't intercept if user is in an input or editable element
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.isContentEditable) return;
 
       const el = scrollRef.current;
       if (!el) return;
@@ -601,7 +623,7 @@ const PlotTwist = () => {
         {/* Loading card */}
         {loading && <LoadingCard />}
 
-        {/* Error state */}
+        {/* Error state — full screen when no stories, inline toast when stories exist */}
         {error && !loading && stories.length === 0 && (
           <div className="h-dvh w-full snap-start flex items-center justify-center bg-pt-bg px-6">
             <div className="text-center max-w-md">
@@ -617,6 +639,19 @@ const PlotTwist = () => {
                 className="px-6 py-2.5 rounded-full border border-pt-border text-pt-text text-sm hover:bg-white/5 transition-colors"
               >
                 Try Again
+              </button>
+            </div>
+          </div>
+        )}
+        {error && !loading && stories.length > 0 && (
+          <div className="h-dvh w-full snap-start flex items-center justify-center bg-pt-bg px-6">
+            <div className="text-center max-w-md">
+              <p className="text-pt-text-secondary mb-4">{error}</p>
+              <button
+                onClick={loadMore}
+                className="px-6 py-2.5 rounded-full border border-pt-border text-pt-text text-sm hover:bg-white/5 transition-colors"
+              >
+                Load More
               </button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes, FaDownload, FaShareAlt } from "react-icons/fa";
 import { GENRE_ACCENT_COLORS } from "./constants";
@@ -179,24 +179,50 @@ function generateShareImage(canvas, story, continuationTexts) {
   ctx.globalAlpha = 1;
 }
 
+function sanitizeFilename(name) {
+  return name
+    .replace(/[^a-zA-Z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .toLowerCase()
+    .slice(0, 80);
+}
+
 const ShareCard = ({ story, isOpen, onClose, continuationTexts }) => {
   const canvasRef = useRef(null);
   const [imageUrl, setImageUrl] = useState(null);
-  const canShare = typeof navigator.share === "function";
+  const canShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
+
+  // Escape key to close
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === "Escape") onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, handleKeyDown]);
 
   useEffect(() => {
     if (isOpen && story && canvasRef.current) {
       generateShareImage(canvasRef.current, story, continuationTexts);
       setImageUrl(canvasRef.current.toDataURL("image/png"));
     }
+    if (!isOpen) {
+      setImageUrl(null);
+    }
   }, [isOpen, story, continuationTexts]);
 
   const handleDownload = () => {
-    if (!imageUrl) return;
-    const a = document.createElement("a");
-    a.href = imageUrl;
-    a.download = `plot-twist-${story.title.replace(/\s+/g, "-").toLowerCase()}.png`;
-    a.click();
+    if (!imageUrl || !story) return;
+    try {
+      const a = document.createElement("a");
+      a.href = imageUrl;
+      a.download = `plot-twist-${sanitizeFilename(story.title)}.png`;
+      a.click();
+    } catch {
+      // Download failed silently
+    }
   };
 
   const handleShare = async () => {
@@ -205,6 +231,7 @@ const ShareCard = ({ story, isOpen, onClose, continuationTexts }) => {
       const blob = await new Promise((resolve) =>
         canvasRef.current.toBlob(resolve, "image/png")
       );
+      if (!blob) return; // toBlob can return null on tainted canvas
       const file = new File([blob], "plot-twist-story.png", {
         type: "image/png",
       });
@@ -230,6 +257,9 @@ const ShareCard = ({ story, isOpen, onClose, continuationTexts }) => {
             className="fixed inset-0 bg-black/70 z-40"
           />
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Share story"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
