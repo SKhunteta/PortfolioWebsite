@@ -13,6 +13,7 @@ import EmotionalLaborExchange from "./components/EmotionalLaborExchange";
 import ELETeaser from "./components/ELETeaser";
 import AaronWestAtlasTeaser from "./components/AaronWestAtlasTeaser";
 import PlotTwistTeaser from "./components/PlotTwistTeaser";
+import InvoiceTeaser from "./components/InvoiceTeaser";
 
 const AaronWestAtlas = lazy(() => import("./components/AaronWestAtlas"));
 const PlotTwist = lazy(() => import("./components/PlotTwist"));
@@ -123,6 +124,9 @@ function App() {
                   <ELETeaser />
                 </div>
                 <div className="bg-white py-8">
+                  <InvoiceTeaser />
+                </div>
+                <div className="bg-gray-light py-8">
                   <AaronWestAtlasTeaser />
                 </div>
                 <div className="bg-gray-light py-8">
