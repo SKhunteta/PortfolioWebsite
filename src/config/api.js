@@ -27,6 +27,7 @@ export const API_ENDPOINTS = {
   stories: `${API_BASE_URL}/api/stories/generate`,
   storiesContinue: `${API_BASE_URL}/api/stories/continue`,
   storiesRemix: `${API_BASE_URL}/api/stories/remix`,
+  invoiceGenerate: `${API_BASE_URL}/api/invoice/generate`,
 };
 
 export default API_CONFIG;
