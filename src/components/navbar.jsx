@@ -12,23 +12,26 @@ const Navbar = () => {
   const links = [
     { id: 1, link: "home", label: "Home" },
     { id: 2, link: "about", label: "About" },
-    { id: 3, link: "experience", label: "Experience" },
-    { id: 4, link: "skills", label: "Skills" },
     { id: 5, link: "projects", label: "Projects" },
     { id: 6, link: "chat", label: "AI Chat" },
-    // { id: 7, link: "mcp", label: "MCP Demo" },
     { id: 8, link: "contact", label: "Contact" },
   ];
 
   const pageLinks = [
     {
-      id: 8,
+      id: 10,
+      external: false,
+      to: "/resume",
+      label: "Resume",
+    },
+    {
+      id: 11,
       external: true,
       to: "https://prompt-injection.ghost.io/tag/blogs/",
       label: "Blog",
     },
     {
-      id: 9,
+      id: 12,
       external: true,
       to: "https://prompt-injection.ghost.io/tag/stories/",
       label: "Stories",

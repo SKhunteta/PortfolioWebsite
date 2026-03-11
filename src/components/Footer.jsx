@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { HiOutlineMail } from "react-icons/hi";
 
@@ -20,8 +21,8 @@ const Footer = () => {
               <span className="gradient-text">Shreyans Khunteta</span>
             </a>
             <p className="text-gray-300 mt-2 max-w-xs">
-              Building innovative solutions that drive business value through
-              clean, scalable code.
+              Building software and telling stories about the futures it
+              creates.
             </p>
           </div>
 
@@ -45,12 +46,12 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a
-                  href="#experience"
+                <Link
+                  to="/resume"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  Experience
-                </a>
+                  Resume
+                </Link>
               </li>
               <li>
                 <a

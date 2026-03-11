@@ -1,10 +1,8 @@
 import React, { lazy, Suspense } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Navbar from "./components/navbar";
 import Hero from "./components/Hero";
 import About from "./components/About";
-import Experience from "./components/Experience";
-import Skills from "./components/Skills";
 import Projects from "./components/Projects";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
@@ -14,6 +12,7 @@ import ELETeaser from "./components/ELETeaser";
 import AaronWestAtlasTeaser from "./components/AaronWestAtlasTeaser";
 import PlotTwistTeaser from "./components/PlotTwistTeaser";
 import InvoiceTeaser from "./components/InvoiceTeaser";
+import ResumePage from "./pages/ResumePage";
 
 const AaronWestAtlas = lazy(() => import("./components/AaronWestAtlas"));
 const PlotTwist = lazy(() => import("./components/PlotTwist"));
@@ -97,6 +96,7 @@ function App() {
             </Suspense>
           }
         />
+        <Route path="/resume" element={<ResumePage />} />
         <Route
           path="/"
           element={
@@ -111,11 +111,44 @@ function App() {
                 <div className="bg-gray-light py-8">
                   <ChatSection />
                 </div>
-                <div className="bg-gray-light py-8">
-                  <Experience />
-                </div>
-                <div className="bg-gray-light py-8">
-                  <Skills />
+                {/* Resume CTA */}
+                <div className="section-container py-12 md:py-16">
+                  <div className="max-w-4xl mx-auto">
+                    <div className="rounded-xl overflow-hidden shadow-custom-lg bg-gradient-to-br from-bg-gradient-start to-bg-gradient-end">
+                      <div className="p-6 sm:p-8 md:p-10">
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <span className="inline-block px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-semibold mb-2">
+                              Professional Background
+                            </span>
+                            <h3 className="text-2xl sm:text-3xl font-bold font-display">
+                              <span className="gradient-text">Resume</span>
+                            </h3>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                          {["C# / .NET", "React / Node.js", "Azure / AWS", "AI / ML"].map((skill) => (
+                            <div key={skill} className="bg-white/80 rounded-lg p-3 text-center">
+                              <p className="text-sm font-medium text-gray-700">{skill}</p>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                          <p className="text-sm text-gray-600 max-w-md">
+                            5+ years building backend systems, cloud infrastructure, and
+                            AI-powered applications. View my full experience and technical skills.
+                          </p>
+                          <Link
+                            to="/resume"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-medium transition-all btn btn-primary shrink-0"
+                          >
+                            View Full Resume
+                            <span aria-hidden="true">&rarr;</span>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div className="bg-white py-8">
                   <Projects />

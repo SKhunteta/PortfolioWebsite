@@ -14,13 +14,13 @@ describe("Hero", () => {
 
   it("renders the role badge", () => {
     renderWithRouter(<Hero />);
-    expect(screen.getByText("Senior Software Engineer")).toBeInTheDocument();
+    expect(screen.getByText("Senior Software Engineer & Writer")).toBeInTheDocument();
   });
 
   it("renders the tagline", () => {
     renderWithRouter(<Hero />);
     expect(
-      screen.getByText(/Building innovative solutions/)
+      screen.getByText(/Building software and telling stories/)
     ).toBeInTheDocument();
   });
 
