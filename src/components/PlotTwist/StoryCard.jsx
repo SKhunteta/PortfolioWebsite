@@ -488,6 +488,7 @@ const StoryCard = ({
             transition={{ delay: 0.5 }}
             viewport={{ once: true }}
             className="flex-shrink-0 flex items-center"
+            onPointerDownCapture={(e) => e.stopPropagation()}
           >
             <FeedControls
               onLike={onLike}
