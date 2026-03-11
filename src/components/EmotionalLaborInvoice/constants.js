@@ -53,6 +53,67 @@ export const MODIFIERS = [
     multiplier: 1.25,
     surchargeLabel: "Non-acknowledgment adjustment (1.25\u00d7)",
   },
+  {
+    key: "sleep_deprived",
+    label: "Performed while sleep-deprived",
+    multiplier: 1.3,
+    surchargeLabel: "Sleep deprivation surcharge (1.3\u00d7)",
+  },
+  {
+    key: "personal_crisis",
+    label: "During a personal crisis",
+    multiplier: 1.6,
+    surchargeLabel: "Personal crisis premium (1.6\u00d7)",
+  },
+  {
+    key: "unreciprocated",
+    label: "For someone who wouldn't do the same",
+    multiplier: 1.45,
+    surchargeLabel: "Non-reciprocity adjustment (1.45\u00d7)",
+  },
+];
+
+export const PRESET_SCENARIOS = [
+  {
+    label: "Holiday dinner with family",
+    client: "My family",
+    description:
+      "Navigated politically charged dinner conversation while maintaining the illusion that everything is fine, mediated two simmering conflicts, and performed enthusiastic gratitude for a meal I didn\u2019t ask for.",
+    duration: "Half a day",
+    emotions: ["empathy", "anxiety", "apathy"],
+  },
+  {
+    label: "Being the only ___ in the room",
+    client: "The institution",
+    description:
+      "Represented an entire demographic in a meeting where no one noticed my discomfort, fielded \u2018innocent\u2019 questions, and smiled through microaggressions to keep my professional reputation intact.",
+    duration: "2 hours",
+    emotions: ["rage", "anxiety", "empathy"],
+  },
+  {
+    label: "Unpaid therapy for a friend",
+    client: "A close friend",
+    description:
+      "Listened to a 90-minute crisis call, offered thoughtful advice that will be ignored, and validated feelings I wasn\u2019t allowed to have about the situation.",
+    duration: "1 hour",
+    emotions: ["empathy", "grief", "hope"],
+  },
+  {
+    label: "Managing someone\u2019s feelings about your boundary",
+    client: "Someone who should know better",
+    description:
+      "Set a boundary, then spent twice as long comforting the other person about how the boundary made them feel.",
+    duration: "2 hours",
+    emotions: ["rage", "empathy", "anxiety"],
+  },
+  {
+    label: "Explaining your existence",
+    client: "A well-meaning stranger",
+    description:
+      "Patiently educated someone about a basic aspect of your lived experience they could have googled, while performing gratitude for their curiosity.",
+    duration: "30 min",
+    emotions: ["apathy", "rage", "empathy"],
+  },
 ];
 
 export const DURATIONS = [

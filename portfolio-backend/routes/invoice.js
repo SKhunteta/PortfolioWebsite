@@ -48,6 +48,18 @@ const MODIFIER_MULTIPLIERS = {
     multiplier: 1.25,
     label: "Non-acknowledgment adjustment (1.25×)",
   },
+  sleep_deprived: {
+    multiplier: 1.3,
+    label: "Sleep deprivation surcharge (1.3×)",
+  },
+  personal_crisis: {
+    multiplier: 1.6,
+    label: "Personal crisis premium (1.6×)",
+  },
+  unreciprocated: {
+    multiplier: 1.45,
+    label: "Non-reciprocity adjustment (1.45×)",
+  },
 };
 
 const SYSTEM_PROMPT = `You are a billing specialist for the Emotional Labor Exchange. You receive descriptions of real emotional labor and produce itemized invoices. Your line items should be precise and clinical in tone — the language of consulting and professional services — but describe labor that has never been formally acknowledged. Do not editorialize. Do not comfort. The invoice format itself is the statement. Break the described labor into 3-5 distinct billable services. Each line item should name a specific skill or service that was performed.
@@ -76,7 +88,7 @@ Do not include markdown, backticks, or explanation. Return only the JSON object.
  */
 router.post("/generate", invoiceLimiter, async (req, res) => {
   try {
-    const { client, description, duration, emotions, modifiers } = req.body;
+    const { client, description, duration, emotions, modifiers, from } = req.body;
 
     // Validate required fields
     if (!client || !description || !duration || !emotions?.length) {
@@ -229,7 +241,7 @@ Price the line items using rates that feel proportional to a base rate of ~$${ba
       invoice_number: invoiceNumber,
       date: dateStr,
       client,
-      from: "Service Provider",
+      from: from || "Service Provider",
       line_items: invoiceData.line_items,
       subtotal: invoiceData.subtotal,
       surcharges,
