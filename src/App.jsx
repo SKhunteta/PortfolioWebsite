@@ -1,5 +1,5 @@
-import React, { lazy, Suspense } from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import React, { lazy, Suspense, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import Navbar from "./components/navbar";
 import Hero from "./components/Hero";
 import About from "./components/About";
@@ -18,9 +18,18 @@ const AaronWestAtlas = lazy(() => import("./components/AaronWestAtlas"));
 const PlotTwist = lazy(() => import("./components/PlotTwist"));
 const EmotionalLaborInvoice = lazy(() => import("./components/EmotionalLaborInvoice"));
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         <Route path="/ele" element={<EmotionalLaborExchange />} />
         <Route
