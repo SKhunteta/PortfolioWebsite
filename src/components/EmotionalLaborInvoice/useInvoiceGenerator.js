@@ -62,5 +62,11 @@ export default function useInvoiceGenerator() {
     setError(null);
   }, []);
 
-  return { status, invoice, error, emotionPrices, generateInvoice, resetForm };
+  const viewExisting = useCallback((existingInvoice) => {
+    setInvoice(existingInvoice);
+    setStatus("invoice");
+    setError(null);
+  }, []);
+
+  return { status, invoice, error, emotionPrices, generateInvoice, resetForm, viewExisting };
 }

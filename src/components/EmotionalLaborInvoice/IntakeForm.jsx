@@ -9,10 +9,12 @@ import {
   DURATIONS,
   CLIENT_GHOST_TEXTS,
   SERVICE_GHOST_TEXT,
+  PRESET_SCENARIOS,
 } from "./constants";
 
 export default function IntakeForm({ emotionPrices, onSubmit }) {
   const [client, setClient] = useState("");
+  const [fromName, setFromName] = useState("");
   const [description, setDescription] = useState("");
   const [duration, setDuration] = useState("");
   const [selectedEmotions, setSelectedEmotions] = useState([]);
@@ -39,6 +41,13 @@ export default function IntakeForm({ emotionPrices, onSubmit }) {
     );
   };
 
+  const applyPreset = (preset) => {
+    setClient(preset.client);
+    setDescription(preset.description);
+    setDuration(preset.duration);
+    setSelectedEmotions(preset.emotions);
+  };
+
   const isValid =
     client.trim() && description.trim() && duration && selectedEmotions.length > 0;
 
@@ -47,6 +56,7 @@ export default function IntakeForm({ emotionPrices, onSubmit }) {
     if (!isValid) return;
     onSubmit({
       client: client.trim(),
+      from: fromName.trim() || undefined,
       description: description.trim(),
       duration,
       emotions: selectedEmotions,
@@ -73,6 +83,25 @@ export default function IntakeForm({ emotionPrices, onSubmit }) {
         </p>
       </div>
 
+      {/* Preset Scenarios */}
+      <div className="mb-8">
+        <p className="font-invoice text-[10px] uppercase tracking-[0.2em] text-ele-text-tertiary mb-2">
+          Quick Scenarios
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {PRESET_SCENARIOS.map((preset) => (
+            <button
+              key={preset.label}
+              type="button"
+              onClick={() => applyPreset(preset)}
+              className="border border-inv-border bg-white text-inv-text/70 hover:border-inv-gold/40 hover:text-inv-text text-xs font-sans-ele px-3 py-1.5 rounded-full cursor-pointer transition-colors"
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Client */}
       <div className="mb-6">
         <label htmlFor="inv-client" className="block font-invoice text-xs font-medium text-inv-text uppercase tracking-widest mb-2">
@@ -84,6 +113,21 @@ export default function IntakeForm({ emotionPrices, onSubmit }) {
           value={client}
           onChange={(e) => setClient(e.target.value)}
           placeholder={CLIENT_GHOST_TEXTS[ghostTextIndex]}
+          className="w-full px-4 py-3 bg-white border border-inv-border rounded-md font-sans-ele text-inv-text text-sm placeholder:text-ele-text-tertiary placeholder:italic focus:outline-none focus:border-inv-gold focus:ring-1 focus:ring-inv-gold/30 transition-colors"
+        />
+      </div>
+
+      {/* From (Optional) */}
+      <div className="mb-6">
+        <label htmlFor="inv-from" className="block font-invoice text-xs font-medium text-inv-text uppercase tracking-widest mb-2">
+          From <span className="normal-case tracking-normal font-normal text-ele-text-tertiary">(optional)</span>
+        </label>
+        <input
+          id="inv-from"
+          type="text"
+          value={fromName}
+          onChange={(e) => setFromName(e.target.value)}
+          placeholder="Your name (or leave blank)"
           className="w-full px-4 py-3 bg-white border border-inv-border rounded-md font-sans-ele text-inv-text text-sm placeholder:text-ele-text-tertiary placeholder:italic focus:outline-none focus:border-inv-gold focus:ring-1 focus:ring-inv-gold/30 transition-colors"
         />
       </div>

@@ -1,16 +1,27 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import useInvoiceGenerator from "./useInvoiceGenerator";
+import useInvoiceHistory from "./useInvoiceHistory";
 import IntakeForm from "./IntakeForm";
 import ProcessingState from "./ProcessingState";
 import InvoiceDisplay from "./InvoiceDisplay";
 import ExportControls from "./ExportControls";
+import PastInvoices from "./PastInvoices";
 
 export default function EmotionalLaborInvoice() {
-  const { status, invoice, error, emotionPrices, generateInvoice, resetForm } =
+  const { status, invoice, error, emotionPrices, generateInvoice, resetForm, viewExisting } =
     useInvoiceGenerator();
+  const { history, addInvoice, clearHistory, lifetimeTotal } =
+    useInvoiceHistory();
   const invoiceRef = useRef(null);
+
+  // Auto-save generated invoices to history
+  useEffect(() => {
+    if (status === "invoice" && invoice) {
+      addInvoice(invoice);
+    }
+  }, [status, invoice, addInvoice]);
 
   return (
     <div className="min-h-screen bg-inv-bg">
@@ -25,11 +36,18 @@ export default function EmotionalLaborInvoice() {
       <div className="px-4 sm:px-6 py-8 sm:py-12">
         <AnimatePresence mode="wait">
           {status === "form" && (
-            <IntakeForm
-              key="form"
-              emotionPrices={emotionPrices}
-              onSubmit={generateInvoice}
-            />
+            <div key="form">
+              <IntakeForm
+                emotionPrices={emotionPrices}
+                onSubmit={generateInvoice}
+              />
+              <PastInvoices
+                history={history}
+                lifetimeTotal={lifetimeTotal}
+                onView={viewExisting}
+                onClear={clearHistory}
+              />
+            </div>
           )}
 
           {status === "loading" && <ProcessingState key="loading" />}
@@ -37,7 +55,7 @@ export default function EmotionalLaborInvoice() {
           {status === "invoice" && invoice && (
             <div key="invoice">
               <InvoiceDisplay ref={invoiceRef} invoice={invoice} />
-              <ExportControls invoiceRef={invoiceRef} onReset={resetForm} />
+              <ExportControls invoice={invoice} invoiceRef={invoiceRef} onReset={resetForm} />
             </div>
           )}
 
