@@ -22,22 +22,22 @@ const Hero = () => {
           <div className="md:col-span-3 space-y-4 text-center md:text-left animate-fade-in">
             <div>
               <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-semibold mb-4">
-                Senior Software Engineer
+                Senior Software Engineer & Writer
               </span>
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold font-display">
                 Hey, I'm{" "}
                 <span className="gradient-text">Shreyans Khunteta</span>
               </h1>
               <h2 className="text-xl md:text-2xl text-gray-600 mt-3 md:mt-4 max-w-lg mx-auto md:mx-0">
-                Building innovative solutions that drive business value through
-                clean, scalable code
+                Building software and telling stories
               </h2>
             </div>
 
             <div className="text-content md:text-left md:mx-0 pt-2">
               <p className="text-gray-600">
-                Experienced full-stack developer specializing in .NET, cloud
-                technologies, and data engineering.
+                Full-stack developer specializing in .NET, cloud technologies,
+                and AI. Science fiction writer exploring technology, ethics, and
+                the human experience.
               </p>
             </div>
 

@@ -32,7 +32,7 @@ describe("App", () => {
 
   it("renders Hero section on the home page", () => {
     render(<App />);
-    expect(screen.getByText("Senior Software Engineer")).toBeInTheDocument();
+    expect(screen.getByText("Senior Software Engineer & Writer")).toBeInTheDocument();
   });
 
   it("renders the Navbar on the home page", () => {
@@ -52,9 +52,9 @@ describe("App", () => {
     expect(screen.getByText("About Me")).toBeInTheDocument();
   });
 
-  it("renders Skills section on the home page", () => {
+  it("renders Resume CTA on the home page", () => {
     render(<App />);
-    expect(screen.getByText("Skills & Expertise")).toBeInTheDocument();
+    expect(screen.getByText("View Full Resume")).toBeInTheDocument();
   });
 
   it("renders Projects section on the home page", () => {

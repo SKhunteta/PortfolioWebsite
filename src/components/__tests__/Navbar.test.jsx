@@ -19,10 +19,6 @@ describe("Navbar", () => {
     expect(screen.getAllByText("Home").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("About").length).toBeGreaterThanOrEqual(1);
     expect(
-      screen.getAllByText("Experience").length
-    ).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("Skills").length).toBeGreaterThanOrEqual(1);
-    expect(
       screen.getAllByText("Projects").length
     ).toBeGreaterThanOrEqual(1);
     expect(
@@ -30,6 +26,9 @@ describe("Navbar", () => {
     ).toBeGreaterThanOrEqual(1);
     expect(
       screen.getAllByText("Contact").length
+    ).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByText("Resume").length
     ).toBeGreaterThanOrEqual(1);
   });
 
