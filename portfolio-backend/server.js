@@ -70,74 +70,64 @@ async function checkAndRunSetup() {
 }
 
 // Middleware
-// Skip helmet for MCP routes (SSE compatibility)
+// For MCP routes: apply Helmet but disable CSP (needed for SSE streaming)
+// For all other routes: apply Helmet with full defaults
+const helmetDefault = helmet();
+const helmetNoCsp = helmet({ contentSecurityPolicy: false });
+
 app.use((req, res, next) => {
   if (req.path.startsWith("/api/mcp-connector")) {
-    return next();
+    return helmetNoCsp(req, res, next);
   }
-  helmet()(req, res, next);
+  helmetDefault(req, res, next);
 });
 app.use(morgan("combined"));
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // CORS configuration
+const isProduction = process.env.NODE_ENV === "production";
 const corsOptions = {
   origin: function (origin, callback) {
-    console.log(
-      "CORS Origin check:",
-      origin,
-      "NODE_ENV:",
-      process.env.NODE_ENV
-    );
+    if (!isProduction) {
+      console.log("CORS Origin check:", origin);
+    }
 
-    // Allow requests with no origin (like mobile apps, curl, or Claude MCP connector)
+    // Allow requests with no origin (curl, server-to-server, MCP clients).
+    // In production this also covers mobile apps and non-browser clients.
     if (!origin) return callback(null, true);
 
     // In development, allow any localhost port
-    if (
-      process.env.NODE_ENV !== "production" &&
-      origin.startsWith("http://localhost:")
-    ) {
-      console.log("Allowing localhost origin:", origin);
+    if (!isProduction && origin.startsWith("http://localhost:")) {
       return callback(null, true);
     }
 
     // Allow Claude/Anthropic servers for MCP connector
     if (origin.includes("anthropic.com") || origin.includes("claude.ai")) {
-      console.log("Allowing Claude/Anthropic origin for MCP:", origin);
       return callback(null, true);
     }
 
     // Allow OpenAI / ChatGPT for REST API Actions
     if (origin.includes("openai.com") || origin.includes("chatgpt.com")) {
-      console.log("Allowing OpenAI/ChatGPT origin for REST API:", origin);
       return callback(null, true);
     }
 
     // Production and specific allowed origins
     const allowedOrigins = [
       process.env.FRONTEND_URL || "http://localhost:5173",
-      "http://localhost:5174", // Add support for alternate port
+      "http://localhost:5174",
       process.env.PRODUCTION_URL || "https://builtbyshrey.com",
-      "https://builtbyshrey.com", // Explicitly include production URL
+      "https://builtbyshrey.com",
       "http://localhost:3000",
     ];
 
-    console.log(
-      "Checking origin:",
-      origin,
-      "against allowed origins:",
-      allowedOrigins
-    );
-
     if (allowedOrigins.includes(origin)) {
-      console.log("Origin allowed:", origin);
       return callback(null, true);
     }
 
-    console.log("Origin not allowed:", origin);
-    // Instead of throwing an error, just return false
+    if (!isProduction) {
+      console.log("Origin not allowed:", origin);
+    }
     return callback(null, false);
   },
   credentials: true,
@@ -147,6 +137,7 @@ const corsOptions = {
     "Authorization",
     "Cache-Control",
     "X-Requested-With",
+    "X-Admin-Key",
     "Accept",
     "Mcp-Session-Id",
   ],
