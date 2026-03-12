@@ -1,4 +1,5 @@
 import express from "express";
+import rateLimit from "express-rate-limit";
 import OpenAIService from "../services/openai.js";
 import QdrantService from "../services/qdrant.js";
 import IndexerService from "../services/indexer.js";
@@ -7,6 +8,46 @@ import { v4 as uuidv4 } from "uuid";
 import setup from "../setup.js";
 
 const router = express.Router();
+
+// Rate limiter for the main ask endpoint (calls OpenAI — protects against bill spikes)
+const askLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20,
+  message: {
+    error: "Too many requests",
+    message: "Please wait a moment before asking another question.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiter for admin/debug endpoints
+const adminLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 3,
+  message: { error: "Too many admin requests" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Admin auth middleware — requires X-Admin-Key header matching ADMIN_API_KEY env var
+function requireAdminKey(req, res, next) {
+  const adminKey = process.env.ADMIN_API_KEY;
+  if (!adminKey) {
+    return res.status(503).json({
+      error: "Admin endpoints are disabled",
+      message: "ADMIN_API_KEY is not configured on the server.",
+    });
+  }
+  const provided = req.headers["x-admin-key"];
+  if (!provided || provided !== adminKey) {
+    return res.status(401).json({
+      error: "Unauthorized",
+      message: "Valid X-Admin-Key header is required.",
+    });
+  }
+  next();
+}
 
 // Middleware to track request timing
 router.use((req, res, next) => {
@@ -18,7 +59,7 @@ router.use((req, res, next) => {
  * POST /api/ask
  * Handle natural language questions about the portfolio
  */
-router.post("/", async (req, res) => {
+router.post("/", askLimiter, async (req, res) => {
   try {
     const { question, context } = req.body;
 
@@ -148,7 +189,7 @@ router.get("/status", async (req, res) => {
   }
 });
 
-router.post("/reindex", async (req, res) => {
+router.post("/reindex", adminLimiter, requireAdminKey, async (req, res) => {
   try {
     const { contentType } = req.body; // contentType can be 'all', 'project', 'skill', etc.
     let result;
@@ -204,8 +245,8 @@ function formatSearchResults(searchResults) {
   }));
 }
 
-// Manual setup endpoint for debugging
-router.post("/setup", async (req, res) => {
+// Manual setup endpoint for debugging (admin-only)
+router.post("/setup", adminLimiter, requireAdminKey, async (req, res) => {
   try {
     console.log("📋 Manual setup triggered via API");
     await setup();
@@ -265,8 +306,8 @@ router.get("/qdrant-health", async (req, res) => {
   }
 });
 
-// Initialize Qdrant collection endpoint
-router.post("/init-collection", async (req, res) => {
+// Initialize Qdrant collection endpoint (admin-only)
+router.post("/init-collection", adminLimiter, requireAdminKey, async (req, res) => {
   try {
     console.log("📋 Manual collection initialization triggered via API");
     await QdrantService.initializeCollection();
