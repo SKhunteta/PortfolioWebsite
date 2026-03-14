@@ -12,6 +12,7 @@ import portfolioRoute from "./routes/portfolio.js";
 import eleRoute from "./routes/ele.js";
 import storiesRoute from "./routes/stories.js";
 import invoiceRoute from "./routes/invoice.js";
+import janetRoute from "./routes/janet.js";
 
 // Service imports
 import QdrantService from "./services/qdrant.js";
@@ -194,6 +195,7 @@ app.use("/api/mcp-connector", mcpConnectorRoute);
 app.use("/api/ele", eleRoute);
 app.use("/api/stories", storiesRoute);
 app.use("/api/invoice", invoiceRoute);
+app.use("/api/janet", janetRoute);
 
 // 404 handler
 app.use((req, res) => {

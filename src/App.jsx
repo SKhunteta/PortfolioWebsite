@@ -9,6 +9,7 @@ import Footer from "./components/Footer";
 import ChatSection from "./components/ChatSection";
 import EmotionalLaborExchange from "./components/EmotionalLaborExchange";
 import ELETeaser from "./components/ELETeaser";
+import JanetTeaser from "./components/JanetTeaser";
 import AaronWestAtlasTeaser from "./components/AaronWestAtlasTeaser";
 import PlotTwistTeaser from "./components/PlotTwistTeaser";
 import InvoiceTeaser from "./components/InvoiceTeaser";
@@ -17,6 +18,7 @@ import ResumePage from "./pages/ResumePage";
 const AaronWestAtlas = lazy(() => import("./components/AaronWestAtlas"));
 const PlotTwist = lazy(() => import("./components/PlotTwist"));
 const EmotionalLaborInvoice = lazy(() => import("./components/EmotionalLaborInvoice"));
+const Janet = lazy(() => import("./components/Janet"));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -86,6 +88,22 @@ function App() {
               }
             >
               <PlotTwist />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/janet"
+          element={
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center bg-[#0d0f11]">
+                  <p className="text-[#4b5563] font-mono text-sm">
+                    Initializing JANET...
+                  </p>
+                </div>
+              }
+            >
+              <Janet />
             </Suspense>
           }
         />
@@ -169,6 +187,9 @@ function App() {
                   <InvoiceTeaser />
                 </div>
                 <div className="bg-gray-light py-8">
+                  <JanetTeaser />
+                </div>
+                <div className="bg-white py-8">
                   <AaronWestAtlasTeaser />
                 </div>
                 <div className="bg-gray-light py-8">

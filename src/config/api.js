@@ -28,6 +28,7 @@ export const API_ENDPOINTS = {
   storiesContinue: `${API_BASE_URL}/api/stories/continue`,
   storiesRemix: `${API_BASE_URL}/api/stories/remix`,
   invoiceGenerate: `${API_BASE_URL}/api/invoice/generate`,
+  janet: `${API_BASE_URL}/api/janet/chat`,
 };
 
 export default API_CONFIG;
