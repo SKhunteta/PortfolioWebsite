@@ -10,7 +10,7 @@ const parseMessageWithLinks = (text) => {
   // First, handle specific GitHub mentions for Shreyans
   let processedText = text.replace(
     /(my GitHub|his GitHub|Shreyans'?\s*GitHub|GitHub profile|GitHub account)/gi,
-    "[GitHub Profile](https://github.com/skhunteta)"
+    "[GitHub Profile](https://github.com/SKhunteta)"
   );
 
   // Handle specific LinkedIn mentions for Shreyans - preserve possessive words

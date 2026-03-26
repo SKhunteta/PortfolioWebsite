@@ -66,7 +66,7 @@ EDUCATION:
 
 CONTACT & LINKS:
 - Email: shreyans.khunteta@gmail.com
-- GitHub: https://github.com/skhunteta
+- GitHub: https://github.com/SKhunteta
 - LinkedIn: https://www.linkedin.com/in/shreyans-khunteta-3167247a/
 - Blog: https://prompt-injection.ghost.io (also https://blog.builtbyshrey.com)
 - Location: Seattle, WA, USA

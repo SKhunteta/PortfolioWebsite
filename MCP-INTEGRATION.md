@@ -122,7 +122,7 @@ To connect Claude to my portfolio, add this configuration to your Claude convers
 
 For technical questions about the MCP integration:
 
-- **GitHub**: [github.com/skhunteta](https://github.com/skhunteta)
+- **GitHub**: [github.com/SKhunteta](https://github.com/SKhunteta)
 - **Website**: [builtbyshrey.com](https://builtbyshrey.com)
 
 ---

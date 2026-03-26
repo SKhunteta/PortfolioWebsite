@@ -12,6 +12,7 @@ const Janet = () => {
   const [fadeOut, setFadeOut] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const decommissionTimeouts = useRef([]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -20,6 +21,12 @@ const Janet = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
+
+  useEffect(() => {
+    return () => {
+      decommissionTimeouts.current.forEach(clearTimeout);
+    };
+  }, []);
 
   // Send messages to JANET API
   const sendToJanet = useCallback(async (conversationMessages) => {
@@ -124,8 +131,10 @@ const Janet = () => {
 
       if (janetData.decommission) {
         // Start decommission sequence
-        setTimeout(() => setFadeOut(true), 3000);
-        setTimeout(() => setDecommissioned(true), 6000);
+        decommissionTimeouts.current.push(
+          setTimeout(() => setFadeOut(true), 3000),
+          setTimeout(() => setDecommissioned(true), 6000)
+        );
       }
     } catch (err) {
       setMessages((prev) => [
