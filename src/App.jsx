@@ -13,12 +13,14 @@ import JanetTeaser from "./components/JanetTeaser";
 import AaronWestAtlasTeaser from "./components/AaronWestAtlasTeaser";
 import PlotTwistTeaser from "./components/PlotTwistTeaser";
 import InvoiceTeaser from "./components/InvoiceTeaser";
+import LinkTrackerTeaser from "./components/LinkTrackerTeaser";
 import ResumePage from "./pages/ResumePage";
 
 const AaronWestAtlas = lazy(() => import("./components/AaronWestAtlas"));
 const PlotTwist = lazy(() => import("./components/PlotTwist"));
 const EmotionalLaborInvoice = lazy(() => import("./components/EmotionalLaborInvoice"));
 const Janet = lazy(() => import("./components/Janet"));
+const LinkTracker = lazy(() => import("./components/LinkTracker"));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -123,6 +125,22 @@ function App() {
             </Suspense>
           }
         />
+        <Route
+          path="/link-tracker"
+          element={
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center bg-[#F0F4F8]">
+                  <p className="text-[#8899AA] text-sm font-sans">
+                    Loading transit map...
+                  </p>
+                </div>
+              }
+            >
+              <LinkTracker />
+            </Suspense>
+          }
+        />
         <Route path="/resume" element={<ResumePage />} />
         <Route
           path="/"
@@ -194,6 +212,9 @@ function App() {
                 </div>
                 <div className="bg-gray-light py-8">
                   <PlotTwistTeaser />
+                </div>
+                <div className="bg-white py-8">
+                  <LinkTrackerTeaser />
                 </div>
                 <div className="bg-gray-light py-8">
                   <Contact />

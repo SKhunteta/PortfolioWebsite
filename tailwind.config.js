@@ -63,6 +63,16 @@ export default {
         "inv-text": "#1A1A1A",
         "inv-band": "#F5F5F0",
         "inv-border": "#E8E4DF",
+        // Link Light Rail Tracker
+        "link-bg": "#F0F4F8",
+        "link-text": "#1A2B3C",
+        "link-text-secondary": "#4A5D6F",
+        "link-text-muted": "#8899AA",
+        "link-border": "#D4DDE6",
+        "link-blue": "#0053A0",
+        "link-red": "#E31837",
+        "link-purple": "#7B2D8E",
+        "link-orange": "#F58220",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
