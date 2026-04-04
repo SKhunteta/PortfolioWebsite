@@ -4,31 +4,37 @@
 export const LINES = {
   "1-line": {
     name: "1 Line",
-    color: "#0053A0",
+    color: "#E31837",
     shortName: "1",
-    description: "Lynnwood to Federal Way",
+    description: "Alaska Junction - Everett",
   },
   "2-line": {
     name: "2 Line",
-    color: "#E31837",
+    color: "#0053A0",
     shortName: "2",
-    description: "Mariner to Redmond (future: Tacoma Dome)",
+    description: "Mariner - Redmond",
   },
   "3-line": {
     name: "3 Line",
-    color: "#7B2D8E",
+    color: "#00A651",
     shortName: "3",
-    description: "Ballard to Tacoma (planned)",
+    description: "Ballard - Tacoma Dome",
+  },
+  "4-line": {
+    name: "4 Line",
+    color: "#F58220",
+    shortName: "4",
+    description: "Kirkland - Issaquah",
   },
   "t-line": {
     name: "T Line",
-    color: "#F58220",
+    color: "#7B2D8E",
     shortName: "T",
-    description: "Tacoma Link - Theater District to Hilltop",
+    description: "Tacoma Dome - TCC",
   },
 };
 
-export const LINE_ORDER = ["1-line", "2-line", "3-line", "t-line"];
+export const LINE_ORDER = ["1-line", "2-line", "3-line", "4-line", "t-line"];
 
 export const MAP_CONFIG = {
   center: [47.6062, -122.3321],
@@ -41,15 +47,15 @@ export const MAP_CONFIG = {
 };
 
 export const STATIONS = [
-  // ===== 1 Line (Blue) - Lynnwood to Federal Way =====
+  // ===== 1 Line (Red) - Alaska Junction to Everett =====
   {
     id: "lynnwood-city-center",
     name: "Lynnwood City Center",
-    lines: ["1-line"],
+    lines: ["1-line", "2-line"],
     lat: 47.8149,
     lng: -122.2953,
     neighborhood: "Lynnwood",
-    blurb: "The northern terminus of the 1 Line in Snohomish County. Lynnwood City Center is a growing urban hub with a large transit-oriented development transforming the area around the station.",
+    blurb: "A major shared station on the 1 and 2 Lines in Snohomish County. Lynnwood City Center is a growing urban hub with a large transit-oriented development transforming the area around the station.",
     operational: true,
     openedYear: 2024,
     notableFact: "The Lynnwood Link Extension added three new stations and brought light rail to Snohomish County for the first time.",
@@ -57,7 +63,7 @@ export const STATIONS = [
   {
     id: "mountlake-terrace",
     name: "Mountlake Terrace",
-    lines: ["1-line"],
+    lines: ["1-line", "2-line"],
     lat: 47.7871,
     lng: -122.3087,
     neighborhood: "Mountlake Terrace",
@@ -69,7 +75,7 @@ export const STATIONS = [
   {
     id: "shoreline-north-185th",
     name: "Shoreline North/185th",
-    lines: ["1-line"],
+    lines: ["1-line", "2-line"],
     lat: 47.7680,
     lng: -122.3456,
     neighborhood: "Shoreline",
@@ -81,7 +87,7 @@ export const STATIONS = [
   {
     id: "shoreline-south-148th",
     name: "Shoreline South/148th",
-    lines: ["1-line"],
+    lines: ["1-line", "2-line"],
     lat: 47.7544,
     lng: -122.3456,
     neighborhood: "Shoreline",
@@ -91,9 +97,21 @@ export const STATIONS = [
     notableFact: null,
   },
   {
+    id: "pinehurst",
+    name: "Pinehurst",
+    lines: ["1-line", "2-line"],
+    lat: 47.7220,
+    lng: -122.3330,
+    neighborhood: "Pinehurst",
+    blurb: "An infill station serving the Pinehurst neighborhood between Shoreline and Northgate. Provides additional transit access to this growing residential area.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
+  {
     id: "northgate",
     name: "Northgate",
-    lines: ["1-line"],
+    lines: ["1-line", "2-line"],
     lat: 47.7084,
     lng: -122.3275,
     neighborhood: "Northgate",
@@ -105,7 +123,7 @@ export const STATIONS = [
   {
     id: "roosevelt",
     name: "Roosevelt",
-    lines: ["1-line"],
+    lines: ["1-line", "2-line"],
     lat: 47.6766,
     lng: -122.3168,
     neighborhood: "Roosevelt",
@@ -117,7 +135,7 @@ export const STATIONS = [
   {
     id: "u-district",
     name: "U District",
-    lines: ["1-line"],
+    lines: ["1-line", "2-line"],
     lat: 47.6611,
     lng: -122.3155,
     neighborhood: "University District",
@@ -129,7 +147,7 @@ export const STATIONS = [
   {
     id: "university-of-washington",
     name: "University of Washington",
-    lines: ["1-line"],
+    lines: ["1-line", "2-line"],
     lat: 47.6498,
     lng: -122.3039,
     neighborhood: "University of Washington",
@@ -141,7 +159,7 @@ export const STATIONS = [
   {
     id: "capitol-hill",
     name: "Capitol Hill",
-    lines: ["1-line"],
+    lines: ["1-line", "2-line"],
     lat: 47.6195,
     lng: -122.3208,
     neighborhood: "Capitol Hill",
@@ -153,7 +171,7 @@ export const STATIONS = [
   {
     id: "westlake",
     name: "Westlake",
-    lines: ["1-line", "3-line"],
+    lines: ["1-line", "2-line", "3-line"],
     lat: 47.6113,
     lng: -122.3373,
     neighborhood: "Downtown Seattle",
@@ -165,7 +183,7 @@ export const STATIONS = [
   {
     id: "university-street",
     name: "Symphony",
-    lines: ["1-line"],
+    lines: ["1-line", "2-line"],
     lat: 47.6076,
     lng: -122.3358,
     neighborhood: "Downtown Seattle",
@@ -177,7 +195,7 @@ export const STATIONS = [
   {
     id: "pioneer-square",
     name: "Pioneer Square",
-    lines: ["1-line"],
+    lines: ["1-line", "2-line"],
     lat: 47.6021,
     lng: -122.3316,
     neighborhood: "Pioneer Square",
@@ -189,7 +207,7 @@ export const STATIONS = [
   {
     id: "international-district",
     name: "International District/Chinatown",
-    lines: ["1-line", "3-line"],
+    lines: ["1-line", "2-line", "3-line"],
     lat: 47.5981,
     lng: -122.3283,
     neighborhood: "Chinatown-International District",
@@ -225,7 +243,7 @@ export const STATIONS = [
   {
     id: "beacon-hill",
     name: "Beacon Hill",
-    lines: ["1-line"],
+    lines: ["3-line"],
     lat: 47.5684,
     lng: -122.3114,
     neighborhood: "Beacon Hill",
@@ -237,7 +255,7 @@ export const STATIONS = [
   {
     id: "mount-baker",
     name: "Mount Baker",
-    lines: ["1-line"],
+    lines: ["3-line"],
     lat: 47.5762,
     lng: -122.2976,
     neighborhood: "Mount Baker",
@@ -249,7 +267,7 @@ export const STATIONS = [
   {
     id: "columbia-city",
     name: "Columbia City",
-    lines: ["1-line"],
+    lines: ["3-line"],
     lat: 47.5592,
     lng: -122.2922,
     neighborhood: "Columbia City",
@@ -259,9 +277,21 @@ export const STATIONS = [
     notableFact: "Columbia City was named one of the best neighborhoods in America by multiple publications for its diversity and walkability.",
   },
   {
+    id: "graham-street",
+    name: "Graham Street",
+    lines: ["3-line"],
+    lat: 47.5489,
+    lng: -122.2868,
+    neighborhood: "Hillman City",
+    blurb: "A planned infill station between Columbia City and Othello, serving the Hillman City neighborhood. Part of a long-planned effort to improve transit access in the Rainier Valley.",
+    operational: false,
+    openedYear: null,
+    notableFact: "Graham Street has been a planned infill station since the original Link light rail opened in 2009.",
+  },
+  {
     id: "othello",
     name: "Othello",
-    lines: ["1-line"],
+    lines: ["3-line"],
     lat: 47.5382,
     lng: -122.2812,
     neighborhood: "Othello",
@@ -273,19 +303,31 @@ export const STATIONS = [
   {
     id: "rainier-beach",
     name: "Rainier Beach",
-    lines: ["1-line"],
+    lines: ["3-line"],
     lat: 47.5227,
     lng: -122.2682,
     neighborhood: "Rainier Beach",
-    blurb: "The southernmost Seattle neighborhood on the 1 Line. Rainier Beach is known for its community resilience, urban farm projects, and proximity to Lake Washington.",
+    blurb: "The southernmost Seattle neighborhood on the 3 Line. Rainier Beach is known for its community resilience, urban farm projects, and proximity to Lake Washington.",
     operational: true,
     openedYear: 2009,
     notableFact: null,
   },
   {
+    id: "boeing-access-road",
+    name: "Boeing Access Road",
+    lines: ["3-line"],
+    lat: 47.5030,
+    lng: -122.2734,
+    neighborhood: "Georgetown",
+    blurb: "A planned station between Rainier Beach and Tukwila, near Boeing's facilities along East Marginal Way. Will improve transit access to the Duwamish industrial area.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
+  {
     id: "tukwila-intl-blvd",
     name: "Tukwila International Blvd",
-    lines: ["1-line"],
+    lines: ["3-line"],
     lat: 47.4649,
     lng: -122.2886,
     neighborhood: "Tukwila",
@@ -297,7 +339,7 @@ export const STATIONS = [
   {
     id: "seatac-airport",
     name: "SeaTac/Airport",
-    lines: ["1-line"],
+    lines: ["3-line"],
     lat: 47.4445,
     lng: -122.2968,
     neighborhood: "SeaTac",
@@ -309,7 +351,7 @@ export const STATIONS = [
   {
     id: "angle-lake",
     name: "Angle Lake",
-    lines: ["1-line"],
+    lines: ["3-line"],
     lat: 47.4254,
     lng: -122.2968,
     neighborhood: "SeaTac",
@@ -321,7 +363,7 @@ export const STATIONS = [
   {
     id: "kent-des-moines",
     name: "Kent/Des Moines",
-    lines: ["1-line"],
+    lines: ["3-line"],
     lat: 47.4100,
     lng: -122.2960,
     neighborhood: "Kent/Des Moines",
@@ -333,7 +375,7 @@ export const STATIONS = [
   {
     id: "star-lake",
     name: "Star Lake",
-    lines: ["1-line"],
+    lines: ["3-line"],
     lat: 47.3942,
     lng: -122.2944,
     neighborhood: "Star Lake",
@@ -345,21 +387,57 @@ export const STATIONS = [
   {
     id: "federal-way-downtown",
     name: "Federal Way Downtown",
-    lines: ["1-line"],
+    lines: ["3-line"],
     lat: 47.3174,
     lng: -122.3032,
     neighborhood: "Federal Way",
-    blurb: "The current southern terminus of the 1 Line. Federal Way Downtown station anchors the city's growing downtown core and connects to bus service throughout South King County.",
+    blurb: "A major station on the 3 Line in Federal Way. Federal Way Downtown station anchors the city's growing downtown core and connects to bus service throughout South King County.",
     operational: true,
     openedYear: 2026,
     notableFact: "The Federal Way Link Extension added 7.8 miles of light rail and three new stations.",
   },
+  {
+    id: "south-federal-way",
+    name: "South Federal Way",
+    lines: ["3-line"],
+    lat: 47.2960,
+    lng: -122.3120,
+    neighborhood: "Federal Way",
+    blurb: "Planned station south of Federal Way Downtown, extending the 3 Line further toward Tacoma. Part of the Tacoma Dome Link Extension.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
 
-  // ===== 2 Line (Red) - East Link Operational Segment =====
+  // ===== 2 Line (Blue) - East Link Operational Segment =====
+  {
+    id: "judkins-park",
+    name: "Judkins Park",
+    lines: ["2-line"],
+    lat: 47.5908,
+    lng: -122.3026,
+    neighborhood: "Judkins Park",
+    blurb: "A key station where the 2 Line diverges east from the downtown tunnel toward Bellevue. Located in the diverse Judkins Park neighborhood with views of Mount Rainier.",
+    operational: true,
+    openedYear: 2024,
+    notableFact: "Judkins Park station is where the 2 Line leaves the shared downtown trunk and begins its cross-lake journey to Bellevue.",
+  },
+  {
+    id: "mercer-island",
+    name: "Mercer Island",
+    lines: ["2-line"],
+    lat: 47.5871,
+    lng: -122.2221,
+    neighborhood: "Mercer Island",
+    blurb: "Located on Mercer Island in the middle of Lake Washington. The station sits in the center of I-90, giving this affluent island community a direct light rail connection to both Seattle and Bellevue.",
+    operational: true,
+    openedYear: 2024,
+    notableFact: "The East Link Extension crosses Lake Washington on the I-90 floating bridge, a first for light rail worldwide.",
+  },
   {
     id: "south-bellevue",
     name: "South Bellevue",
-    lines: ["2-line"],
+    lines: ["2-line", "4-line"],
     lat: 47.5876,
     lng: -122.1773,
     neighborhood: "South Bellevue",
@@ -371,7 +449,7 @@ export const STATIONS = [
   {
     id: "east-main",
     name: "East Main",
-    lines: ["2-line"],
+    lines: ["2-line", "4-line"],
     lat: 47.6059,
     lng: -122.1998,
     neighborhood: "Bellevue",
@@ -383,7 +461,7 @@ export const STATIONS = [
   {
     id: "bellevue-downtown",
     name: "Bellevue Downtown",
-    lines: ["2-line"],
+    lines: ["2-line", "4-line"],
     lat: 47.6148,
     lng: -122.1965,
     neighborhood: "Downtown Bellevue",
@@ -395,7 +473,7 @@ export const STATIONS = [
   {
     id: "wilburton",
     name: "Wilburton",
-    lines: ["2-line"],
+    lines: ["2-line", "4-line"],
     lat: 47.6175,
     lng: -122.1876,
     neighborhood: "Wilburton",
@@ -465,11 +543,23 @@ export const STATIONS = [
     notableFact: "Redmond is known as the 'Bicycle Capital of the Northwest' with extensive trail connections from this station.",
   },
 
-  // ===== 2 Line (Red) - Planned Extensions =====
+  // ===== 1+2 Line - Planned Northern Extensions =====
+  {
+    id: "ash-way",
+    name: "Ash Way",
+    lines: ["1-line", "2-line"],
+    lat: 47.8280,
+    lng: -122.2770,
+    neighborhood: "Ash Way",
+    blurb: "Planned station on the shared 1/2 Line corridor between Lynnwood and Mariner. Will feature a park-and-ride facility serving south Snohomish County commuters.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
   {
     id: "mariner",
     name: "Mariner",
-    lines: ["2-line"],
+    lines: ["1-line", "2-line"],
     lat: 47.8563,
     lng: -122.2688,
     neighborhood: "Mariner",
@@ -479,33 +569,57 @@ export const STATIONS = [
     notableFact: null,
   },
   {
-    id: "south-everett",
-    name: "South Everett",
-    lines: ["2-line"],
-    lat: 47.8845,
-    lng: -122.2450,
-    neighborhood: "South Everett",
-    blurb: "Planned station serving southern Everett. Will provide light rail access to one of Snohomish County's largest employment areas.",
+    id: "airport-road",
+    name: "Airport Road",
+    lines: ["1-line"],
+    lat: 47.8700,
+    lng: -122.2600,
+    neighborhood: "Everett",
+    blurb: "Planned station on the 1 Line extension north of Mariner. Will serve the Airport Road corridor and surrounding commercial areas in south Snohomish County.",
     operational: false,
     openedYear: null,
     notableFact: null,
   },
   {
-    id: "sw-everett-industrial",
-    name: "SW Everett Industrial Center",
-    lines: ["2-line"],
-    lat: 47.9043,
-    lng: -122.2350,
+    id: "evergreen",
+    name: "Evergreen",
+    lines: ["1-line"],
+    lat: 47.8850,
+    lng: -122.2550,
     neighborhood: "Everett",
-    blurb: "Planned station near Boeing's Everett factory, the largest building in the world by volume. Will serve major aerospace manufacturing employment.",
+    blurb: "Planned station serving the Evergreen area between Airport Road and Paine Field. Part of the Everett Link Extension bringing light rail to Snohomish County's largest city.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
+  {
+    id: "paine-field",
+    name: "Paine Field",
+    lines: ["1-line"],
+    lat: 47.9060,
+    lng: -122.2700,
+    neighborhood: "Everett",
+    blurb: "Planned station near Paine Field airport and Boeing's Everett factory, the largest building in the world by volume. Will serve major aerospace manufacturing employment.",
     operational: false,
     openedYear: null,
     notableFact: "The nearby Boeing Everett Factory is where 747, 767, 777, and 787 Dreamliner aircraft are assembled.",
   },
   {
+    id: "mukilteo",
+    name: "Mukilteo",
+    lines: ["1-line"],
+    lat: 47.9250,
+    lng: -122.2900,
+    neighborhood: "Mukilteo",
+    blurb: "Planned station in Mukilteo, near the Washington State Ferries terminal serving Whidbey Island. Will connect ferry commuters directly to the light rail network.",
+    operational: false,
+    openedYear: null,
+    notableFact: "Mukilteo is home to a major Washington State Ferries terminal connecting to Whidbey Island.",
+  },
+  {
     id: "everett",
     name: "Everett",
-    lines: ["2-line"],
+    lines: ["1-line"],
     lat: 47.9750,
     lng: -122.1970,
     neighborhood: "Everett",
@@ -517,7 +631,7 @@ export const STATIONS = [
   {
     id: "south-kirkland",
     name: "South Kirkland",
-    lines: ["2-line"],
+    lines: ["4-line"],
     lat: 47.6660,
     lng: -122.1870,
     neighborhood: "South Kirkland",
@@ -529,7 +643,7 @@ export const STATIONS = [
   {
     id: "kirkland",
     name: "Totem Lake/Kirkland",
-    lines: ["2-line"],
+    lines: ["4-line"],
     lat: 47.6810,
     lng: -122.2087,
     neighborhood: "Totem Lake",
@@ -541,7 +655,7 @@ export const STATIONS = [
   {
     id: "issaquah",
     name: "Issaquah",
-    lines: ["2-line"],
+    lines: ["4-line"],
     lat: 47.5310,
     lng: -122.0325,
     neighborhood: "Issaquah",
@@ -553,7 +667,7 @@ export const STATIONS = [
   {
     id: "issaquah-highlands",
     name: "Issaquah Highlands",
-    lines: ["2-line"],
+    lines: ["4-line"],
     lat: 47.5405,
     lng: -122.0150,
     neighborhood: "Issaquah Highlands",
@@ -563,7 +677,57 @@ export const STATIONS = [
     notableFact: null,
   },
 
-  // ===== 3 Line (Purple) - All Planned =====
+  // ===== 4 Line (Orange) - Kirkland to Issaquah =====
+  {
+    id: "ne-85th",
+    name: "NE 85th",
+    lines: ["4-line"],
+    lat: 47.6808,
+    lng: -122.1965,
+    neighborhood: "Kirkland",
+    blurb: "Planned station on the 4 Line in Kirkland near NE 85th Street. Will provide a key connection between the Kirkland area and the Bellevue transit corridor.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
+  {
+    id: "richards",
+    name: "Richards",
+    lines: ["4-line"],
+    lat: 47.5720,
+    lng: -122.1600,
+    neighborhood: "Richards",
+    blurb: "Planned station on the 4 Line between South Bellevue and Eastgate, serving the Factoria and Richards Valley area.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
+  {
+    id: "eastgate",
+    name: "Eastgate",
+    lines: ["4-line"],
+    lat: 47.5558,
+    lng: -122.1400,
+    neighborhood: "Eastgate",
+    blurb: "Planned station at the Eastgate park-and-ride area. Will serve as a major transit connection point for commuters from the I-90 corridor communities.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
+  {
+    id: "lakemont",
+    name: "Lakemont",
+    lines: ["4-line"],
+    lat: 47.5450,
+    lng: -122.0780,
+    neighborhood: "Lakemont",
+    blurb: "Planned station serving the Lakemont residential community between Eastgate and Issaquah in the Cascade foothills.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
+
+  // ===== 3 Line (Green) - All Planned =====
   {
     id: "ballard",
     name: "Ballard",
@@ -639,7 +803,7 @@ export const STATIONS = [
   {
     id: "delridge",
     name: "Delridge",
-    lines: ["3-line"],
+    lines: ["1-line"],
     lat: 47.5618,
     lng: -122.3433,
     neighborhood: "Delridge",
@@ -651,7 +815,7 @@ export const STATIONS = [
   {
     id: "avalon",
     name: "Avalon",
-    lines: ["3-line"],
+    lines: ["1-line"],
     lat: 47.5510,
     lng: -122.3370,
     neighborhood: "West Seattle",
@@ -663,7 +827,7 @@ export const STATIONS = [
   {
     id: "alaska-junction",
     name: "Alaska Junction",
-    lines: ["3-line"],
+    lines: ["1-line"],
     lat: 47.5610,
     lng: -122.3870,
     neighborhood: "West Seattle",
@@ -673,9 +837,9 @@ export const STATIONS = [
     notableFact: "West Seattle was an independent city until it was annexed by Seattle in 1907, and many residents maintain a strong sense of separate identity.",
   },
   {
-    id: "tacoma-dome-3",
+    id: "tacoma-dome",
     name: "Tacoma Dome",
-    lines: ["3-line"],
+    lines: ["3-line", "t-line"],
     lat: 47.2393,
     lng: -122.4278,
     neighborhood: "Tacoma",
@@ -685,7 +849,55 @@ export const STATIONS = [
     notableFact: "When complete, the 3 Line will create a continuous rail corridor from Ballard to Tacoma spanning over 50 miles.",
   },
 
-  // ===== T Line (Orange) - Tacoma Link =====
+  // ===== T Line (Purple) - Tacoma Dome to TCC =====
+  {
+    id: "stadium-district",
+    name: "Stadium District",
+    lines: ["t-line"],
+    lat: 47.2445,
+    lng: -122.4310,
+    neighborhood: "Tacoma Dome District",
+    blurb: "Planned station near the Tacoma Dome, connecting the T Line to the 3 Line and Sounder commuter rail at the Tacoma Dome transit hub.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
+  {
+    id: "tacoma-general",
+    name: "Tacoma General",
+    lines: ["t-line"],
+    lat: 47.2508,
+    lng: -122.4382,
+    neighborhood: "Stadium District",
+    blurb: "Planned station near Tacoma General Hospital and the Stadium District neighborhood, known for its historic Stadium High School.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
+  {
+    id: "s-4th",
+    name: "S 4th",
+    lines: ["t-line"],
+    lat: 47.2520,
+    lng: -122.4395,
+    neighborhood: "Downtown Tacoma",
+    blurb: "Planned station along South 4th Street in downtown Tacoma, providing access to the central business district.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
+  {
+    id: "old-city-hall",
+    name: "Old City Hall",
+    lines: ["t-line"],
+    lat: 47.2525,
+    lng: -122.4402,
+    neighborhood: "Downtown Tacoma",
+    blurb: "Planned station near Tacoma's historic Old City Hall, a Romanesque Revival landmark built in 1893.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
   {
     id: "theater-district",
     name: "Theater District",
@@ -693,21 +905,33 @@ export const STATIONS = [
     lat: 47.2530,
     lng: -122.4410,
     neighborhood: "Downtown Tacoma",
-    blurb: "The northern terminus of the T Line in downtown Tacoma's Theater District. Near the Tacoma Art Museum, Museum of Glass, and the historic Pantages Theater.",
+    blurb: "A central T Line station in downtown Tacoma's Theater District. Near the Tacoma Art Museum, Museum of Glass, and the historic Pantages Theater.",
     operational: true,
     openedYear: 2003,
     notableFact: "The T Line was the first modern light rail line in the Puget Sound region, opening in 2003.",
   },
   {
-    id: "commerce-street",
-    name: "Commerce Street",
+    id: "6th-ave",
+    name: "6th Avenue",
     lines: ["t-line"],
-    lat: 47.2534,
-    lng: -122.4365,
+    lat: 47.2540,
+    lng: -122.4450,
     neighborhood: "Downtown Tacoma",
-    blurb: "Serving the heart of downtown Tacoma's commercial core. Steps from the University of Washington Tacoma campus and the Tacoma Convention Center.",
-    operational: true,
-    openedYear: 2003,
+    blurb: "Planned station along 6th Avenue, a vibrant commercial corridor in Tacoma with independent shops, restaurants, and galleries.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
+  {
+    id: "convention-center",
+    name: "Convention Center",
+    lines: ["t-line"],
+    lat: 47.2515,
+    lng: -122.4480,
+    neighborhood: "Downtown Tacoma",
+    blurb: "Planned station near the Greater Tacoma Convention Center and UW Tacoma campus.",
+    operational: false,
+    openedYear: null,
     notableFact: null,
   },
   {
@@ -753,20 +977,113 @@ export const STATIONS = [
     lat: 47.2448,
     lng: -122.4710,
     neighborhood: "Hilltop",
-    blurb: "The western terminus of the T Line in Tacoma's Hilltop neighborhood, near Tacoma General Hospital. The extension brought transit access to this historically underserved community.",
+    blurb: "A key T Line station in Tacoma's Hilltop neighborhood, near Tacoma General Hospital. The extension brought transit access to this historically underserved community.",
     operational: true,
     openedYear: 2023,
     notableFact: "The Hilltop Link Extension was a key equity project, reconnecting a neighborhood that lost its streetcar service in 1938.",
+  },
+  {
+    id: "stevens",
+    name: "Stevens",
+    lines: ["t-line"],
+    lat: 47.2420,
+    lng: -122.4760,
+    neighborhood: "South Tacoma",
+    blurb: "Planned station on the T Line extension west of Hilltop, serving the Stevens Street corridor toward Tacoma Community College.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
+  {
+    id: "union-ave",
+    name: "Union Avenue",
+    lines: ["t-line"],
+    lat: 47.2400,
+    lng: -122.4810,
+    neighborhood: "South Tacoma",
+    blurb: "Planned station along Union Avenue on the T Line extension to Tacoma Community College.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
+  {
+    id: "ainsworth",
+    name: "Ainsworth",
+    lines: ["t-line"],
+    lat: 47.2385,
+    lng: -122.4860,
+    neighborhood: "South Tacoma",
+    blurb: "Planned station in the Ainsworth neighborhood on the T Line extension to Tacoma Community College.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
+  {
+    id: "sprague",
+    name: "Sprague",
+    lines: ["t-line"],
+    lat: 47.2365,
+    lng: -122.4910,
+    neighborhood: "South Tacoma",
+    blurb: "Planned station along Sprague Avenue on the T Line extension to Tacoma Community College.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
+  {
+    id: "st-joseph",
+    name: "St Joseph",
+    lines: ["t-line"],
+    lat: 47.2345,
+    lng: -122.4960,
+    neighborhood: "South Tacoma",
+    blurb: "Planned station near St. Joseph on the T Line extension to Tacoma Community College.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
+  {
+    id: "pearl",
+    name: "Pearl",
+    lines: ["t-line"],
+    lat: 47.2328,
+    lng: -122.5010,
+    neighborhood: "South Tacoma",
+    blurb: "Planned station along Pearl Street, one of the final stops before Tacoma Community College on the T Line extension.",
+    operational: false,
+    openedYear: null,
+    notableFact: null,
+  },
+  {
+    id: "tacoma-cc",
+    name: "Tacoma Community College",
+    lines: ["t-line"],
+    lat: 47.2310,
+    lng: -122.5090,
+    neighborhood: "South Tacoma",
+    blurb: "The western terminus of the T Line at Tacoma Community College (TCC). Extends light rail access to one of Tacoma's largest educational institutions.",
+    operational: false,
+    openedYear: null,
+    notableFact: "When complete, the T Line will span from Tacoma Dome to Tacoma Community College, connecting major destinations across the city.",
   },
 ];
 
 // Polyline paths for each line (ordered station coordinates with some intermediate waypoints)
 export const LINE_PATHS = {
   "1-line": [
+    // Everett to Alaska Junction (Red)
+    [47.9750, -122.1970],  // Everett
+    [47.9250, -122.2900],  // Mukilteo
+    [47.9060, -122.2700],  // Paine Field
+    [47.8850, -122.2550],  // Evergreen
+    [47.8700, -122.2600],  // Airport Road
+    [47.8563, -122.2688],  // Mariner
+    [47.8280, -122.2770],  // Ash Way
     [47.8149, -122.2953],  // Lynnwood City Center
     [47.7871, -122.3087],  // Mountlake Terrace
     [47.7680, -122.3456],  // Shoreline North/185th
     [47.7544, -122.3456],  // Shoreline South/148th
+    [47.7220, -122.3330],  // Pinehurst
     [47.7084, -122.3275],  // Northgate
     [47.6766, -122.3168],  // Roosevelt
     [47.6611, -122.3155],  // U District
@@ -779,31 +1096,31 @@ export const LINE_PATHS = {
     [47.5981, -122.3283],  // International District
     [47.5918, -122.3275],  // Stadium
     [47.5806, -122.3275],  // SODO
-    [47.5750, -122.3200],  // waypoint
-    [47.5684, -122.3114],  // Beacon Hill
-    [47.5762, -122.2976],  // Mount Baker
-    [47.5592, -122.2922],  // Columbia City
-    [47.5382, -122.2812],  // Othello
-    [47.5227, -122.2682],  // Rainier Beach
-    [47.4950, -122.2780],  // waypoint
-    [47.4649, -122.2886],  // Tukwila Intl Blvd
-    [47.4445, -122.2968],  // SeaTac Airport
-    [47.4254, -122.2968],  // Angle Lake
-    [47.4100, -122.2960],  // Kent/Des Moines
-    [47.3942, -122.2944],  // Star Lake
-    [47.3550, -122.2980],  // waypoint
-    [47.3174, -122.3032],  // Federal Way Downtown
+    [47.5618, -122.3433],  // Delridge
+    [47.5510, -122.3370],  // Avalon
+    [47.5610, -122.3870],  // Alaska Junction
   ],
   "2-line": [
-    // Planned northern extension
-    [47.9750, -122.1970],  // Everett
-    [47.9043, -122.2350],  // SW Everett Industrial
-    [47.8845, -122.2450],  // South Everett
+    // Mariner to Downtown Redmond (Blue)
     [47.8563, -122.2688],  // Mariner
-    // Planned Kirkland branch would diverge here
-    [47.6810, -122.2087],  // Totem Lake/Kirkland
-    [47.6660, -122.1870],  // South Kirkland
-    // Main East Link operational segment
+    [47.8280, -122.2770],  // Ash Way
+    [47.8149, -122.2953],  // Lynnwood City Center
+    [47.7871, -122.3087],  // Mountlake Terrace
+    [47.7680, -122.3456],  // Shoreline North/185th
+    [47.7544, -122.3456],  // Shoreline South/148th
+    [47.7220, -122.3330],  // Pinehurst
+    [47.7084, -122.3275],  // Northgate
+    [47.6766, -122.3168],  // Roosevelt
+    [47.6611, -122.3155],  // U District
+    [47.6498, -122.3039],  // University of Washington
+    [47.6350, -122.3120],  // waypoint - Montlake
+    [47.6195, -122.3208],  // Capitol Hill
+    [47.6113, -122.3373],  // Westlake
+    [47.6076, -122.3358],  // Symphony
+    [47.6021, -122.3316],  // Pioneer Square
+    [47.5981, -122.3283],  // International District
+    [47.5908, -122.3026],  // Judkins Park
+    [47.5871, -122.2221],  // Mercer Island
     [47.5876, -122.1773],  // South Bellevue
     [47.6059, -122.1998],  // East Main
     [47.6148, -122.1965],  // Bellevue Downtown
@@ -813,11 +1130,9 @@ export const LINE_PATHS = {
     [47.6369, -122.1544],  // Overlake Village
     [47.6439, -122.1345],  // Redmond Technology
     [47.6739, -122.1185],  // Downtown Redmond
-    // Planned southern extension to Issaquah
-    [47.5310, -122.0325],  // Issaquah
-    [47.5405, -122.0150],  // Issaquah Highlands
   ],
   "3-line": [
+    // Ballard to Tacoma Dome (Green)
     [47.6680, -122.3853],  // Ballard
     [47.6510, -122.3750],  // Interbay
     [47.6385, -122.3700],  // Smith Cove
@@ -827,20 +1142,61 @@ export const LINE_PATHS = {
     [47.6095, -122.3360],  // Midtown
     [47.5981, -122.3283],  // International District (shared)
     [47.5806, -122.3275],  // SODO (shared)
-    [47.5618, -122.3433],  // Delridge
-    [47.5510, -122.3370],  // Avalon
-    [47.5610, -122.3870],  // Alaska Junction
-    // Long gap to Tacoma (would have intermediate waypoints in reality)
-    [47.3500, -122.4000],  // waypoint
+    [47.5750, -122.3200],  // waypoint
+    [47.5684, -122.3114],  // Beacon Hill
+    [47.5762, -122.2976],  // Mount Baker
+    [47.5592, -122.2922],  // Columbia City
+    [47.5489, -122.2868],  // Graham Street
+    [47.5382, -122.2812],  // Othello
+    [47.5227, -122.2682],  // Rainier Beach
+    [47.5030, -122.2734],  // Boeing Access Road
+    [47.4649, -122.2886],  // Tukwila Intl Blvd
+    [47.4445, -122.2968],  // SeaTac Airport
+    [47.4254, -122.2968],  // Angle Lake
+    [47.4100, -122.2960],  // Kent/Des Moines
+    [47.3942, -122.2944],  // Star Lake
+    [47.3550, -122.2980],  // waypoint
+    [47.3174, -122.3032],  // Federal Way Downtown
+    [47.2960, -122.3120],  // South Federal Way
+    [47.2700, -122.3600],  // waypoint
     [47.2393, -122.4278],  // Tacoma Dome
   ],
+  "4-line": [
+    // Kirkland to Issaquah (Orange)
+    [47.6810, -122.2087],  // Totem Lake/Kirkland
+    [47.6808, -122.1965],  // NE 85th
+    [47.6660, -122.1870],  // South Kirkland
+    [47.6175, -122.1876],  // Wilburton (shared)
+    [47.6148, -122.1965],  // Bellevue Downtown (shared)
+    [47.6059, -122.1998],  // East Main (shared)
+    [47.5876, -122.1773],  // South Bellevue (shared)
+    [47.5720, -122.1600],  // Richards
+    [47.5558, -122.1400],  // Eastgate
+    [47.5450, -122.0780],  // Lakemont
+    [47.5310, -122.0325],  // Issaquah
+    [47.5405, -122.0150],  // Issaquah Highlands
+  ],
   "t-line": [
+    // Tacoma Dome to TCC (Purple)
+    [47.2393, -122.4278],  // Tacoma Dome
+    [47.2445, -122.4310],  // Stadium District
+    [47.2508, -122.4382],  // Tacoma General
+    [47.2520, -122.4395],  // S 4th
+    [47.2525, -122.4402],  // Old City Hall
     [47.2530, -122.4410],  // Theater District
-    [47.2534, -122.4365],  // Commerce Street
+    [47.2540, -122.4450],  // 6th Avenue
+    [47.2515, -122.4480],  // Convention Center
     [47.2549, -122.4325],  // Union Station
     [47.2510, -122.4430],  // waypoint
     [47.2487, -122.4535],  // South 25th
     [47.2430, -122.4590],  // MLK Jr Way
     [47.2448, -122.4710],  // Hilltop District
+    [47.2420, -122.4760],  // Stevens
+    [47.2400, -122.4810],  // Union Avenue
+    [47.2385, -122.4860],  // Ainsworth
+    [47.2365, -122.4910],  // Sprague
+    [47.2345, -122.4960],  // St Joseph
+    [47.2328, -122.5010],  // Pearl
+    [47.2310, -122.5090],  // Tacoma Community College
   ],
 };
