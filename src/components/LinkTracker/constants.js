@@ -243,7 +243,7 @@ export const STATIONS = [
   {
     id: "beacon-hill",
     name: "Beacon Hill",
-    lines: ["3-line"],
+    lines: ["1-line", "3-line"],
     lat: 47.5684,
     lng: -122.3114,
     neighborhood: "Beacon Hill",
@@ -255,7 +255,7 @@ export const STATIONS = [
   {
     id: "mount-baker",
     name: "Mount Baker",
-    lines: ["3-line"],
+    lines: ["1-line", "3-line"],
     lat: 47.5762,
     lng: -122.2976,
     neighborhood: "Mount Baker",
@@ -267,7 +267,7 @@ export const STATIONS = [
   {
     id: "columbia-city",
     name: "Columbia City",
-    lines: ["3-line"],
+    lines: ["1-line", "3-line"],
     lat: 47.5592,
     lng: -122.2922,
     neighborhood: "Columbia City",
@@ -279,7 +279,7 @@ export const STATIONS = [
   {
     id: "graham-street",
     name: "Graham Street",
-    lines: ["3-line"],
+    lines: ["1-line", "3-line"],
     lat: 47.5489,
     lng: -122.2868,
     neighborhood: "Hillman City",
@@ -291,7 +291,7 @@ export const STATIONS = [
   {
     id: "othello",
     name: "Othello",
-    lines: ["3-line"],
+    lines: ["1-line", "3-line"],
     lat: 47.5382,
     lng: -122.2812,
     neighborhood: "Othello",
@@ -303,11 +303,11 @@ export const STATIONS = [
   {
     id: "rainier-beach",
     name: "Rainier Beach",
-    lines: ["3-line"],
+    lines: ["1-line", "3-line"],
     lat: 47.5227,
     lng: -122.2682,
     neighborhood: "Rainier Beach",
-    blurb: "The southernmost Seattle neighborhood on the 3 Line. Rainier Beach is known for its community resilience, urban farm projects, and proximity to Lake Washington.",
+    blurb: "The southernmost Seattle neighborhood on the Link light rail. Rainier Beach is known for its community resilience, urban farm projects, and proximity to Lake Washington.",
     operational: true,
     openedYear: 2009,
     notableFact: null,
@@ -315,7 +315,7 @@ export const STATIONS = [
   {
     id: "boeing-access-road",
     name: "Boeing Access Road",
-    lines: ["3-line"],
+    lines: ["1-line", "3-line"],
     lat: 47.5030,
     lng: -122.2734,
     neighborhood: "Georgetown",
@@ -327,7 +327,7 @@ export const STATIONS = [
   {
     id: "tukwila-intl-blvd",
     name: "Tukwila International Blvd",
-    lines: ["3-line"],
+    lines: ["1-line", "3-line"],
     lat: 47.4649,
     lng: -122.2886,
     neighborhood: "Tukwila",
@@ -339,7 +339,7 @@ export const STATIONS = [
   {
     id: "seatac-airport",
     name: "SeaTac/Airport",
-    lines: ["3-line"],
+    lines: ["1-line", "3-line"],
     lat: 47.4445,
     lng: -122.2968,
     neighborhood: "SeaTac",
@@ -351,7 +351,7 @@ export const STATIONS = [
   {
     id: "angle-lake",
     name: "Angle Lake",
-    lines: ["3-line"],
+    lines: ["1-line", "3-line"],
     lat: 47.4254,
     lng: -122.2968,
     neighborhood: "SeaTac",
@@ -363,7 +363,7 @@ export const STATIONS = [
   {
     id: "kent-des-moines",
     name: "Kent/Des Moines",
-    lines: ["3-line"],
+    lines: ["1-line", "3-line"],
     lat: 47.4100,
     lng: -122.2960,
     neighborhood: "Kent/Des Moines",
@@ -375,7 +375,7 @@ export const STATIONS = [
   {
     id: "star-lake",
     name: "Star Lake",
-    lines: ["3-line"],
+    lines: ["1-line", "3-line"],
     lat: 47.3942,
     lng: -122.2944,
     neighborhood: "Star Lake",
@@ -387,11 +387,11 @@ export const STATIONS = [
   {
     id: "federal-way-downtown",
     name: "Federal Way Downtown",
-    lines: ["3-line"],
+    lines: ["1-line", "3-line"],
     lat: 47.3174,
     lng: -122.3032,
     neighborhood: "Federal Way",
-    blurb: "A major station on the 3 Line in Federal Way. Federal Way Downtown station anchors the city's growing downtown core and connects to bus service throughout South King County.",
+    blurb: "A major station on the 1 and 3 Lines. Federal Way Downtown station anchors the city's growing downtown core and connects to bus service throughout South King County.",
     operational: true,
     openedYear: 2026,
     notableFact: "The Federal Way Link Extension added 7.8 miles of light rail and three new stations.",
@@ -399,7 +399,7 @@ export const STATIONS = [
   {
     id: "south-federal-way",
     name: "South Federal Way",
-    lines: ["3-line"],
+    lines: ["1-line", "3-line"],
     lat: 47.2960,
     lng: -122.3120,
     neighborhood: "Federal Way",
@@ -1071,34 +1071,56 @@ export const STATIONS = [
 // Polyline paths for each line (ordered station coordinates with some intermediate waypoints)
 export const LINE_PATHS = {
   "1-line": [
-    // Everett to Alaska Junction (Red)
-    [47.9750, -122.1970],  // Everett
-    [47.9250, -122.2900],  // Mukilteo
-    [47.9060, -122.2700],  // Paine Field
-    [47.8850, -122.2550],  // Evergreen
-    [47.8700, -122.2600],  // Airport Road
-    [47.8563, -122.2688],  // Mariner
-    [47.8280, -122.2770],  // Ash Way
-    [47.8149, -122.2953],  // Lynnwood City Center
-    [47.7871, -122.3087],  // Mountlake Terrace
-    [47.7680, -122.3456],  // Shoreline North/185th
-    [47.7544, -122.3456],  // Shoreline South/148th
-    [47.7220, -122.3330],  // Pinehurst
-    [47.7084, -122.3275],  // Northgate
-    [47.6766, -122.3168],  // Roosevelt
-    [47.6611, -122.3155],  // U District
-    [47.6498, -122.3039],  // University of Washington
-    [47.6350, -122.3120],  // waypoint - Montlake
-    [47.6195, -122.3208],  // Capitol Hill
-    [47.6113, -122.3373],  // Westlake
-    [47.6076, -122.3358],  // Symphony
-    [47.6021, -122.3316],  // Pioneer Square
-    [47.5981, -122.3283],  // International District
-    [47.5918, -122.3275],  // Stadium
-    [47.5806, -122.3275],  // SODO
-    [47.5618, -122.3433],  // Delridge
-    [47.5510, -122.3370],  // Avalon
-    [47.5610, -122.3870],  // Alaska Junction
+    // Segment 1: Everett to Federal Way via Rainier Valley (Red - main trunk)
+    [
+      [47.9750, -122.1970],  // Everett
+      [47.9250, -122.2900],  // Mukilteo
+      [47.9060, -122.2700],  // Paine Field
+      [47.8850, -122.2550],  // Evergreen
+      [47.8700, -122.2600],  // Airport Road
+      [47.8563, -122.2688],  // Mariner
+      [47.8280, -122.2770],  // Ash Way
+      [47.8149, -122.2953],  // Lynnwood City Center
+      [47.7871, -122.3087],  // Mountlake Terrace
+      [47.7680, -122.3456],  // Shoreline North/185th
+      [47.7544, -122.3456],  // Shoreline South/148th
+      [47.7220, -122.3330],  // Pinehurst
+      [47.7084, -122.3275],  // Northgate
+      [47.6766, -122.3168],  // Roosevelt
+      [47.6611, -122.3155],  // U District
+      [47.6498, -122.3039],  // University of Washington
+      [47.6350, -122.3120],  // waypoint - Montlake
+      [47.6195, -122.3208],  // Capitol Hill
+      [47.6113, -122.3373],  // Westlake
+      [47.6076, -122.3358],  // Symphony
+      [47.6021, -122.3316],  // Pioneer Square
+      [47.5981, -122.3283],  // International District
+      [47.5918, -122.3275],  // Stadium
+      [47.5806, -122.3275],  // SODO
+      [47.5750, -122.3200],  // waypoint
+      [47.5684, -122.3114],  // Beacon Hill
+      [47.5762, -122.2976],  // Mount Baker
+      [47.5592, -122.2922],  // Columbia City
+      [47.5489, -122.2868],  // Graham Street
+      [47.5382, -122.2812],  // Othello
+      [47.5227, -122.2682],  // Rainier Beach
+      [47.5030, -122.2734],  // Boeing Access Road
+      [47.4649, -122.2886],  // Tukwila Intl Blvd
+      [47.4445, -122.2968],  // SeaTac Airport
+      [47.4254, -122.2968],  // Angle Lake
+      [47.4100, -122.2960],  // Kent/Des Moines
+      [47.3942, -122.2944],  // Star Lake
+      [47.3550, -122.2980],  // waypoint
+      [47.3174, -122.3032],  // Federal Way Downtown
+      [47.2960, -122.3120],  // South Federal Way
+    ],
+    // Segment 2: SODO to Alaska Junction (Red - West Seattle branch)
+    [
+      [47.5806, -122.3275],  // SODO
+      [47.5618, -122.3433],  // Delridge
+      [47.5510, -122.3370],  // Avalon
+      [47.5610, -122.3870],  // Alaska Junction
+    ],
   ],
   "2-line": [
     // Mariner to Downtown Redmond (Blue)

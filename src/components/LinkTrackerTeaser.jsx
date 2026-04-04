@@ -7,7 +7,7 @@ const PREVIEW_STATIONS = [
   { name: "Westlake", neighborhood: "Downtown Seattle", color: "#E31837" },
   { name: "Bellevue Downtown", neighborhood: "Bellevue", color: "#0053A0" },
   { name: "U District", neighborhood: "University District", color: "#E31837" },
-  { name: "SeaTac/Airport", neighborhood: "SeaTac", color: "#00A651" },
+  { name: "SeaTac/Airport", neighborhood: "SeaTac", color: "#E31837" },
 ];
 
 const LinkTrackerTeaser = () => {
