@@ -1,13 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const LINE_COLORS = ["#0053A0", "#E31837", "#7B2D8E", "#F58220"];
+const LINE_COLORS = ["#E31837", "#0053A0", "#00A651", "#F58220", "#7B2D8E"];
 
 const PREVIEW_STATIONS = [
-  { name: "Westlake", neighborhood: "Downtown Seattle", color: "#0053A0" },
-  { name: "Bellevue Downtown", neighborhood: "Bellevue", color: "#E31837" },
-  { name: "U District", neighborhood: "University District", color: "#0053A0" },
-  { name: "SeaTac/Airport", neighborhood: "SeaTac", color: "#0053A0" },
+  { name: "Westlake", neighborhood: "Downtown Seattle", color: "#E31837" },
+  { name: "Bellevue Downtown", neighborhood: "Bellevue", color: "#0053A0" },
+  { name: "U District", neighborhood: "University District", color: "#E31837" },
+  { name: "SeaTac/Airport", neighborhood: "SeaTac", color: "#E31837" },
 ];
 
 const LinkTrackerTeaser = () => {
@@ -32,12 +32,12 @@ const LinkTrackerTeaser = () => {
                   className="text-xs font-sans"
                   style={{ color: "#8899AA" }}
                 >
-                  Track the ST3 vision from Lynnwood to Federal Way and beyond
+                  Track the ST3 vision from Everett to Tacoma and beyond
                 </p>
               </div>
               <span
                 className="text-xs px-2 py-1 rounded border font-mono"
-                style={{ borderColor: "#D4DDE6", color: "#0053A0" }}
+                style={{ borderColor: "#D4DDE6", color: "#E31837" }}
               >
                 MAP
               </span>
@@ -81,7 +81,7 @@ const LinkTrackerTeaser = () => {
               <Link
                 to="/link-tracker"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-sans font-medium transition-colors shrink-0"
-                style={{ backgroundColor: "#0053A0", color: "#FFFFFF" }}
+                style={{ backgroundColor: "#E31837", color: "#FFFFFF" }}
               >
                 Explore the Network
                 <span aria-hidden="true">&rarr;</span>

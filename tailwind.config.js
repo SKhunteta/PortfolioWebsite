@@ -69,10 +69,11 @@ export default {
         "link-text-secondary": "#4A5D6F",
         "link-text-muted": "#8899AA",
         "link-border": "#D4DDE6",
-        "link-blue": "#0053A0",
         "link-red": "#E31837",
-        "link-purple": "#7B2D8E",
+        "link-blue": "#0053A0",
+        "link-green": "#00A651",
         "link-orange": "#F58220",
+        "link-purple": "#7B2D8E",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],

@@ -44,15 +44,16 @@ const LinkMap = ({
         const line = LINES[lineId];
         const path = LINE_PATHS[lineId];
         if (!path) return null;
-        return (
+        const segments = Array.isArray(path[0]?.[0]) ? path : [path];
+        return segments.map((segment, i) => (
           <Polyline
-            key={lineId}
-            positions={path}
+            key={`${lineId}-${i}`}
+            positions={segment}
             color={line.color}
             weight={3}
             opacity={0.7}
           />
-        );
+        ));
       })}
 
       {STATIONS.map((station) => {
