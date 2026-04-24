@@ -23,6 +23,14 @@ export default function EmotionalLaborInvoice() {
     }
   }, [status, invoice, addInvoice]);
 
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = "Emotional Labor Invoice";
+    return () => {
+      document.title = previousTitle;
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-inv-bg">
       <div className="px-4 sm:px-6 pt-4">

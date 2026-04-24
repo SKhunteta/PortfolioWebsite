@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import useMarketData from "./useMarketData";
 import { EMOTIONS, EMOTION_ORDER } from "./constants";
@@ -11,6 +11,14 @@ import LoadingState from "./LoadingState";
 const EmotionalLaborExchange = () => {
   const { marketData, priceHistory, loading, error, lastUpdate, refreshMarket } =
     useMarketData();
+
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = "Emotional Labor Exchange";
+    return () => {
+      document.title = previousTitle;
+    };
+  }, []);
 
   const emotions = marketData?.emotions;
   const headlines = marketData?.headlines;
