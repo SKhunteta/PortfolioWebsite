@@ -29,6 +29,8 @@ export const API_ENDPOINTS = {
   storiesRemix: `${API_BASE_URL}/api/stories/remix`,
   invoiceGenerate: `${API_BASE_URL}/api/invoice/generate`,
   janet: `${API_BASE_URL}/api/janet/chat`,
+  quiz: `${API_BASE_URL}/api/quiz/generate`,
+  quizCacheClear: `${API_BASE_URL}/api/quiz/cache`,
 };
 
 export default API_CONFIG;
