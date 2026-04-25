@@ -14,6 +14,7 @@ import AaronWestAtlasTeaser from "./components/AaronWestAtlasTeaser";
 import PlotTwistTeaser from "./components/PlotTwistTeaser";
 import InvoiceTeaser from "./components/InvoiceTeaser";
 import LinkTrackerTeaser from "./components/LinkTrackerTeaser";
+import CityQuizTeaser from "./components/CityQuizTeaser";
 import ResumePage from "./pages/ResumePage";
 
 const AaronWestAtlas = lazy(() => import("./components/AaronWestAtlas"));
@@ -21,6 +22,7 @@ const PlotTwist = lazy(() => import("./components/PlotTwist"));
 const EmotionalLaborInvoice = lazy(() => import("./components/EmotionalLaborInvoice"));
 const Janet = lazy(() => import("./components/Janet"));
 const LinkTracker = lazy(() => import("./components/LinkTracker"));
+const CityQuiz = lazy(() => import("./components/CityQuiz"));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -141,6 +143,25 @@ function App() {
             </Suspense>
           }
         />
+        <Route
+          path="/city-quiz"
+          element={
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center bg-[#FAFAF7]">
+                  <p
+                    className="text-[#9A9A9A] text-sm"
+                    style={{ fontFamily: '"IBM Plex Mono", "JetBrains Mono", monospace' }}
+                  >
+                    Loading the city quiz...
+                  </p>
+                </div>
+              }
+            >
+              <CityQuiz />
+            </Suspense>
+          }
+        />
         <Route path="/resume" element={<ResumePage />} />
         <Route
           path="/"
@@ -217,6 +238,9 @@ function App() {
                   <LinkTrackerTeaser />
                 </div>
                 <div className="bg-gray-light py-8">
+                  <CityQuizTeaser />
+                </div>
+                <div className="bg-white py-8">
                   <Contact />
                 </div>
               </main>
