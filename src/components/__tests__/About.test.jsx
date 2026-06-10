@@ -20,7 +20,7 @@ describe("About", () => {
     render(<About />);
     const img = screen.getByAltText("Shreyans Khunteta");
     expect(img).toBeInTheDocument();
-    expect(img).toHaveAttribute("src", "/images/ShreyPic2.jpg");
+    expect(img).toHaveAttribute("src", "/images/ShreyPic2.webp");
   });
 
   it('has the about section id', () => {

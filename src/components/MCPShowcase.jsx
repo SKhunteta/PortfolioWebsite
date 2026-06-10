@@ -38,7 +38,7 @@ const MCPShowcase = () => {
             </h4>
             <div className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
               <div className="mb-2 text-gray-500 text-xs">
-                // Copy and paste this entire block into Claude
+                {"// Copy and paste this entire block into Claude"}
               </div>
               <pre className="whitespace-pre-wrap">{`{
   "mcp_servers": [

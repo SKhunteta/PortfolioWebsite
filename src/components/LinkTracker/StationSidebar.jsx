@@ -48,7 +48,6 @@ const LineBadges = ({ lines }) => (
 const StationContent = ({
   station,
   onNavigate,
-  totalStations,
   canNavigatePrev,
   canNavigateNext,
   compact = false,

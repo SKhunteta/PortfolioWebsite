@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/navbar";
 import Experience from "../components/Experience";
@@ -6,6 +6,14 @@ import Skills from "../components/Skills";
 import Footer from "../components/Footer";
 
 const ResumePage = () => {
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = "Resume | Shreyans Khunteta";
+    return () => {
+      document.title = previousTitle;
+    };
+  }, []);
+
   return (
     <div className="bg-light text-secondary relative overflow-hidden">
       <div className="absolute inset-0 bg-hero-pattern opacity-5 z-0"></div>

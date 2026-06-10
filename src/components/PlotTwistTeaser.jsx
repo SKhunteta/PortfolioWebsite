@@ -82,7 +82,7 @@ const PlotTwistTeaser = () => {
                     className="text-xs font-medium uppercase tracking-widest hidden sm:inline"
                     style={{
                       fontFamily: '"DM Sans", system-ui, sans-serif',
-                      color: "#6B6B80",
+                      color: "#8A8AA3",
                     }}
                   >
                     Story Discovery
@@ -92,7 +92,7 @@ const PlotTwistTeaser = () => {
                   className="text-xs italic"
                   style={{
                     fontFamily: '"DM Sans", system-ui, sans-serif',
-                    color: "#6B6B80",
+                    color: "#8A8AA3",
                   }}
                 >
                   Swipe through the multiverse of stories
@@ -146,7 +146,7 @@ const PlotTwistTeaser = () => {
                     </span>
                     <span
                       className="text-[10px] italic"
-                      style={{ color: "#6B6B80" }}
+                      style={{ color: "#8A8AA3" }}
                     >
                       {currentStory.mood}
                     </span>
@@ -187,7 +187,7 @@ const PlotTwistTeaser = () => {
                 className="text-sm max-w-md"
                 style={{
                   fontFamily: '"DM Sans", system-ui, sans-serif',
-                  color: "#6B6B80",
+                  color: "#8A8AA3",
                 }}
               >
                 A TikTok-style feed of AI-generated story ideas. Like what hooks

@@ -46,7 +46,7 @@ export default {
         "pt-surface": "#1A1A2E",
         "pt-text": "#F0F0F0",
         "pt-text-secondary": "#A0A0B8",
-        "pt-text-muted": "#6B6B80",
+        "pt-text-muted": "#8A8AA3",
         "pt-border": "#2A2A3E",
         "pt-accent": "#8B5CF6",
         "pt-like": "#EF4444",

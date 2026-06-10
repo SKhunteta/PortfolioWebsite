@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 import { ALBUMS, SPOTIFY_TRACK_IDS } from "./constants";
 import SpotifyPlayer from "./SpotifyPlayer";
@@ -11,7 +11,7 @@ const slideVariants = {
   exit: (direction) => ({ x: direction > 0 ? -200 : 200, opacity: 0 }),
 };
 
-const LyricContent = ({ location, onNavigate, journeyActive, totalLocations, canNavigatePrev, canNavigateNext, autoPlaySignal, onPlaybackStarted, compact = false }) => {
+const LyricContent = ({ location, onNavigate, totalLocations, canNavigatePrev, canNavigateNext, autoPlaySignal, onPlaybackStarted, compact = false }) => {
   const [showContext, setShowContext] = useState(false);
   const [slideDirection, setSlideDirection] = useState(0);
   const album = ALBUMS[location.album];

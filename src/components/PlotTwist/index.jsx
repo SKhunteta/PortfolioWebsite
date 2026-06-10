@@ -299,6 +299,14 @@ const PlotTwist = () => {
     resetPreferences,
   } = useStoryFeed();
 
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = "Plot Twist";
+    return () => {
+      document.title = previousTitle;
+    };
+  }, []);
+
   const [showWelcome, setShowWelcome] = useState(() => {
     try {
       return !localStorage.getItem(STORAGE_KEYS.visited);

@@ -51,7 +51,7 @@ const Projects = () => {
       technologies: ["Python", "OpenAI API", "Docker", "Discord Bot"],
       github: "https://github.com/SKhunteta/lingua-ai",
       featured: true,
-      video: "/images/LinguaVideo.MOV",
+      video: "/images/LinguaVideo.mp4",
     },
     {
       id: 3,
@@ -103,7 +103,7 @@ const Projects = () => {
       </div>
 
       {/* Featured Projects */}
-      {featuredProjects.map((featuredProject, index) => (
+      {featuredProjects.map((featuredProject) => (
         <div key={featuredProject.id} className="mb-10 animate-fade-in">
           <div className="bg-white rounded-xl shadow-custom-lg overflow-hidden transition-all duration-300 hover:shadow-custom-2xl">
             <div className="grid md:grid-cols-2 gap-4">
@@ -193,7 +193,7 @@ const Projects = () => {
                   <>
                     <video
                       src={featuredProject.video}
-                      alt={featuredProject.title}
+                      aria-label={featuredProject.title}
                       className="w-full h-full object-cover object-center"
                       autoPlay
                       muted

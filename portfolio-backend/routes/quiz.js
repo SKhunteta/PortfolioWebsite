@@ -209,6 +209,7 @@ function validateCity(input) {
   if (/[<>{}[\]\\]/.test(trimmed)) {
     return { ok: false, reason: "City contains disallowed characters." };
   }
+  // eslint-disable-next-line no-control-regex
   if (/[\x00-\x1f\x7f]/.test(trimmed)) {
     return { ok: false, reason: "City contains control characters." };
   }
@@ -591,7 +592,6 @@ router.post(
       const forceRefresh = req.body?.forceRefresh === true;
       const result = await getQuiz(cityInput, cityKey, forceRefresh);
 
-      const headers = {};
       if (result.data.freshness?.unverified) {
         res.setHeader("X-Quiz-Verified", "false");
       }

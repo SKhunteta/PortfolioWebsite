@@ -46,7 +46,7 @@ const SpotifyPlayer = ({ trackId, autoPlaySignal, onPlaybackStarted }) => {
   const observerRef = useRef(null);
   const onPlaybackStartedRef = useRef(onPlaybackStarted);
   onPlaybackStartedRef.current = onPlaybackStarted;
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
   const initController = useCallback(async () => {

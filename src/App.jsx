@@ -7,7 +7,6 @@ import Projects from "./components/Projects";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import ChatSection from "./components/ChatSection";
-import EmotionalLaborExchange from "./components/EmotionalLaborExchange";
 import ELETeaser from "./components/ELETeaser";
 import JanetTeaser from "./components/JanetTeaser";
 import AaronWestAtlasTeaser from "./components/AaronWestAtlasTeaser";
@@ -17,6 +16,7 @@ import LinkTrackerTeaser from "./components/LinkTrackerTeaser";
 import CityQuizTeaser from "./components/CityQuizTeaser";
 import ResumePage from "./pages/ResumePage";
 
+const EmotionalLaborExchange = lazy(() => import("./components/EmotionalLaborExchange"));
 const AaronWestAtlas = lazy(() => import("./components/AaronWestAtlas"));
 const PlotTwist = lazy(() => import("./components/PlotTwist"));
 const EmotionalLaborInvoice = lazy(() => import("./components/EmotionalLaborInvoice"));
@@ -37,7 +37,25 @@ function App() {
     <Router>
       <ScrollToTop />
       <Routes>
-        <Route path="/ele" element={<EmotionalLaborExchange />} />
+        <Route
+          path="/ele"
+          element={
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex flex-col items-center justify-center bg-ele-bg">
+                  <p
+                    className="text-ele-text-tertiary text-sm"
+                    style={{ fontFamily: '"JetBrains Mono", monospace' }}
+                  >
+                    Opening the exchange...
+                  </p>
+                </div>
+              }
+            >
+              <EmotionalLaborExchange />
+            </Suspense>
+          }
+        />
         <Route
           path="/invoice"
           element={
@@ -76,7 +94,7 @@ function App() {
                   >
                     Plot Twist
                   </h1>
-                  <p className="text-[#6B6B80] text-sm mb-6 animate-[fadeIn_0.8s_ease-out]" style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}>
+                  <p className="text-[#8A8AA3] text-sm mb-6 animate-[fadeIn_0.8s_ease-out]" style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}>
                     Preparing your stories...
                   </p>
                   <div className="flex gap-1.5">

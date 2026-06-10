@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import useAtlasState from "./useAtlasState";
 import { ALBUMS, ALBUM_ORDER, MAP_CONFIG } from "./constants";
 import AtlasHeader from "./AtlasHeader";
@@ -11,6 +11,14 @@ import AtlasFooter from "./AtlasFooter";
 
 const AaronWestAtlas = () => {
   const atlas = useAtlasState();
+
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = "Aaron West Atlas";
+    return () => {
+      document.title = previousTitle;
+    };
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-atlas-bg">
