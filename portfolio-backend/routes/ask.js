@@ -3,8 +3,6 @@ import rateLimit from "express-rate-limit";
 import OpenAIService from "../services/openai.js";
 import QdrantService from "../services/qdrant.js";
 import IndexerService from "../services/indexer.js";
-import { config } from "../config/index.js";
-import { v4 as uuidv4 } from "uuid";
 import setup from "../setup.js";
 
 const router = express.Router();
@@ -61,7 +59,7 @@ router.use((req, res, next) => {
  */
 router.post("/", askLimiter, async (req, res) => {
   try {
-    const { question, context } = req.body;
+    const { question } = req.body;
 
     if (!question) {
       return res.status(400).json({

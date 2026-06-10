@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import useLinkTrackerState from "./useLinkTrackerState";
 import LinkHeader from "./LinkHeader";
 import LineFilterBar from "./LineFilterBar";
@@ -8,6 +8,14 @@ import LinkFooter from "./LinkFooter";
 
 const LinkTracker = () => {
   const tracker = useLinkTrackerState();
+
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = "Link Light Rail Tracker";
+    return () => {
+      document.title = previousTitle;
+    };
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-link-bg">

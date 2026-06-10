@@ -191,7 +191,7 @@ const ChatSection = () => {
       ];
 
       setSuggestions(allSuggestions);
-    } catch (error) {
+    } catch {
       setSuggestions([
         "What are Shreyans' key technical skills?",
         "Tell me about his AI projects",
@@ -240,7 +240,7 @@ const ChatSection = () => {
       } else {
         throw new Error(data.message || "Failed to get response");
       }
-    } catch (error) {
+    } catch {
       const errorMessage = {
         id: Date.now() + 1,
         type: "ai",

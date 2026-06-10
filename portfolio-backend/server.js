@@ -208,6 +208,7 @@ app.use((req, res) => {
 });
 
 // Error handler
+// eslint-disable-next-line no-unused-vars -- Express requires the 4-arg signature for error handlers
 app.use((err, req, res, next) => {
   console.error("Error:", err);
   res.status(500).json({

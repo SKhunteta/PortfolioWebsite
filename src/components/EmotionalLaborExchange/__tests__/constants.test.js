@@ -8,7 +8,7 @@ describe("ELE Constants", () => {
     });
 
     it("has all required fields for each emotion", () => {
-      for (const [key, emotion] of Object.entries(EMOTIONS)) {
+      for (const emotion of Object.values(EMOTIONS)) {
         expect(emotion).toHaveProperty("name");
         expect(emotion).toHaveProperty("icon");
         expect(emotion).toHaveProperty("accentColor");

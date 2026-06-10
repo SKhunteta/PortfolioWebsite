@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { API_ENDPOINTS } from "../../config/api";
 
-const INITIAL_GREETING = null; // Will be fetched from API on mount
 
 const Janet = () => {
   const [messages, setMessages] = useState([]); // { role, content, meta? }
@@ -12,6 +11,14 @@ const Janet = () => {
   const [fadeOut, setFadeOut] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = "JANET";
+    return () => {
+      document.title = previousTitle;
+    };
+  }, []);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -127,7 +134,7 @@ const Janet = () => {
         setTimeout(() => setFadeOut(true), 3000);
         setTimeout(() => setDecommissioned(true), 6000);
       }
-    } catch (err) {
+    } catch {
       setMessages((prev) => [
         ...prev,
         {

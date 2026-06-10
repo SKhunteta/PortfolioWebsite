@@ -1,7 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
-import { HiOutlineMail } from "react-icons/hi";
 
 const Hero = () => {
   return (
@@ -85,7 +83,7 @@ const Hero = () => {
               <div className="relative rounded-full overflow-hidden border-4 border-white shadow-custom-2xl">
                 {/* Profile image */}
                 <img
-                  src="/images/ShreyPic1.jpg"
+                  src="/images/ShreyPic1.webp"
                   alt="Shreyans Khunteta"
                   className="w-full h-full object-cover object-center"
                 />

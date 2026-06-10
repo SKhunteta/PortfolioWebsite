@@ -34,7 +34,7 @@ describe("Hero", () => {
     renderWithRouter(<Hero />);
     const img = screen.getByAltText("Shreyans Khunteta");
     expect(img).toBeInTheDocument();
-    expect(img).toHaveAttribute("src", "/images/ShreyPic1.jpg");
+    expect(img).toHaveAttribute("src", "/images/ShreyPic1.webp");
   });
 
   it("renders social links with correct aria labels", () => {

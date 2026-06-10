@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import useMarketData from "./useMarketData";
-import { EMOTIONS, EMOTION_ORDER } from "./constants";
+import { EMOTION_ORDER } from "./constants";
 import EmotionCard from "./EmotionCard";
 import NewsTicker from "./NewsTicker";
 import HeadlinesPanel from "./HeadlinesPanel";
