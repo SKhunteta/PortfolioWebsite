@@ -117,7 +117,7 @@ async function fetchStoriesFromAPI(preferences, count, genreFilter) {
   console.log("📖 PlotTwist: Generating stories via Anthropic API...");
 
   const response = await client.messages.create({
-    model: "claude-sonnet-4-20250514",
+    model: "claude-sonnet-4-6",
     max_tokens: 8000,
     system: SYSTEM_PROMPT,
     messages: [{ role: "user", content: userMessage }],
@@ -254,7 +254,7 @@ router.post("/continue", continueLimiter, async (req, res) => {
     }
 
     const response = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 2000,
       system: `You are continuing a short story. Maintain the same voice, style, genre (${safeGenre}), and mood (${safeMood}). Write 2-3 paragraphs that continue naturally from where the story left off. ${safePrevious.length > 0 ? "This story has been continued " + safePrevious.length + " time(s) already — escalate the tension, deepen the mystery, or introduce a new development. Don't repeat what came before." : ""} End at another moment of tension, intrigue, or emotional resonance. Return ONLY the continuation text — no titles, labels, or JSON.`,
       messages: [
@@ -335,7 +335,7 @@ router.post("/remix", remixLimiter, async (req, res) => {
     );
 
     const response = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 4000,
       system: `You are remixing a story from one genre to another. Take the core concept/premise and reimagine it completely in the target genre. Transform setting, tone, character archetypes, and narrative style to authentically fit the new genre while preserving the fundamental story idea.
 
