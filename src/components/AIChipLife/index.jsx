@@ -25,21 +25,95 @@ const cumulativePartsThrough = (index) => {
   return set;
 };
 
+const useMediaQuery = (query) => {
+  const [matches, setMatches] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia ? window.matchMedia(query).matches : false
+  );
+  useEffect(() => {
+    if (!window.matchMedia) return undefined;
+    const mql = window.matchMedia(query);
+    const onChange = (e) => setMatches(e.matches);
+    setMatches(mql.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, [query]);
+  return matches;
+};
+
+// Per-scene effective zoom: phones in portrait see a narrower horizontal span
+// at the same zoom (the map covers by height), so city scenes zoom in a touch
+// more and the Pacific crossing pulls back to keep both coasts in frame.
+const effectiveZoom = (scene, isMobile) => {
+  if (!isMobile) return scene.zoom;
+  return scene.crossing ? scene.zoom * 0.8 : scene.zoom * 1.25;
+};
+
+// Ease that dwells near scene centers so the camera rests on a place while the
+// reader reads, then glides during the hand-off between sections.
+const easeSegment = (t) => {
+  const c = Math.max(0, Math.min(1, t));
+  return c * c * (3 - 2 * c);
+};
+
+const META_DESCRIPTION =
+  "An interactive, sourced tour of the AI chip supply chain by Shreyans Khunteta: from design in Santa Clara through ASML, Zeiss, TSMC, HBM, and CoWoS to a data center in Quincy, Washington. Every decision has one live button. That is the point.";
+
 const AIChipLife = () => {
   const reducedMotion = useReducedMotion();
-  const { setRef, activeIndex, crossProgress } = useScrollScenes(SCENES.length, CROSSING_INDEX);
+  const { setRef, activeIndex, crossProgress, flow } = useScrollScenes(SCENES.length, CROSSING_INDEX);
+  const isMobile = useMediaQuery("(max-width: 1023px)");
+  const isDesktop = !isMobile;
 
-  // Selections per scene id, and the accreting set of assembly parts.
+  // Selections per scene id, the accreting set of assembly parts, and every
+  // locked-in guess (for the epilogue recap).
   const [selections, setSelections] = useState({});
   const [parts, setParts] = useState(() => new Set());
+  const [guessEntries, setGuessEntries] = useState([]);
+  const [assemblyOpen, setAssemblyOpen] = useState(false);
 
+  // Route metadata: title, description, and structured data for the piece,
+  // restored on unmount (SPA, so this is best-effort for JS-running crawlers).
   useEffect(() => {
-    document.title = "The Life of an AI Chip · Built by Shrey";
+    const prevTitle = document.title;
+    document.title = "The Life of an AI Chip · Shreyans Khunteta";
+
+    const meta = document.querySelector('meta[name="description"]');
+    const prevDescription = meta ? meta.getAttribute("content") : null;
+    if (meta) meta.setAttribute("content", META_DESCRIPTION);
+
+    const ld = document.createElement("script");
+    ld.type = "application/ld+json";
+    ld.id = "ai-chip-jsonld";
+    ld.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: "The Life of an AI Chip",
+      description: META_DESCRIPTION,
+      url: "https://builtbyshrey.com/ai-chip",
+      image: "https://builtbyshrey.com/images/ai-chip-og.png",
+      author: {
+        "@type": "Person",
+        name: "Shreyans Khunteta",
+        url: "https://builtbyshrey.com",
+      },
+      about: ["semiconductor supply chain", "EUV lithography", "AI accelerators", "advanced packaging"],
+    });
+    document.head.appendChild(ld);
+
+    return () => {
+      document.title = prevTitle;
+      if (meta && prevDescription != null) meta.setAttribute("content", prevDescription);
+      ld.remove();
+    };
   }, []);
 
   const handleSelect = (sceneId, optionId, part) => {
     setSelections((prev) => (prev[sceneId] === optionId ? prev : { ...prev, [sceneId]: optionId }));
     if (part) setParts((prev) => (prev.has(part) ? prev : new Set(prev).add(part)));
+  };
+
+  const handleGuessReveal = (entry) => {
+    setGuessEntries((prev) => (prev.some((e) => e.factId === entry.factId) ? prev : [...prev, entry]));
   };
 
   const activeScene = SCENES[activeIndex];
@@ -51,7 +125,22 @@ const AIChipLife = () => {
     }
   }, [activeScene]);
 
-  const focus = useMemo(() => projectFocus(activeScene.focus), [activeScene]);
+  // Camera scrubbed by scroll: interpolate focus and zoom between the scenes
+  // adjacent to the fractional scroll position.
+  const camera = useMemo(() => {
+    const i0 = Math.max(0, Math.min(SCENES.length - 1, Math.floor(flow)));
+    const i1 = Math.min(SCENES.length - 1, i0 + 1);
+    const t = easeSegment(flow - i0);
+    const a = projectFocus(SCENES[i0].focus);
+    const b = projectFocus(SCENES[i1].focus);
+    const za = effectiveZoom(SCENES[i0], isMobile);
+    const zb = effectiveZoom(SCENES[i1], isMobile);
+    return {
+      focus: { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t },
+      zoom: za + (zb - za) * t,
+    };
+  }, [flow, isMobile]);
+
   const conceptual = activeScene.mapMode === "conceptual";
 
   // The assembly widget retires for the crossing (chip is on the map) and the
@@ -65,12 +154,13 @@ const AIChipLife = () => {
       {!reducedMotion && (
         <div className="fixed inset-0 z-0">
           <WorldMap
-            focus={focus}
-            zoom={activeScene.zoom}
+            focus={camera.focus}
+            zoom={camera.zoom}
             crossing={activeScene.crossing}
             crossProgress={crossProgress}
             reducedMotion={reducedMotion}
             activeId={activeScene.id}
+            scrubbed
           />
           {/* Conceptual scenes: the map recedes behind a paper wash. */}
           <div
@@ -81,7 +171,14 @@ const AIChipLife = () => {
       )}
 
       {/* Header. */}
-      <header className="fixed top-0 inset-x-0 z-40 border-b backdrop-blur" style={{ borderColor: "rgba(0,0,0,0.06)", backgroundColor: "rgba(243,239,232,0.85)" }}>
+      <header
+        className="fixed top-0 inset-x-0 z-40 border-b backdrop-blur"
+        style={{
+          borderColor: "rgba(0,0,0,0.06)",
+          backgroundColor: "rgba(243,239,232,0.85)",
+          paddingTop: "env(safe-area-inset-top, 0px)",
+        }}
+      >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <Link to="/" className="text-xs sm:text-sm transition-colors" style={{ fontFamily: SANS, color: "#6B6B6B" }}>
             ← Back to portfolio
@@ -104,7 +201,9 @@ const AIChipLife = () => {
         </div>
       </header>
 
-      {/* Persistent chip-assembly widget. */}
+      {/* Persistent chip-assembly widget. Desktop: full diagram, vertically
+          centered in the free right column. Mobile: a collapsed pill that
+          expands on tap so it never fights the header for space. */}
       <AnimatePresence>
         {assemblyVisible && (
           <motion.div
@@ -112,10 +211,40 @@ const AIChipLife = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.5 }}
-            className="fixed z-30 top-16 right-3 sm:right-6 rounded-xl border shadow-lg p-2"
+            className="fixed z-30 top-20 right-3 lg:top-1/2 lg:-translate-y-1/2 lg:right-10 xl:right-16 rounded-xl border shadow-lg"
             style={{ borderColor: "#E8E4DF", backgroundColor: "rgba(255,255,255,0.92)", backdropFilter: "blur(6px)" }}
           >
-            <ChipAssembly parts={parts} reducedMotion={reducedMotion} shipped={shipped} compact />
+            {isDesktop ? (
+              <div className="p-4">
+                <ChipAssembly parts={parts} reducedMotion={reducedMotion} shipped={shipped} />
+              </div>
+            ) : assemblyOpen ? (
+              <button
+                type="button"
+                onClick={() => setAssemblyOpen(false)}
+                aria-expanded="true"
+                aria-label="Collapse chip assembly"
+                className="p-2 block"
+              >
+                <ChipAssembly parts={parts} reducedMotion={reducedMotion} shipped={shipped} compact />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setAssemblyOpen(true)}
+                aria-expanded="false"
+                aria-label={`Expand chip assembly, ${parts.size} of 7 components`}
+                className="px-3 py-2 flex items-center gap-2"
+              >
+                <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+                  <rect x="3" y="3" width="10" height="10" rx="1.5" fill="#1A1A1A" />
+                  <rect x="6" y="6" width="4" height="4" rx="0.5" fill="#5BC0BE" />
+                </svg>
+                <span className="text-[10px] tracking-widest uppercase" style={{ fontFamily: MONO, color: "#6B6B6B" }}>
+                  {parts.size}/7
+                </span>
+              </button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -129,6 +258,8 @@ const AIChipLife = () => {
               completed={!!selections[scene.id]}
               selectedId={selections[scene.id]}
               onSelect={handleSelect}
+              onGuessReveal={handleGuessReveal}
+              guessEntries={guessEntries}
               reducedMotion={reducedMotion}
               staticParts={reducedMotion ? cumulativePartsThrough(i) : null}
             />

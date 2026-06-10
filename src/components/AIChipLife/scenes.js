@@ -90,6 +90,16 @@ export const SCENES = [
       options: [{ id: "zeiss", label: "Carl Zeiss SMT", enabled: true }],
       selectedText: "1 of 1 suppliers selected",
     },
+    guess: {
+      factId: "euv_highna_price",
+      prompt: "These optics are why the machine costs what it costs. What does one High-NA EUV scanner sell for?",
+      min: 5,
+      max: 500,
+      step: 5,
+      kind: "money_millions",
+      unit: "$M",
+      factScale: 1000000,
+    },
     facts: ["zeiss_sole", "zeiss_specialists"],
   },
   {
@@ -117,15 +127,15 @@ export const SCENES = [
       selectedText: "1 of 1 foundries selected",
     },
     guess: {
-      factId: "tsmc_leading_edge",
-      prompt: "What share of the world's most advanced chips is made by one company?",
+      factId: "tsmc_advanced_node_revenue",
+      prompt: "How much of TSMC's own wafer revenue already comes from advanced nodes, 7 nanometers and below?",
       min: 0,
       max: 100,
       step: 1,
       kind: "percent",
       unit: "%",
     },
-    facts: ["tsmc_leading_edge"],
+    facts: ["tsmc_leading_edge", "tsmc_advanced_node_revenue"],
   },
   {
     id: 5,
@@ -184,7 +194,7 @@ export const SCENES = [
       options: [{ id: "cowos", label: "CoWoS", enabled: true }],
       selectedText: "1 of 1 lines selected",
     },
-    facts: ["cowos_bottleneck"],
+    facts: ["cowos_bottleneck", "cowos_wafers_2025"],
   },
   {
     id: 7,
@@ -222,6 +232,23 @@ export const SCENES = [
     },
     facts: ["rack_power", "homes_equivalent", "columbia_hydro"],
     photoPlaceholder: true,
+  },
+  {
+    id: 9,
+    slug: "09-break-the-chain",
+    title: "Break the chain",
+    place: "Anywhere along the thread",
+    focus: { lng: -160, lat: 38, copy: 0 },
+    zoom: 1.6,
+    mapMode: "conceptual",
+    part: null,
+    epilogue: true,
+    prose: {
+      lead: "Run the story backward and pull on any single knot. An export ruling in The Hague stops every scanner at the loading dock. A blockade of one strait idles the only fab that says yes. A fire in one packaging line, and the bottleneck of 2023 returns overnight. None of these requires imagination; each has a near miss already on record.",
+      turn: "A chain with one supplier at four of its links does not have a weakest point. It has four of them. That is what you were tracing.",
+      reduced: "Each sole-supplier link (ASML, Zeiss, TSMC, CoWoS) is a single point of failure for the entire leading edge of computing.",
+    },
+    facts: [],
   },
 ];
 

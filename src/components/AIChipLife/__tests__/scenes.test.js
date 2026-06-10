@@ -4,8 +4,8 @@ import { SCENES, ASSEMBLY_ORDER } from "../scenes";
 const enabledCount = (scene) => (scene.choice ? scene.choice.options.filter((o) => o.enabled).length : 0);
 
 describe("scene structure (the thesis is the mechanic)", () => {
-  it("has exactly eight scenes in order", () => {
-    expect(SCENES).toHaveLength(8);
+  it("has exactly nine scenes in order (eight chapters plus the epilogue)", () => {
+    expect(SCENES).toHaveLength(9);
     SCENES.forEach((s, i) => expect(s.id).toBe(i + 1));
   });
 
@@ -35,9 +35,16 @@ describe("scene structure (the thesis is the mechanic)", () => {
     expect(quincy.guess).toBeUndefined();
   });
 
-  it("uses 3 guess-the-number interactions, sparingly", () => {
+  it("the epilogue follows Quincy and stays non-interactive", () => {
+    const epilogue = SCENES.find((s) => s.epilogue);
+    expect(epilogue.id).toBe(9);
+    expect(epilogue.choice).toBeUndefined();
+    expect(epilogue.guess).toBeUndefined();
+  });
+
+  it("uses 4 guess-the-number interactions, sparingly", () => {
     const guesses = SCENES.filter((s) => s.guess);
-    expect(guesses).toHaveLength(3);
+    expect(guesses).toHaveLength(4);
   });
 
   it("the chip assembly accretes unique parts and ships by scene 7", () => {

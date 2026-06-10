@@ -19,6 +19,12 @@ const Navbar = () => {
 
   const pageLinks = [
     {
+      id: 9,
+      external: false,
+      to: "/ai-chip",
+      label: "AI Chip",
+    },
+    {
       id: 10,
       external: false,
       to: "/resume",

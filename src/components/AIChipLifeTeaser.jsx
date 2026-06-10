@@ -56,9 +56,10 @@ const AIChipLifeTeaser = () => {
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <p className="text-sm max-w-md" style={{ fontFamily: SANS, color: "#6B6B6B" }}>
-                Eight scenes, from a parking lot in Santa Clara to a data center on the
+                Nine scenes, from a parking lot in Santa Clara to a data center on the
                 Columbia River. Every &ldquo;decision&rdquo; has exactly one live button. By the
-                time the chip ships, you feel the monopoly through your thumb.
+                time the chip ships, you feel the monopoly through your thumb. Every figure
+                sourced and confidence-rated.
               </p>
               <Link
                 to="/ai-chip"

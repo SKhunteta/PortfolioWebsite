@@ -7,18 +7,20 @@ source, then update `verified`, `confidence`, and `verifiedDate` in `facts.js`.
 
 ## needs_verification (block launch)
 
-- [ ] **`tsmc_leading_edge` — TSMC share of leading-edge chips (~90%)** (Scene 4, Hsinchu)
-  - Primary source: TSMC quarterly investor presentation / annual report, *or*
-    a dated analyst breakdown of leading-edge (≤5nm) foundry share.
-  - MUST be phrased as share of the *most advanced / leading-edge* chips. Never
-    "90% of all chips." Update the `note` if the phrasing tightens.
+- [x] **`tsmc_leading_edge`** — RESOLVED 2026-06-10. The "~90% of advanced chips"
+  market-share framing is publicly contested (SemiWiki, "No! TSMC does not Make
+  90% of Advanced Silicon") and has been dropped entirely. The fact is reframed
+  as the defensible chokepoint claim: every current merchant flagship AI
+  accelerator is fabricated by TSMC. A new companion fact
+  `tsmc_advanced_node_revenue` (74% of TSMC wafer revenue from ≤7nm, TSMC Q1
+  2026 results) drives the scene-4 guess from a primary source. The contested
+  figure is acknowledged in the sources footer.
 
-- [ ] **`cowos_bottleneck` — CoWoS as the 2023–24 supply bottleneck** (Scene 6, Packaging)
-  - STUB. SHREY to source. Primary source: TSMC commentary on CoWoS capacity
-    expansion (earnings calls, 2023–2024), and reporting tying GPU supply to
-    packaging rather than wafers.
-  - Add a concrete capacity figure (e.g. monthly CoWoS wafer capacity and its
-    planned multiple) once sourced, and flip `verified` to true.
+- [x] **`cowos_bottleneck`** — RESOLVED 2026-06-10. Sourced to TSMC's Q3 2024
+  earnings call (CoWoS capacity roughly doubling in both 2024 and 2025, still
+  trailing demand). Concrete capacity figures added as `cowos_wafers_2025`
+  (~35–40k wafers/month in 2024 → ~75k in 2025 → ~130k targeted late 2026, per
+  TrendForce), held at order_of_magnitude confidence.
 
 ## analyst_estimate (attribute, do not present as counted)
 
