@@ -26,24 +26,27 @@ const CROSS_END = projectFocus({ lng: -119.85, lat: 47.23, copy: 1 }); // Quincy
 const Continents = ({ offset }) => (
   <g transform={`translate(${offset},0)`}>
     {CONTINENTS.map((c) => (
-      <path
-        key={c.id}
-        d={pathFor(c.points)}
-        fill="#DCD6CC"
-        stroke="#C4BCAE"
-        strokeWidth="0.4"
-        strokeLinejoin="round"
-      />
+      <g key={c.id}>
+        <path d={pathFor(c.points)} fill="#DCD6CC" stroke="#C4BCAE" strokeWidth="0.4" strokeLinejoin="round" />
+        {/* Editorial dot-grid texture over the flat landmass fill. */}
+        <path d={pathFor(c.points)} fill="url(#landDots)" stroke="none" />
+      </g>
     ))}
   </g>
 );
 
-const WorldMap = ({ focus, zoom, crossing = false, crossProgress = 0, reducedMotion = false, activeId }) => {
+const WorldMap = ({ focus, zoom, crossing = false, crossProgress = 0, reducedMotion = false, activeId, scrubbed = false }) => {
   const tx = 180 - zoom * focus.x;
   const ty = 90 - zoom * focus.y;
 
   const transform = `translate(${tx}px, ${ty}px) scale(${zoom})`;
-  const transition = reducedMotion ? "none" : "transform 1.3s cubic-bezier(0.22, 1, 0.36, 1)";
+  // Scrubbed mode: the camera follows scroll continuously, so the transition
+  // only smooths discrete wheel steps rather than animating whole scene hops.
+  const transition = reducedMotion
+    ? "none"
+    : scrubbed
+      ? "transform 0.3s linear"
+      : "transform 1.3s cubic-bezier(0.22, 1, 0.36, 1)";
 
   // Chip token position during the crossing, interpolated in map space.
   const token = useMemo(() => {
@@ -63,6 +66,11 @@ const WorldMap = ({ focus, zoom, crossing = false, crossProgress = 0, reducedMot
       aria-hidden="true"
       style={{ backgroundColor: "#F3EFE8" }}
     >
+      <defs>
+        <pattern id="landDots" width="2.4" height="2.4" patternUnits="userSpaceOnUse">
+          <circle cx="1.2" cy="1.2" r="0.22" fill="#B9AE9C" opacity="0.5" />
+        </pattern>
+      </defs>
       <g style={{ transform, transformOrigin: "0 0", transition }}>
         <Continents offset={0} />
         <Continents offset={MAP_W} />

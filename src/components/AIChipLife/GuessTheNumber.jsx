@@ -6,16 +6,33 @@ const MONO = '"JetBrains Mono", "IBM Plex Mono", monospace';
 
 const formatValue = (n, kind, unit) => {
   if (kind === "percent") return `${Math.round(n)}%`;
+  if (kind === "money_millions") return `$${Math.round(n).toLocaleString()}M`;
   if (kind === "count") return `${Math.round(n).toLocaleString()}${unit ? ` ${unit}` : ""}`;
   return `${Math.round(n).toLocaleString()}${unit ? ` ${unit}` : ""}`;
 };
 
+// Custom slider thumb: the default range thumb is too small a touch target on
+// phones, so this enlarges it to a 28px circle (≥44px including track height).
+const SLIDER_CSS = `
+.aichip-range { -webkit-appearance: none; appearance: none; background: transparent; }
+.aichip-range::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: #E0DACF; }
+.aichip-range::-moz-range-track { height: 4px; border-radius: 2px; background: #E0DACF; }
+.aichip-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 28px; height: 28px; margin-top: -12px; border-radius: 9999px; background: #1A1A1A; border: 3px solid #F3EFE8; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; }
+.aichip-range::-moz-range-thumb { width: 28px; height: 28px; border-radius: 9999px; background: #1A1A1A; border: 3px solid #F3EFE8; box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer; }
+`;
+
 // Estimate-before-reveal. Slider input (touch-first, no typing), then the stat
 // card flips with the real figure and the reader's guess marked against it.
-// No score, no persistence: the payoff is the gap, in the moment.
-const GuessTheNumber = ({ guess, fact, reducedMotion = false }) => {
+// `onReveal` reports the locked guess upward so the ending can recap every
+// guess against the truth.
+const GuessTheNumber = ({ guess, fact, reducedMotion = false, onReveal }) => {
   const [value, setValue] = useState(Math.round((guess.min + guess.max) / 2));
   const [revealed, setRevealed] = useState(false);
+
+  // The fact's numeric may be in raw units (e.g. dollars) while the slider
+  // works in display units (e.g. $M); factScale converts between them.
+  const scale = guess.factScale || 1;
+  const truth = fact.numeric != null ? fact.numeric / scale : null;
 
   // Reduced-motion / linear article: just show the answer.
   if (reducedMotion) {
@@ -30,17 +47,32 @@ const GuessTheNumber = ({ guess, fact, reducedMotion = false }) => {
   }
 
   const pct = (n) => ((n - guess.min) / (guess.max - guess.min)) * 100;
-  const truthPct = fact.numeric != null ? Math.max(0, Math.min(100, pct(fact.numeric))) : null;
+  const truthPct = truth != null ? Math.max(0, Math.min(100, pct(truth))) : null;
+
+  const lockIn = () => {
+    setRevealed(true);
+    if (onReveal) {
+      onReveal({
+        factId: fact.id,
+        prompt: guess.prompt,
+        guessed: value,
+        truth,
+        kind: guess.kind,
+        unit: guess.unit,
+      });
+    }
+  };
 
   return (
     <div className="rounded-lg border bg-white p-4 sm:p-5" style={{ borderColor: "#E8E4DF" }}>
+      <style>{SLIDER_CSS}</style>
       <p className="text-sm font-medium mb-4" style={{ fontFamily: SANS, color: "#1A1A1A" }}>
         {guess.prompt}
       </p>
 
       {!revealed ? (
         <>
-          <p className="text-3xl font-bold mb-3" style={{ fontFamily: '"DM Serif Display", Georgia, serif', color: "#1A1A1A" }}>
+          <p className="text-3xl sm:text-4xl font-bold mb-3" style={{ fontFamily: '"DM Serif Display", Georgia, serif', color: "#1A1A1A" }}>
             {formatValue(value, guess.kind, guess.unit)}
           </p>
           <input
@@ -51,7 +83,7 @@ const GuessTheNumber = ({ guess, fact, reducedMotion = false }) => {
             value={value}
             onChange={(e) => setValue(Number(e.target.value))}
             aria-label={guess.prompt}
-            className="w-full accent-[#1A1A1A] h-6 cursor-pointer"
+            className="aichip-range w-full h-8 cursor-pointer"
           />
           <div className="flex justify-between text-[10px] mt-1" style={{ fontFamily: MONO, color: "#B8B2AA" }}>
             <span>{formatValue(guess.min, guess.kind, guess.unit)}</span>
@@ -59,7 +91,7 @@ const GuessTheNumber = ({ guess, fact, reducedMotion = false }) => {
           </div>
           <button
             type="button"
-            onClick={() => setRevealed(true)}
+            onClick={lockIn}
             className="mt-4 w-full rounded-md px-4 py-2.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2"
             style={{ fontFamily: SANS, backgroundColor: "#1A1A1A", color: "#FAFAF7" }}
           >
@@ -106,4 +138,5 @@ const GuessTheNumber = ({ guess, fact, reducedMotion = false }) => {
   );
 };
 
+export { formatValue };
 export default GuessTheNumber;

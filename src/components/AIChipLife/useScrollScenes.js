@@ -8,6 +8,10 @@ const useScrollScenes = (count, crossingIndex) => {
   const sectionRefs = useRef([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [crossProgress, setCrossProgress] = useState(0);
+  // Fractional scene position (e.g. 2.4 = 40% of the way from scene 3's center
+  // to scene 4's center). Lets the map camera scrub with the scroll instead of
+  // jumping when a scene activates.
+  const [flow, setFlow] = useState(0);
 
   const setRef = (i) => (el) => {
     sectionRefs.current[i] = el;
@@ -22,10 +26,12 @@ const useScrollScenes = (count, crossingIndex) => {
       let best = 0;
       let bestDist = Infinity;
 
+      const centers = [];
       sectionRefs.current.forEach((el, i) => {
         if (!el) return;
         const rect = el.getBoundingClientRect();
         const center = rect.top + rect.height / 2;
+        centers[i] = center;
         const dist = Math.abs(center - viewportCenter);
         if (dist < bestDist) {
           bestDist = dist;
@@ -33,6 +39,26 @@ const useScrollScenes = (count, crossingIndex) => {
         }
       });
       setActiveIndex(best);
+
+      // Fractional position between consecutive scene centers, clamped to the
+      // story's ends.
+      let f = best;
+      if (centers.length > 1) {
+        if (viewportCenter <= centers[0]) {
+          f = 0;
+        } else if (viewportCenter >= centers[centers.length - 1]) {
+          f = centers.length - 1;
+        } else {
+          for (let i = 0; i < centers.length - 1; i += 1) {
+            if (viewportCenter >= centers[i] && viewportCenter <= centers[i + 1]) {
+              const span = centers[i + 1] - centers[i];
+              f = span > 0 ? i + (viewportCenter - centers[i]) / span : i;
+              break;
+            }
+          }
+        }
+      }
+      setFlow(f);
 
       const crossEl = sectionRefs.current[crossingIndex];
       if (crossEl) {
@@ -59,7 +85,7 @@ const useScrollScenes = (count, crossingIndex) => {
     };
   }, [count, crossingIndex]);
 
-  return { setRef, activeIndex, crossProgress };
+  return { setRef, activeIndex, crossProgress, flow };
 };
 
 export default useScrollScenes;
