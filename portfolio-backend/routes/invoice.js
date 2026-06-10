@@ -206,7 +206,7 @@ Price the line items using rates that feel proportional to a base rate of ~$${ba
     // Call Claude API
     const anthropic = new Anthropic({ apiKey: config.anthropic.apiKey });
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 2000,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userPrompt }],

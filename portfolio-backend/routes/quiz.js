@@ -11,7 +11,7 @@ const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const MODEL = "claude-sonnet-4-20250514";
+const MODEL = "claude-sonnet-4-6";
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const HARD_TIMEOUT_MS = 90 * 1000;
 const PRESET_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes — used by the offline generation script
