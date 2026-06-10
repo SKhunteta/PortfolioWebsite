@@ -15,6 +15,7 @@ import PlotTwistTeaser from "./components/PlotTwistTeaser";
 import InvoiceTeaser from "./components/InvoiceTeaser";
 import LinkTrackerTeaser from "./components/LinkTrackerTeaser";
 import CityQuizTeaser from "./components/CityQuizTeaser";
+import MonetizedReaderTeaser from "./components/MonetizedReaderTeaser";
 import ResumePage from "./pages/ResumePage";
 
 const AaronWestAtlas = lazy(() => import("./components/AaronWestAtlas"));
@@ -23,6 +24,7 @@ const EmotionalLaborInvoice = lazy(() => import("./components/EmotionalLaborInvo
 const Janet = lazy(() => import("./components/Janet"));
 const LinkTracker = lazy(() => import("./components/LinkTracker"));
 const CityQuiz = lazy(() => import("./components/CityQuiz"));
+const MonetizedReader = lazy(() => import("./components/MonetizedReader"));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -162,6 +164,22 @@ function App() {
             </Suspense>
           }
         />
+        <Route
+          path="/monetized-reader"
+          element={
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center bg-[#07090D]">
+                  <p className="text-[#55606E] font-mono text-sm">
+                    Establishing neural link...
+                  </p>
+                </div>
+              }
+            >
+              <MonetizedReader />
+            </Suspense>
+          }
+        />
         <Route path="/resume" element={<ResumePage />} />
         <Route
           path="/"
@@ -229,18 +247,21 @@ function App() {
                   <JanetTeaser />
                 </div>
                 <div className="bg-white py-8">
+                  <MonetizedReaderTeaser />
+                </div>
+                <div className="bg-gray-light py-8">
                   <AaronWestAtlasTeaser />
                 </div>
-                <div className="bg-gray-light py-8">
+                <div className="bg-white py-8">
                   <PlotTwistTeaser />
                 </div>
-                <div className="bg-white py-8">
+                <div className="bg-gray-light py-8">
                   <LinkTrackerTeaser />
                 </div>
-                <div className="bg-gray-light py-8">
+                <div className="bg-white py-8">
                   <CityQuizTeaser />
                 </div>
-                <div className="bg-white py-8">
+                <div className="bg-gray-light py-8">
                   <Contact />
                 </div>
               </main>

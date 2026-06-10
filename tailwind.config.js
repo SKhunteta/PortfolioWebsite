@@ -74,6 +74,21 @@ export default {
         "link-green": "#00A651",
         "link-orange": "#F58220",
         "link-purple": "#7B2D8E",
+        // Monetized Reader (The Happiness Liability excerpt)
+        "mr-bg": "#07090D",
+        "mr-surface": "#0D1117",
+        "mr-panel": "#11161D",
+        "mr-border": "#1F2733",
+        "mr-text": "#E6EDF3",
+        "mr-text-secondary": "#8B98A9",
+        "mr-text-muted": "#55606E",
+        "mr-accent": "#2DD4BF",
+        "mr-money": "#F5C542",
+        "mr-grief": "#3B82F6",
+        "mr-melancholy": "#64748B",
+        "mr-curiosity": "#8B5CF6",
+        "mr-happiness": "#F59E0B",
+        "mr-warning": "#EF4444",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
@@ -117,6 +132,8 @@ export default {
         "pt-stamp-in": "pt-stamp-in 0.3s ease-out forwards",
         "pt-glitch": "pt-glitch 3s steps(5) infinite",
         "pt-double-tap-heart": "pt-double-tap-heart 1s ease-out forwards",
+        // Monetized Reader
+        "mr-pulse-warning": "mr-pulse-warning 2s ease-in-out infinite",
       },
       keyframes: {
         "ticker-scroll": {
@@ -241,6 +258,10 @@ export default {
           "30%": { transform: "scale(1)", opacity: "1" },
           "80%": { transform: "scale(1)", opacity: "1" },
           "100%": { transform: "scale(1)", opacity: "0" },
+        },
+        "mr-pulse-warning": {
+          "0%, 100%": { borderColor: "rgba(239, 68, 68, 0.4)" },
+          "50%": { borderColor: "rgba(239, 68, 68, 1)" },
         },
       },
     },
