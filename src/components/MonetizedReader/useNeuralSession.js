@@ -161,10 +161,6 @@ export default function useNeuralSession() {
         );
         return next;
       });
-      setEarnings((prev) => {
-        const jitter = 1 + (Math.random() * 2 - 1) * SIM.JITTER;
-        return prev + SIM.BASE_RATE_PER_TICK * marketRateRef.current * jitter;
-      });
     }, SIM.TICK_MS);
     return () => clearInterval(interval);
   }, [phase]);
