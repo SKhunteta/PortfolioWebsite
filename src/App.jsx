@@ -16,6 +16,7 @@ import InvoiceTeaser from "./components/InvoiceTeaser";
 import LinkTrackerTeaser from "./components/LinkTrackerTeaser";
 import CityQuizTeaser from "./components/CityQuizTeaser";
 import MonetizedReaderTeaser from "./components/MonetizedReaderTeaser";
+import AIChipLifeTeaser from "./components/AIChipLifeTeaser";
 import ResumePage from "./pages/ResumePage";
 
 const AaronWestAtlas = lazy(() => import("./components/AaronWestAtlas"));
@@ -25,6 +26,7 @@ const Janet = lazy(() => import("./components/Janet"));
 const LinkTracker = lazy(() => import("./components/LinkTracker"));
 const CityQuiz = lazy(() => import("./components/CityQuiz"));
 const MonetizedReader = lazy(() => import("./components/MonetizedReader"));
+const AIChipLife = lazy(() => import("./components/AIChipLife"));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -180,6 +182,22 @@ function App() {
             </Suspense>
           }
         />
+        <Route
+          path="/ai-chip"
+          element={
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#F3EFE8" }}>
+                  <p className="text-[#9A9A9A] text-sm" style={{ fontFamily: '"IBM Plex Mono", "JetBrains Mono", monospace' }}>
+                    Powering up the fab...
+                  </p>
+                </div>
+              }
+            >
+              <AIChipLife />
+            </Suspense>
+          }
+        />
         <Route path="/resume" element={<ResumePage />} />
         <Route
           path="/"
@@ -248,6 +266,9 @@ function App() {
                 </div>
                 <div className="bg-white py-8">
                   <MonetizedReaderTeaser />
+                </div>
+                <div className="bg-gray-light py-8">
+                  <AIChipLifeTeaser />
                 </div>
                 <div className="bg-gray-light py-8">
                   <AaronWestAtlasTeaser />

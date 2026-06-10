@@ -1,0 +1,109 @@
+import React, { useState } from "react";
+import StatCard from "./StatCard";
+
+const SANS = '"DM Sans", system-ui, sans-serif';
+const MONO = '"JetBrains Mono", "IBM Plex Mono", monospace';
+
+const formatValue = (n, kind, unit) => {
+  if (kind === "percent") return `${Math.round(n)}%`;
+  if (kind === "count") return `${Math.round(n).toLocaleString()}${unit ? ` ${unit}` : ""}`;
+  return `${Math.round(n).toLocaleString()}${unit ? ` ${unit}` : ""}`;
+};
+
+// Estimate-before-reveal. Slider input (touch-first, no typing), then the stat
+// card flips with the real figure and the reader's guess marked against it.
+// No score, no persistence: the payoff is the gap, in the moment.
+const GuessTheNumber = ({ guess, fact, reducedMotion = false }) => {
+  const [value, setValue] = useState(Math.round((guess.min + guess.max) / 2));
+  const [revealed, setRevealed] = useState(false);
+
+  // Reduced-motion / linear article: just show the answer.
+  if (reducedMotion) {
+    return (
+      <div className="rounded-lg border bg-white p-4" style={{ borderColor: "#E8E4DF" }}>
+        <p className="text-sm mb-3" style={{ fontFamily: SANS, color: "#1A1A1A" }}>
+          {guess.prompt}
+        </p>
+        <StatCard fact={fact} />
+      </div>
+    );
+  }
+
+  const pct = (n) => ((n - guess.min) / (guess.max - guess.min)) * 100;
+  const truthPct = fact.numeric != null ? Math.max(0, Math.min(100, pct(fact.numeric))) : null;
+
+  return (
+    <div className="rounded-lg border bg-white p-4 sm:p-5" style={{ borderColor: "#E8E4DF" }}>
+      <p className="text-sm font-medium mb-4" style={{ fontFamily: SANS, color: "#1A1A1A" }}>
+        {guess.prompt}
+      </p>
+
+      {!revealed ? (
+        <>
+          <p className="text-3xl font-bold mb-3" style={{ fontFamily: '"DM Serif Display", Georgia, serif', color: "#1A1A1A" }}>
+            {formatValue(value, guess.kind, guess.unit)}
+          </p>
+          <input
+            type="range"
+            min={guess.min}
+            max={guess.max}
+            step={guess.step}
+            value={value}
+            onChange={(e) => setValue(Number(e.target.value))}
+            aria-label={guess.prompt}
+            className="w-full accent-[#1A1A1A] h-6 cursor-pointer"
+          />
+          <div className="flex justify-between text-[10px] mt-1" style={{ fontFamily: MONO, color: "#B8B2AA" }}>
+            <span>{formatValue(guess.min, guess.kind, guess.unit)}</span>
+            <span>{formatValue(guess.max, guess.kind, guess.unit)}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setRevealed(true)}
+            className="mt-4 w-full rounded-md px-4 py-2.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2"
+            style={{ fontFamily: SANS, backgroundColor: "#1A1A1A", color: "#FAFAF7" }}
+          >
+            Lock in your guess
+          </button>
+        </>
+      ) : (
+        <>
+          {/* Guess vs. truth track */}
+          <div className="relative h-10 mb-4">
+            <div className="absolute top-1/2 left-0 right-0 h-0.5 -translate-y-1/2" style={{ backgroundColor: "#E8E4DF" }} />
+            {/* Reader's guess */}
+            <div
+              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center"
+              style={{ left: `${Math.max(0, Math.min(100, pct(value)))}%` }}
+            >
+              <span className="w-3 h-3 rounded-full border-2 bg-white" style={{ borderColor: "#9A9A9A" }} />
+              <span className="text-[9px] mt-0.5 whitespace-nowrap" style={{ fontFamily: MONO, color: "#9A9A9A" }}>
+                you
+              </span>
+            </div>
+            {/* The truth */}
+            {truthPct != null && (
+              <div
+                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center"
+                style={{ left: `${truthPct}%` }}
+              >
+                <span className="w-0.5 h-5" style={{ backgroundColor: "#1A1A1A" }} />
+                <span className="text-[9px] mt-0.5 whitespace-nowrap font-semibold" style={{ fontFamily: MONO, color: "#1A1A1A" }}>
+                  truth
+                </span>
+              </div>
+            )}
+          </div>
+
+          <p className="text-xs mb-3" style={{ fontFamily: SANS, color: "#6B6B6B" }}>
+            You guessed <strong style={{ color: "#1A1A1A" }}>{formatValue(value, guess.kind, guess.unit)}</strong>.
+          </p>
+
+          <StatCard fact={fact} />
+        </>
+      )}
+    </div>
+  );
+};
+
+export default GuessTheNumber;

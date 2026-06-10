@@ -1,0 +1,239 @@
+// The eight scenes. Each scene declares its camera focus, map mode, prose
+// (drafted per the plan's prose policy: concrete detail first, then the turn;
+// proper capitalization; no em-dashes; no rule-of-three; no aphoristic
+// closers; no hype), interaction config, and the assembly part it drops onto
+// the persistent chip diagram on completion.
+//
+// Camera focus: { lng, lat, copy } where copy:1 lives in the duplicated world
+// map (+360deg east) so the Pacific crossing reads as one continuous eastward
+// motion from East Asia to Washington State.
+
+export const SCENES = [
+  {
+    id: 1,
+    slug: "01-design",
+    title: "Design",
+    place: "Santa Clara, California",
+    focus: { lng: -121.95, lat: 37.35, copy: 0 },
+    zoom: 4,
+    mapMode: "geographic",
+    part: "die",
+    prose: {
+      lead: "The chip starts as a feeling about a deadline. In an office park off Highway 101, a few hundred engineers describe a processor that does not exist yet, in a language that compiles to a layout no person reads in full. They will never touch silicon. The company that designs the most valuable chip in the world owns no factory.",
+      turn: "This is the one place in the story where the choice is real. There are many design houses and they compete for the work. Pick one. It is the last time the list will have more than a single live name on it.",
+      reduced: "Many fabless design houses compete here. This is the only genuinely plural choice in the chain.",
+    },
+    choice: {
+      prompt: "Choose your design house",
+      plural: true,
+      options: [
+        { id: "a", label: "NVIDIA", enabled: true },
+        { id: "b", label: "AMD", enabled: true },
+        { id: "c", label: "A hyperscaler's in-house team", enabled: true },
+        { id: "d", label: "A well-funded startup", enabled: true },
+      ],
+      selectedText: "Design house selected",
+    },
+  },
+  {
+    id: 2,
+    slug: "02-veldhoven",
+    title: "The machine",
+    place: "Veldhoven, the Netherlands",
+    focus: { lng: 5.4, lat: 51.4, copy: 0 },
+    zoom: 6,
+    mapMode: "geographic",
+    part: "pattern",
+    prose: {
+      lead: "To print the engineers' drawing onto silicon you need a machine that focuses light at 13.5 nanometers by bouncing it off mirrors inside a vacuum, after vaporizing tin droplets with a laser fifty thousand times a second. One company on Earth sells it. It sits in a town in the south of the Netherlands you had not heard of until now.",
+      turn: "There is no second supplier to call if the first one says no. The entire leading edge of computing passes through one company's order book.",
+      reduced: "There is one supplier of EUV lithography: ASML.",
+    },
+    choice: {
+      prompt: "Choose your EUV scanner vendor",
+      plural: false,
+      options: [
+        { id: "asml", label: "ASML", enabled: true },
+        { id: "nikon", label: "Nikon", enabled: false, epitaph: "Built the last generation of lithography. Never shipped a production EUV scanner." },
+        { id: "canon", label: "Canon", enabled: false, epitaph: "Pursued nanoimprint instead. Not at the leading edge." },
+      ],
+      selectedText: "1 of 1 suppliers selected",
+    },
+    guess: {
+      factId: "euv_units_2025",
+      prompt: "How many EUV scanners did ASML ship in all of 2025?",
+      min: 0,
+      max: 400,
+      step: 1,
+      kind: "count",
+      unit: "units",
+    },
+    facts: ["euv_monopoly", "euv_units_2025", "euv_units_2026", "euv_units_2027", "euv_lowna_price", "euv_highna_price"],
+  },
+  {
+    id: 3,
+    slug: "03-oberkochen",
+    title: "The optics",
+    place: "Oberkochen, Germany",
+    focus: { lng: 10.1, lat: 48.8, copy: 0 },
+    zoom: 7,
+    mapMode: "conceptual",
+    part: "fineEtch",
+    prose: {
+      lead: "The machine's mirrors are not made by the machine's maker. They are polished in a Swabian town by an optics company that has existed since the 1840s, to a smoothness where, scaled up to the size of Germany, the largest bump would stand under a millimeter. The number of people alive who can do this work fits inside a single estimate.",
+      turn: "Sole supplier, again. The monopoly has a monopoly inside it.",
+      reduced: "There is one supplier of EUV optics: Carl Zeiss SMT.",
+    },
+    choice: {
+      prompt: "Choose your EUV optics supplier",
+      plural: false,
+      options: [{ id: "zeiss", label: "Carl Zeiss SMT", enabled: true }],
+      selectedText: "1 of 1 suppliers selected",
+    },
+    facts: ["zeiss_sole", "zeiss_specialists"],
+  },
+  {
+    id: 4,
+    slug: "04-hsinchu",
+    title: "Fabrication",
+    place: "Hsinchu, Taiwan",
+    focus: { lng: 120.97, lat: 24.8, copy: 0 },
+    zoom: 6,
+    mapMode: "geographic",
+    part: "fabbed",
+    prose: {
+      lead: "The patterned wafers are etched at a fab in an industrial park in northern Taiwan, on an island that sits in a strait that other countries' navies practice crossing. Most of the world's most advanced chips are made within a few miles of one another here.",
+      turn: "You could fabricate this somewhere else, in theory. At this node, in this volume, for this customer, one fab says yes.",
+      reduced: "At the leading edge there is effectively one fab: TSMC.",
+    },
+    choice: {
+      prompt: "Choose your foundry",
+      plural: false,
+      options: [
+        { id: "tsmc", label: "TSMC", enabled: true },
+        { id: "samsung", label: "Samsung Foundry", enabled: false, epitaph: "A generation behind at the bleeding edge for this part." },
+        { id: "smic", label: "SMIC", enabled: false, epitaph: "Export controls bar it from leading-edge EUV." },
+      ],
+      selectedText: "1 of 1 foundries selected",
+    },
+    guess: {
+      factId: "tsmc_leading_edge",
+      prompt: "What share of the world's most advanced chips is made by one company?",
+      min: 0,
+      max: 100,
+      step: 1,
+      kind: "percent",
+      unit: "%",
+    },
+    facts: ["tsmc_leading_edge"],
+  },
+  {
+    id: 5,
+    slug: "05-korea",
+    title: "Memory",
+    place: "Icheon, South Korea",
+    focus: { lng: 127.4, lat: 37.4, copy: 0 },
+    zoom: 6,
+    mapMode: "geographic",
+    part: "hbm",
+    prose: {
+      lead: "A logic die alone computes nothing useful at this scale. It needs memory stacked against it, dozens of DRAM layers bonded into towers and wired to the processor across a bridge thinner than tape. Most of that memory comes from two companies in South Korea and one in the United States.",
+      turn: "Three names instead of one. After four scenes of single suppliers, an oligopoly of three feels like abundance. It is not abundance. It is the widest the road ever gets.",
+      reduced: "Memory at this tier comes from three suppliers: SK hynix, Samsung, and Micron.",
+    },
+    choice: {
+      prompt: "Choose your HBM supplier",
+      plural: false,
+      oligopoly: true,
+      options: [
+        { id: "skhynix", label: "SK hynix", enabled: true },
+        { id: "samsung", label: "Samsung", enabled: true },
+        { id: "micron", label: "Micron", enabled: true },
+      ],
+      selectedText: "3 of 3 suppliers available",
+    },
+    guess: {
+      factId: "korea_revenue_share",
+      prompt: "What share of ASML's Q1 2026 revenue came from one country, South Korea?",
+      min: 0,
+      max: 100,
+      step: 1,
+      kind: "percent",
+      unit: "%",
+    },
+    facts: ["hbm_makers", "memory_share_shipments", "korea_revenue_share"],
+  },
+  {
+    id: 6,
+    slug: "06-packaging",
+    title: "Packaging",
+    place: "Advanced packaging",
+    focus: { lng: 120.97, lat: 24.8, copy: 0 },
+    zoom: 7,
+    mapMode: "conceptual",
+    part: "interposer",
+    prose: {
+      lead: "The die and its memory towers are mounted together on a silicon interposer and sealed into one package. For two years this step, not the transistors and not the memory, was the thing the whole industry could not get enough of. The bottleneck was the glue, not the genius.",
+      turn: "By now you may have noticed that every decision in this story has had one button. That was not a flaw in the game. That was the supply chain.",
+      reduced: "Advanced packaging (CoWoS) was the binding constraint on 2023–24 supply.",
+    },
+    choice: {
+      prompt: "Choose your advanced packaging line",
+      plural: false,
+      acknowledgment: true,
+      options: [{ id: "cowos", label: "CoWoS", enabled: true }],
+      selectedText: "1 of 1 lines selected",
+    },
+    facts: ["cowos_bottleneck"],
+  },
+  {
+    id: 7,
+    slug: "07-crossing",
+    title: "The crossing",
+    place: "Across the Pacific",
+    focus: { lng: 180, lat: 38, copy: 0 },
+    zoom: 2.4,
+    mapMode: "geographic",
+    part: "crate",
+    crossing: true,
+    prose: {
+      lead: "The finished package leaves the island in a temperature-logged box, on a plane or a ship, insured for more than its weight in almost anything. It crosses the Pacific to a country that designed it and cannot yet build it.",
+      turn: "You assembled this. Now watch it go where it goes.",
+      reduced: "The completed package ships across the Pacific to the United States.",
+    },
+    facts: [],
+  },
+  {
+    id: 8,
+    slug: "08-quincy",
+    title: "Quincy, Washington",
+    place: "Quincy, Washington",
+    focus: { lng: -119.85, lat: 47.23, copy: 1 },
+    zoom: 6,
+    mapMode: "geographic",
+    part: null,
+    still: true,
+    prose: {
+      // FLAGGED FOR SHREY'S PERSONAL PASS — this prose sits over your photographs
+      // and carries the close. Draft only.
+      lead: "It ends in Quincy, Washington, in a windowless building beside the Columbia River, drawing power from the same dams that water the apple orchards. A rack of these chips pulls about as much electricity as a hundred homes. There is no button here.",
+      turn: "You were never choosing. You were tracing a thread that someone else had already pulled taut, from a parking lot in Santa Clara to a field in eastern Washington, and the only freedom you had was to follow it to the end.",
+      reduced: "The chip arrives at a data center in Quincy, Washington, on Columbia River hydropower.",
+    },
+    facts: ["rack_power", "homes_equivalent", "columbia_hydro"],
+    photoPlaceholder: true,
+  },
+];
+
+// Cumulative assembly state: which parts exist once each scene completes.
+export const ASSEMBLY_ORDER = ["die", "pattern", "fineEtch", "fabbed", "hbm", "interposer", "crate"];
+
+export const PART_LABELS = {
+  die: "Logic die",
+  pattern: "EUV pattern",
+  fineEtch: "Sub-nm features",
+  fabbed: "Fabricated wafer",
+  hbm: "HBM stacks",
+  interposer: "Interposer + package",
+  crate: "Shipped",
+};
