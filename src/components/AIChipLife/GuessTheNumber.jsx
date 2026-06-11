@@ -28,6 +28,10 @@ const SLIDER_CSS = `
 const GuessTheNumber = ({ guess, fact, reducedMotion = false, onReveal }) => {
   const [value, setValue] = useState(Math.round((guess.min + guess.max) / 2));
   const [revealed, setRevealed] = useState(false);
+  // Once a guess is locked, the reader can collapse the reveal down to a compact
+  // one-liner so the (tall) track + stat card don't force endless scrolling on a
+  // phone. Starts expanded so the payoff still lands the moment they lock in.
+  const [collapsed, setCollapsed] = useState(false);
 
   // The fact's numeric may be in raw units (e.g. dollars) while the slider
   // works in display units (e.g. $M); factScale converts between them.
@@ -100,38 +104,76 @@ const GuessTheNumber = ({ guess, fact, reducedMotion = false, onReveal }) => {
         </>
       ) : (
         <>
-          {/* Guess vs. truth track */}
-          <div className="relative h-10 mb-4">
-            <div className="absolute top-1/2 left-0 right-0 h-0.5 -translate-y-1/2" style={{ backgroundColor: "#E8E4DF" }} />
-            {/* Reader's guess */}
-            <div
-              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center"
-              style={{ left: `${Math.max(0, Math.min(100, pct(value)))}%` }}
+          {/* Summary + minimize toggle. Always visible once locked so the reader
+              can collapse/expand the details without losing what they guessed. */}
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <p className="text-xs" style={{ fontFamily: SANS, color: "#6B6B6B" }}>
+              You guessed <strong style={{ color: "#1A1A1A" }}>{formatValue(value, guess.kind, guess.unit)}</strong>
+              {collapsed && (
+                <>
+                  {" · actual "}
+                  <strong style={{ color: "#1A1A1A" }}>{fact.value}</strong>
+                </>
+              )}
+              .
+            </p>
+            <button
+              type="button"
+              onClick={() => setCollapsed((c) => !c)}
+              aria-expanded={!collapsed}
+              aria-label={collapsed ? "Show the details" : "Minimize the details"}
+              className="shrink-0 inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors focus:outline-none focus-visible:ring-2"
+              style={{ fontFamily: SANS, color: "#6B6B6B", backgroundColor: "#F3EFE8" }}
             >
-              <span className="w-3 h-3 rounded-full border-2 bg-white" style={{ borderColor: "#9A9A9A" }} />
-              <span className="text-[9px] mt-0.5 whitespace-nowrap" style={{ fontFamily: MONO, color: "#9A9A9A" }}>
-                you
-              </span>
-            </div>
-            {/* The truth */}
-            {truthPct != null && (
-              <div
-                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center"
-                style={{ left: `${truthPct}%` }}
+              {collapsed ? "Details" : "Minimize"}
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 10 10"
+                fill="none"
+                aria-hidden="true"
+                style={{
+                  transform: collapsed ? "rotate(0deg)" : "rotate(180deg)",
+                  transition: reducedMotion ? "none" : "transform 0.2s ease",
+                }}
               >
-                <span className="w-0.5 h-5" style={{ backgroundColor: "#1A1A1A" }} />
-                <span className="text-[9px] mt-0.5 whitespace-nowrap font-semibold" style={{ fontFamily: MONO, color: "#1A1A1A" }}>
-                  truth
-                </span>
-              </div>
-            )}
+                <path d="M2 3.5 L5 6.5 L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
           </div>
 
-          <p className="text-xs mb-3" style={{ fontFamily: SANS, color: "#6B6B6B" }}>
-            You guessed <strong style={{ color: "#1A1A1A" }}>{formatValue(value, guess.kind, guess.unit)}</strong>.
-          </p>
+          {!collapsed && (
+            <>
+              {/* Guess vs. truth track */}
+              <div className="relative h-10 mb-4">
+                <div className="absolute top-1/2 left-0 right-0 h-0.5 -translate-y-1/2" style={{ backgroundColor: "#E8E4DF" }} />
+                {/* Reader's guess */}
+                <div
+                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center"
+                  style={{ left: `${Math.max(0, Math.min(100, pct(value)))}%` }}
+                >
+                  <span className="w-3 h-3 rounded-full border-2 bg-white" style={{ borderColor: "#9A9A9A" }} />
+                  <span className="text-[9px] mt-0.5 whitespace-nowrap" style={{ fontFamily: MONO, color: "#9A9A9A" }}>
+                    you
+                  </span>
+                </div>
+                {/* The truth */}
+                {truthPct != null && (
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center"
+                    style={{ left: `${truthPct}%` }}
+                  >
+                    <span className="w-0.5 h-5" style={{ backgroundColor: "#1A1A1A" }} />
+                    <span className="text-[9px] mt-0.5 whitespace-nowrap font-semibold" style={{ fontFamily: MONO, color: "#1A1A1A" }}>
+                      truth
+                    </span>
+                  </div>
+                )}
+              </div>
 
-          <StatCard fact={fact} />
+              <StatCard fact={fact} />
+            </>
+          )}
         </>
       )}
     </div>
