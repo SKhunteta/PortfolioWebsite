@@ -69,11 +69,12 @@ export default {
         "link-text-secondary": "#4A5D6F",
         "link-text-muted": "#8899AA",
         "link-border": "#D4DDE6",
-        "link-red": "#E31837",
-        "link-blue": "#0053A0",
-        "link-green": "#00A651",
-        "link-orange": "#F58220",
-        "link-purple": "#7B2D8E",
+        // Official Sound Transit line colors
+        "link-1line": "#3DAE2B",
+        "link-2line": "#00A0DF",
+        "link-3line": "#ED40A9",
+        "link-4line": "#B14FC5",
+        "link-tline": "#F38B00",
         // Monetized Reader (The Happiness Liability excerpt)
         "mr-bg": "#07090D",
         "mr-surface": "#0D1117",

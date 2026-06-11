@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { motion, AnimatePresence, useMotionValue } from "framer-motion";
-import { LINES } from "./constants";
+import { LINES, ERAS, stationLinesForEra } from "./constants";
+import ArrivalsPanel from "./ArrivalsPanel";
 
 const SWIPE_THRESHOLD = 50;
 
@@ -10,19 +11,29 @@ const slideVariants = {
   exit: (direction) => ({ x: direction > 0 ? -200 : 200, opacity: 0 }),
 };
 
-const StatusBadge = ({ operational, openedYear }) => {
-  if (operational) {
+const StatusBadge = ({ station }) => {
+  if (station.status === "open") {
+    const year = station.opened ? station.opened.slice(0, 4) : null;
     return (
       <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-        Operational{openedYear ? ` since ${openedYear}` : ""}
+        Open{year ? ` since ${year}` : ""}
+      </span>
+    );
+  }
+  if (station.status === "construction") {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-700">
+        <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
+        Under construction
+        {station.plannedOpening ? ` — opens ${station.plannedOpening}` : ""}
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
       <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-      Planned
+      Planned{station.plannedOpening ? ` — ${station.plannedOpening}` : ""}
     </span>
   );
 };
@@ -46,6 +57,7 @@ const LineBadges = ({ lines }) => (
 );
 
 const StationContent = ({
+  era,
   station,
   onNavigate,
   totalStations,
@@ -88,7 +100,7 @@ const StationContent = ({
         className={compact ? "p-4 space-y-2" : "p-6 space-y-4"}
       >
         {/* Line badges */}
-        <LineBadges lines={station.lines} />
+        <LineBadges lines={stationLinesForEra(station, era)} />
 
         {/* Station name */}
         <h2
@@ -104,8 +116,13 @@ const StationContent = ({
           <p className="text-sm text-link-text-secondary font-sans">
             {station.neighborhood}
           </p>
-          <StatusBadge operational={station.operational} openedYear={station.openedYear} />
+          <StatusBadge station={station} />
         </div>
+
+        {/* Live arrivals (Present view, open stations only) */}
+        {era === ERAS.CURRENT && station.status === "open" && (
+          <ArrivalsPanel station={station} compact={compact} />
+        )}
 
         {/* Blurb */}
         <p
@@ -119,7 +136,7 @@ const StationContent = ({
         {/* Notable fact */}
         {station.notableFact && (
           <div
-            className={`rounded-lg bg-link-blue/5 border border-link-blue/20 ${
+            className={`rounded-lg bg-link-2line/5 border border-link-2line/20 ${
               compact ? "p-2.5" : "p-3"
             }`}
           >
@@ -184,6 +201,7 @@ const EmptyState = () => (
 );
 
 export const DesktopSidebar = ({
+  era,
   station,
   onNavigate,
   totalStations,
@@ -193,6 +211,7 @@ export const DesktopSidebar = ({
   if (!station) return <EmptyState />;
   return (
     <StationContent
+      era={era}
       station={station}
       onNavigate={onNavigate}
       totalStations={totalStations}
@@ -203,6 +222,7 @@ export const DesktopSidebar = ({
 };
 
 export const MobileBottomSheet = ({
+  era,
   station,
   onNavigate,
   onClose,
@@ -228,6 +248,7 @@ export const MobileBottomSheet = ({
             />
           </div>
           <StationContent
+            era={era}
             station={station}
             onNavigate={onNavigate}
             totalStations={totalStations}

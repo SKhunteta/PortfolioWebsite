@@ -14,10 +14,10 @@ const LinkTracker = () => {
       <LinkHeader />
 
       <LineFilterBar
+        era={tracker.era}
+        onSetEra={tracker.setEra}
         activeLines={tracker.activeLines}
         onToggleLine={tracker.toggleLineFilter}
-        operationalOnly={tracker.operationalOnly}
-        onToggleOperational={tracker.toggleOperationalOnly}
       />
 
       {/* Main content: Map + Sidebar */}
@@ -26,6 +26,7 @@ const LinkTracker = () => {
         <div className="hidden lg:flex lg:flex-col w-96 border-r border-link-border overflow-hidden bg-link-bg">
           <div className="flex-1 overflow-y-auto overflow-x-hidden">
             <DesktopSidebar
+              era={tracker.era}
               station={tracker.selectedStation}
               onNavigate={tracker.navigateStation}
               totalStations={tracker.totalStations}
@@ -38,6 +39,7 @@ const LinkTracker = () => {
         {/* Map */}
         <div className="flex-1 relative" style={{ minHeight: "400px" }}>
           <LinkMap
+            era={tracker.era}
             selectedStation={tracker.selectedStation}
             activeLines={tracker.activeLines}
             filteredStations={tracker.filteredStations}
@@ -50,6 +52,7 @@ const LinkTracker = () => {
       {/* Mobile bottom sheet */}
       <div className="lg:hidden">
         <MobileBottomSheet
+          era={tracker.era}
           station={tracker.selectedStation}
           onNavigate={tracker.navigateStation}
           onClose={tracker.clearSelection}

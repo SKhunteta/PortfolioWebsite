@@ -10,7 +10,7 @@ const LinkHeader = () => {
             Seattle Link Light Rail Tracker
           </h1>
           <p className="text-xs text-link-text-muted font-sans mt-0.5">
-            Sound Transit ST3 &middot; All planned and operational stations
+            Today&apos;s live system &middot; toggle to the future ST3 buildout
           </p>
         </div>
         <Link
