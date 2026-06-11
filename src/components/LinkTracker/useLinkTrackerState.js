@@ -1,29 +1,67 @@
-import { useState, useCallback, useMemo, useRef } from "react";
-import { STATIONS, LINE_ORDER } from "./constants";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import {
+  STATIONS,
+  ERAS,
+  LINES_FOR_ERA,
+  stationLinesForEra,
+  stationVisibleInEra,
+} from "./constants";
 
 export default function useLinkTrackerState() {
-  const [selectedStation, setSelectedStation] = useState(null);
-  const [activeLines, setActiveLines] = useState(new Set(LINE_ORDER));
-  const [operationalOnly, setOperationalOnly] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [era, setEraState] = useState(() =>
+    searchParams.get("view") === "future" ? ERAS.FUTURE : ERAS.CURRENT
+  );
+  const [activeLines, setActiveLines] = useState(
+    () => new Set(LINES_FOR_ERA[era])
+  );
+  const [selectedStation, setSelectedStation] = useState(() => {
+    const id = searchParams.get("station");
+    return STATIONS.find((s) => s.id === id) || null;
+  });
   const mapRef = useRef(null);
+
+  // Keep the URL shareable: /link-tracker?view=future&station=westlake
+  useEffect(() => {
+    const params = {};
+    if (era === ERAS.FUTURE) params.view = "future";
+    if (selectedStation) params.station = selectedStation.id;
+    setSearchParams(params, { replace: true });
+  }, [era, selectedStation, setSearchParams]);
 
   const filteredStations = useMemo(() => {
     return STATIONS.filter((s) => {
-      const lineMatch = s.lines.some((l) => activeLines.has(l));
-      const statusMatch = !operationalOnly || s.operational;
-      return lineMatch && statusMatch;
+      if (!stationVisibleInEra(s, era)) return false;
+      return stationLinesForEra(s, era).some((l) => activeLines.has(l));
     });
-  }, [activeLines, operationalOnly]);
+  }, [activeLines, era]);
 
-  const selectStation = useCallback((stationId) => {
-    const station = STATIONS.find((s) => s.id === stationId) || null;
-    setSelectedStation(station);
+  const flyTo = useCallback((station) => {
     if (station && mapRef.current) {
       mapRef.current.flyTo([station.lat, station.lng], 14, { duration: 1 });
     }
   }, []);
 
+  const selectStation = useCallback(
+    (stationId) => {
+      const station = STATIONS.find((s) => s.id === stationId) || null;
+      setSelectedStation(station);
+      flyTo(station);
+    },
+    [flyTo]
+  );
+
   const clearSelection = useCallback(() => setSelectedStation(null), []);
+
+  const setEra = useCallback((nextEra) => {
+    setEraState(nextEra);
+    setActiveLines(new Set(LINES_FOR_ERA[nextEra]));
+    setSelectedStation((prev) =>
+      prev && stationVisibleInEra(prev, nextEra) ? prev : null
+    );
+  }, []);
 
   const toggleLineFilter = useCallback((lineId) => {
     setActiveLines((prev) => {
@@ -37,25 +75,21 @@ export default function useLinkTrackerState() {
     });
   }, []);
 
-  const toggleOperationalOnly = useCallback(() => {
-    setOperationalOnly((prev) => !prev);
-  }, []);
-
   const navigateStation = useCallback(
     (direction) => {
       if (!selectedStation) return;
-      const idx = filteredStations.findIndex((s) => s.id === selectedStation.id);
+      const idx = filteredStations.findIndex(
+        (s) => s.id === selectedStation.id
+      );
       if (idx === -1) return;
       const nextIdx = idx + direction;
       if (nextIdx >= 0 && nextIdx < filteredStations.length) {
         const next = filteredStations[nextIdx];
         setSelectedStation(next);
-        if (mapRef.current) {
-          mapRef.current.flyTo([next.lat, next.lng], 14, { duration: 1 });
-        }
+        flyTo(next);
       }
     },
-    [selectedStation, filteredStations]
+    [selectedStation, filteredStations, flyTo]
   );
 
   const selectedIndex = selectedStation
@@ -63,17 +97,18 @@ export default function useLinkTrackerState() {
     : -1;
 
   return {
+    era,
+    setEra,
     selectedStation,
     selectStation,
     clearSelection,
     activeLines,
     toggleLineFilter,
-    operationalOnly,
-    toggleOperationalOnly,
     filteredStations,
     navigateStation,
     canNavigatePrev: selectedIndex > 0,
-    canNavigateNext: selectedIndex >= 0 && selectedIndex < filteredStations.length - 1,
+    canNavigateNext:
+      selectedIndex >= 0 && selectedIndex < filteredStations.length - 1,
     totalStations: filteredStations.length,
     mapRef,
   };

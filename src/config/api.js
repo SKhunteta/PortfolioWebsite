@@ -31,6 +31,7 @@ export const API_ENDPOINTS = {
   janet: `${API_BASE_URL}/api/janet/chat`,
   quiz: `${API_BASE_URL}/api/quiz/generate`,
   quizCacheClear: `${API_BASE_URL}/api/quiz/cache`,
+  linkArrivals: `${API_BASE_URL}/api/linkrail/arrivals`,
 };
 
 export default API_CONFIG;

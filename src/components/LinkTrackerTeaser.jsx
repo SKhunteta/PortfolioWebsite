@@ -1,13 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const LINE_COLORS = ["#E31837", "#0053A0", "#00A651", "#F58220", "#7B2D8E"];
+// Official Sound Transit line colors: 1, 2, 3, 4, T
+const LINE_COLORS = ["#3DAE2B", "#00A0DF", "#ED40A9", "#B14FC5", "#F38B00"];
 
 const PREVIEW_STATIONS = [
-  { name: "Westlake", neighborhood: "Downtown Seattle", color: "#E31837" },
-  { name: "Bellevue Downtown", neighborhood: "Bellevue", color: "#0053A0" },
-  { name: "U District", neighborhood: "University District", color: "#E31837" },
-  { name: "SeaTac/Airport", neighborhood: "SeaTac", color: "#E31837" },
+  { name: "Westlake", neighborhood: "Downtown Seattle", color: "#3DAE2B" },
+  { name: "Bellevue Downtown", neighborhood: "Bellevue", color: "#00A0DF" },
+  { name: "U District", neighborhood: "University District", color: "#3DAE2B" },
+  { name: "SeaTac/Airport", neighborhood: "SeaTac", color: "#3DAE2B" },
 ];
 
 const LinkTrackerTeaser = () => {
@@ -32,12 +33,12 @@ const LinkTrackerTeaser = () => {
                   className="text-xs font-sans"
                   style={{ color: "#8899AA" }}
                 >
-                  Track the ST3 vision from Everett to Tacoma and beyond
+                  Today&apos;s system with live arrivals, plus the future ST3 buildout
                 </p>
               </div>
               <span
                 className="text-xs px-2 py-1 rounded border font-mono"
-                style={{ borderColor: "#D4DDE6", color: "#E31837" }}
+                style={{ borderColor: "#D4DDE6", color: "#3DAE2B" }}
               >
                 MAP
               </span>
@@ -74,14 +75,14 @@ const LinkTrackerTeaser = () => {
                 className="text-sm font-sans max-w-md"
                 style={{ color: "#4A5D6F" }}
               >
-                An interactive map of every planned and operational station across
-                Sound Transit&apos;s Link light rail network. Filter by line,
-                explore neighborhoods, and track ST3 progress.
+                An interactive map of Sound Transit&apos;s Link light rail —
+                today&apos;s system with live arrivals, and a toggle to the
+                planned ST3 network from Everett to Tacoma.
               </p>
               <Link
                 to="/link-tracker"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-sans font-medium transition-colors shrink-0"
-                style={{ backgroundColor: "#E31837", color: "#FFFFFF" }}
+                style={{ backgroundColor: "#3DAE2B", color: "#FFFFFF" }}
               >
                 Explore the Network
                 <span aria-hidden="true">&rarr;</span>

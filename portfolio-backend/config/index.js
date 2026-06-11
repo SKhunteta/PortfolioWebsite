@@ -35,6 +35,12 @@ export const config = {
     version: "v3",
   },
 
+  // OneBusAway Puget Sound (Link light rail arrivals)
+  // Request a free key from oba_api_key@soundtransit.org
+  oneBusAway: {
+    apiKey: process.env.OBA_API_KEY,
+  },
+
   // Server Configuration
   server: {
     port: process.env.PORT || 3001,
