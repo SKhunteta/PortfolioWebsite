@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import ViewSourceLink from "../ViewSourceLink";
 import {
   BOOK_AUTHOR,
   BOOK_TITLE,
@@ -91,6 +92,12 @@ const SessionSummary = ({ stats }) => {
             >
               Back to portfolio
             </Link>
+          </div>
+          <div className="mt-4 text-center">
+            <ViewSourceLink
+              dir="src/components/MonetizedReader"
+              className="font-mono text-xs text-mr-text-secondary"
+            />
           </div>
         </div>
       </div>

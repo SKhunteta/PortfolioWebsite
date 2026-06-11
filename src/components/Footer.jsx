@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { HiOutlineMail } from "react-icons/hi";
+import { DEMOS } from "../data/demos";
 
 const Footer = () => {
   return (
@@ -12,7 +13,7 @@ const Footer = () => {
       <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-accent/20 rounded-full blur-3xl"></div>
 
       <div className="container-wide relative z-10">
-        <div className="grid md:grid-cols-3 gap-8 mb-8">
+        <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div>
             <a
               href="#home"
@@ -68,6 +69,30 @@ const Footer = () => {
                 >
                   Contact
                 </a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-semibold mb-4">Playground</h3>
+            <ul className="space-y-2">
+              {DEMOS.map((demo) => (
+                <li key={demo.id}>
+                  <Link
+                    to={demo.route}
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    {demo.title}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link
+                  to="/playground"
+                  className="text-accent hover:text-white transition-colors"
+                >
+                  All experiments &rarr;
+                </Link>
               </li>
             </ul>
           </div>

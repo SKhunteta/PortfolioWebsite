@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import ViewSourceLink from "../ViewSourceLink";
 
 const LinkHeader = () => {
   return (
@@ -13,12 +14,18 @@ const LinkHeader = () => {
             Today&apos;s live system &middot; toggle to the future ST3 buildout
           </p>
         </div>
-        <Link
-          to="/"
-          className="text-xs text-link-text-muted hover:text-link-text font-sans transition-colors"
-        >
-          &larr; Back
-        </Link>
+        <div className="flex items-center gap-4">
+          <ViewSourceLink
+            dir="src/components/LinkTracker"
+            className="text-xs text-link-text-muted font-sans hidden sm:inline-flex"
+          />
+          <Link
+            to="/"
+            className="text-xs text-link-text-muted hover:text-link-text font-sans transition-colors"
+          >
+            &larr; Back
+          </Link>
+        </div>
       </div>
     </header>
   );

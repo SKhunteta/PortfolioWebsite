@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaBookmark, FaFilter, FaChartPie } from "react-icons/fa";
+import ViewSourceLink from "../ViewSourceLink";
 import useStoryFeed from "./useStoryFeed";
 import StoryCard from "./StoryCard";
 import GenreFilter from "./GenreFilter";
@@ -537,6 +538,11 @@ const PlotTwist = () => {
             >
               Plot Twist
             </h1>
+            <ViewSourceLink
+              dir="src/components/PlotTwist"
+              className="text-xs text-pt-text-muted hidden sm:inline-flex"
+              style={{ fontFamily: '"JetBrains Mono", monospace' }}
+            />
           </div>
           <div className="flex items-center gap-2 pointer-events-auto">
             <motion.button

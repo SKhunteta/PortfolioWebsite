@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import ViewSourceLink from "../ViewSourceLink";
 import WorldMap from "./WorldMap";
 import Scene from "./Scene";
 import ChipAssembly from "./ChipAssembly";
@@ -180,9 +181,16 @@ const AIChipLife = () => {
         }}
       >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-          <Link to="/" className="text-xs sm:text-sm transition-colors" style={{ fontFamily: SANS, color: "#6B6B6B" }}>
-            ← Back to portfolio
-          </Link>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Link to="/" className="text-xs sm:text-sm transition-colors" style={{ fontFamily: SANS, color: "#6B6B6B" }}>
+              ← Back to portfolio
+            </Link>
+            <ViewSourceLink
+              dir="src/components/AIChipLife"
+              className="text-xs hidden sm:inline-flex"
+              style={{ fontFamily: MONO, color: "#9A9A9A" }}
+            />
+          </div>
           <div className="text-right">
             <span className="block text-xs sm:text-sm font-bold" style={{ fontFamily: SERIF, color: "#1A1A1A" }}>
               The Life of an AI Chip

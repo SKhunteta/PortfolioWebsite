@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+import ViewSourceLink from "../ViewSourceLink";
 import useQuizGenerator from "./useQuizGenerator";
 import CitySelector from "./CitySelector";
 import LoadingState from "./LoadingState";
@@ -76,12 +77,18 @@ const CityQuiz = () => {
           >
             ← Back to portfolio
           </Link>
-          <span
-            className="text-xs uppercase tracking-widest text-gray-400"
-            style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}
-          >
-            City Quiz
-          </span>
+          <div className="flex items-center gap-4">
+            <span
+              className="text-xs uppercase tracking-widest text-gray-400"
+              style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}
+            >
+              City Quiz
+            </span>
+            <ViewSourceLink
+              dir="src/components/CityQuiz"
+              className="text-xs text-gray-400"
+            />
+          </div>
         </div>
       </header>
 

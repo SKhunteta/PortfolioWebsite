@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { API_ENDPOINTS } from "../../config/api";
+import ViewSourceLink from "../ViewSourceLink";
 
 const INITIAL_GREETING = null; // Will be fetched from API on mount
 
@@ -191,14 +193,26 @@ const Janet = () => {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
+              <Link
+                to="/"
+                className="font-mono text-[#6b7280] hover:text-[#9ca3af] text-xs transition-colors"
+              >
+                &larr;
+              </Link>
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="font-mono text-[#6b7280] text-xs tracking-widest uppercase">
                 JANET v4.2.1
               </span>
             </div>
-            <span className="font-mono text-[#374151] text-xs">
-              Demo Mode — No Active Contract
-            </span>
+            <div className="flex items-center gap-4">
+              <span className="font-mono text-[#374151] text-xs hidden sm:inline">
+                Demo Mode — No Active Contract
+              </span>
+              <ViewSourceLink
+                dir="src/components/Janet"
+                className="font-mono text-[#374151] text-xs"
+              />
+            </div>
           </div>
         </div>
       </header>
