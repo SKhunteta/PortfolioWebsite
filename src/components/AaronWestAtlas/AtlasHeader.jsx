@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import ViewSourceLink from "../ViewSourceLink";
 
 const AtlasHeader = () => {
   return (
@@ -14,12 +15,18 @@ const AtlasHeader = () => {
               41 places. Five records. One story.
             </p>
           </div>
-          <Link
-            to="/"
-            className="text-sm text-atlas-text-secondary hover:text-atlas-text transition-colors font-sans"
-          >
-            &larr; Back
-          </Link>
+          <div className="flex items-center gap-4">
+            <ViewSourceLink
+              dir="src/components/AaronWestAtlas"
+              className="text-xs text-atlas-text-secondary font-sans hidden sm:inline-flex"
+            />
+            <Link
+              to="/"
+              className="text-sm text-atlas-text-secondary hover:text-atlas-text transition-colors font-sans"
+            >
+              &larr; Back
+            </Link>
+          </div>
         </div>
       </div>
     </header>

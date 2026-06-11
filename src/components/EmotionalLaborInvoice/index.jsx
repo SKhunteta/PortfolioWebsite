@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+import ViewSourceLink from "../ViewSourceLink";
 import useInvoiceGenerator from "./useInvoiceGenerator";
 import useInvoiceHistory from "./useInvoiceHistory";
 import IntakeForm from "./IntakeForm";
@@ -33,13 +34,17 @@ export default function EmotionalLaborInvoice() {
 
   return (
     <div className="min-h-screen bg-inv-bg">
-      <div className="px-4 sm:px-6 pt-4">
+      <div className="px-4 sm:px-6 pt-4 flex items-center justify-between">
         <Link
           to="/"
           className="inline-block text-sm text-inv-text/60 hover:text-inv-text transition-colors font-invoice"
         >
           &larr; Back
         </Link>
+        <ViewSourceLink
+          dir="src/components/EmotionalLaborInvoice"
+          className="text-xs text-inv-text/60 font-invoice"
+        />
       </div>
       <div className="px-4 sm:px-6 py-8 sm:py-12">
         <AnimatePresence mode="wait">

@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
+import ViewSourceLink from "../ViewSourceLink";
 import useMarketData from "./useMarketData";
 import { EMOTIONS, EMOTION_ORDER } from "./constants";
 import EmotionCard from "./EmotionCard";
@@ -51,6 +52,10 @@ const EmotionalLaborExchange = () => {
               >
                 &larr; Back
               </Link>
+              <ViewSourceLink
+                dir="src/components/EmotionalLaborExchange"
+                className="text-xs text-ele-text-tertiary font-sans-ele"
+              />
               {loading && (
                 <span className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-ele-anxiety animate-pulse" />

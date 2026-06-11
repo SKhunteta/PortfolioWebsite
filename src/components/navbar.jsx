@@ -21,8 +21,8 @@ const Navbar = () => {
     {
       id: 9,
       external: false,
-      to: "/ai-chip",
-      label: "AI Chip",
+      to: "/playground",
+      label: "Playground",
     },
     {
       id: 10,

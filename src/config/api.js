@@ -8,7 +8,7 @@ const API_CONFIG = {
   },
 };
 
-// Determine environment - Updated May 23, 2025
+// Determine environment
 const isDevelopment =
   window.location.hostname === "localhost" ||
   window.location.hostname === "127.0.0.1";

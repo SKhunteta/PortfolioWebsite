@@ -37,7 +37,7 @@ describe("useNeuralSession", () => {
     expect(result.current.alerts).toHaveLength(0);
   });
 
-  it("accrues the passive drip once reading begins, and not before", () => {
+  it("accrues no passive earnings — money comes only from events", () => {
     const { result } = renderHook(() => useNeuralSession());
     act(() => {
       vi.advanceTimersByTime(SIM.TICK_MS * 3);
@@ -46,9 +46,12 @@ describe("useNeuralSession", () => {
 
     act(() => result.current.beginSession());
     act(() => {
-      vi.advanceTimersByTime(SIM.TICK_MS);
+      vi.advanceTimersByTime(SIM.TICK_MS * 3);
     });
-    expect(result.current.earnings).toBeCloseTo(SIM.BASE_RATE_PER_TICK, 5);
+    expect(result.current.earnings).toBe(0);
+
+    act(() => result.current.onParagraphEnter("p-05"));
+    expect(result.current.earnings).toBeCloseTo(VIENNA_SALE, 5);
   });
 
   it("fires a sale event exactly once per session", () => {
@@ -133,20 +136,22 @@ describe("useNeuralSession", () => {
     );
   });
 
-  it("stops harvesting while the tab is hidden", () => {
+  it("stops easing the meters while the tab is hidden", () => {
     const { result } = renderHook(() => useNeuralSession());
     act(() => result.current.beginSession());
+
+    const before = { ...result.current.emotionLevels };
     setVisibility("hidden");
     act(() => {
       vi.advanceTimersByTime(SIM.TICK_MS * 5);
     });
-    expect(result.current.earnings).toBe(0);
+    expect(result.current.emotionLevels).toEqual(before);
 
     setVisibility("visible");
     act(() => {
       vi.advanceTimersByTime(SIM.TICK_MS);
     });
-    expect(result.current.earnings).toBeGreaterThan(0);
+    expect(result.current.emotionLevels).not.toEqual(before);
   });
 
   it("completes the session with frozen stats", () => {

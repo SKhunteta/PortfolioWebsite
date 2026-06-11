@@ -8,15 +8,10 @@ import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import ChatSection from "./components/ChatSection";
 import EmotionalLaborExchange from "./components/EmotionalLaborExchange";
-import ELETeaser from "./components/ELETeaser";
-import JanetTeaser from "./components/JanetTeaser";
 import AaronWestAtlasTeaser from "./components/AaronWestAtlasTeaser";
 import PlotTwistTeaser from "./components/PlotTwistTeaser";
-import InvoiceTeaser from "./components/InvoiceTeaser";
-import LinkTrackerTeaser from "./components/LinkTrackerTeaser";
-import CityQuizTeaser from "./components/CityQuizTeaser";
-import MonetizedReaderTeaser from "./components/MonetizedReaderTeaser";
 import AIChipLifeTeaser from "./components/AIChipLifeTeaser";
+import PlaygroundTeaser from "./components/PlaygroundTeaser";
 import ResumePage from "./pages/ResumePage";
 
 const AaronWestAtlas = lazy(() => import("./components/AaronWestAtlas"));
@@ -27,6 +22,7 @@ const LinkTracker = lazy(() => import("./components/LinkTracker"));
 const CityQuiz = lazy(() => import("./components/CityQuiz"));
 const MonetizedReader = lazy(() => import("./components/MonetizedReader"));
 const AIChipLife = lazy(() => import("./components/AIChipLife"));
+const PlaygroundPage = lazy(() => import("./pages/PlaygroundPage"));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -198,6 +194,22 @@ function App() {
             </Suspense>
           }
         />
+        <Route
+          path="/playground"
+          element={
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center bg-light">
+                  <p className="text-gray-400 text-sm font-sans">
+                    Opening the playground...
+                  </p>
+                </div>
+              }
+            >
+              <PlaygroundPage />
+            </Suspense>
+          }
+        />
         <Route path="/resume" element={<ResumePage />} />
         <Route
           path="/"
@@ -256,31 +268,16 @@ function App() {
                   <Projects />
                 </div>
                 <div className="bg-gray-light py-8">
-                  <ELETeaser />
-                </div>
-                <div className="bg-white py-8">
-                  <InvoiceTeaser />
-                </div>
-                <div className="bg-gray-light py-8">
-                  <JanetTeaser />
-                </div>
-                <div className="bg-white py-8">
-                  <MonetizedReaderTeaser />
-                </div>
-                <div className="bg-gray-light py-8">
                   <AIChipLifeTeaser />
                 </div>
-                <div className="bg-gray-light py-8">
+                <div className="bg-white py-8">
                   <AaronWestAtlasTeaser />
                 </div>
-                <div className="bg-white py-8">
+                <div className="bg-gray-light py-8">
                   <PlotTwistTeaser />
                 </div>
-                <div className="bg-gray-light py-8">
-                  <LinkTrackerTeaser />
-                </div>
                 <div className="bg-white py-8">
-                  <CityQuizTeaser />
+                  <PlaygroundTeaser />
                 </div>
                 <div className="bg-gray-light py-8">
                   <Contact />
