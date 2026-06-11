@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ForcedChoice from "./ForcedChoice";
 import GuessTheNumber from "./GuessTheNumber";
@@ -16,6 +16,14 @@ const Scene = ({ scene, completed, selectedId, onSelect, onGuessReveal, guessEnt
   // option is chosen. Scenes without a choice show everything when reached.
   const resolved = reducedMotion || !scene.choice || completed;
   const dark = scene.still || scene.epilogue;
+
+  // Once the facts are showing, let the reader minimize the whole block — the
+  // guess reveal *and* the stack of stat cards — down to its headline so they
+  // aren't scrolling past a wall of cards on a phone. The reduced-motion/linear
+  // article keeps everything open (no scroll-driven reveal to manage there).
+  const [factsCollapsed, setFactsCollapsed] = useState(false);
+  const hasFactsBlock = !!scene.guess || (scene.facts && scene.facts.length > 0);
+  const canMinimize = !reducedMotion && resolved && hasFactsBlock;
 
   return (
     <section
@@ -79,6 +87,40 @@ const Scene = ({ scene, completed, selectedId, onSelect, onGuessReveal, guessEnt
             )}
           </AnimatePresence>
 
+          {/* Minimize control for the whole revealed facts block (guess reveal
+              + stat cards). Appears once the facts are showing. */}
+          {canMinimize && (
+            <div className="flex justify-end mb-3">
+              <button
+                type="button"
+                onClick={() => setFactsCollapsed((c) => !c)}
+                aria-expanded={!factsCollapsed}
+                aria-label={factsCollapsed ? "Show the facts" : "Minimize the facts"}
+                className="inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-[11px] font-medium transition-colors focus:outline-none focus-visible:ring-2"
+                style={{
+                  fontFamily: SANS,
+                  color: dark ? "#C9C4BD" : "#6B6B6B",
+                  backgroundColor: dark ? "rgba(255,255,255,0.08)" : "#F3EFE8",
+                }}
+              >
+                {factsCollapsed ? "Show the facts" : "Minimize the facts"}
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  aria-hidden="true"
+                  style={{
+                    transform: factsCollapsed ? "rotate(0deg)" : "rotate(180deg)",
+                    transition: reducedMotion ? "none" : "transform 0.2s ease",
+                  }}
+                >
+                  <path d="M2 3.5 L5 6.5 L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </div>
+          )}
+
           {/* Guess-the-number (the hook). */}
           {scene.guess && (
             <div className="mb-4">
@@ -87,12 +129,13 @@ const Scene = ({ scene, completed, selectedId, onSelect, onGuessReveal, guessEnt
                 fact={getFact(scene.guess.factId)}
                 reducedMotion={reducedMotion}
                 onReveal={onGuessReveal}
+                collapsed={factsCollapsed}
               />
             </div>
           )}
 
-          {/* Stat cards, flipped on completion. */}
-          {scene.facts && scene.facts.length > 0 && (
+          {/* Stat cards, flipped on completion. Hidden when minimized. */}
+          {scene.facts && scene.facts.length > 0 && !factsCollapsed && (
             <div className="grid grid-cols-1 gap-3">
               {scene.facts.map((id) => (
                 <StatCard key={id} fact={getFact(id)} flipped={resolved} />

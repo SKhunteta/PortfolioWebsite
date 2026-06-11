@@ -4,6 +4,7 @@ import ForcedChoice, { choiceStatement } from "../ForcedChoice";
 import GuessTheNumber from "../GuessTheNumber";
 import StatCard from "../StatCard";
 import RecapCard, { verdict } from "../RecapCard";
+import Scene from "../Scene";
 import { SCENES } from "../scenes";
 import { getFact } from "../facts";
 
@@ -58,6 +59,20 @@ describe("GuessTheNumber", () => {
     );
   });
 
+  it("collapses a locked reveal to a one-line you-vs-actual summary", () => {
+    const fact = getFact(veldhoven.guess.factId);
+    const { rerender } = render(<GuessTheNumber guess={veldhoven.guess} fact={fact} />);
+    fireEvent.click(screen.getByRole("button", { name: /lock in/i }));
+
+    // Expanded: the track and the sourced figure are present.
+    expect(screen.getByText("truth")).toBeInTheDocument();
+    expect(screen.getByText(fact.value)).toBeInTheDocument();
+
+    rerender(<GuessTheNumber guess={veldhoven.guess} fact={fact} collapsed />);
+    expect(screen.queryByText("truth")).toBeNull();
+    expect(screen.getByText(/actual/)).toBeInTheDocument();
+  });
+
   it("scales the truth into slider units when the guess declares a factScale", () => {
     const oberkochen = SCENES.find((s) => s.id === 3);
     const fact = getFact(oberkochen.guess.factId);
@@ -68,6 +83,32 @@ describe("GuessTheNumber", () => {
     expect(onReveal).toHaveBeenCalledWith(
       expect.objectContaining({ truth: fact.numeric / oberkochen.guess.factScale })
     );
+  });
+});
+
+describe("Scene minimize", () => {
+  it("collapses the whole revealed facts block, then restores it", () => {
+    const supporting = getFact("euv_monopoly"); // only in the facts grid
+    render(
+      <Scene
+        scene={veldhoven}
+        completed
+        selectedId="asml"
+        onSelect={() => {}}
+        onGuessReveal={() => {}}
+        guessEntries={[]}
+        reducedMotion={false}
+      />
+    );
+
+    // Resolved scene: the supporting stat card is on screen.
+    expect(screen.getByText(supporting.label)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /minimize the facts/i }));
+    expect(screen.queryByText(supporting.label)).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: /show the facts/i }));
+    expect(screen.getByText(supporting.label)).toBeInTheDocument();
   });
 });
 
