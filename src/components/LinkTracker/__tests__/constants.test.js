@@ -97,9 +97,9 @@ describe("LinkTracker station data invariants", () => {
   });
 
   it("hides future-only stations from the Present view", () => {
-    const ballard = STATIONS.find((s) => s.id === "ballard");
-    expect(stationVisibleInEra(ballard, ERAS.CURRENT)).toBe(false);
-    expect(stationVisibleInEra(ballard, ERAS.FUTURE)).toBe(true);
+    const alaskaJunction = STATIONS.find((s) => s.id === "alaska-junction");
+    expect(stationVisibleInEra(alaskaJunction, ERAS.CURRENT)).toBe(false);
+    expect(stationVisibleInEra(alaskaJunction, ERAS.FUTURE)).toBe(true);
   });
 
   it("threads every open station's coordinates through its current line path", () => {
@@ -135,8 +135,10 @@ describe("LinkTracker station data invariants", () => {
 
   it("assigns future routes per the Sound Transit future service map", () => {
     const byId = Object.fromEntries(STATIONS.map((s) => [s.id, s]));
-    // 1 Line: Ballard – Tacoma.
-    expect(byId["ballard"].futureLines).toEqual(["1-line"]);
+    // 1 Line: Lynnwood City Center – Tacoma. The Ballard Link Extension was
+    // dropped from the ST3 plan, so the 1 Line stays on its existing alignment.
+    expect(byId["ballard"]).toBeUndefined();
+    expect(byId["lynnwood-city-center"].futureLines).toContain("1-line");
     expect(byId["tacoma-dome"].futureLines).toContain("1-line");
     // 3 Line: Everett – West Seattle.
     expect(byId["everett-station"].futureLines).toEqual(["3-line"]);

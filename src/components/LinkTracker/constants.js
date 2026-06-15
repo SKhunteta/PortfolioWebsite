@@ -4,9 +4,12 @@
 //   - "current": service as actually running (verified June 2026)
 //   - "future":  Sound Transit's Future Service Map (full ST3 buildout)
 //
-// Future line designations per Sound Transit: 1 Line Ballard–Tacoma Dome,
-// 2 Line Mariner–Downtown Redmond, 3 Line Everett–West Seattle,
+// Future line designations per Sound Transit: 1 Line Lynnwood City Center–
+// Tacoma Dome, 2 Line Mariner–Downtown Redmond, 3 Line Everett–West Seattle,
 // 4 Line South Kirkland–Central Issaquah, T Line TCC–Tacoma Dome.
+// Note: the Ballard Link Extension (the planned new downtown tunnel and the
+// Ballard–Midtown stations) has been dropped from the ST3 plan, so the future
+// 1 Line keeps running on its existing alignment through the downtown tunnel.
 // Line colors are Sound Transit's official brand colors.
 
 export const ERAS = {
@@ -21,7 +24,7 @@ export const LINES = {
     color: "#3DAE2B",
     descriptions: {
       current: "Federal Way Downtown – Lynnwood City Center",
-      future: "Ballard – Tacoma Dome",
+      future: "Lynnwood City Center – Tacoma Dome",
     },
   },
   "2-line": {
@@ -85,13 +88,14 @@ export const MAP_CONFIG = {
 // not final).
 export const STATIONS = [
   // ===== Shared north corridor: Lynnwood – International District =====
-  // Today served by both the 1 and 2 Lines; after the Ballard Link opens
-  // (future map) this trunk is served by the 2 and 3 Lines.
+  // Today served by both the 1 and 2 Lines. In the future map the 3 Line joins
+  // this trunk too; the 1 Line stays here now that the Ballard Link second
+  // downtown tunnel has been dropped from the ST3 plan.
   {
     id: "lynnwood-city-center",
     name: "Lynnwood City Center",
     currentLines: ["1-line", "2-line"],
-    futureLines: ["2-line", "3-line"],
+    futureLines: ["1-line", "2-line", "3-line"],
     lat: 47.81564,
     lng: -122.29473,
     neighborhood: "Lynnwood",
@@ -104,7 +108,7 @@ export const STATIONS = [
     id: "mountlake-terrace",
     name: "Mountlake Terrace",
     currentLines: ["1-line", "2-line"],
-    futureLines: ["2-line", "3-line"],
+    futureLines: ["1-line", "2-line", "3-line"],
     lat: 47.7857,
     lng: -122.3152,
     neighborhood: "Mountlake Terrace",
@@ -117,7 +121,7 @@ export const STATIONS = [
     id: "shoreline-north-185th",
     name: "Shoreline North/185th",
     currentLines: ["1-line", "2-line"],
-    futureLines: ["2-line", "3-line"],
+    futureLines: ["1-line", "2-line", "3-line"],
     lat: 47.764477,
     lng: -122.322731,
     neighborhood: "Shoreline",
@@ -130,7 +134,7 @@ export const STATIONS = [
     id: "shoreline-south-148th",
     name: "Shoreline South/148th",
     currentLines: ["1-line", "2-line"],
-    futureLines: ["2-line", "3-line"],
+    futureLines: ["1-line", "2-line", "3-line"],
     lat: 47.736126,
     lng: -122.325243,
     neighborhood: "Shoreline",
@@ -143,7 +147,7 @@ export const STATIONS = [
     id: "pinehurst",
     name: "Pinehurst",
     currentLines: ["1-line", "2-line"],
-    futureLines: ["2-line", "3-line"],
+    futureLines: ["1-line", "2-line", "3-line"],
     lat: 47.7224,
     lng: -122.3285, // NE 130th St & I-5
     neighborhood: "Pinehurst",
@@ -156,7 +160,7 @@ export const STATIONS = [
     id: "northgate",
     name: "Northgate",
     currentLines: ["1-line", "2-line"],
-    futureLines: ["2-line", "3-line"],
+    futureLines: ["1-line", "2-line", "3-line"],
     lat: 47.703038,
     lng: -122.328282,
     neighborhood: "Northgate",
@@ -169,7 +173,7 @@ export const STATIONS = [
     id: "roosevelt",
     name: "Roosevelt",
     currentLines: ["1-line", "2-line"],
-    futureLines: ["2-line", "3-line"],
+    futureLines: ["1-line", "2-line", "3-line"],
     lat: 47.676107,
     lng: -122.316041,
     neighborhood: "Roosevelt",
@@ -182,7 +186,7 @@ export const STATIONS = [
     id: "u-district",
     name: "U District",
     currentLines: ["1-line", "2-line"],
-    futureLines: ["2-line", "3-line"],
+    futureLines: ["1-line", "2-line", "3-line"],
     lat: 47.660312,
     lng: -122.314131,
     neighborhood: "University District",
@@ -195,7 +199,7 @@ export const STATIONS = [
     id: "university-of-washington",
     name: "University of Washington",
     currentLines: ["1-line", "2-line"],
-    futureLines: ["2-line", "3-line"],
+    futureLines: ["1-line", "2-line", "3-line"],
     lat: 47.6498,
     lng: -122.3039,
     neighborhood: "University of Washington",
@@ -208,7 +212,7 @@ export const STATIONS = [
     id: "capitol-hill",
     name: "Capitol Hill",
     currentLines: ["1-line", "2-line"],
-    futureLines: ["2-line", "3-line"],
+    futureLines: ["1-line", "2-line", "3-line"],
     lat: 47.619591,
     lng: -122.320214,
     neighborhood: "Capitol Hill",
@@ -228,13 +232,13 @@ export const STATIONS = [
     blurb: "The bustling heart of downtown Seattle. Westlake is the system's busiest station, connecting to the Monorail, bus routes, and the retail core around Westlake Center and Pike Place Market.",
     status: "open",
     opened: "2009-07-18",
-    notableFact: "Westlake is the busiest Link station and will gain new platforms for the future Ballard-bound 1 Line in a second downtown tunnel.",
+    notableFact: "Westlake is the busiest Link station and serves as the downtown hub where the future 1, 2, and 3 Lines all converge.",
   },
   {
     id: "symphony",
     name: "Symphony",
     currentLines: ["1-line", "2-line"],
-    futureLines: ["2-line", "3-line"],
+    futureLines: ["1-line", "2-line", "3-line"],
     lat: 47.6076,
     lng: -122.3358,
     neighborhood: "Downtown Seattle",
@@ -247,7 +251,7 @@ export const STATIONS = [
     id: "pioneer-square",
     name: "Pioneer Square",
     currentLines: ["1-line", "2-line"],
-    futureLines: ["2-line", "3-line"],
+    futureLines: ["1-line", "2-line", "3-line"],
     lat: 47.6029,
     lng: -122.3318,
     neighborhood: "Pioneer Square",
@@ -267,7 +271,7 @@ export const STATIONS = [
     blurb: "A culturally rich neighborhood home to Seattle's Chinese, Japanese, Vietnamese, and Filipino communities. The Wing Luke Museum and Uwajimaya grocery are neighborhood landmarks. Today's 2 Line trains branch east toward Judkins Park just south of here.",
     status: "open",
     opened: "2009-07-18",
-    notableFact: "This station is planned to become a major transfer hub when the future 1 Line opens with its new downtown tunnel to Ballard.",
+    notableFact: "This station is a major downtown transfer hub where the future 1, 2, and 3 Lines converge and the 2 Line branches east across Lake Washington.",
   },
 
   // ===== 1 Line south: Stadium – Federal Way Downtown =====
@@ -800,99 +804,6 @@ export const STATIONS = [
     notableFact: "West Seattle was an independent city until it was annexed by Seattle in 1907, and many residents maintain a strong sense of separate identity.",
   },
 
-  // ===== Future 1 Line north: Ballard Link Extension (planned) =====
-  {
-    id: "ballard",
-    name: "Ballard",
-    currentLines: [],
-    futureLines: ["1-line"],
-    lat: 47.668, // approximate — alignment not final
-    lng: -122.3853,
-    neighborhood: "Ballard",
-    blurb: "Planned northern terminus of the future 1 Line in historic Ballard. Known for its maritime heritage, craft breweries, the Ballard Locks, and a thriving Sunday farmers market.",
-    status: "planned",
-    plannedOpening: "2039",
-    notableFact: "Ballard was originally an independent city that was annexed by Seattle in 1907. Its Scandinavian heritage is still celebrated today.",
-  },
-  {
-    id: "interbay",
-    name: "Interbay",
-    currentLines: [],
-    futureLines: ["1-line"],
-    lat: 47.6492, // approximate — alignment not final
-    lng: -122.376,
-    neighborhood: "Interbay",
-    blurb: "Planned station in the Interbay neighborhood, a narrow corridor between Queen Anne and Magnolia. Home to the Interbay Golf Center and growing mixed-use development.",
-    status: "planned",
-    plannedOpening: "2039",
-    notableFact: null,
-  },
-  {
-    id: "smith-cove",
-    name: "Smith Cove",
-    currentLines: [],
-    futureLines: ["1-line"],
-    lat: 47.6385, // approximate — alignment not final
-    lng: -122.37,
-    neighborhood: "Interbay",
-    blurb: "Planned station near the Smith Cove cruise terminal and Expedia headquarters. Will serve the growing Interbay area and provide access to the Elliott Bay waterfront.",
-    status: "planned",
-    plannedOpening: "2039",
-    notableFact: null,
-  },
-  {
-    id: "seattle-center",
-    name: "Seattle Center",
-    currentLines: [],
-    futureLines: ["1-line"],
-    lat: 47.6217, // approximate — alignment not final
-    lng: -122.352,
-    neighborhood: "Lower Queen Anne",
-    blurb: "Planned station at Seattle Center, home of the Space Needle, Museum of Pop Culture, Pacific Science Center, and Climate Pledge Arena (home of the Seattle Kraken).",
-    status: "planned",
-    plannedOpening: "2039",
-    notableFact: "Seattle Center was built for the 1962 World's Fair and remains the city's premier arts and entertainment campus.",
-  },
-  {
-    id: "south-lake-union",
-    name: "South Lake Union",
-    currentLines: [],
-    futureLines: ["1-line"],
-    lat: 47.623, // approximate — alignment not final
-    lng: -122.3395,
-    neighborhood: "South Lake Union",
-    blurb: "Planned station in the heart of South Lake Union, a neighborhood transformed by Amazon's headquarters campus and a dense cluster of biotech companies.",
-    status: "planned",
-    plannedOpening: "2039",
-    notableFact: "South Lake Union went from a sleepy warehouse district to one of Seattle's densest job centers in just 15 years.",
-  },
-  {
-    id: "denny",
-    name: "Denny",
-    currentLines: [],
-    futureLines: ["1-line"],
-    lat: 47.6184, // approximate — alignment not final
-    lng: -122.338,
-    neighborhood: "Denny Triangle",
-    blurb: "Planned station in the booming Denny Triangle area between downtown and South Lake Union, surrounded by new residential and office towers.",
-    status: "planned",
-    plannedOpening: "2039",
-    notableFact: null,
-  },
-  {
-    id: "midtown",
-    name: "Midtown",
-    currentLines: [],
-    futureLines: ["1-line"],
-    lat: 47.6062, // approximate — alignment not final
-    lng: -122.3318,
-    neighborhood: "First Hill",
-    blurb: "Planned station serving the edge of First Hill, Seattle's hospital district, home to Swedish Medical Center, Virginia Mason, and Harborview Medical Center.",
-    status: "planned",
-    plannedOpening: "2039",
-    notableFact: "First Hill was originally supposed to get a station in the initial Link plan but was cut due to tunneling risk.",
-  },
-
   // ===== Future 4 Line: South Kirkland – Central Issaquah (planned) =====
   {
     id: "south-kirkland",
@@ -1220,22 +1131,11 @@ export const CURRENT_PATHS = {
 export const FUTURE_PATHS = {
   "1-line": [
     {
-      status: "planned", // Ballard Link Extension (new downtown tunnel)
-      points: [
-        [47.668, -122.3853], // Ballard
-        [47.6492, -122.376], // Interbay
-        [47.6385, -122.37], // Smith Cove
-        [47.6217, -122.352], // Seattle Center
-        [47.623, -122.3395], // South Lake Union
-        [47.6184, -122.338], // Denny
-        [47.6113, -122.3373], // Westlake (new platforms)
-        [47.6062, -122.3318], // Midtown
-        [47.5981, -122.3283], // International District/Chinatown (new platforms)
-      ],
-    },
-    {
-      status: "open", // existing line through the Rainier Valley
-      points: RAINIER_VALLEY_SOUTH,
+      // Ballard Link (the new downtown tunnel) was dropped from the ST3 plan,
+      // so the future 1 Line keeps its existing alignment through the downtown
+      // tunnel: Lynnwood City Center – Federal Way Downtown.
+      status: "open",
+      points: [...NORTH_TRUNK, ...RAINIER_VALLEY_SOUTH.slice(1)],
     },
     {
       status: "planned", // Tacoma Dome Link Extension
