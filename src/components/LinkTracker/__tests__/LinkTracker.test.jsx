@@ -61,11 +61,11 @@ describe("LinkTracker page", () => {
   });
 
   it("deep-links into the future era", () => {
-    renderTracker("/link-tracker?view=future&station=ballard");
+    renderTracker("/link-tracker?view=future&station=alaska-junction");
     expect(screen.getByRole("button", { name: "Future (ST3)" })).toHaveAttribute(
       "aria-pressed",
       "true"
     );
-    expect(screen.getAllByText(/Planned — 2039/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Planned — 2032/).length).toBeGreaterThan(0);
   });
 });
