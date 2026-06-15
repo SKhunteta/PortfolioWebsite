@@ -63,6 +63,11 @@ async function resolveStopIds(stationId, lat, lng) {
   const isLinkRoute = (routeId) => {
     const r = routesById.get(routeId);
     if (!r) return false;
+    // Link light rail is GTFS route_type 0 (tram/streetcar/light rail).
+    // Check the type, not just the name: King County Metro RapidRide buses
+    // are named "<letter> Line" (C/D/E/F/G/H Line) and would otherwise match
+    // the name check, putting buses on the downtown departure board.
+    if (r.type !== 0) return false;
     const name = `${r.shortName || ""} ${r.longName || ""}`.toLowerCase();
     return name.includes("line");
   };
@@ -92,9 +97,17 @@ async function fetchArrivals(stationId, lat, lng) {
   const arrivals = [];
   for (const result of results) {
     if (result.status !== "fulfilled") continue;
+    const routesById = new Map(
+      (result.value.references?.routes || []).map((r) => [r.id, r])
+    );
     for (const ad of result.value.entry?.arrivalsAndDepartures || []) {
+      // Link trains only: GTFS route_type 0. RapidRide buses share the
+      // "<letter> Line" naming, so the name check alone lets buses through —
+      // require the route to be light rail as well.
+      const route = routesById.get(ad.routeId);
+      if (!route || route.type !== 0) continue;
       const name = `${ad.routeShortName || ""}`.toLowerCase();
-      if (!name.includes("line")) continue; // Link trains only
+      if (!name.includes("line")) continue;
       const predicted = ad.predictedArrivalTime || ad.predictedDepartureTime;
       const scheduled = ad.scheduledArrivalTime || ad.scheduledDepartureTime;
       const when = predicted > 0 ? predicted : scheduled;

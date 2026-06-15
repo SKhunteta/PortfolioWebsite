@@ -40,7 +40,13 @@ const ArrivalsPanel = ({ station, compact = false }) => {
     };
   }, [station.id, station.lat, station.lng]);
 
-  if (state.loading || !state.arrivals || state.arrivals.length === 0) {
+  // Only show Link trains. Guards against non-Link routes (e.g. RapidRide
+  // buses, which share the "<letter> Line" naming) slipping onto the board.
+  const trains = (state.arrivals || []).filter((a) =>
+    Object.values(LINES).some((l) => l.name === a.line)
+  );
+
+  if (state.loading || trains.length === 0) {
     return null;
   }
 
@@ -58,7 +64,7 @@ const ArrivalsPanel = ({ station, compact = false }) => {
         Next departures
       </p>
       <ul className="space-y-1">
-        {state.arrivals.slice(0, 6).map((a, i) => {
+        {trains.slice(0, 6).map((a, i) => {
           const line = Object.values(LINES).find((l) => l.name === a.line);
           return (
             <li
