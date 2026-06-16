@@ -13,6 +13,7 @@ vi.mock("react-leaflet", () => ({
   ),
   Polyline: () => <div data-testid="polyline" />,
   useMap: () => ({ flyTo: vi.fn() }),
+  useMapEvents: () => ({ getZoom: () => 11 }),
 }));
 vi.mock("leaflet/dist/leaflet.css", () => ({}));
 
