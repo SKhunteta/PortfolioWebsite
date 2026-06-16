@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   MapContainer,
   TileLayer,
   CircleMarker,
   Polyline,
   useMap,
+  useMapEvents,
 } from "react-leaflet";
 import {
   STATIONS,
@@ -26,6 +27,29 @@ const MapRefSetter = ({ mapRef }) => {
   return null;
 };
 
+// At/above this zoom, dots keep their full size; below it they shrink toward
+// RADIUS_FLOOR so the network stops collapsing into an overlapping blob.
+const RADIUS_BASE_ZOOM = MAP_CONFIG.zoom;
+const RADIUS_FLOOR = 0.4;
+
+// Linear scale in [RADIUS_FLOOR, 1] driven by how far the current zoom sits
+// between minZoom and the baseline zoom.
+const radiusScale = (zoom) => {
+  if (zoom >= RADIUS_BASE_ZOOM) return 1;
+  const span = RADIUS_BASE_ZOOM - MAP_CONFIG.minZoom;
+  if (span <= 0) return 1;
+  const t = (zoom - MAP_CONFIG.minZoom) / span; // 0 at minZoom, 1 at baseline
+  return RADIUS_FLOOR + (1 - RADIUS_FLOOR) * Math.max(0, Math.min(1, t));
+};
+
+// Tracks the live zoom level so markers can rescale as the user zooms.
+const ZoomWatcher = ({ onZoom }) => {
+  const map = useMapEvents({
+    zoomend: () => onZoom(map.getZoom()),
+  });
+  return null;
+};
+
 const LinkMap = ({
   era,
   selectedStation,
@@ -35,6 +59,8 @@ const LinkMap = ({
   mapRef,
 }) => {
   const filteredIds = new Set(filteredStations.map((s) => s.id));
+  const [zoom, setZoom] = useState(MAP_CONFIG.zoom);
+  const scale = radiusScale(zoom);
 
   // Normalize both path shapes to segments of { status, points }.
   const segmentsForLine = (lineId) => {
@@ -56,6 +82,7 @@ const LinkMap = ({
       scrollWheelZoom={true}
     >
       <MapRefSetter mapRef={mapRef} />
+      <ZoomWatcher onZoom={setZoom} />
       <TileLayer url={MAP_CONFIG.tileUrl} attribution={MAP_CONFIG.tileAttribution} />
 
       {LINES_FOR_ERA[era].map((lineId) => {
@@ -86,7 +113,7 @@ const LinkMap = ({
           <CircleMarker
             key={`${era}-${station.id}`}
             center={[station.lat, station.lng]}
-            radius={isSelected ? 10 : isMultiLine ? 7 : 6}
+            radius={(isSelected ? 10 : isMultiLine ? 7 : 6) * scale}
             fillColor={isOpen ? primaryLine.color : "#FFFFFF"}
             fillOpacity={isFiltered ? (isOpen ? 0.9 : 0.8) : 0.15}
             color={
@@ -98,7 +125,10 @@ const LinkMap = ({
                     : primaryLine.color
                   : primaryLine.color
             }
-            weight={isSelected ? 2.5 : isOpen ? (isMultiLine ? 2 : 1) : 2}
+            weight={
+              (isSelected ? 2.5 : isOpen ? (isMultiLine ? 2 : 1) : 2) *
+              Math.max(0.6, scale)
+            }
             opacity={isFiltered ? 1 : 0.2}
             eventHandlers={{
               click: () => onSelectStation(station.id),
