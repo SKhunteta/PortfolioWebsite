@@ -21,11 +21,12 @@ const APP_ROUTES = [
   "/city-quiz",
   "/monetized-reader",
   "/ai-chip",
+  "/apple-price-hike",
 ];
 
 describe("DEMOS metadata", () => {
-  it("covers all nine demos", () => {
-    expect(DEMOS).toHaveLength(9);
+  it("covers all ten demos", () => {
+    expect(DEMOS).toHaveLength(10);
   });
 
   it("has unique ids and routes", () => {
@@ -59,7 +60,7 @@ describe("DEMOS metadata", () => {
   });
 
   it("splits featured and remaining demos cleanly", () => {
-    expect(FEATURED_DEMOS.length).toBe(3);
+    expect(FEATURED_DEMOS.length).toBe(4);
     expect(FEATURED_DEMOS.length + MORE_DEMOS.length).toBe(DEMOS.length);
   });
 

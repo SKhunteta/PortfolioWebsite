@@ -43,6 +43,30 @@ export const DEMOS = [
     },
   },
   {
+    id: "apple-price-hike",
+    route: "/apple-price-hike",
+    title: "The Memory Tax",
+    kindLabel: "Interactive price piece",
+    tagline: "The same machine. One week apart.",
+    description:
+      "Configure a MacBook or iPad and watch last week's price become today's, after Apple's June 2026 memory-driven price hike. Base prices exact and sourced; upgrade rungs modeled and badged.",
+    cta: "Configure one",
+    tags: ["interactive essay", "data", "hardware"],
+    live: false,
+    series: null,
+    featured: true,
+    sourceDir: "src/components/ApplePriceHike",
+    theme: {
+      bg: "#F5F5F7",
+      text: "#1D1D1F",
+      muted: "#6E6E73",
+      accent: "#1D1D1F",
+      ctaText: "#FFFFFF",
+      titleFont:
+        '-apple-system, "SF Pro Display", BlinkMacSystemFont, system-ui, sans-serif',
+    },
+  },
+  {
     id: "aaron-west-atlas",
     route: "/aaron-west-atlas",
     title: "The Aaron West Lyric Atlas",

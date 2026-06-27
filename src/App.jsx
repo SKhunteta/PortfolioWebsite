@@ -11,6 +11,7 @@ import EmotionalLaborExchange from "./components/EmotionalLaborExchange";
 import AaronWestAtlasTeaser from "./components/AaronWestAtlasTeaser";
 import PlotTwistTeaser from "./components/PlotTwistTeaser";
 import AIChipLifeTeaser from "./components/AIChipLifeTeaser";
+import ApplePriceHikeTeaser from "./components/ApplePriceHikeTeaser";
 import PlaygroundTeaser from "./components/PlaygroundTeaser";
 import ResumePage from "./pages/ResumePage";
 
@@ -22,6 +23,7 @@ const LinkTracker = lazy(() => import("./components/LinkTracker"));
 const CityQuiz = lazy(() => import("./components/CityQuiz"));
 const MonetizedReader = lazy(() => import("./components/MonetizedReader"));
 const AIChipLife = lazy(() => import("./components/AIChipLife"));
+const ApplePriceHike = lazy(() => import("./components/ApplePriceHike"));
 const PlaygroundPage = lazy(() => import("./pages/PlaygroundPage"));
 
 function ScrollToTop() {
@@ -195,6 +197,22 @@ function App() {
           }
         />
         <Route
+          path="/apple-price-hike"
+          element={
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#F5F5F7" }}>
+                  <p className="text-sm" style={{ fontFamily: '"JetBrains Mono", "IBM Plex Mono", monospace', color: "#6E6E73" }}>
+                    Recalculating&hellip;
+                  </p>
+                </div>
+              }
+            >
+              <ApplePriceHike />
+            </Suspense>
+          }
+        />
+        <Route
           path="/playground"
           element={
             <Suspense
@@ -271,15 +289,18 @@ function App() {
                   <AIChipLifeTeaser />
                 </div>
                 <div className="bg-white py-8">
+                  <ApplePriceHikeTeaser />
+                </div>
+                <div className="bg-gray-light py-8">
                   <AaronWestAtlasTeaser />
                 </div>
-                <div className="bg-gray-light py-8">
+                <div className="bg-white py-8">
                   <PlotTwistTeaser />
                 </div>
-                <div className="bg-white py-8">
+                <div className="bg-gray-light py-8">
                   <PlaygroundTeaser />
                 </div>
-                <div className="bg-gray-light py-8">
+                <div className="bg-white py-8">
                   <Contact />
                 </div>
               </main>
