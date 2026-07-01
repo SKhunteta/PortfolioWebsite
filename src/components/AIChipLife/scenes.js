@@ -80,7 +80,7 @@ export const SCENES = [
     mapMode: "conceptual",
     part: "fineEtch",
     prose: {
-      lead: "The machine's mirrors are not made by the machine's maker. They are polished in a Swabian town by an optics company that has existed since the 1840s, to a smoothness where, scaled up to the size of Germany, the largest bump would stand under a millimeter. The number of people alive who can do this work fits inside a single estimate.",
+      lead: "The machine's mirrors are not made by the machine's maker. They are polished in a Swabian town by an optics company that has existed since the 1840s, to a smoothness where, scaled up to the size of Germany, the largest bump would stand under a millimeter. The number of people who do this work, at the one company that does it, fits inside a single estimate.",
       turn: "Sole supplier, again. The monopoly has a monopoly inside it.",
       reduced: "There is one supplier of EUV optics: Carl Zeiss SMT.",
     },
@@ -121,7 +121,7 @@ export const SCENES = [
       plural: false,
       options: [
         { id: "tsmc", label: "TSMC", enabled: true },
-        { id: "samsung", label: "Samsung Foundry", enabled: false, epitaph: "A generation behind at the bleeding edge for this part." },
+        { id: "samsung", label: "Samsung Foundry", enabled: false, epitaph: "Runs advanced nodes, but yields trail TSMC and no current flagship accelerator is fabbed here." },
         { id: "smic", label: "SMIC", enabled: false, epitaph: "Export controls bar it from leading-edge EUV." },
       ],
       selectedText: "1 of 1 foundries selected",
@@ -164,7 +164,7 @@ export const SCENES = [
     },
     guess: {
       factId: "korea_revenue_share",
-      prompt: "What share of ASML's Q1 2026 revenue came from one country, South Korea?",
+      prompt: "What share of ASML's Q1 2026 system sales went to one country, South Korea?",
       min: 0,
       max: 100,
       step: 1,
