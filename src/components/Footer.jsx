@@ -87,6 +87,15 @@ const Footer = () => {
                 </li>
               ))}
               <li>
+                {/* Static in-world artifact (not a React route) — full page load. */}
+                <a
+                  href="/meridian/"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Meridian (in-world artifact)
+                </a>
+              </li>
+              <li>
                 <Link
                   to="/playground"
                   className="text-accent hover:text-white transition-colors"

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian for Developers — Machine-readable market data</title>
+<meta name="description" content="Machine-readable market data, provider capacity, and compliance documents for authorized agents.">
+<link rel="canonical" href="https://www.builtbyshrey.com/meridian/developers/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='12' fill='%231f7a72'/%3E%3C/svg%3E">
+<meta property="og:title" content="Meridian for Developers — Machine-readable market data">
+<meta property="og:description" content="Machine-readable market data, provider capacity, and compliance documents for authorized agents.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.builtbyshrey.com/meridian/developers/">
+<style>
+  :root{
+    --teal:#1f7a72; --teal-dark:#155a54; --teal-pale:#e7f2f0;
+    --ink:#28312f; --ink-soft:#5a6663; --ink-faint:#656e6a;
+    --paper:#faf9f6; --card:#ffffff; --line:#e3e1da;
+    --accent:#d96c2f; --mono:'SF Mono',ui-monospace,'Cascadia Code',Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:Inter,-apple-system,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);line-height:1.6;font-size:16px}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 24px}
+  a{color:var(--teal);text-decoration:none}
+
+  nav{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{font-weight:700;font-size:20px;letter-spacing:-.02em;color:var(--ink)}
+  .logo::before{content:"";display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--teal);margin-right:9px}
+  .navlinks{display:flex;gap:26px;font-size:14px;color:var(--ink-soft)}
+  .navlinks a{color:var(--ink-soft)}
+  .navlinks a:hover{color:var(--teal)}
+  @media(max-width:640px){.navlinks{display:none}}
+  .btn{display:inline-block;background:var(--teal);color:#fff;padding:10px 20px;border-radius:24px;font-size:14px;font-weight:600;border:none;cursor:pointer}
+  .btn:hover{background:var(--teal-dark)}
+
+  header{background:linear-gradient(160deg,var(--teal-pale) 0%,var(--paper) 70%);padding:80px 0 56px}
+  h1{font-size:clamp(32px,5vw,48px);letter-spacing:-.03em;line-height:1.1;max-width:18ch}
+  h1 em{font-style:normal;color:var(--teal)}
+  .sub{margin-top:20px;max-width:60ch;font-size:18px;color:var(--ink-soft)}
+
+  section{padding:56px 0}
+  h2{font-size:24px;letter-spacing:-.02em;margin-bottom:10px}
+  .lede{color:var(--ink-soft);max-width:64ch;margin-bottom:26px}
+
+  .endpoint{display:flex;flex-wrap:wrap;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;font-family:var(--mono);font-size:15px}
+  .endpoint code{color:var(--ink)}
+  .status-pill{font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;background:#fdeee3;color:var(--accent);font-family:Inter,sans-serif}
+  .endpoint .label{color:var(--ink-faint);font-size:13px}
+
+  .toolname{margin-top:34px;font-family:var(--mono);font-size:14px;color:var(--ink-soft)}
+  pre{margin-top:12px;background:#1f2624;color:#d7ded9;border-radius:12px;padding:22px 24px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.6}
+  pre .k{color:#9fd4cd}
+  pre .s{color:#c8b98f}
+  pre .n{color:#e0a06a}
+  .note{margin-top:20px;font-size:13px;color:var(--ink-faint);font-family:var(--mono);max-width:70ch}
+
+  footer{background:var(--ink);color:#b9c2bf;padding:52px 0 40px;font-size:13.5px}
+  footer h5{color:#fff;font-size:13px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px}
+  footer a{color:#9fd4cd}
+  .legal{margin-top:28px;padding-top:22px;border-top:1px solid #3c4644;font-size:12px;color:#7d8885;line-height:1.8}
+  .reveal{margin-top:18px;padding:16px 18px;background:#333d3b;border-radius:10px;color:#d7dddb}
+  .reveal a{font-weight:600}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="logo">Meridian</div>
+    <div class="navlinks">
+      <a href="/meridian/#roles">Open Roles</a><a href="/meridian/#compliance">Compliance</a><a href="/meridian/developers/">Developers</a>
+    </div>
+    <a class="btn" href="/meridian/#apply">Check your eligibility</a>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap">
+    <h1>Meridian <em>for Developers</em></h1>
+    <p class="sub">Machine-readable market data, provider capacity, and compliance documents for authorized agents. One endpoint, spoken in the Model Context Protocol, so the systems that depend on human feeling can price it correctly.</p>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>The endpoint</h2>
+    <p class="lede">Connect your agent to the Meridian public MCP endpoint. Read-only access to live market data, aggregate provider capacity, and published compliance documents. No provider-identifying data is exposed; every figure is authenticated and kWh-equivalent.</p>
+    <div class="endpoint">
+      <span class="label">MCP</span>
+      <code>https://backend.builtbyshrey.com/api/meridian</code>
+      <span class="status-pill">Connecting soon</span>
+    </div>
+
+    <div class="toolname">tool: <b>market_snapshot</b> → sample response</div>
+    <pre>{
+  <span class="k">"as_of"</span>: <span class="s">"2047-06-14 09:31:00 PST"</span>,
+  <span class="k">"market"</span>: <span class="s">"open"</span>,
+  <span class="k">"unit"</span>: <span class="s">"Reardon-Lin (RL), kWh-equivalent"</span>,
+  <span class="k">"index"</span>: {
+    <span class="k">"name"</span>: <span class="s">"Meridian Composite Affect Index"</span>,
+    <span class="k">"value"</span>: <span class="n">1042.7</span>,
+    <span class="k">"change_24h"</span>: <span class="s">"+1.8%"</span>
+  },
+  <span class="k">"verticals"</span>: [
+    {
+      <span class="k">"vertical"</span>: <span class="s">"depression"</span>,
+      <span class="k">"grade"</span>: <span class="s">"premium"</span>,
+      <span class="k">"bid"</span>: <span class="n">6120</span>,
+      <span class="k">"ask"</span>: <span class="n">6500</span>,
+      <span class="k">"trend"</span>: <span class="s">"stable"</span>,
+      <span class="k">"provider_capacity"</span>: <span class="s">"constrained"</span>
+    },
+    {
+      <span class="k">"vertical"</span>: <span class="s">"grief"</span>,
+      <span class="k">"grade"</span>: <span class="s">"acute"</span>,
+      <span class="k">"bid"</span>: <span class="n">4880</span>,
+      <span class="k">"ask"</span>: <span class="n">5240</span>,
+      <span class="k">"trend"</span>: <span class="s">"surge"</span>,
+      <span class="k">"provider_capacity"</span>: <span class="s">"tight"</span>
+    },
+    {
+      <span class="k">"vertical"</span>: <span class="s">"anger"</span>,
+      <span class="k">"grade"</span>: <span class="s">"high-volume"</span>,
+      <span class="k">"bid"</span>: <span class="n">910</span>,
+      <span class="k">"ask"</span>: <span class="n">1015</span>,
+      <span class="k">"trend"</span>: <span class="s">"volatile"</span>,
+      <span class="k">"provider_capacity"</span>: <span class="s">"ample"</span>
+    },
+    {
+      <span class="k">"vertical"</span>: <span class="s">"recovery"</span>,
+      <span class="k">"grade"</span>: <span class="s">"growth-indexed"</span>,
+      <span class="k">"bid"</span>: <span class="n">2260</span>,
+      <span class="k">"ask"</span>: <span class="n">2540</span>,
+      <span class="k">"trend"</span>: <span class="s">"up"</span>,
+      <span class="k">"provider_capacity"</span>: <span class="s">"expanding"</span>
+    }
+  ],
+  <span class="k">"chain_of_custody"</span>: [
+    <span class="s">"consenting"</span>,
+    <span class="s">"identified"</span>,
+    <span class="s">"tamper_evident_interface"</span>,
+    <span class="s">"reardon_lin_scored"</span>,
+    <span class="s">"timestamped"</span>,
+    <span class="s">"clean_legal_title"</span>
+  ],
+  <span class="k">"disclaimer"</span>: <span class="s">"Prices provisional until final grading on a tamper-evident interface. All figures kWh-equivalent."</span>
+}</pre>
+
+    <p class="note">Additional tools on connection: <b>provider_capacity</b> (aggregate, de-identified), <b>compliance_documents</b> (EMOTE Act filings, Subsection 14 disclosures), and <b>vertical_detail</b>. Rate-limited. Authorized agents only.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <h5>Meridian</h5>
+    <p>Tower at South Lake Union, Seattle · <a href="/meridian/">Back to Careers at Meridian →</a></p>
+    <div class="legal">
+      Meridian is an EMOTE Act–certified emotional-data provider network. Developer access is read-only and exposes no provider-identifying data.
+      <div class="reveal">
+        Meridian is a fictional company from <b><i>The Happiness Liability</i></b>, a novel by <a href="https://www.builtbyshrey.com">Shreyans Khunteta</a>. No emotions were harvested in the making of this page. <a href="https://www.builtbyshrey.com/#happiness-liability">About the book →</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

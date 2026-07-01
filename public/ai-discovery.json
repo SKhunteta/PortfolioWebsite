@@ -66,7 +66,7 @@
     },
     "projects": {
       "description": "Portfolio of software, AI, and creative projects",
-      "topics": ["MCP server", "RAG pipeline", "creative writing", "data engineering", "community leadership"]
+      "topics": ["MCP server", "RAG pipeline", "creative writing", "data engineering", "community leadership", "The Happiness Liability", "Meridian careers page (in-world artifact)"]
     },
     "chat": {
       "description": "Interactive AI assistant powered by RAG pipeline",
@@ -100,6 +100,10 @@
     "science fiction writer",
     "AI ethics",
     "vector databases",
-    "Qdrant"
+    "Qdrant",
+    "The Happiness Liability",
+    "Meridian",
+    "emotional labor",
+    "in-world artifact"
   ]
 } 

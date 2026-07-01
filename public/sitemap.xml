@@ -67,4 +67,17 @@
     <priority>0.95</priority>
   </url>
 
+  <!-- Meridian careers page (in-world artifact from The Happiness Liability) -->
+  <url>
+    <loc>https://builtbyshrey.com/meridian/</loc>
+    <lastmod>2026-07-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <image:image>
+      <image:loc>https://builtbyshrey.com/meridian/og.png</image:loc>
+      <image:title>Careers at Meridian — What you feel matters. Literally.</image:title>
+      <image:caption>In-world corporate careers page for Meridian, the fictional emotional-labor company from the novel The Happiness Liability.</image:caption>
+    </image:image>
+  </url>
+
 </urlset> 
