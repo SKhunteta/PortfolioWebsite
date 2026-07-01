@@ -30,6 +30,15 @@ describe("PlaygroundPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("renders the Meridian in-world artifact card in the series section", () => {
+    renderPage();
+    expect(screen.getByText("Meridian — Careers")).toBeInTheDocument();
+    const links = screen
+      .getAllByRole("link")
+      .filter((el) => el.getAttribute("href") === "/meridian/");
+    expect(links.length).toBeGreaterThan(0);
+  });
+
   it("renders a view-source link for every demo", () => {
     renderPage();
     const sourceLinks = screen.getAllByLabelText(/View source for/);
