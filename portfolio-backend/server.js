@@ -8,6 +8,7 @@ import dotenv from "dotenv";
 import askRoute from "./routes/ask.js";
 import schemaRoute from "./routes/schema.js";
 import mcpConnectorRoute from "./routes/mcp-connector.js";
+import meridianRoute from "./routes/meridian.js";
 import portfolioRoute from "./routes/portfolio.js";
 import eleRoute from "./routes/ele.js";
 import storiesRoute from "./routes/stories.js";
@@ -79,7 +80,10 @@ const helmetDefault = helmet();
 const helmetNoCsp = helmet({ contentSecurityPolicy: false });
 
 app.use((req, res, next) => {
-  if (req.path.startsWith("/api/mcp-connector")) {
+  if (
+    req.path.startsWith("/api/mcp-connector") ||
+    req.path.startsWith("/api/meridian")
+  ) {
     return helmetNoCsp(req, res, next);
   }
   helmetDefault(req, res, next);
@@ -194,6 +198,7 @@ app.use("/api/ask", askRoute);
 app.use("/api/schema", schemaRoute);
 app.use("/api/portfolio", portfolioRoute);
 app.use("/api/mcp-connector", mcpConnectorRoute);
+app.use("/api/meridian", meridianRoute);
 app.use("/api/ele", eleRoute);
 app.use("/api/stories", storiesRoute);
 app.use("/api/invoice", invoiceRoute);

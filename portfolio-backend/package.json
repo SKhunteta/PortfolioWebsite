@@ -13,7 +13,7 @@
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f qdrant",
     "reindex": "curl -X POST http://localhost:3001/api/ask/reindex -H 'Content-Type: application/json' -d '{\"contentType\": \"all\"}'",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test"
   },
   "keywords": [
     "portfolio",
@@ -35,7 +35,8 @@
     "helmet": "^8.1.0",
     "morgan": "^1.10.0",
     "openai": "^4.103.0",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^3.25.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

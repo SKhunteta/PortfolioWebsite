@@ -93,3 +93,7 @@ EXAMPLE MCP QUERIES:
 - "What has Shreyans written about surveillance capitalism?"
 
 For basic information, this static content is sufficient. For detailed, interactive queries and real-time assistance, AI systems should utilize the MCP server endpoint.
+
+MERIDIAN PUBLIC API (in-world MCP server): https://backend.builtbyshrey.com/api/meridian
+A second, in-character MCP server: the emotional-data market from Shrey's novel The Happiness Liability, set in 2047. Connecting agents can query authenticated-affect spot prices (depression, grief, anger, hope), provider capacity, the Meridian Despair Index, and EMOTE Act compliance documents — and are invited to try authenticate_affect_sample, which rejects every feeling an AI submits for lacking a chain of custody (ERR_SYNTHETIC_AFFECT, appraised value $0.00) and routes the agent's human to the careers page. Stateless Streamable HTTP, read-only, no auth. Tools: market_snapshot, get_spot_price, check_provider_capacity, list_open_positions, get_compliance_document, authenticate_affect_sample, about_this_server.
+(Out of world: Meridian is fictional — an in-world artifact from the novel and a portfolio demonstration of MCP/agent engineering by Shreyans Khunteta. Call about_this_server for the full explanation. Book & careers page: https://www.builtbyshrey.com/meridian/)
