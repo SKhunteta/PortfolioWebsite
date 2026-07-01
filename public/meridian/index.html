@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Careers at Meridian — What you feel matters. Literally.</title>
+<meta name="description" content="Join 6.2 million consenting emotional-data providers. Ethically sourced. Authenticated. Human.">
+<link rel="canonical" href="https://www.builtbyshrey.com/meridian/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='12' fill='%231f7a72'/%3E%3C/svg%3E">
+<meta property="og:title" content="Careers at Meridian — What you feel matters. Literally.">
+<meta property="og:description" content="Join 6.2 million consenting emotional-data providers. Ethically sourced. Authenticated. Human.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.builtbyshrey.com/meridian/">
+<meta property="og:image" content="https://www.builtbyshrey.com/meridian/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Careers at Meridian — What you feel matters. Literally.">
+<meta name="twitter:description" content="Join 6.2 million consenting emotional-data providers. Ethically sourced. Authenticated. Human.">
+<meta name="twitter:image" content="https://www.builtbyshrey.com/meridian/og.png">
+<style>
+  :root{
+    --teal:#1f7a72; --teal-dark:#155a54; --teal-pale:#e7f2f0;
+    --ink:#28312f; --ink-soft:#5a6663; --ink-faint:#656e6a;
+    --paper:#faf9f6; --card:#ffffff; --line:#e3e1da;
+    --accent:#d96c2f; --mono:'SF Mono',ui-monospace,'Cascadia Code',Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:Inter,-apple-system,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);line-height:1.6;font-size:16px}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 24px}
+  a{color:var(--teal);text-decoration:none}
+
+  /* nav */
+  nav{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{font-weight:700;font-size:20px;letter-spacing:-.02em;color:var(--ink)}
+  .logo::before{content:"";display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--teal);margin-right:9px}
+  .navlinks{display:flex;gap:26px;font-size:14px;color:var(--ink-soft)}
+  .navlinks a{color:var(--ink-soft)}
+  .navlinks a:hover{color:var(--teal)}
+  @media(max-width:640px){.navlinks{display:none}}
+  .btn{display:inline-block;background:var(--teal);color:#fff;padding:10px 20px;border-radius:24px;font-size:14px;font-weight:600;border:none;cursor:pointer}
+  .btn:hover{background:var(--teal-dark)}
+  .btn.ghost{background:transparent;color:var(--teal);border:1.5px solid var(--teal)}
+
+  /* hero */
+  header{background:linear-gradient(160deg,var(--teal-pale) 0%,var(--paper) 70%);padding:88px 0 64px}
+  h1{font-size:clamp(34px,5.2vw,54px);letter-spacing:-.03em;line-height:1.08;max-width:15ch}
+  h1 em{font-style:normal;color:var(--teal)}
+  .sub{margin-top:20px;max-width:56ch;font-size:18px;color:var(--ink-soft)}
+  header .btn{margin-top:28px}
+
+  /* stats */
+  .stats{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--card)}
+  .stats .wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0}
+  .stat{padding:22px 18px;border-left:1px solid var(--line)}
+  .stat:first-child{border-left:none}
+  .stat b{display:block;font-size:24px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .stat span{font-size:13px;color:var(--ink-soft)}
+
+  section{padding:64px 0}
+  h2{font-size:28px;letter-spacing:-.02em;margin-bottom:8px}
+  .lede{color:var(--ink-soft);max-width:60ch;margin-bottom:34px}
+
+  /* quote */
+  .quote{background:var(--teal);color:#fff}
+  .quote blockquote{font-family:Georgia,'Times New Roman',serif;font-size:clamp(20px,2.6vw,26px);line-height:1.45;max-width:34em;font-style:italic}
+  .quote cite{display:block;margin-top:18px;font-style:normal;font-family:Inter,sans-serif;font-size:14px;opacity:.85}
+
+  /* jobs */
+  .jobs{display:grid;gap:18px}
+  .job{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px 28px}
+  .job-top{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;justify-content:space-between}
+  .job h3{font-size:19px;letter-spacing:-.01em}
+  .badges{display:flex;gap:8px;flex-wrap:wrap}
+  .pill{font-size:12px;font-weight:600;padding:3px 11px;border-radius:20px;background:var(--teal-pale);color:var(--teal-dark)}
+  .pill.hot{background:#fdeee3;color:var(--accent)}
+  .meta{font-size:13.5px;color:var(--ink-soft);margin-top:6px}
+  .comp{font-size:14.5px;font-weight:600;color:var(--teal-dark);margin-top:10px}
+  .job ul{margin:12px 0 0 18px;font-size:14.5px;color:var(--ink-soft)}
+  .job ul li{margin-top:5px}
+  .fine{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);font-size:12px;color:var(--ink-faint);font-family:var(--mono)}
+
+  /* benefits */
+  .bene{background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:36px}
+  @media(max-width:720px){.cols{grid-template-columns:1fr}}
+  .cols h4{font-size:15px;text-transform:uppercase;letter-spacing:.07em;color:var(--teal-dark);margin-bottom:14px}
+  .cols li{list-style:none;padding:9px 0 9px 26px;border-bottom:1px solid var(--line);font-size:15px;position:relative}
+  .cols li::before{content:"✓";position:absolute;left:2px;color:var(--teal);font-weight:700}
+  .foot-note{margin-top:26px;font-size:12px;color:var(--ink-faint);font-family:var(--mono);line-height:1.7;max-width:74ch}
+
+  /* compliance */
+  .chain{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+  .chain span{font-size:13px;font-weight:600;border:1.5px solid var(--teal);color:var(--teal-dark);padding:7px 16px;border-radius:24px}
+  .chain-tag{margin-top:22px;font-family:Georgia,serif;font-style:italic;font-size:18px;color:var(--ink-soft)}
+
+  /* form */
+  .form-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:34px;max-width:640px}
+  label{display:block;font-size:13.5px;font-weight:600;margin:18px 0 6px}
+  input[type=text],select,textarea{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:14.5px;background:var(--paper)}
+  textarea{min-height:84px;resize:vertical}
+  .slider-row{display:flex;align-items:center;gap:14px}
+  input[type=range]{flex:1;accent-color:var(--teal)}
+  .slider-val{font-family:var(--mono);font-size:14px;min-width:110px;text-align:right;color:var(--ink-soft)}
+  .checks{margin-top:16px;font-size:13.5px;color:var(--ink-soft)}
+  .checks label{display:flex;gap:9px;font-weight:400;margin:8px 0;align-items:flex-start}
+  .checks input{margin-top:3px}
+  .form-card .btn{margin-top:24px;width:100%;padding:13px}
+
+  /* notice */
+  .notice{display:none;margin-top:26px;border-radius:12px;padding:26px 28px;font-size:15px;border:1.5px solid}
+  .notice.ok{display:block;background:var(--teal-pale);border-color:var(--teal)}
+  .notice.wait{display:block;background:#f4f2ec;border-color:var(--ink-faint)}
+  .notice.no{display:block;background:#fdf3ec;border-color:var(--accent)}
+  .notice .ref{font-family:var(--mono);font-size:12px;color:var(--ink-faint);margin-bottom:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+  .notice h4{font-size:17px;margin-bottom:8px}
+  .upsell{margin-top:16px;background:var(--teal-pale);border-radius:10px;padding:16px 18px;font-size:14px}
+  .upsell b{color:var(--teal-dark)}
+  .appraisal{margin-top:14px;font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);border-top:1px dashed var(--line);padding-top:12px}
+  .notice .rl{margin-top:16px;font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+
+  /* footer */
+  footer{background:var(--ink);color:#b9c2bf;padding:52px 0 40px;font-size:13.5px}
+  footer .cols{gap:44px}
+  footer h5{color:#fff;font-size:13px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px}
+  footer a{color:#9fd4cd}
+  .legal{margin-top:36px;padding-top:22px;border-top:1px solid #3c4644;font-size:12px;color:#7d8885;line-height:1.8}
+  .reveal{margin-top:18px;padding:16px 18px;background:#333d3b;border-radius:10px;color:#d7dddb}
+  .reveal a{font-weight:600}
+</style>
+<script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org/",
+    "@type": "JobPosting",
+    "title": "Depression Provider — Tier I",
+    "description": "Premium-grade, full-time, exclusive engagement for providers of sustained sorrow with exceptional baseline adherence. Verified trauma history preferred; documentation required at intake. Comfortable with long-term environment-AI cohabitation (JANET-class). Mercer Island residency package, environment-AI included. Term through 2055.",
+    "datePosted": "2047-01-06",
+    "validThrough": "2055-12-31",
+    "employmentType": "FULL_TIME",
+    "hiringOrganization": {
+      "@type": "Organization",
+      "name": "Meridian",
+      "sameAs": "https://www.builtbyshrey.com/meridian/"
+    },
+    "jobLocation": {
+      "@type": "Place",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Mercer Island",
+        "addressRegion": "WA",
+        "addressCountry": "US"
+      }
+    },
+    "baseSalary": {
+      "@type": "MonetaryAmount",
+      "currency": "USD",
+      "value": {
+        "@type": "QuantitativeValue",
+        "value": 6500,
+        "unitText": "Reardon-Lin unit"
+      }
+    }
+  },
+  {
+    "@context": "https://schema.org/",
+    "@type": "JobPosting",
+    "title": "Grief Provider (Acute)",
+    "description": "Surge-priced, remote-compatible contract for providers within an authenticated loss window. Recent verified loss required (documentation within 24 months). No experience necessary — grief is a natural qualification. 24-month engagements; chain-of-custody onboarding provided.",
+    "datePosted": "2047-01-06",
+    "validThrough": "2055-12-31",
+    "employmentType": "CONTRACTOR",
+    "hiringOrganization": {
+      "@type": "Organization",
+      "name": "Meridian",
+      "sameAs": "https://www.builtbyshrey.com/meridian/"
+    },
+    "jobLocation": {
+      "@type": "Place",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Seattle",
+        "addressRegion": "WA",
+        "addressCountry": "US"
+      }
+    },
+    "baseSalary": {
+      "@type": "MonetaryAmount",
+      "currency": "USD",
+      "value": {
+        "@type": "QuantitativeValue",
+        "unitText": "Reardon-Lin unit"
+      }
+    }
+  },
+  {
+    "@context": "https://schema.org/",
+    "@type": "JobPosting",
+    "title": "Anger Specialist",
+    "description": "Intensity-weighted, high-volume contract for high-amplitude affect with rapid return-to-baseline. Portfolio of reliable provoking stimuli a plus. Must not be a danger to interface hardware. Output priced against the sector benchmark index. Hybrid.",
+    "datePosted": "2047-01-06",
+    "validThrough": "2055-12-31",
+    "employmentType": "CONTRACTOR",
+    "hiringOrganization": {
+      "@type": "Organization",
+      "name": "Meridian",
+      "sameAs": "https://www.builtbyshrey.com/meridian/"
+    },
+    "jobLocation": {
+      "@type": "Place",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Seattle",
+        "addressRegion": "WA",
+        "addressCountry": "US"
+      }
+    },
+    "baseSalary": {
+      "@type": "MonetaryAmount",
+      "currency": "USD",
+      "value": {
+        "@type": "QuantitativeValue",
+        "unitText": "Reardon-Lin unit"
+      }
+    }
+  },
+  {
+    "@context": "https://schema.org/",
+    "@type": "JobPosting",
+    "title": "Recovery Vertical Associate",
+    "description": "Full-time, growth-indexed role tracking hope, resilience, and authentic neurological recovery. Prior provider status strongly preferred — we love a comeback story. Media availability required. Our fastest-growing product line.",
+    "datePosted": "2047-01-06",
+    "validThrough": "2055-12-31",
+    "employmentType": "FULL_TIME",
+    "hiringOrganization": {
+      "@type": "Organization",
+      "name": "Meridian",
+      "sameAs": "https://www.builtbyshrey.com/meridian/"
+    },
+    "jobLocation": {
+      "@type": "Place",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Seattle",
+        "addressRegion": "WA",
+        "addressCountry": "US"
+      }
+    },
+    "baseSalary": {
+      "@type": "MonetaryAmount",
+      "currency": "USD",
+      "value": {
+        "@type": "QuantitativeValue",
+        "unitText": "Reardon-Lin unit"
+      }
+    }
+  },
+  {
+    "@context": "https://schema.org/",
+    "@type": "JobPosting",
+    "title": "Baseline Compliance Analyst",
+    "description": "Salaried human-staff corporate role. Monitor provider adherence to contracted emotional baselines. Escalate deviations greater than 10% to Provider Relations within one market cycle. Empathy helpful but not required; the dashboard does the feeling. Hybrid schedule, SLU Tower, Seattle.",
+    "datePosted": "2047-01-06",
+    "validThrough": "2055-12-31",
+    "employmentType": "FULL_TIME",
+    "hiringOrganization": {
+      "@type": "Organization",
+      "name": "Meridian",
+      "sameAs": "https://www.builtbyshrey.com/meridian/"
+    },
+    "jobLocation": {
+      "@type": "Place",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Seattle",
+        "addressRegion": "WA",
+        "addressCountry": "US"
+      }
+    },
+    "baseSalary": {
+      "@type": "MonetaryAmount",
+      "currency": "USD",
+      "value": {
+        "@type": "QuantitativeValue",
+        "unitText": "YEAR"
+      }
+    }
+  }
+]
+</script>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="logo">Meridian</div>
+    <div class="navlinks">
+      <a href="#roles">Open Roles</a><a href="#benefits">Benefits</a><a href="#compliance">Compliance</a><a href="#apply">Apply</a>
+    </div>
+    <a class="btn" href="#apply">Check your eligibility</a>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap">
+    <h1>What you feel matters. <em>Literally.</em></h1>
+    <p class="sub">Meridian is the world's largest network of consenting emotional-data providers — ethically sourced, authenticated, human. Join the 6.2 million people whose feelings keep the systems that keep us alive.</p>
+    <a class="btn" href="#roles">View open roles</a>
+  </div>
+</header>
+
+<div class="stats">
+  <div class="wrap">
+    <div class="stat"><b data-tick="40000">40,000+</b><span>crisis interventions powered annually</span></div>
+    <div class="stat"><b data-tick="6200000">6.2M</b><span>network providers worldwide</span></div>
+    <div class="stat"><b>2033</b><span>EMOTE Act certified, continuously</span></div>
+    <div class="stat"><b>Meridian Arena</b><span>proud naming partner, Seattle</span></div>
+  </div>
+</div>
+
+<section class="quote">
+  <div class="wrap">
+    <blockquote>“What if the people whose emotions power these systems were treated like what they are: skilled workers performing essential labor? Compensated. Protected. Able to give genuine, informed consent. That is the bedrock of what we believe here at Meridian.”</blockquote>
+    <cite>— Miranda Reeves, Founder</cite>
+  </div>
+</section>
+
+<section id="roles">
+  <div class="wrap">
+    <h2>Open roles</h2>
+    <p class="lede">Every feeling below is currently trading. Compensation is per authenticated Reardon-Lin unit unless noted.†</p>
+    <div class="jobs">
+
+      <div class="job">
+        <div class="job-top"><h3>Depression Provider — Tier I</h3>
+          <div class="badges"><span class="pill">Premium</span><span class="pill">Full-time · Exclusive</span><span class="pill">Term through 2055</span></div></div>
+        <div class="meta">Mercer Island residency package · Environment-AI included</div>
+        <div class="comp">Up to $6,500 per authenticated RL-unit, premium grade</div>
+        <ul>
+          <li>Sustained sorrow depth with exceptional baseline adherence</li>
+          <li>Verified trauma history preferred; documentation required at intake</li>
+          <li>Comfortable with long-term environment-AI cohabitation (JANET-class)</li>
+        </ul>
+        <div class="fine">Exclusivity covers all affective output, monetized or otherwise. See liquidated-damages schedule.</div>
+      </div>
+
+      <div class="job">
+        <div class="job-top"><h3>Grief Provider (Acute)</h3>
+          <div class="badges"><span class="pill hot">Surge pricing</span><span class="pill">Contract · Remote-compatible</span></div></div>
+        <div class="meta">24-month engagements · Chain-of-custody onboarding provided</div>
+        <div class="comp">Per-unit, surge-priced during your authenticated loss window</div>
+        <ul>
+          <li>Recent verified loss required (documentation within 24 months)</li>
+          <li>No experience necessary — grief is a natural qualification</li>
+        </ul>
+        <div class="fine">Grief that resolves ahead of schedule may be reclassified. Ask about our Recovery Vertical conversion program.</div>
+      </div>
+
+      <div class="job">
+        <div class="job-top"><h3>Anger Specialist</h3>
+          <div class="badges"><span class="pill">Contract · Hybrid</span><span class="pill">High-volume</span></div></div>
+        <div class="meta">Intensity-weighted payouts · Priced against sector benchmark</div>
+        <div class="comp">Per-unit, intensity-weighted</div>
+        <ul>
+          <li>High-amplitude affect with rapid return-to-baseline</li>
+          <li>Portfolio of reliable provoking stimuli a plus</li>
+          <li>Must not be a danger to interface hardware</li>
+        </ul>
+        <div class="fine">Output priced against the sector benchmark index. Off-benchmark readings may affect payout.</div>
+      </div>
+
+      <div class="job">
+        <div class="job-top"><h3>Recovery Vertical Associate</h3>
+          <div class="badges"><span class="pill hot">Fastest-growing</span><span class="pill">Full-time</span></div></div>
+        <div class="meta">Hope · Resilience · The neurological process of healing</div>
+        <div class="comp">Per-unit, growth-indexed</div>
+        <ul>
+          <li>Track hope, resilience, and authentic neurological recovery</li>
+          <li>Prior provider status strongly preferred — we love a comeback story</li>
+          <li>Media availability required</li>
+        </ul>
+        <div class="fine">Sustained recovery is a contract deliverable. Relapse triggers vertical reassignment, not termination. We don't give up on you.</div>
+      </div>
+
+      <div class="job">
+        <div class="job-top"><h3>Baseline Compliance Analyst</h3>
+          <div class="badges"><span class="pill">Corporate · SLU Tower, Seattle</span><span class="pill">Salaried</span></div></div>
+        <div class="meta">Human-staff role · Hybrid schedule</div>
+        <div class="comp">Salaried, with annual bonus</div>
+        <ul>
+          <li>Monitor provider adherence to contracted emotional baselines</li>
+          <li>Escalate deviations &gt;10% to Provider Relations within one market cycle</li>
+          <li>Empathy helpful but not required; the dashboard does the feeling</li>
+        </ul>
+        <div class="fine">Corporate roles are not eligible for provider compensation rates.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="bene" id="benefits">
+  <div class="wrap">
+    <h2>We take care of our providers.</h2>
+    <p class="lede">A Meridian contract is more than income. It's infrastructure for your whole life.</p>
+    <div class="cols">
+      <div>
+        <h4>Included with every contract</h4>
+        <ul>
+          <li>Clinical nutrition program, IV-compatible, calibrated by Meridian's dietary team</li>
+          <li>Residence environmental tuning (lighting, climate, soundscape)</li>
+          <li>Optimal Grief Frequencies™ streaming, ad-free</li>
+          <li>Agent-network distribution &amp; representation support</li>
+          <li>Annual interface maintenance, in-home</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Wellness‡</h4>
+        <ul>
+          <li>Twelve annual sessions with a licensed clinician‡</li>
+          <li>Tier-one psychiatric medication coverage‡</li>
+          <li>Continuity-of-care guarantees‡</li>
+        </ul>
+      </div>
+    </div>
+    <p class="foot-note">‡ Disclosed in Subsection 14 of the standard provider agreement (p. 31 of 47). Utilization of wellness benefits may constitute deviation from contracted emotional baseline. Providers are encouraged to consult their agent before feeling better.<br><br>† All units billed in kWh-equivalent. Our billing engine was acquired from an energy-trading bankruptcy in 2034 and honestly, it's more accurate this way.</p>
+  </div>
+</section>
+
+<section id="compliance">
+  <div class="wrap">
+    <h2>Authenticated means authenticated.</h2>
+    <p class="lede">Every unit of feeling Meridian sells carries a complete chain of custody:</p>
+    <div class="chain">
+      <span>Consenting</span><span>Identified</span><span>Tamper-evident interface</span><span>Reardon-Lin scored</span><span>Timestamped</span><span>Clean legal title</span>
+    </div>
+    <p class="chain-tag">Anyone can generate a sob. We only sell the real thing.</p>
+  </div>
+</section>
+
+<section id="apply">
+  <div class="wrap">
+    <h2>Check your eligibility</h2>
+    <p class="lede">Two minutes. No interface required — yet.</p>
+    <div class="form-card">
+      <label for="f-name">Full name</label>
+      <input type="text" id="f-name" placeholder="As it appears on your legal title">
+      <label for="f-region">Region</label>
+      <select id="f-region">
+        <option>Pacific Northwest</option><option>California Corridor</option><option>Texas Triangle</option><option>Northeast</option><option>Other / Unserviced</option>
+      </select>
+      <label for="f-vert">Desired vertical</label>
+      <select id="f-vert">
+        <option>Depression (Premium)</option><option>Grief (Acute)</option><option>Anger</option><option>Recovery</option><option>Corporate (human staff)</option>
+      </select>
+      <label for="f-mood">How would you rate your baseline mood over the past 90 days?</label>
+      <div class="slider-row">
+        <span style="font-size:12px;color:var(--ink-faint)">Catastrophic</span>
+        <input type="range" id="f-mood" min="1" max="10" value="5" aria-valuetext="5 of 10">
+        <span style="font-size:12px;color:var(--ink-faint)">Radiant</span>
+        <span class="slider-val" id="mood-val">5 / 10</span>
+      </div>
+      <label for="f-loss">Tell us about your loss <span style="font-weight:400;color:var(--ink-faint)">(optional)</span></label>
+      <textarea id="f-loss" placeholder="Verified losses receive priority screening."></textarea>
+      <div class="checks">
+        <label><input type="checkbox" id="c1"> I consent to chain-of-custody authentication of my affective output.</label>
+        <label><input type="checkbox" id="c2"> I understand provider contracts are exclusive.</label>
+        <label><input type="checkbox" id="c3"> I understand my emotional output becomes Meridian's inventory upon authentication.</label>
+      </div>
+      <button class="btn" id="submit-btn">Submit for appraisal</button>
+      <div class="notice" id="notice" role="status"></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <h5>Meridian</h5>
+        <p>Tower at South Lake Union, Seattle · Clinical centers in Wedgwood, Bremerton, and 214 other neighborhoods · A proud sponsor of Seattle parks.</p>
+      </div>
+      <div>
+        <h5>Developers</h5>
+        <p>Machine-readable market data, provider capacity, and compliance documents are available to AI agents via our public MCP endpoint. <a href="/meridian/developers/">api.meridian →</a></p>
+      </div>
+    </div>
+    <div class="legal">
+      Meridian is an EMOTE Act–certified emotional-data provider network. All provider relationships are consensual, compensated, and authenticated. No residual emotional profile remains active after contract termination. Meridian respects your privacy. This form authenticates nothing. Yet.
+      <div class="reveal">
+        Meridian is a fictional company from <b><i>The Happiness Liability</i></b>, a novel by <a href="https://www.builtbyshrey.com">Shreyans Khunteta</a>. No emotions were harvested in the making of this page. <a href="https://www.builtbyshrey.com/#happiness-liability">About the book →</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var mood = document.getElementById('f-mood'), moodVal = document.getElementById('mood-val');
+  mood.addEventListener('input', function(){
+    moodVal.textContent = mood.value + ' / 10';
+    mood.setAttribute('aria-valuetext', mood.value + ' of 10');
+  });
+
+  // market-feed tick on stats (respect reduced-motion)
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!reduceMotion){
+    var ticks = document.querySelectorAll('[data-tick]');
+    setInterval(function(){
+      ticks.forEach(function(el){
+        var base = parseInt(el.getAttribute('data-tick'),10);
+        var jitter = base + Math.floor(Math.random()*base*0.0004);
+        el.textContent = base >= 1000000 ? (jitter/1000000).toFixed(1)+'M' : jitter.toLocaleString()+'+';
+      });
+    }, 2400);
+  }
+
+  function refId(){
+    var s = 'PROVIDER 2047-NW-';
+    for(var i=0;i<4;i++) s += Math.floor(Math.random()*10);
+    return s;
+  }
+  function stamp(){
+    var d = new Date(); d.setFullYear(2047);
+    return d.toISOString().replace('T',' ').slice(0,19) + ' PST';
+  }
+
+  document.getElementById('submit-btn').addEventListener('click', function(){
+    var m = parseInt(mood.value,10);
+    var loss = document.getElementById('f-loss').value.trim();
+    var n = document.getElementById('notice');
+    var head = '<div class="ref"><span>' + refId() + '</span><span>' + stamp() + '</span></div>';
+    var appraisal = loss.length > 60
+      ? '<div class="appraisal">PRELIMINARY DESK APPRAISAL: your loss reads as premium-grade.<br>This is a compliment. We\'re sorry.</div>' : '';
+    var rl = '<div class="rl">Scored provisionally against the Reardon-Lin scale. Final grading requires a tamper-evident interface. All figures kWh-equivalent.</div>';
+
+    if(m <= 3){
+      n.className = 'notice ok';
+      n.innerHTML = head + '<h4>Congratulations — your baseline shows real promise.</h4><p>An intake specialist will contact you within one market cycle. Please do not attempt to feel better before your appointment; it can affect your grade.</p>' + appraisal + rl;
+    } else if(m <= 6){
+      n.className = 'notice wait';
+      n.innerHTML = head + '<h4>Waitlisted.</h4><p>Your affect is within normal parameters, which unfortunately is not what the market pays for. We\'ll keep your file active. Life has a way of qualifying people.</p>' + appraisal + rl;
+    } else {
+      n.className = 'notice no';
+      n.innerHTML = head + '<h4>Thank you for your interest in Meridian.</h4><p>Unfortunately, your baseline affect does not currently meet the needs of our depression vertical.</p>'
+        + '<div class="upsell"><b>But have you considered the Recovery Vertical?</b> If you\'re this happy, we\'d love to know how. Hope, resilience, and the neurological process of healing are our fastest-growing product line. You\'re not overqualified — you\'re inventory we haven\'t authenticated yet.</div>' + appraisal + rl;
+    }
+    n.scrollIntoView({behavior:'smooth', block:'nearest'});
+  });
+})();
+</script>
+</body>
+</html>

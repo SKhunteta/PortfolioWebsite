@@ -152,6 +152,18 @@ const PlaygroundPage = () => {
                 <DemoCard key={demo.id} demo={demo} />
               ))}
             </div>
+            {/* Static in-world artifact (not a React route) — full page load. */}
+            <p className="text-sm text-gray-600 mt-8">
+              There's also an in-world artifact from the same universe:{" "}
+              <a
+                href="/meridian/"
+                className="text-primary font-medium hover:underline"
+              >
+                the Meridian careers site &rarr;
+              </a>{" "}
+              — a straight-faced corporate recruiting page for the fictional
+              emotional-labor company at the center of the novel.
+            </p>
           </div>
         </div>
 
