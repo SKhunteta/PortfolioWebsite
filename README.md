@@ -1,7 +1,5 @@
 # Shreyans Khunteta - Portfolio Website
 
-<!-- Trigger deployment 2025-05-23 -->
-
 > **Live Site:** [builtbyshrey.com](https://builtbyshrey.com)
 
 Welcome to my personal portfolio website! This is where I showcase my journey as a Software Engineer, share my technical expertise, and connect with fellow developers and innovators.
@@ -33,7 +31,7 @@ _I regularly update both sections with fresh content—bookmark them for the lat
 
 ### **Frontend Stack**
 
-- **React 18** - Modern component-based architecture
+- **React 19** - Modern component-based architecture
 - **Vite** - Lightning-fast build tool and development server
 - **React Router** - Seamless single-page application routing
 - **Tailwind CSS** - Utility-first styling with custom design system
@@ -51,6 +49,15 @@ _I regularly update both sections with fresh content—bookmark them for the lat
 - **Custom Domain** - Professional branding at builtbyshrey.com
 - **CI/CD Pipeline** - Automated deployment workflow
 - **Performance Monitoring** - Optimized for speed and reliability
+
+## 🚀 Local Development
+
+```bash
+npm install     # install dependencies
+npm run dev     # start the Vite dev server
+npm test        # run the Vitest suite
+npm run build   # production build to dist/
+```
 
 ## 🤝 Connect With Me
 

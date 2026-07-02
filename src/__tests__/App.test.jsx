@@ -16,10 +16,6 @@ vi.mock("../components/ChatSection", () => ({
   default: () => <div data-testid="chat-section">Chat Section</div>,
 }));
 
-vi.mock("../components/AIChat", () => ({
-  default: () => <div data-testid="ai-chat">AI Chat</div>,
-}));
-
 describe("App", () => {
   it("renders the home page at /", () => {
     // App includes its own BrowserRouter, so we just render it
