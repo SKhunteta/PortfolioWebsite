@@ -55,7 +55,7 @@ const Navbar = () => {
 
     const handleScroll = () => {
       if (location.pathname === "/") {
-        const sections = document.querySelectorAll("div[id]");
+        const sections = document.querySelectorAll("section[id], div[id]");
         const scrollPosition = window.scrollY;
 
         sections.forEach((section) => {
@@ -169,12 +169,14 @@ const Navbar = () => {
         </nav>
 
         {/* Mobile Menu Icon */}
-        <div
+        <button
           onClick={() => setNav(!nav)}
           className="md:hidden p-2 cursor-pointer"
+          aria-label="Open menu"
+          aria-expanded={nav}
         >
           <FaBars size={24} className="text-primary" />
-        </div>
+        </button>
       </div>
 
       {/* Mobile Navigation */}

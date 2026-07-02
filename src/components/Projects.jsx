@@ -94,7 +94,7 @@ const Projects = () => {
   const regularProjects = projects.filter((project) => !project.featured);
 
   return (
-    <div id="projects" className="section-container py-12 md:py-16">
+    <section id="projects" className="section-container py-12 md:py-16">
       <div className="text-center mb-8">
         <h2 className="section-title mx-auto">My Projects</h2>
         <p className="section-subtitle">
@@ -193,11 +193,10 @@ const Projects = () => {
                   <>
                     <video
                       src={featuredProject.video}
-                      alt={featuredProject.title}
+                      aria-label={`Demo video of ${featuredProject.title}`}
                       className="w-full h-full object-cover object-center"
-                      autoPlay
+                      preload="metadata"
                       muted
-                      loop
                       playsInline
                       controls
                     />
@@ -257,7 +256,7 @@ const Projects = () => {
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 };
 

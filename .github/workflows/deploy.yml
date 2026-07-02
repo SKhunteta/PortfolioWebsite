@@ -24,6 +24,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npx vitest run
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -36,6 +37,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - uses: actions/configure-pages@v4    # ✅ REQUIRED step you’re missing
+      - uses: actions/configure-pages@v4
       - id: deploy
-        uses: actions/deploy-pages@v4       # ✅ updated to v4 for consistency
+        uses: actions/deploy-pages@v4

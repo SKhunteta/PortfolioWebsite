@@ -149,16 +149,6 @@ const ChatSection = () => {
     fetchSuggestions();
   }, []);
 
-  // Auto-scroll to bottom when messages change - REMOVED PER USER REQUEST
-  // useEffect(() => {
-  //   if (messagesEndRef.current) {
-  //     messagesEndRef.current.scrollIntoView({
-  //       behavior: "smooth",
-  //       block: "end",
-  //     });
-  //   }
-  // }, [messages, isLoading]);
-
   // Handle scroll to show/hide scroll-to-bottom button
   const handleScroll = () => {
     if (chatContainerRef.current) {
@@ -266,7 +256,7 @@ const ChatSection = () => {
   };
 
   return (
-    <div id="chat" className="section-container py-8 md:py-12 lg:py-16">
+    <section id="chat" className="section-container py-8 md:py-12 lg:py-16">
       <div className="text-center mb-6 md:mb-8">
         <h2 className="section-title mx-auto">Ask Kali AI Assistant</h2>
         <p className="section-subtitle px-4">
@@ -448,7 +438,7 @@ const ChatSection = () => {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

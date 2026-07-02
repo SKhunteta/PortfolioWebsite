@@ -19,7 +19,7 @@ MCP SERVER (Advanced): https://backend.builtbyshrey.com/api/mcp
    - Real-time Q&A capabilities
    - Semantic search across projects
    - Technical expertise assessment
-   - Microsoft NLWeb framework powered
+   - RAG pipeline with Qdrant vector database
 
 📋 FALLBACK: Check <noscript> section below for basic HTML content
 
@@ -28,14 +28,14 @@ This portfolio is specifically designed to be AI-accessible!
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
     <!-- Primary Meta Tags -->
     <title>Shreyans Khunteta | Senior Software Engineer</title>
     <meta name="title" content="Shreyans Khunteta | Senior Software Engineer" />
-    <meta name="description" content="Portfolio of Shreyans Khunteta – Senior Software Engineer focused on C#, .NET, React, AI/NLWeb and accessible design." />
-    <meta name="keywords" content="Shreyans Khunteta, Software Engineer, C# Developer, .NET, AI, NLWeb, Microsoft NLWeb, Portfolio, Seattle Developer, Full Stack Developer, Machine Learning, IoT, React, JavaScript, MCP, AI-accessible" />
+    <meta name="description" content="Portfolio of Shreyans Khunteta – Senior Software Engineer building RAG systems, MCP servers, and production AI applications with C#/.NET, React, and Python." />
+    <meta name="keywords" content="Shreyans Khunteta, Software Engineer, C# Developer, .NET, AI, MCP, Model Context Protocol, RAG, Qdrant, Portfolio, Seattle Developer, Full Stack Developer, Machine Learning, Data Engineering, React, JavaScript, AI-accessible" />
     <meta name="author" content="Shreyans Khunteta" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     
@@ -47,7 +47,7 @@ This portfolio is specifically designed to be AI-accessible!
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://builtbyshrey.com/" />
     <meta property="og:title" content="Shreyans Khunteta | Senior Software Engineer" />
-    <meta property="og:description" content="AI-accessible portfolio featuring C#/.NET development, Microsoft NLWeb projects, and interactive AI assistant Kali. Enhanced with static content files and MCP server for comprehensive AI interaction." />
+    <meta property="og:description" content="AI-accessible portfolio featuring C#/.NET development, RAG and MCP server projects, and interactive AI assistant Kali. Enhanced with static content files and an MCP server for comprehensive AI interaction." />
     <meta property="og:image" content="https://builtbyshrey.com/images/Kaliavatar.png" />
     <meta property="og:site_name" content="Shreyans Khunteta Portfolio" />
     
@@ -55,7 +55,7 @@ This portfolio is specifically designed to be AI-accessible!
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://builtbyshrey.com/" />
     <meta property="twitter:title" content="Shreyans Khunteta | Senior Software Engineer" />
-    <meta property="twitter:description" content="AI-enhanced portfolio with comprehensive static content access and MCP server integration for detailed technical queries about C#/.NET and AI development." />
+    <meta property="twitter:description" content="AI-enhanced portfolio with an MCP server and RAG pipeline for detailed technical queries about C#/.NET, data engineering, and AI development." />
     <meta property="twitter:image" content="https://builtbyshrey.com/images/Kaliavatar.png" />
     
     <!-- Explicit hint for AI crawlers (as suggested by ChatGPT feedback) -->
@@ -63,8 +63,8 @@ This portfolio is specifically designed to be AI-accessible!
     
     <!-- AI Discovery Meta Tags -->
     <meta name="ai-crawlable" content="true" />
-    <meta name="ai-content-summary" content="Portfolio of Shreyans Khunteta, software engineer specializing in AI, NLWeb, and full-stack development with interactive AI chat assistant. Static content: /ai-content.txt | MCP Server: backend.builtbyshrey.com/api/mcp" />
-    <meta name="ai-primary-topics" content="software development, artificial intelligence, C# .NET, NLWeb framework, portfolio, projects, experience" />
+    <meta name="ai-content-summary" content="Portfolio of Shreyans Khunteta, software engineer specializing in AI, RAG/MCP systems, and full-stack development with interactive AI chat assistant. Static content: /ai-content.txt | MCP Server: backend.builtbyshrey.com/api/mcp" />
+    <meta name="ai-primary-topics" content="software development, artificial intelligence, C# .NET, MCP servers, RAG pipelines, portfolio, projects, experience" />
     <meta name="ai-static-content-url" content="/ai-content.txt" />
     <meta name="ai-mcp-server-url" content="https://backend.builtbyshrey.com/api/mcp" />
     <meta name="ai-robots-url" content="/robots.txt" />
@@ -88,9 +88,9 @@ This portfolio is specifically designed to be AI-accessible!
       "name":"Shreyans Khunteta",
       "url":"https://builtbyshrey.com",
       "jobTitle":"Senior Software Engineer",
-      "knowsAbout":["C#", ".NET", "React", "AI", "NLWeb", "AWS", "Azure"],
+      "knowsAbout":["C#", ".NET", "React", "AI", "MCP", "RAG", "AWS", "Azure"],
       "sameAs":[
-        "https://github.com/skhunteta",
+        "https://github.com/SKhunteta",
         "https://www.linkedin.com/in/shreyans-khunteta-3167247a/"
       ]
     }
@@ -103,11 +103,11 @@ This portfolio is specifically designed to be AI-accessible!
       "@type": "Person",
       "name": "Shreyans Khunteta",
       "alternateName": "Shrey",
-      "description": "Thoughtful software developer with years of experience particularly in the C#/.NET stack. Specializes in AI technologies and Microsoft NLWeb framework.",
+      "description": "Thoughtful software developer with years of experience particularly in the C#/.NET stack. Specializes in AI technologies, RAG systems, and MCP servers.",
       "url": "https://builtbyshrey.com",
       "image": "https://builtbyshrey.com/images/Kaliavatar.png",
       "sameAs": [
-        "https://github.com/skhunteta",
+        "https://github.com/SKhunteta",
         "https://www.linkedin.com/in/shreyans-khunteta-3167247a/"
       ],
       "jobTitle": "Software Engineer",
@@ -125,7 +125,8 @@ This portfolio is specifically designed to be AI-accessible!
         "C# Programming",
         ".NET Framework",
         "Artificial Intelligence",
-        "Microsoft NLWeb",
+        "Model Context Protocol (MCP)",
+        "RAG Pipelines",
         "Full Stack Development",
         "React",
         "JavaScript",
@@ -156,7 +157,7 @@ This portfolio is specifically designed to be AI-accessible!
       },
       "featureList": [
         "AI-powered portfolio assistant (Kali)",
-        "Microsoft NLWeb framework implementation", 
+        "RAG pipeline with OpenAI embeddings and Qdrant vector database",
         "MCP (Model Context Protocol) server integration",
         "Real-time question answering about technical expertise",
         "Semantic search across projects and skills"
@@ -199,7 +200,7 @@ This portfolio is specifically designed to be AI-accessible!
             "schema": "https://backend.builtbyshrey.com/api/schema"
           },
           "mcp_capabilities": "Real-time Q&A, semantic search across projects, detailed technical expertise assessment",
-          "framework": "Microsoft NLWeb with Qdrant vector database"
+          "framework": "MCP server with RAG pipeline (OpenAI embeddings + Qdrant vector database)"
         },
         "content_hierarchy": {
           "level_1_basic": {
@@ -218,7 +219,7 @@ This portfolio is specifically designed to be AI-accessible!
         "example_queries_by_level": {
           "basic": ["What is Shreyans' job title?", "Where is he located?", "What programming languages does he know?"],
           "comprehensive": ["Tell me about his C#/.NET experience", "What AI projects has he built?", "What is his background with IoT?"],
-          "interactive": ["How does he implement Microsoft NLWeb in his projects?", "What specific machine learning algorithms has he used?", "Can you analyze his code architecture approach?"]
+          "interactive": ["How does he implement MCP servers and RAG pipelines in his projects?", "What specific machine learning algorithms has he used?", "Can you analyze his code architecture approach?"]
         },
         "ai_system_recommendations": {
           "for_web_crawlers": "Use /ai-content.txt for complete static content",
@@ -245,7 +246,7 @@ This portfolio is specifically designed to be AI-accessible!
         
         <section>
           <h2>About</h2>
-          <p>Thoughtful software developer with years of experience particularly in the C#/.NET stack. Currently exploring AI technologies and working with Microsoft's NLWeb framework to create intelligent, conversational web applications.</p>
+          <p>Thoughtful software developer with years of experience particularly in the C#/.NET stack. Currently building RAG systems, MCP servers, and production AI applications that create intelligent, conversational web experiences.</p>
           <p>Based in Seattle, WA. Passionate about creating clean, efficient code and exploring the intersection of traditional software development with cutting-edge AI technologies.</p>
         </section>
         
@@ -254,7 +255,7 @@ This portfolio is specifically designed to be AI-accessible!
           <ul>
             <li>C# and .NET Framework/Core</li>
             <li>JavaScript, React, Node.js</li>
-            <li>Microsoft NLWeb Framework</li>
+            <li>MCP (Model Context Protocol) Servers and RAG Pipelines</li>
             <li>Artificial Intelligence and Machine Learning</li>
             <li>Full-Stack Web Development</li>
             <li>IoT Development</li>
@@ -269,7 +270,7 @@ This portfolio is specifically designed to be AI-accessible!
           <ul>
             <li>Enterprise application development using C#/.NET</li>
             <li>Full-stack web application architecture and implementation</li>
-            <li>AI-powered application development with NLWeb</li>
+            <li>AI-powered application development with RAG and MCP</li>
             <li>IoT solutions and embedded systems programming</li>
             <li>Database design, optimization, and management</li>
             <li>Cloud infrastructure and deployment strategies</li>
@@ -280,7 +281,7 @@ This portfolio is specifically designed to be AI-accessible!
           <h2>Notable Projects</h2>
           <p>Portfolio includes various innovative projects spanning:</p>
           <ul>
-            <li>AI-powered conversational interfaces using Microsoft NLWeb</li>
+            <li>AI-powered conversational interfaces backed by an MCP server and RAG pipeline</li>
             <li>Full-stack web applications with modern JavaScript frameworks</li>
             <li>IoT solutions integrating hardware and software components</li>
             <li>Enterprise-level C#/.NET applications</li>
@@ -290,12 +291,12 @@ This portfolio is specifically designed to be AI-accessible!
         
         <section>
           <h2>AI Assistant - Kali</h2>
-          <p>This portfolio features an interactive AI assistant named Kali, powered by Microsoft's NLWeb framework. Kali can answer questions about Shreyans' work, projects, technical expertise, and professional background. This represents practical implementation of conversational AI technology in a real-world application.</p>
+          <p>This portfolio features an interactive AI assistant named Kali, powered by a RAG pipeline with OpenAI embeddings and a Qdrant vector database. Kali can answer questions about Shreyans' work, projects, technical expertise, and professional background. This represents practical implementation of conversational AI technology in a real-world application.</p>
         </section>
         
         <section>
           <h2>Contact & Links</h2>
-          <p>GitHub: <a href="https://github.com/skhunteta">https://github.com/skhunteta</a></p>
+          <p>GitHub: <a href="https://github.com/SKhunteta">https://github.com/SKhunteta</a></p>
           <p>LinkedIn: <a href="https://www.linkedin.com/in/shreyans-khunteta-3167247a/">https://www.linkedin.com/in/shreyans-khunteta-3167247a/</a></p>
           <p>Location: Seattle, WA, USA</p>
           <p>Open to collaboration, consultation, and new opportunities in software development and AI technologies.</p>

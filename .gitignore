@@ -7,7 +7,7 @@
 node_modules/
 
 # Build outputs
-# dist/ - commented out for GitHub Pages deployment
+dist/
 build/
 
 # Logs
