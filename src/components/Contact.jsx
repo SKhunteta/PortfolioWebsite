@@ -3,7 +3,7 @@ import { FaLinkedin, FaGithub } from "react-icons/fa";
 
 const Contact = () => {
   return (
-    <div id="contact" className="section-container py-12 md:py-16">
+    <section id="contact" className="section-container py-12 md:py-16">
       <div className="text-center mb-8">
         <h2 className="section-title mx-auto">Let's Connect</h2>
         <p className="section-subtitle">
@@ -19,6 +19,9 @@ const Contact = () => {
               <img
                 src="/images/ShreyPic2.jpg"
                 alt="Shreyans Khunteta"
+                width="1000"
+                height="997"
+                loading="lazy"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -104,7 +107,7 @@ const Contact = () => {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

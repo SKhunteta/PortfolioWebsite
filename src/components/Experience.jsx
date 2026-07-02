@@ -70,7 +70,7 @@ const Experience = () => {
   ];
 
   return (
-    <div id="experience" className="w-full p-6 py-16">
+    <section id="experience" className="w-full p-6 py-16">
       <div className="max-w-5xl mx-auto">
         <h2 className="text-3xl font-bold text-primary tracking-widest uppercase">Work Experience</h2>
         <div className="border-b border-gray-300 my-4"></div>
@@ -92,7 +92,7 @@ const Experience = () => {
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

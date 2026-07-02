@@ -5,7 +5,7 @@ import { HiOutlineMail } from "react-icons/hi";
 
 const Hero = () => {
   return (
-    <div
+    <section
       id="home"
       className="relative overflow-hidden bg-gradient-to-br from-bg-gradient-start to-bg-gradient-end"
     >
@@ -87,6 +87,9 @@ const Hero = () => {
                 <img
                   src="/images/ShreyPic1.jpg"
                   alt="Shreyans Khunteta"
+                  width="1000"
+                  height="1025"
+                  fetchPriority="high"
                   className="w-full h-full object-cover object-center"
                 />
               </div>
@@ -152,7 +155,7 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

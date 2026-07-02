@@ -32,7 +32,7 @@ const Skills = () => {
   ];
 
   return (
-    <div id="skills" className="section-container py-12 md:py-16">
+    <section id="skills" className="section-container py-12 md:py-16">
       <div className="text-center mb-8">
         <h2 className="section-title mx-auto">Skills & Expertise</h2>
         <p className="section-subtitle">
@@ -70,8 +70,11 @@ const Skills = () => {
             <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
             <div className="relative rounded-lg overflow-hidden shadow-custom-lg">
               <img
-                src="/images/ShreyPic3.PNG"
-                alt="Working with modern technologies"
+                src="/images/ShreyPic3.jpg"
+                alt="Illustrated portrait of Shreyans Khunteta with his black cat"
+                width="1000"
+                height="1500"
+                loading="lazy"
                 className="w-full h-full object-cover object-center rounded"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent flex flex-col justify-end p-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -103,7 +106,7 @@ const Skills = () => {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

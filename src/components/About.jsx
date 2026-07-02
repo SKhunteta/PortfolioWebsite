@@ -2,7 +2,7 @@ import React from "react";
 
 const About = () => {
   return (
-    <div id="about" className="section-container py-12 md:py-16 pt-14 md:pt-18">
+    <section id="about" className="section-container py-12 md:py-16 pt-14 md:pt-18">
       <div className="text-center mb-8">
         <h2 className="section-title mx-auto">About Me</h2>
         <p className="section-subtitle">
@@ -18,6 +18,9 @@ const About = () => {
               <img
                 src="/images/ShreyPic2.jpg"
                 alt="Shreyans Khunteta"
+                width="1000"
+                height="997"
+                loading="lazy"
                 className="w-full h-full object-cover rounded-lg shadow-lg"
               />
             </div>
@@ -63,7 +66,7 @@ const About = () => {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

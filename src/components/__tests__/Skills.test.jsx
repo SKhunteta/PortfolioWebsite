@@ -41,7 +41,9 @@ describe("Skills", () => {
 
   it("renders the skills image", () => {
     render(<Skills />);
-    const img = screen.getByAltText("Working with modern technologies");
+    const img = screen.getByAltText(
+      "Illustrated portrait of Shreyans Khunteta with his black cat"
+    );
     expect(img).toBeInTheDocument();
   });
 });
