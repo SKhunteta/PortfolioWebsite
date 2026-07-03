@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="You Are Here">
+<title>You Are Here — The Happiness Liability</title>
+<style>
+/* ------------------------------------------------------------------
+   "You Are Here" — Tezcon 2026 kiosk. Fully offline, single file.
+   Dark-room legible. No external resources of any kind.
+------------------------------------------------------------------- */
+:root{
+  --ink:#e8e6e0;
+  --ink-dim:#9a978f;
+  --ink-faint:#6a6862;
+  --teal:#5fa39a;
+  --warm:#b3a389;
+  --serif:Georgia,'Times New Roman',serif;
+  --sans:-apple-system,'SF Pro Display','Helvetica Neue',Helvetica,Arial,sans-serif;
+  --mono:'SF Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{
+  height:100%;
+  overflow:hidden;
+  overscroll-behavior:none;
+  background:#101312;
+  color:var(--ink);
+  font-family:var(--serif);
+  -webkit-text-size-adjust:100%;
+  -webkit-font-smoothing:antialiased;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-touch-callout:none;
+  -webkit-tap-highlight-color:transparent;
+}
+body{transition:background-color .8s ease}
+
+/* ---- stage + track ---- */
+#stage{
+  position:fixed;
+  inset:0;
+  overflow:hidden;
+  touch-action:none;
+  cursor:default;
+}
+#track{
+  display:flex;
+  height:100%;
+  will-change:transform;
+  transition:transform .3s ease;
+}
+#track.dragging{transition:none}
+#track.rewind{transition:transform .9s cubic-bezier(.4,0,.2,1)}
+
+/* ---- panel layout ---- */
+.panel{
+  flex:0 0 100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:calc(env(safe-area-inset-top, 0px) + 4vh)
+          calc(env(safe-area-inset-right, 0px) + 7vw)
+          calc(env(safe-area-inset-bottom, 0px) + 12vh)
+          calc(env(safe-area-inset-left, 0px) + 7vw);
+  text-align:center;
+}
+.panel .year{
+  font-family:var(--sans);
+  font-weight:200;
+  font-variant-numeric:tabular-nums;
+  font-size:clamp(44px, 11vh, 104px);
+  letter-spacing:.04em;
+  line-height:1;
+  min-height:14vh;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  color:var(--ink-dim);
+  margin-bottom:4.5vh;
+}
+.panel .content{
+  max-width:640px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2.6vh;
+}
+.panel .kicker{
+  font-family:var(--sans);
+  font-size:clamp(11px, 1.3vh, 14px);
+  font-weight:500;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--accent, var(--ink-faint));
+}
+.panel .title{
+  font-family:var(--serif);
+  font-weight:400;
+  font-size:clamp(34px, 5.2vh, 52px);
+  line-height:1.15;
+  letter-spacing:-.01em;
+  text-wrap:balance;
+}
+.panel .body{
+  font-size:clamp(20px, 2.4vh, 24px);
+  line-height:1.6;
+  max-width:34ch;
+  color:var(--ink);
+}
+.panel .body em{font-style:italic}
+.panel .footnote{
+  font-family:var(--sans);
+  font-size:clamp(13px, 1.5vh, 16px);
+  line-height:1.5;
+  color:var(--ink-faint);
+  max-width:44ch;
+}
+.panel .closing{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:clamp(26px, 3.6vh, 36px);
+  line-height:1.3;
+  color:var(--teal);
+  margin-top:1.5vh;
+}
+.motif{min-height:0}
+
+/* ---- era accents (background is set per-panel on <body> via JS) ---- */
+.panel[data-era="warm"]{--accent:var(--warm)}
+.panel[data-era="cold"]{--accent:#8b95a1}
+.panel[data-era="grey"]{--accent:#94938c}
+.panel[data-era="teal"]{--accent:var(--teal)}
+
+/* ---- entry animation (title fades up, body follows) ---- */
+.fx .title,.fx .kicker,.fx .body,.fx .footnote,.fx .closing,.fx .motif{
+  opacity:0;
+  transform:translateY(10px);
+}
+.fx.active .kicker{transition:opacity .2s ease .05s, transform .2s ease .05s}
+.fx.active .title{transition:opacity .2s ease .1s, transform .2s ease .1s}
+.fx.active .body{transition:opacity .25s ease .2s, transform .25s ease .2s}
+.fx.active .motif{transition:opacity .4s ease .35s, transform .4s ease .35s}
+.fx.active .footnote{transition:opacity .3s ease .45s, transform .3s ease .45s}
+.fx.active .closing{transition:opacity .6s ease .8s, transform .6s ease .8s}
+.fx.active .kicker,.fx.active .title,.fx.active .body,
+.fx.active .footnote,.fx.active .closing,.fx.active .motif{
+  opacity:1;
+  transform:none;
+}
+/* P4 gets no animation at all: stillness is the design. */
+.static-panel .kicker,.static-panel .title,.static-panel .body,
+.static-panel .footnote,.static-panel .closing,.static-panel .motif{
+  opacity:1 !important;
+  transform:none !important;
+  transition:none !important;
+  animation:none !important;
+}
+
+/* ---- progress: scrubber + dots ---- */
+#progress{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:calc(env(safe-area-inset-bottom, 0px) + 2.2vh);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:1.4vh;
+  pointer-events:none;
+}
+#scrubber{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:min(60vw, 480px);
+  font-family:var(--sans);
+  font-size:11px;
+  letter-spacing:.15em;
+  color:var(--ink-faint);
+}
+#scrubber .rail{
+  flex:1;
+  height:2px;
+  background:#2c2f2d;
+  border-radius:1px;
+  overflow:hidden;
+}
+#scrubber .fill{
+  height:100%;
+  width:0%;
+  background:var(--teal);
+  transition:width .3s ease;
+}
+#dots{
+  display:flex;
+  gap:2px;
+  pointer-events:auto;
+}
+#dots button{
+  appearance:none;
+  border:none;
+  background:transparent;
+  width:22px;
+  height:26px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+#dots button::after{
+  content:"";
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#3a3d3b;
+  transition:background .25s ease, transform .25s ease;
+}
+#dots button.on::after{
+  background:var(--ink);
+  transform:scale(1.35);
+}
+
+/* ---- P0 attract motifs ---- */
+.pin-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+.pin-svg .pulse{
+  transform-origin:20px 34px;
+  animation:pinpulse 2.8s ease-in-out infinite;
+}
+@keyframes pinpulse{
+  0%,100%{opacity:.25;transform:scale(1)}
+  50%{opacity:.7;transform:scale(1.5)}
+}
+.swipe-hint{
+  font-family:var(--sans);
+  font-size:13px;
+  letter-spacing:.25em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+  animation:hintpulse 3.2s ease-in-out infinite;
+}
+@keyframes hintpulse{
+  0%,100%{opacity:.35;transform:translateX(0)}
+  50%{opacity:.9;transform:translateX(6px)}
+}
+
+/* ---- P2 empty frame ---- */
+.frame-svg rect.border{
+  stroke-dasharray:720;
+  stroke-dashoffset:720;
+}
+.active .frame-svg rect.border{
+  animation:drawframe 1.6s ease .4s forwards;
+}
+@keyframes drawframe{to{stroke-dashoffset:0}}
+
+/* ---- P4 count: static, small, restrained ---- */
+.count{
+  font-family:var(--sans);
+  font-variant-numeric:tabular-nums;
+  font-size:15px;
+  letter-spacing:.3em;
+  color:var(--ink-faint);
+}
+
+/* ---- P6 self-redacting lines ---- */
+.redact{display:flex;flex-direction:column;gap:9px;width:min(300px,60vw)}
+.redact .line{
+  position:relative;
+  height:10px;
+  border-radius:2px;
+  background:#3b3e3c;
+  overflow:hidden;
+}
+.redact .line i{
+  position:absolute;
+  inset:0;
+  width:0%;
+  background:#000;
+  border-radius:2px;
+}
+.active .redact .line i{animation:redactline .9s ease forwards}
+.active .redact .line:nth-child(1) i{animation-delay:.6s}
+.active .redact .line:nth-child(2) i{animation-delay:1.0s}
+.active .redact .line:nth-child(3) i{animation-delay:1.4s}
+.active .redact .line:nth-child(4) i{animation-delay:1.8s}
+.active .redact .line:nth-child(5) i{animation-delay:2.2s}
+@keyframes redactline{to{width:100%}}
+
+/* ---- P8 contract header ---- */
+.contract{
+  font-family:var(--mono);
+  border:1px solid #3c4341;
+  border-radius:4px;
+  padding:14px 26px;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  background:rgba(0,0,0,.25);
+}
+.contract .co{
+  font-size:10px;
+  letter-spacing:.3em;
+  color:var(--ink-faint);
+}
+.contract .id{
+  font-size:clamp(16px, 2.2vh, 22px);
+  letter-spacing:.12em;
+  color:var(--ink);
+}
+
+/* ---- P10 diverging lines / P11 index line ---- */
+.draw path{
+  fill:none;
+  stroke-width:1.5;
+  stroke-linecap:round;
+  stroke-dasharray:420;
+  stroke-dashoffset:420;
+}
+.active .draw path{animation:drawpath 2.4s ease .5s forwards}
+@keyframes drawpath{to{stroke-dashoffset:0}}
+.chart-label{
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.08em;
+  fill:var(--ink-faint);
+}
+
+/* ---- P14 end card ---- */
+.qr-card{
+  background:#f4f2ec;
+  border-radius:10px;
+  padding:14px;
+  display:inline-flex;
+  line-height:0;
+}
+.qr-card svg{width:240px;height:240px}
+.qr-caption{
+  font-family:var(--sans);
+  font-size:13px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+}
+
+/* ---- reduced motion: everything instant, loops stop ---- */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation:none !important;
+    transition:none !important;
+  }
+  .fx .kicker,.fx .title,.fx .body,.fx .footnote,.fx .closing,.fx .motif{
+    opacity:1;
+    transform:none;
+  }
+  .redact .line i{width:100%}
+  .draw path{stroke-dashoffset:0}
+  .frame-svg rect.border{stroke-dashoffset:0}
+}
+
+/* ---- narrow / portrait adjustments ---- */
+@media (max-width:700px), (orientation:portrait){
+  .panel .year{font-size:clamp(38px, 8vh, 72px)}
+  .panel .body{font-size:clamp(17px, 2.1vh, 21px)}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="track"></div>
+</div>
+<div id="progress">
+  <div id="scrubber">
+    <span>2026</span>
+    <div class="rail"><div class="fill" id="fill"></div></div>
+    <span>2047</span>
+  </div>
+  <div id="dots"></div>
+</div>
+
+<script>
+"use strict";
+
+/* ==================================================================
+   CONTENT LAYER — copy is FINAL, verbatim from the build plan.
+   Canon source: "The Happiness Liability" worldbuilding bible.
+   Do not reword. Typo fixes only.
+=================================================================== */
+var PANELS = [
+  {
+    year: "JULY 11, 2026",
+    kicker: "THE HAPPINESS LIABILITY · A NOVEL BY SHREYANS KHUNTETA",
+    title: "You are here.",
+    body: "You are standing in an artists' loft in the last year anyone trusted a video. What follows is a history of the next twenty-one years. Swipe when ready.",
+    era: "warm",
+    bg: "#101312",
+    motif: "pin"
+  },
+  {
+    year: "2026",
+    kicker: "A society at the absolute peak of confidence in its own systems.",
+    title: "The peak of confidence.",
+    body: "The panics of the decade are losing on the merits. Data centers rise in Quincy and Texas; the discourse congratulates itself for being right about the grid, the chips, the AI. A virus moves through the dairy herds, filed by the public under *not yet.* Somewhere in the field, a warning: once it jumps, the window to stop it is two to ten detected cases.",
+    footnote: "Eli Marquez is fourteen. He has a father, a baseball team, and a photograph that hasn't been taken yet.",
+    era: "warm",
+    bg: "#14120e"
+  },
+  {
+    year: "2027",
+    title: "The last season anyone believed anything.",
+    body: "The Mariners make a run, and the whole city gets a season of stupid, unearnable certainty. A father is photographed in a Mariners cap. Meanwhile video quietly stops being evidence: any voice can say anything for free, and the forgeries are winning — a fake only has to be plausible to someone who wants to believe.",
+    era: "warm",
+    bg: "#151210",
+    motif: "frame"
+  },
+  {
+    year: "2028",
+    title: "The Virus Arrives.",
+    body: "The virus jumps. The first real footage of overwhelmed hospitals is indistinguishable from years of synthetic outbreak hoaxes — the boy had cried wolf in perfect 4K a hundred times. Every official address is deepfaked within minutes. The containment window closes while the country argues about whether the footage was generated.",
+    era: "cold",
+    bg: "#0f1113"
+  },
+  {
+    year: "2028",
+    title: "Four million.",
+    body: "Four million American dead, twenty million worldwide — grief disputed even at the graveside, families unable to agree whether the footage of their own dead was real. A sixteen-year-old watches his father drown in his own lungs in a hospital hallway while, on the same phone, a synthetic video of that same hospital — calm, half-empty — circulates as proof it's all a hoax. He keeps the photograph. It's an old kind of object: from the last moment an image was evidence.",
+    era: "cold",
+    bg: "#0e1012",
+    motif: "count",
+    still: true
+  },
+  {
+    year: "2029–2030",
+    kicker: "She is looking at survivors and seeing, without yet admitting it, an industry.",
+    title: "The long convalescence.",
+    body: "Not war, not collapse — gutted and turned inward. Recovery splits the country permanently: those who could buy their way out of the unreality, and those who drowned in it. Grief support groups become national infrastructure. In Portland, a former grief counselor sits in circles of the destroyed and sees what no one else can: in a world drowning in synthetic everything, real grief is the last scarce resource.",
+    era: "grey",
+    bg: "#101112"
+  },
+  {
+    year: "2031",
+    title: "The Great Copyright Purge.",
+    body: "The courts finally rule against the incumbents: the stolen training data is ordered expunged. It is framed as justice. And it kills people — the therapy algorithms, the crisis lines, the NICU systems all degrade without the corpus that built them. A second wave of deaths, this time from the absence of the machines. The bind that defines the century: you cannot legally use the stolen data, and you cannot survive without the systems it trained.",
+    era: "grey",
+    bg: "#101013",
+    motif: "redact"
+  },
+  {
+    year: "2031",
+    title: "The EMOTE Act.",
+    body: "The only legal path left is consenting human sourcing — so America builds a rights regime around its new extraction, the one institutional muscle it never lost. Emotional labor becomes legal work: contracts, protections, provenance, chain of custody. It passes as bipartisan crisis legislation. In a world where no image can be trusted, the one commodity left is grief you can prove a real person really felt — and really agreed to sell.",
+    era: "grey",
+    bg: "#101112"
+  },
+  {
+    year: "2032",
+    title: "Meridian.",
+    body: "Meridian Emotional Partners incorporates. Its founder finds a nineteen-year-old in a grief support group — orphaned, two hundred thousand dollars in medical debt, no degree, no family — and offers him a way to turn his worst trauma into his only asset. The paperwork reads: PROVIDER 2032-NW-0017. Exclusive. Depression, specifically. Through 2055. The protagonist's origin and the entire economy's origin are the same event.",
+    era: "teal",
+    bg: "#0f1213",
+    motif: "contract"
+  },
+  {
+    year: "2031–2034",
+    title: "The quiet fork.",
+    body: "Across the Pacific, no invasion — just a sequence of accommodations too gradual to force a response from a hegemon too sick to rise from its bed. The doing-nothing is the event. The chip chokepoint the old world feared losing is lost in a long exhale, and America learns the lesson it will apply to everything after: never depend on anyone else for the strategic input. Including feeling.",
+    era: "grey",
+    bg: "#0f1212"
+  },
+  {
+    year: "2032–2042",
+    title: "Two civilizations.",
+    body: "Two incompatible answers to one question: how do you build AI that understands people, after the stolen data is gone? America, trauma-rich and chip-poor, builds the authentic model — hand-sourced, consent-certified, appallingly expensive, throttled by the speed of human suffering. China, chip-rich and untouched by the Purge, builds synthetic at industrial scale: cheap, infinite, and — by the Western account — hollow. The gap between them closes quietly the entire time. Whether it ever fully closes is the question no one in 2047 can afford to answer.",
+    era: "grey",
+    bg: "#0e1313",
+    motif: "diverge"
+  },
+  {
+    year: "2037–2046",
+    title: "The good times come back. That is the horror.",
+    body: "Everything the doomers feared gets built around. The lights stop going out, permanently. Chips become boring. And abundance is the precondition for total capture: when watching was expensive, surveillance was rationed — once it's free, nothing is too trivial to watch. A kindergartener's micro-expressions. A commuter's anxiety. The harvest assembles itself out of a thousand individually reasonable conveniences. A four-hundred-billion-dollar industry compounds toward forty trillion.",
+    era: "teal",
+    bg: "#0e1413",
+    motif: "index"
+  },
+  {
+    year: "2047",
+    title: "The Saudi Arabia of feeling.",
+    body: "The grid hums and never fails. You can't tell whose silicon is in your interface — but you can absolutely tell whose feelings trained the model speaking to you. The saddest country in the developed world is the largest exporter of authenticated, provably-real emotion on earth — not because its people feel more, but because it built the law and the chain of custody that turn feeling into clean, tradeable title. The crows, crashed to almost nothing in 2028, have spent twenty years rebuilding. They're on every streetlight now. No interfaces. No futures market on grief.",
+    era: "teal",
+    bg: "#0d1514"
+  },
+  {
+    year: "EARLY 2047",
+    title: "Where the story begins.",
+    body: "Mercer Island. Eli Marquez turns thirty-five — year sixteen of contracted clinical depression, his grief streamed worldwide, the baseload plant of a global empathy grid. The house AI has logged 4,112 good mornings. His sadness trades at $6,500 a unit. His wellness benefits sit unused on page 31 of a 47-page contract, because using them would breach his baseline.",
+    closing: "And one baseload plant is about to deviate.",
+    era: "teal",
+    bg: "#0c1514"
+  },
+  {
+    year: "",
+    title: "The Happiness Liability",
+    body: "A novel by Shreyans Khunteta.",
+    footnote: "Explore the world of the book at builtbyshrey.com.",
+    era: "teal",
+    bg: "#0d1615",
+    motif: "qr"
+  }
+];
+
+/* ==================================================================
+   Tiny formatter: escape HTML, then *word* becomes <em>word</em>.
+=================================================================== */
+function fmt(s){
+  var out = s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  out = out.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+  return out;
+}
+
+/* ==================================================================
+   Motifs — all inline SVG / CSS, no images, no network.
+=================================================================== */
+var MOTIFS = {
+  pin: function(){
+    return '<div class="pin-wrap">' +
+      '<svg class="pin-svg" width="300" height="72" viewBox="0 0 300 72" aria-hidden="true">' +
+        '<circle class="pulse" cx="20" cy="34" r="10" fill="none" stroke="#b3a389" stroke-width="1"/>' +
+        '<circle cx="20" cy="34" r="4" fill="#e8e6e0"/>' +
+        '<path d="M20 38 L20 52" stroke="#e8e6e0" stroke-width="1.5"/>' +
+        '<line x1="20" y1="58" x2="280" y2="58" stroke="#3a3d3b" stroke-width="1"/>' +
+        (function(){
+          var t = "";
+          for(var i = 0; i < 21; i++){
+            var x = 20 + i * 13;
+            t += '<line x1="' + x + '" y1="55" x2="' + x + '" y2="61" stroke="#3a3d3b" stroke-width="1"/>';
+          }
+          return t;
+        })() +
+        '<text x="6" y="16" font-family="-apple-system,Helvetica,sans-serif" font-size="9" letter-spacing="3" fill="#9a978f">YOU ARE HERE</text>' +
+      '</svg>' +
+      '<div class="swipe-hint">Swipe &#8594;</div>' +
+    '</div>';
+  },
+  frame: function(){
+    return '<svg class="frame-svg" width="150" height="110" viewBox="0 0 150 110" aria-hidden="true">' +
+      '<rect class="border" x="6" y="6" width="138" height="98" fill="none" stroke="#b3a389" stroke-width="2"/>' +
+      '<rect x="16" y="16" width="118" height="78" fill="rgba(179,163,137,0.06)"/>' +
+    '</svg>';
+  },
+  count: function(){
+    return '<div class="count">4,000,000</div>';
+  },
+  redact: function(){
+    return '<div class="redact" aria-hidden="true">' +
+      '<div class="line" style="width:92%"><i></i></div>' +
+      '<div class="line" style="width:100%"><i></i></div>' +
+      '<div class="line" style="width:78%"><i></i></div>' +
+      '<div class="line" style="width:96%"><i></i></div>' +
+      '<div class="line" style="width:60%"><i></i></div>' +
+    '</div>';
+  },
+  contract: function(){
+    return '<div class="contract">' +
+      '<span class="co">MERIDIAN EMOTIONAL PARTNERS</span>' +
+      '<span class="id">PROVIDER 2032-NW-0017</span>' +
+    '</div>';
+  },
+  diverge: function(){
+    return '<svg class="draw" width="320" height="90" viewBox="0 0 320 90" aria-hidden="true">' +
+      '<path d="M10 45 C 90 45, 150 14, 310 22" stroke="#b3a389"/>' +
+      '<path d="M10 45 C 90 45, 150 76, 310 34" stroke="#5fa39a"/>' +
+    '</svg>';
+  },
+  index: function(){
+    return '<svg class="draw" width="320" height="110" viewBox="0 0 320 110" aria-hidden="true">' +
+      '<path d="M10 92 C 120 88, 200 74, 250 46 S 300 14, 310 8" stroke="#5fa39a"/>' +
+      '<text class="chart-label" x="10" y="106">$400B &#8594; $40T (2047 dollars)</text>' +
+    '</svg>';
+  },
+  qr: function(){
+    return '<div style="display:flex;flex-direction:column;align-items:center;gap:12px">' +
+      '<div class="qr-card"><!--QR:BEGIN--><svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 37 37" shape-rendering="crispEdges" role="img" aria-label="QR code: https://www.builtbyshrey.com/playground"><rect x="-4" y="-4" width="37" height="37" fill="#f4f2ec"/><path d="M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM4 0h1v1h-1zM5 0h1v1h-1zM6 0h1v1h-1zM14 0h1v1h-1zM16 0h1v1h-1zM18 0h1v1h-1zM19 0h1v1h-1zM20 0h1v1h-1zM22 0h1v1h-1zM23 0h1v1h-1zM24 0h1v1h-1zM25 0h1v1h-1zM26 0h1v1h-1zM27 0h1v1h-1zM28 0h1v1h-1zM0 1h1v1h-1zM6 1h1v1h-1zM11 1h1v1h-1zM14 1h1v1h-1zM15 1h1v1h-1zM16 1h1v1h-1zM22 1h1v1h-1zM28 1h1v1h-1zM0 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM4 2h1v1h-1zM6 2h1v1h-1zM8 2h1v1h-1zM11 2h1v1h-1zM14 2h1v1h-1zM16 2h1v1h-1zM19 2h1v1h-1zM22 2h1v1h-1zM24 2h1v1h-1zM25 2h1v1h-1zM26 2h1v1h-1zM28 2h1v1h-1zM0 3h1v1h-1zM2 3h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM8 3h1v1h-1zM11 3h1v1h-1zM12 3h1v1h-1zM13 3h1v1h-1zM14 3h1v1h-1zM17 3h1v1h-1zM20 3h1v1h-1zM22 3h1v1h-1zM24 3h1v1h-1zM25 3h1v1h-1zM26 3h1v1h-1zM28 3h1v1h-1zM0 4h1v1h-1zM2 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM6 4h1v1h-1zM8 4h1v1h-1zM13 4h1v1h-1zM16 4h1v1h-1zM17 4h1v1h-1zM19 4h1v1h-1zM20 4h1v1h-1zM22 4h1v1h-1zM24 4h1v1h-1zM25 4h1v1h-1zM26 4h1v1h-1zM28 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM9 5h1v1h-1zM11 5h1v1h-1zM12 5h1v1h-1zM13 5h1v1h-1zM14 5h1v1h-1zM15 5h1v1h-1zM18 5h1v1h-1zM22 5h1v1h-1zM28 5h1v1h-1zM0 6h1v1h-1zM1 6h1v1h-1zM2 6h1v1h-1zM3 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM25 6h1v1h-1zM26 6h1v1h-1zM27 6h1v1h-1zM28 6h1v1h-1zM8 7h1v1h-1zM9 7h1v1h-1zM11 7h1v1h-1zM12 7h1v1h-1zM0 8h1v1h-1zM2 8h1v1h-1zM3 8h1v1h-1zM4 8h1v1h-1zM5 8h1v1h-1zM6 8h1v1h-1zM9 8h1v1h-1zM12 8h1v1h-1zM13 8h1v1h-1zM14 8h1v1h-1zM15 8h1v1h-1zM16 8h1v1h-1zM17 8h1v1h-1zM18 8h1v1h-1zM19 8h1v1h-1zM22 8h1v1h-1zM23 8h1v1h-1zM24 8h1v1h-1zM25 8h1v1h-1zM26 8h1v1h-1zM0 9h1v1h-1zM2 9h1v1h-1zM4 9h1v1h-1zM5 9h1v1h-1zM11 9h1v1h-1zM12 9h1v1h-1zM16 9h1v1h-1zM17 9h1v1h-1zM18 9h1v1h-1zM19 9h1v1h-1zM20 9h1v1h-1zM21 9h1v1h-1zM22 9h1v1h-1zM23 9h1v1h-1zM24 9h1v1h-1zM28 9h1v1h-1zM1 10h1v1h-1zM3 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM8 10h1v1h-1zM14 10h1v1h-1zM15 10h1v1h-1zM16 10h1v1h-1zM17 10h1v1h-1zM20 10h1v1h-1zM21 10h1v1h-1zM2 11h1v1h-1zM3 11h1v1h-1zM4 11h1v1h-1zM5 11h1v1h-1zM7 11h1v1h-1zM8 11h1v1h-1zM10 11h1v1h-1zM11 11h1v1h-1zM16 11h1v1h-1zM18 11h1v1h-1zM19 11h1v1h-1zM21 11h1v1h-1zM22 11h1v1h-1zM23 11h1v1h-1zM25 11h1v1h-1zM27 11h1v1h-1zM4 12h1v1h-1zM6 12h1v1h-1zM8 12h1v1h-1zM9 12h1v1h-1zM10 12h1v1h-1zM11 12h1v1h-1zM12 12h1v1h-1zM15 12h1v1h-1zM17 12h1v1h-1zM20 12h1v1h-1zM25 12h1v1h-1zM26 12h1v1h-1zM0 13h1v1h-1zM1 13h1v1h-1zM5 13h1v1h-1zM10 13h1v1h-1zM12 13h1v1h-1zM13 13h1v1h-1zM16 13h1v1h-1zM18 13h1v1h-1zM19 13h1v1h-1zM20 13h1v1h-1zM22 13h1v1h-1zM24 13h1v1h-1zM28 13h1v1h-1zM2 14h1v1h-1zM3 14h1v1h-1zM5 14h1v1h-1zM6 14h1v1h-1zM9 14h1v1h-1zM10 14h1v1h-1zM13 14h1v1h-1zM14 14h1v1h-1zM15 14h1v1h-1zM16 14h1v1h-1zM17 14h1v1h-1zM18 14h1v1h-1zM20 14h1v1h-1zM23 14h1v1h-1zM25 14h1v1h-1zM26 14h1v1h-1zM0 15h1v1h-1zM2 15h1v1h-1zM4 15h1v1h-1zM8 15h1v1h-1zM10 15h1v1h-1zM13 15h1v1h-1zM15 15h1v1h-1zM23 15h1v1h-1zM24 15h1v1h-1zM27 15h1v1h-1zM1 16h1v1h-1zM2 16h1v1h-1zM4 16h1v1h-1zM5 16h1v1h-1zM6 16h1v1h-1zM9 16h1v1h-1zM11 16h1v1h-1zM12 16h1v1h-1zM14 16h1v1h-1zM16 16h1v1h-1zM17 16h1v1h-1zM19 16h1v1h-1zM20 16h1v1h-1zM23 16h1v1h-1zM25 16h1v1h-1zM26 16h1v1h-1zM0 17h1v1h-1zM1 17h1v1h-1zM3 17h1v1h-1zM4 17h1v1h-1zM5 17h1v1h-1zM8 17h1v1h-1zM10 17h1v1h-1zM11 17h1v1h-1zM16 17h1v1h-1zM17 17h1v1h-1zM18 17h1v1h-1zM19 17h1v1h-1zM20 17h1v1h-1zM21 17h1v1h-1zM22 17h1v1h-1zM23 17h1v1h-1zM24 17h1v1h-1zM26 17h1v1h-1zM28 17h1v1h-1zM0 18h1v1h-1zM2 18h1v1h-1zM3 18h1v1h-1zM4 18h1v1h-1zM6 18h1v1h-1zM11 18h1v1h-1zM12 18h1v1h-1zM15 18h1v1h-1zM16 18h1v1h-1zM17 18h1v1h-1zM21 18h1v1h-1zM22 18h1v1h-1zM23 18h1v1h-1zM26 18h1v1h-1zM0 19h1v1h-1zM2 19h1v1h-1zM3 19h1v1h-1zM7 19h1v1h-1zM8 19h1v1h-1zM9 19h1v1h-1zM12 19h1v1h-1zM14 19h1v1h-1zM15 19h1v1h-1zM19 19h1v1h-1zM23 19h1v1h-1zM24 19h1v1h-1zM27 19h1v1h-1zM0 20h1v1h-1zM2 20h1v1h-1zM3 20h1v1h-1zM4 20h1v1h-1zM5 20h1v1h-1zM6 20h1v1h-1zM7 20h1v1h-1zM8 20h1v1h-1zM9 20h1v1h-1zM10 20h1v1h-1zM11 20h1v1h-1zM12 20h1v1h-1zM15 20h1v1h-1zM17 20h1v1h-1zM20 20h1v1h-1zM21 20h1v1h-1zM22 20h1v1h-1zM23 20h1v1h-1zM24 20h1v1h-1zM26 20h1v1h-1zM27 20h1v1h-1zM28 20h1v1h-1zM8 21h1v1h-1zM10 21h1v1h-1zM11 21h1v1h-1zM12 21h1v1h-1zM13 21h1v1h-1zM14 21h1v1h-1zM16 21h1v1h-1zM17 21h1v1h-1zM18 21h1v1h-1zM20 21h1v1h-1zM24 21h1v1h-1zM25 21h1v1h-1zM26 21h1v1h-1zM27 21h1v1h-1zM28 21h1v1h-1zM0 22h1v1h-1zM1 22h1v1h-1zM2 22h1v1h-1zM3 22h1v1h-1zM4 22h1v1h-1zM5 22h1v1h-1zM6 22h1v1h-1zM9 22h1v1h-1zM10 22h1v1h-1zM11 22h1v1h-1zM13 22h1v1h-1zM14 22h1v1h-1zM15 22h1v1h-1zM19 22h1v1h-1zM20 22h1v1h-1zM22 22h1v1h-1zM24 22h1v1h-1zM25 22h1v1h-1zM26 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM8 23h1v1h-1zM10 23h1v1h-1zM12 23h1v1h-1zM13 23h1v1h-1zM15 23h1v1h-1zM16 23h1v1h-1zM19 23h1v1h-1zM20 23h1v1h-1zM24 23h1v1h-1zM28 23h1v1h-1zM0 24h1v1h-1zM2 24h1v1h-1zM3 24h1v1h-1zM4 24h1v1h-1zM6 24h1v1h-1zM8 24h1v1h-1zM14 24h1v1h-1zM17 24h1v1h-1zM18 24h1v1h-1zM20 24h1v1h-1zM21 24h1v1h-1zM22 24h1v1h-1zM23 24h1v1h-1zM24 24h1v1h-1zM26 24h1v1h-1zM0 25h1v1h-1zM2 25h1v1h-1zM3 25h1v1h-1zM4 25h1v1h-1zM6 25h1v1h-1zM8 25h1v1h-1zM10 25h1v1h-1zM12 25h1v1h-1zM16 25h1v1h-1zM17 25h1v1h-1zM18 25h1v1h-1zM23 25h1v1h-1zM25 25h1v1h-1zM26 25h1v1h-1zM27 25h1v1h-1zM28 25h1v1h-1zM0 26h1v1h-1zM2 26h1v1h-1zM3 26h1v1h-1zM4 26h1v1h-1zM6 26h1v1h-1zM8 26h1v1h-1zM11 26h1v1h-1zM12 26h1v1h-1zM13 26h1v1h-1zM15 26h1v1h-1zM17 26h1v1h-1zM19 26h1v1h-1zM21 26h1v1h-1zM22 26h1v1h-1zM23 26h1v1h-1zM24 26h1v1h-1zM25 26h1v1h-1zM26 26h1v1h-1zM27 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM9 27h1v1h-1zM10 27h1v1h-1zM11 27h1v1h-1zM12 27h1v1h-1zM14 27h1v1h-1zM15 27h1v1h-1zM19 27h1v1h-1zM20 27h1v1h-1zM22 27h1v1h-1zM23 27h1v1h-1zM25 27h1v1h-1zM27 27h1v1h-1zM0 28h1v1h-1zM1 28h1v1h-1zM2 28h1v1h-1zM3 28h1v1h-1zM4 28h1v1h-1zM5 28h1v1h-1zM6 28h1v1h-1zM8 28h1v1h-1zM9 28h1v1h-1zM10 28h1v1h-1zM13 28h1v1h-1zM14 28h1v1h-1zM15 28h1v1h-1zM16 28h1v1h-1zM17 28h1v1h-1zM19 28h1v1h-1zM21 28h1v1h-1zM23 28h1v1h-1zM24 28h1v1h-1zM25 28h1v1h-1zM26 28h1v1h-1z" fill="#101312"/></svg><!--QR:END--></div>' +
+      '<div class="qr-caption">builtbyshrey.com</div>' +
+    '</div>';
+  }
+};
+
+/* ==================================================================
+   Build the DOM from PANELS. Pure render, instant on load.
+=================================================================== */
+var track = document.getElementById("track");
+var dotsEl = document.getElementById("dots");
+var fillEl = document.getElementById("fill");
+var N = PANELS.length;
+var idx = 0;
+
+(function render(){
+  var i, p, el, html;
+  for(i = 0; i < N; i++){
+    p = PANELS[i];
+    el = document.createElement("section");
+    el.className = "panel " + (p.still ? "static-panel" : "fx");
+    el.setAttribute("data-era", p.era);
+    html = '<div class="year">' + fmt(p.year) + '</div>';
+    html += '<div class="content">';
+    if(p.kicker){ html += '<div class="kicker">' + fmt(p.kicker) + '</div>'; }
+    if(p.motif === "count"){ html += '<div class="motif">' + MOTIFS.count() + '</div>'; }
+    html += '<h1 class="title">' + fmt(p.title) + '</h1>';
+    html += '<p class="body">' + fmt(p.body) + '</p>';
+    if(p.closing){ html += '<div class="closing">' + fmt(p.closing) + '</div>'; }
+    if(p.motif && p.motif !== "count"){ html += '<div class="motif">' + MOTIFS[p.motif]() + '</div>'; }
+    if(p.footnote){ html += '<div class="footnote">' + fmt(p.footnote) + '</div>'; }
+    html += '</div>';
+    el.innerHTML = html;
+    track.appendChild(el);
+  }
+  for(i = 0; i < N; i++){
+    var b = document.createElement("button");
+    b.setAttribute("aria-label", "Panel " + (i + 1));
+    b.setAttribute("data-i", i);
+    dotsEl.appendChild(b);
+  }
+})();
+
+var panels = track.children;
+var dots = dotsEl.children;
+
+function apply(){
+  track.style.transform = "translateX(" + (-idx * 100) + "%)";
+  document.body.style.backgroundColor = PANELS[idx].bg;
+  for(var i = 0; i < N; i++){
+    panels[i].classList.toggle("active", i === idx);
+    dots[i].classList.toggle("on", i === idx);
+  }
+  fillEl.style.width = (idx / (N - 1) * 100) + "%";
+}
+
+function goTo(i, rewind){
+  i = Math.max(0, Math.min(N - 1, i));
+  if(i === idx && !rewind){ apply(); return; }
+  idx = i;
+  track.classList.toggle("rewind", !!rewind);
+  apply();
+  if(rewind){
+    setTimeout(function(){ track.classList.remove("rewind"); }, 950);
+  }
+}
+
+/* ==================================================================
+   Navigation: swipe (pointer drag, 50px / velocity threshold),
+   tap left/right thirds, arrow keys, progress dots.
+=================================================================== */
+var stage = document.getElementById("stage");
+var drag = null;
+
+stage.addEventListener("pointerdown", function(e){
+  if(drag){ return; } /* ignore extra fingers in a multi-touch storm */
+  drag = { id: e.pointerId, x0: e.clientX, t0: e.timeStamp, dx: 0 };
+  track.classList.add("dragging");
+  wake();
+  poke();
+}, {passive:true});
+
+stage.addEventListener("pointermove", function(e){
+  if(!drag || e.pointerId !== drag.id){ return; }
+  drag.dx = e.clientX - drag.x0;
+  var dx = drag.dx;
+  if((idx === 0 && dx > 0) || (idx === N - 1 && dx < 0)){ dx = dx / 3; }
+  track.style.transform = "translateX(calc(" + (-idx * 100) + "% + " + dx + "px))";
+}, {passive:true});
+
+function endDrag(e){
+  if(!drag || e.pointerId !== drag.id){ return; }
+  var dx = drag.dx;
+  var dt = Math.max(1, e.timeStamp - drag.t0);
+  var v = Math.abs(dx) / dt;
+  drag = null;
+  track.classList.remove("dragging");
+  if(Math.abs(dx) > 50 || (Math.abs(dx) > 18 && v > 0.35)){
+    goTo(idx + (dx < 0 ? 1 : -1));
+  }else if(Math.abs(dx) < 10 && dt < 500){
+    var w = window.innerWidth;
+    if(e.clientX > w * 2 / 3){ goTo(idx + 1); }
+    else if(e.clientX < w / 3){ goTo(idx - 1); }
+    else { apply(); }
+  }else{
+    apply();
+  }
+  poke();
+}
+stage.addEventListener("pointerup", endDrag);
+stage.addEventListener("pointercancel", function(e){
+  if(drag && e.pointerId === drag.id){
+    drag = null;
+    track.classList.remove("dragging");
+    apply();
+  }
+});
+
+document.addEventListener("keydown", function(e){
+  if(e.key === "ArrowRight" || e.key === " "){ goTo(idx + 1); }
+  else if(e.key === "ArrowLeft"){ goTo(idx - 1); }
+  else if(e.key === "Home"){ goTo(0); }
+  poke();
+});
+
+dotsEl.addEventListener("click", function(e){
+  var b = e.target.closest("button");
+  if(b){ goTo(parseInt(b.getAttribute("data-i"), 10)); }
+  poke();
+});
+
+/* Block pinch-zoom and double-tap zoom inside Safari. */
+document.addEventListener("gesturestart", function(e){ e.preventDefault(); });
+document.addEventListener("dblclick", function(e){ e.preventDefault(); });
+
+/* ==================================================================
+   Kiosk hardening: 45s idle returns to the attract panel (fast
+   rewind through the deck); wake lock held and re-acquired.
+=================================================================== */
+var IDLE_MS = 45000;
+var idleTimer = null;
+
+function poke(){
+  if(idleTimer){ clearTimeout(idleTimer); }
+  idleTimer = setTimeout(function(){
+    if(idx !== 0){ goTo(0, true); }
+    poke();
+  }, IDLE_MS);
+}
+poke();
+
+var lock = null;
+function wake(){
+  if(!("wakeLock" in navigator) || lock){ return; }
+  navigator.wakeLock.request("screen").then(function(l){
+    lock = l;
+    l.addEventListener("release", function(){ lock = null; });
+  }).catch(function(){ /* denied or unsupported: Guided Access + Auto-Lock:Never covers it */ });
+}
+document.addEventListener("visibilitychange", function(){
+  if(document.visibilityState === "visible"){ lock = null; wake(); }
+});
+
+apply();
+</script>
+</body>
+</html>
