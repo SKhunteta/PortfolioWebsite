@@ -96,6 +96,14 @@ const Footer = () => {
                 </a>
               </li>
               <li>
+                <a
+                  href="/you-are-here/"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  You Are Here (in-world artifact)
+                </a>
+              </li>
+              <li>
                 <Link
                   to="/playground"
                   className="text-accent hover:text-white transition-colors"

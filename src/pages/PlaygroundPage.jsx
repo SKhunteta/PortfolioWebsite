@@ -95,19 +95,50 @@ const DemoCard = ({ demo }) => {
   );
 };
 
-// The Meridian careers site is a static in-world artifact at public/meridian/
-// (not a React route), so it gets its own card outside the DEMOS array. Theme
-// mirrors the artifact's own palette: paper, ink, teal.
-const MERIDIAN_THEME = {
-  bg: "#faf9f6",
-  text: "#28312f",
-  muted: "#5a6663",
-  accent: "#1f7a72",
-  ctaText: "#ffffff",
-};
+// Static in-world artifacts live under public/ (not React routes), so they
+// get their own cards outside the DEMOS array. Each theme mirrors the
+// artifact's own palette.
+const STATIC_ARTIFACTS = [
+  {
+    id: "meridian",
+    title: "Meridian — Careers",
+    tagline: "What you feel matters. Literally.",
+    description:
+      "The straight-faced recruiting site for the emotional-labor company at the center of the novel — nine open roles, an eligibility appraisal, and a Subsection 14 you should really read before signing.",
+    tags: ["satire", "worldbuilding", "static page"],
+    cta: "Check your eligibility",
+    href: "/meridian/",
+    urlLabel: "builtbyshrey.com/meridian",
+    theme: {
+      bg: "#faf9f6",
+      text: "#28312f",
+      muted: "#5a6663",
+      accent: "#1f7a72",
+      ctaText: "#ffffff",
+    },
+  },
+  {
+    id: "you-are-here",
+    title: "You Are Here",
+    tagline: "A history of the next twenty-one years.",
+    description:
+      "The swipe-through timeline of the novel — from 2026, the last year anyone trusted a video, to the threshold where Chapter 1 begins in 2047. Built to run on an iPad in a dark room at the book's Tezcon debut.",
+    tags: ["timeline", "worldbuilding", "static page"],
+    cta: "Start in 2026",
+    href: "/you-are-here/",
+    urlLabel: "builtbyshrey.com/you-are-here",
+    theme: {
+      bg: "#101312",
+      text: "#e8e6e0",
+      muted: "#9a978f",
+      accent: "#5fa39a",
+      ctaText: "#101312",
+    },
+  },
+];
 
-const MeridianCard = () => {
-  const theme = MERIDIAN_THEME;
+const StaticArtifactCard = ({ artifact }) => {
+  const { theme } = artifact;
   return (
     <div
       className="rounded-xl overflow-hidden shadow-custom-lg flex flex-col h-full"
@@ -119,7 +150,7 @@ const MeridianCard = () => {
             className="text-xl sm:text-2xl font-bold tracking-tight"
             style={{ fontFamily: SANS, color: theme.text }}
           >
-            Meridian — Careers
+            {artifact.title}
           </h3>
           <span
             className="text-[10px] px-2 py-1 rounded border uppercase tracking-widest shrink-0"
@@ -136,18 +167,16 @@ const MeridianCard = () => {
           className="text-xs italic mb-3"
           style={{ fontFamily: SANS, color: theme.muted }}
         >
-          What you feel matters. Literally.
+          {artifact.tagline}
         </p>
         <p
           className="text-sm leading-relaxed mb-4 flex-1"
           style={{ fontFamily: SANS, color: theme.muted }}
         >
-          The straight-faced recruiting site for the emotional-labor company at
-          the center of the novel — nine open roles, an eligibility appraisal,
-          and a Subsection 14 you should really read before signing.
+          {artifact.description}
         </p>
         <div className="flex flex-wrap gap-1.5 mb-5">
-          {["satire", "worldbuilding", "static page"].map((tag) => (
+          {artifact.tags.map((tag) => (
             <span
               key={tag}
               className="text-[10px] px-2 py-0.5 rounded-full"
@@ -164,7 +193,7 @@ const MeridianCard = () => {
         <div className="flex items-center justify-between gap-3">
           {/* Static in-world artifact (not a React route) — full page load. */}
           <a
-            href="/meridian/"
+            href={artifact.href}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-opacity hover:opacity-85"
             style={{
               fontFamily: SANS,
@@ -172,14 +201,14 @@ const MeridianCard = () => {
               color: theme.ctaText,
             }}
           >
-            Check your eligibility
+            {artifact.cta}
             <span aria-hidden="true">&rarr;</span>
           </a>
           <span
             className="text-xs"
             style={{ fontFamily: MONO, color: theme.muted }}
           >
-            builtbyshrey.com/meridian
+            {artifact.urlLabel}
           </span>
         </div>
       </div>
@@ -243,7 +272,9 @@ const PlaygroundPage = () => {
               {series.map((demo) => (
                 <DemoCard key={demo.id} demo={demo} />
               ))}
-              <MeridianCard />
+              {STATIC_ARTIFACTS.map((artifact) => (
+                <StaticArtifactCard key={artifact.id} artifact={artifact} />
+              ))}
             </div>
           </div>
         </div>
