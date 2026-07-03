@@ -622,6 +622,8 @@
     <div class="form-card">
       <label for="f-name">Full name</label>
       <input type="text" id="f-name" placeholder="As it appears on your legal title">
+      <label for="f-email">Email <span style="font-weight:400;color:var(--ink-faint)">(optional)</span></label>
+      <input type="email" id="f-email" placeholder="For appraisal results and market dispatches" autocomplete="email">
       <label for="f-region">Region</label>
       <select id="f-region">
         <option>Pacific Northwest</option><option>California Corridor</option><option>Texas Triangle</option><option>Northeast</option><option>Other / Unserviced</option>
@@ -643,6 +645,7 @@
         <label><input type="checkbox" id="c1"> I consent to chain-of-custody authentication of my affective output.</label>
         <label><input type="checkbox" id="c2"> I understand provider contracts are exclusive.</label>
         <label><input type="checkbox" id="c3"> I understand my emotional output becomes Meridian's inventory upon authentication.</label>
+        <label><input type="checkbox" id="c4"> I consent to receiving Meridian market dispatches — delivered, in this timeline, as the author's newsletter at <a href="https://blog.builtbyshrey.com" target="_blank" rel="noopener">blog.builtbyshrey.com</a>.</label>
       </div>
       <button class="btn" id="submit-btn">Submit for appraisal</button>
       <div class="notice" id="notice" role="status"></div>
@@ -663,7 +666,7 @@
       </div>
     </div>
     <div class="legal">
-      Meridian is an EMOTE Act–certified emotional-data provider network. All provider relationships are consensual, compensated, and authenticated. No residual emotional profile remains active after contract termination. Meridian respects your privacy. This form authenticates nothing. Yet.
+      Meridian is an EMOTE Act–certified emotional-data provider network. All provider relationships are consensual, compensated, and authenticated. No residual emotional profile remains active after contract termination. Meridian respects your privacy. This form authenticates nothing. Except the email field — that one's real, and only if you check the dispatches box.
       <div class="reveal">
         Meridian is a fictional company from <b><i>The Happiness Liability</i></b>, a novel by <a href="https://www.builtbyshrey.com">Shreyans Khunteta</a>. No emotions were harvested in the making of this page. <a href="https://www.builtbyshrey.com/playground#happiness-liability">About the book →</a>
       </div>
@@ -702,6 +705,24 @@
     return d.toISOString().replace('T',' ').slice(0,19) + ' PST';
   }
 
+  // Newsletter signup via Ghost's public members API (the one real thing on this page).
+  // Tries the blog's custom domain first, then the ghost.io origin.
+  var GHOST_URLS = ['https://blog.builtbyshrey.com', 'https://prompt-injection.ghost.io'];
+  function subscribe(email, urlIndex){
+    urlIndex = urlIndex || 0;
+    return fetch(GHOST_URLS[urlIndex] + '/members/api/send-magic-link/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, emailType: 'subscribe', labels: ['meridian-careers'] })
+    }).then(function(res){
+      if(res.ok) return true;
+      throw new Error('status ' + res.status);
+    }).catch(function(err){
+      if(urlIndex + 1 < GHOST_URLS.length) return subscribe(email, urlIndex + 1);
+      throw err;
+    });
+  }
+
   document.getElementById('submit-btn').addEventListener('click', function(){
     var m = parseInt(mood.value,10);
     var loss = document.getElementById('f-loss').value.trim();
@@ -721,6 +742,27 @@
       n.className = 'notice no';
       n.innerHTML = head + '<h4>Thank you for your interest in Meridian.</h4><p>Unfortunately, your baseline affect does not currently meet the needs of our depression vertical.</p>'
         + '<div class="upsell"><b>But have you considered the Recovery Vertical?</b> If you\'re this happy, we\'d love to know how. Hope, resilience, and the neurological process of healing are our fastest-growing product line. You\'re not overqualified — you\'re inventory we haven\'t authenticated yet.</div>' + appraisal + rl;
+    }
+
+    var emailInput = document.getElementById('f-email');
+    var wantsDispatches = document.getElementById('c4').checked;
+    if(wantsDispatches){
+      var email = emailInput.value.trim();
+      var dispatch = document.createElement('div');
+      dispatch.className = 'rl';
+      if(!email || !emailInput.checkValidity()){
+        dispatch.textContent = 'Dispatch subscription could not be filed: a valid email address is required. Meridian cannot transmit to a feeling.';
+        n.appendChild(dispatch);
+        emailInput.focus();
+      } else {
+        dispatch.textContent = 'Filing dispatch subscription…';
+        n.appendChild(dispatch);
+        subscribe(email).then(function(){
+          dispatch.textContent = 'Dispatch subscription filed: a confirmation transmission has been sent to ' + email + '. Check your inbox to authenticate.';
+        }).catch(function(){
+          dispatch.textContent = 'Dispatch subscription could not be filed. The market will try again later — or subscribe directly at blog.builtbyshrey.com.';
+        });
+      }
     }
     n.scrollIntoView({behavior:'smooth', block:'nearest'});
   });
