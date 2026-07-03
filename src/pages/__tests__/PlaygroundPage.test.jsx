@@ -39,6 +39,15 @@ describe("PlaygroundPage", () => {
     expect(links.length).toBeGreaterThan(0);
   });
 
+  it("renders the You Are Here in-world artifact card in the series section", () => {
+    renderPage();
+    expect(screen.getByText("You Are Here")).toBeInTheDocument();
+    const links = screen
+      .getAllByRole("link")
+      .filter((el) => el.getAttribute("href") === "/you-are-here/");
+    expect(links.length).toBeGreaterThan(0);
+  });
+
   it("renders a view-source link for every demo", () => {
     renderPage();
     const sourceLinks = screen.getAllByLabelText(/View source for/);
