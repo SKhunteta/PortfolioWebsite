@@ -45,7 +45,9 @@ body{transition:background-color .8s ease}
   position:fixed;
   inset:0;
   overflow:hidden;
-  touch-action:none;
+  /* pan-y lets the browser scroll a too-tall panel natively;
+     horizontal swipes stay ours via the pointer handlers. */
+  touch-action:pan-y;
   cursor:default;
 }
 #track{
@@ -64,7 +66,14 @@ body{transition:background-color .8s ease}
   display:flex;
   flex-direction:column;
   align-items:center;
-  justify-content:center;
+  /* auto margins on .year/.content (not justify-content:center) so a
+     panel taller than a phone screen top-aligns and scrolls instead
+     of clipping both ends. */
+  justify-content:flex-start;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
   padding:calc(env(safe-area-inset-top, 0px) + 4vh)
           calc(env(safe-area-inset-right, 0px) + 7vw)
           calc(env(safe-area-inset-bottom, 0px) + 12vh)
@@ -72,6 +81,7 @@ body{transition:background-color .8s ease}
   text-align:center;
 }
 .panel .year{
+  margin-top:auto;
   font-family:var(--sans);
   font-weight:200;
   font-variant-numeric:tabular-nums;
@@ -91,6 +101,7 @@ body{transition:background-color .8s ease}
   flex-direction:column;
   align-items:center;
   gap:2.6vh;
+  margin-bottom:auto;
 }
 .panel .kicker{
   font-family:var(--sans);
@@ -654,32 +665,51 @@ function goTo(i, rewind){
 }
 
 /* ==================================================================
-   Navigation: swipe (pointer drag, 50px / velocity threshold),
-   tap left/right thirds, arrow keys, progress dots.
+   Navigation: swipe (50px / velocity threshold), tap left/right
+   thirds, arrow keys, progress dots.
+
+   Touch input is driven by touch events, mouse/pen by pointer
+   events. With touch-action:pan-y (needed so too-tall panels can
+   scroll vertically on phones) browsers stop delivering pointermove
+   once a touch drag exceeds the slop threshold — but touchmove
+   keeps firing, so touch swipes must live there.
 =================================================================== */
 var stage = document.getElementById("stage");
 var drag = null;
 
-stage.addEventListener("pointerdown", function(e){
-  if(drag){ return; } /* ignore extra fingers in a multi-touch storm */
-  drag = { id: e.pointerId, x0: e.clientX, t0: e.timeStamp, dx: 0 };
+function startDrag(id, x, y, t){
+  drag = { id: id, x0: x, y0: y, t0: t, dx: 0, axis: null };
   track.classList.add("dragging");
   wake();
   poke();
-}, {passive:true});
+}
 
-stage.addEventListener("pointermove", function(e){
-  if(!drag || e.pointerId !== drag.id){ return; }
-  drag.dx = e.clientX - drag.x0;
-  var dx = drag.dx;
+function cancelDrag(){
+  drag = null;
+  track.classList.remove("dragging");
+  apply();
+}
+
+function moveDrag(id, x, y){
+  if(!drag || id !== drag.id){ return; }
+  var dx = x - drag.x0;
+  var dy = y - drag.y0;
+  if(!drag.axis){
+    if(Math.abs(dx) < 8 && Math.abs(dy) < 8){ return; }
+    /* Lock the gesture to one axis. Vertical means the visitor is
+       scrolling a too-tall panel — release it to the browser. */
+    if(Math.abs(dy) > Math.abs(dx)){ cancelDrag(); return; }
+    drag.axis = "x";
+  }
+  drag.dx = dx;
   if((idx === 0 && dx > 0) || (idx === N - 1 && dx < 0)){ dx = dx / 3; }
   track.style.transform = "translateX(calc(" + (-idx * 100) + "% + " + dx + "px))";
-}, {passive:true});
+}
 
-function endDrag(e){
-  if(!drag || e.pointerId !== drag.id){ return; }
+function endDrag(id, x, t){
+  if(!drag || id !== drag.id){ return; }
   var dx = drag.dx;
-  var dt = Math.max(1, e.timeStamp - drag.t0);
+  var dt = Math.max(1, t - drag.t0);
   var v = Math.abs(dx) / dt;
   drag = null;
   track.classList.remove("dragging");
@@ -687,21 +717,59 @@ function endDrag(e){
     goTo(idx + (dx < 0 ? 1 : -1));
   }else if(Math.abs(dx) < 10 && dt < 500){
     var w = window.innerWidth;
-    if(e.clientX > w * 2 / 3){ goTo(idx + 1); }
-    else if(e.clientX < w / 3){ goTo(idx - 1); }
+    if(x > w * 2 / 3){ goTo(idx + 1); }
+    else if(x < w / 3){ goTo(idx - 1); }
     else { apply(); }
   }else{
     apply();
   }
   poke();
 }
-stage.addEventListener("pointerup", endDrag);
-stage.addEventListener("pointercancel", function(e){
-  if(drag && e.pointerId === drag.id){
-    drag = null;
-    track.classList.remove("dragging");
-    apply();
+
+/* ---- touch ---- */
+stage.addEventListener("touchstart", function(e){
+  if(drag){ return; } /* ignore extra fingers in a multi-touch storm */
+  var t = e.changedTouches[0];
+  startDrag("t" + t.identifier, t.clientX, t.clientY, e.timeStamp);
+}, {passive:true});
+
+stage.addEventListener("touchmove", function(e){
+  for(var i = 0; i < e.changedTouches.length; i++){
+    var t = e.changedTouches[i];
+    moveDrag("t" + t.identifier, t.clientX, t.clientY);
   }
+}, {passive:true});
+
+function endTouch(e){
+  for(var i = 0; i < e.changedTouches.length; i++){
+    var t = e.changedTouches[i];
+    if(drag && "t" + t.identifier === drag.id){
+      if(e.type === "touchcancel"){ cancelDrag(); }
+      else { endDrag(drag.id, t.clientX, e.timeStamp); }
+    }
+  }
+}
+stage.addEventListener("touchend", endTouch);
+stage.addEventListener("touchcancel", endTouch);
+
+/* ---- mouse / pen ---- */
+stage.addEventListener("pointerdown", function(e){
+  if(drag || e.pointerType === "touch"){ return; }
+  startDrag(e.pointerId, e.clientX, e.clientY, e.timeStamp);
+}, {passive:true});
+
+stage.addEventListener("pointermove", function(e){
+  if(e.pointerType === "touch"){ return; }
+  moveDrag(e.pointerId, e.clientX, e.clientY);
+}, {passive:true});
+
+stage.addEventListener("pointerup", function(e){
+  if(e.pointerType === "touch"){ return; }
+  endDrag(e.pointerId, e.clientX, e.timeStamp);
+});
+stage.addEventListener("pointercancel", function(e){
+  if(e.pointerType === "touch"){ return; }
+  if(drag && e.pointerId === drag.id){ cancelDrag(); }
 });
 
 document.addEventListener("keydown", function(e){
