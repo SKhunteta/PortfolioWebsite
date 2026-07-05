@@ -6,7 +6,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Late for Book Club — Stoup Run</title>
-<meta name="description" content="You're late for AI Book Club. Power-walk from Capitol Hill Station down Broadway to Stoup Brewing. Mario Kart, but you're walking.">
+<meta name="description" content="You're late for AI Book Club. Power-walk the real 665 meters from Capitol Hill Station down Broadway to Stoup Brewing. Mario Kart, but you're walking.">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{height:100%;overflow:hidden;background:#1a1230;touch-action:none;overscroll-behavior:none;
@@ -15,18 +15,18 @@
   canvas{display:block;background:#1a1230}
   .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
     background:rgba(16,10,34,.82);backdrop-filter:blur(4px);z-index:10;padding:20px}
-  .card{max-width:420px;width:100%;text-align:center;color:#f3efe6;background:rgba(30,20,58,.92);
-    border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:28px 24px;box-shadow:0 18px 60px rgba(0,0,0,.5)}
-  .card h1{font-size:26px;line-height:1.15;margin-bottom:4px;letter-spacing:.3px}
-  .card h2{font-size:15px;font-weight:600;color:#ffcf6b;margin-bottom:14px}
-  .card p{font-size:14px;line-height:1.5;color:#cfc8e8;margin-bottom:10px}
-  .card .ctrl{font-size:12.5px;color:#9d94c4;line-height:1.6;margin:12px 0 16px}
+  .card{max-width:430px;width:100%;text-align:center;color:#f3efe6;background:rgba(30,20,58,.92);
+    border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:26px 22px;box-shadow:0 18px 60px rgba(0,0,0,.5)}
+  .card h1{font-size:25px;line-height:1.15;margin-bottom:4px;letter-spacing:.3px}
+  .card h2{font-size:14px;font-weight:600;color:#ffcf6b;margin-bottom:12px}
+  .card p{font-size:13.5px;line-height:1.5;color:#cfc8e8;margin-bottom:9px}
+  .card .ctrl{font-size:12.5px;color:#9d94c4;line-height:1.6;margin:10px 0 14px}
   .card .ctrl b{color:#e8e2ff}
   .btn{display:inline-block;border:0;cursor:pointer;font-weight:800;font-size:17px;color:#241539;
     background:linear-gradient(180deg,#ffd873,#f5a83c);padding:13px 34px;border-radius:999px;
     box-shadow:0 6px 0 #b06f1a;transition:transform .08s}
   .btn:active{transform:translateY(3px);box-shadow:0 3px 0 #b06f1a}
-  .stats{display:flex;justify-content:center;gap:18px;margin:14px 0 18px;font-size:13px;color:#cfc8e8}
+  .stats{display:flex;justify-content:center;gap:18px;margin:12px 0 16px;font-size:13px;color:#cfc8e8}
   .stats b{display:block;font-size:20px;color:#fff}
   .grade{font-size:17px;font-weight:800;color:#ffd873;margin-bottom:6px}
   #sprintBtn{position:fixed;right:16px;bottom:18px;z-index:5;width:86px;height:86px;border-radius:50%;
@@ -35,7 +35,7 @@
     -webkit-tap-highlight-color:transparent}
   #sprintBtn span{font-size:26px;line-height:1}
   #sprintBtn.on{background:rgba(255,190,80,.55);color:#241539}
-  .tiny{font-size:11px;color:#7f76a8;margin-top:12px}
+  .tiny{font-size:11px;color:#7f76a8;margin-top:10px;line-height:1.5}
   .hidden{display:none!important}
 </style>
 </head>
@@ -46,16 +46,18 @@
 <div class="overlay" id="titleOverlay">
   <div class="card">
     <h1>🚉 LATE FOR AI BOOK CLUB 🍺</h1>
-    <h2>Capitol Hill Station → Stoup Brewing</h2>
-    <p>The 6:30 book club is starting and you're still stepping off the light rail.
-       600&nbsp;meters down Broadway. Dodge slow walkers, dogs, scooters and puddles.
-       Grab ☕ to keep your power-walk fueled.</p>
+    <h2>Capitol Hill Station → 665 m south on Broadway → Stoup Brewing (1158 Broadway at E Union)</h2>
+    <p>Book club's at 6:30 and you're still stepping off the light rail at Barbara Bailey Way.
+       The real route, block by block: past Seattle Central, the Jimi Hendrix statue, the rainbow
+       crosswalks at Pine &amp; Pike, and Harvard Market — with real streetcar tracks and the
+       Broadway Bikeway to survive.</p>
     <div class="ctrl">
       <b>← →</b> steer &nbsp;·&nbsp; <b>↑ / shift / space</b> power-walk<br>
-      touch: <b>drag</b> to steer, hold <b>⚡SPRINT</b> to hustle
+      touch: <b>drag</b> to steer, hold <b>⚡SPRINT</b> to hustle<br>
+      ☕ refuels you · 🕺 bronze dance steps give a boost · 🚋 stay off the tracks
     </div>
     <button class="btn" id="startBtn">START WALKING</button>
-    <div class="tiny">Mario Kart, but you're walking. No rats were harmed.</div>
+    <div class="tiny">Mario Kart, but you're walking. Geography checked against the real Broadway.</div>
   </div>
 </div>
 
@@ -70,16 +72,37 @@
       <div><b id="stBumps">0</b>collisions</div>
     </div>
     <button class="btn" id="retryBtn">WALK IT AGAIN</button>
-    <div class="tiny">Next month's book gets picked with or without you.</div>
+    <div class="tiny">Stoup Capitol Hill pours in the 1900s auto-row showroom at Broadway &amp; Union.<br>
+    Next month's book gets picked with or without you.</div>
   </div>
 </div>
 
 <script>
 'use strict';
 /* ---------------------------------------------------------------
-   LATE FOR AI BOOK CLUB — a Cap Hill walking "kart" game.
-   Capitol Hill Station → Broadway → Stoup Brewing (600 m).
-   Single file, no dependencies, pseudo-3D segment renderer.
+   LATE FOR AI BOOK CLUB — the real walk, block by block.
+   Capitol Hill Station (Barbara Bailey Way) → south on Broadway
+   → Stoup Brewing, 1158 Broadway at E Union. ~665 m.
+
+   Geography (verified):
+   - Heading SOUTH. Left of screen = EAST side, right = WEST side.
+   - Cross streets on route: E Howell, E Pine, E Pike, E Union.
+     (E Olive Way meets Broadway north of here, at E John.)
+   - Dick's Drive-In: west side, just north of Denny — behind you
+     at the start, across from the station.
+   - Annapurna Cafe (basement) 1833 Broadway: west side at Denny.
+   - East side Denny→Pine: Seattle Central College campus,
+     incl. Broadway Performance Hall (old Broadway High, 1902)
+     and the Jimi Hendrix statue just north of Pine.
+   - Rainbow crosswalks (2015): Broadway/Pine and Broadway/Pike.
+   - First Hill Streetcar tracks run the length of Broadway;
+     terminus stop by the station's west entrance, stop at Pike.
+   - Broadway Bikeway: two-way protected lane, EAST side, whole route.
+   - Jack Mackie's bronze dance steps (1982) inlaid in sidewalks.
+   - Neighbours (1509 Broadway, east, mid-block Pine→Pike).
+   - Harvard Market + QFC (1401 Broadway): west side, Pike→Union.
+   - Looking south: First Hill towers + Mount Rainier. The Space
+     Needle is BEHIND you (northwest) — so it's not in the sky.
 ---------------------------------------------------------------- */
 
 const canvas = document.getElementById('game');
@@ -88,9 +111,7 @@ let W = 480, H = 720, DPR = 1;
 
 function resize(){
   DPR = Math.min(window.devicePixelRatio || 1, 2);
-  const aw = window.innerWidth, ah = window.innerHeight;
-  // fill the window, but keep logical coords
-  W = aw; H = ah;
+  W = window.innerWidth; H = window.innerHeight;
   canvas.width = Math.round(W * DPR);
   canvas.height = Math.round(H * DPR);
   canvas.style.width = W + 'px';
@@ -100,100 +121,151 @@ function resize(){
 window.addEventListener('resize', resize);
 resize();
 
-/* ---------------- track ---------------- */
-const TRACK_LEN = 600;           // meters, station to Stoup
-const SEG = 2;                   // segment length m
-const DRAW_SEGS = 75;            // draw distance = 150 m
-const ROADW = 4.2;               // half road width m
-const CAM_H = 3.0, CAM_D = 2.0;  // camera height / depth (1/tan(fov/2))
-const TIME_LIMIT = 100;          // seconds until book club starts
+/* ---------------- street geometry ---------------- */
+const TRACK_LEN = 665;             // Denny/Barbara Bailey Way → Stoup's corner door
+const DRAW_DIST = 150;
+const CAM_H = 3.0, CAM_D = 2.0;
+const TIME_LIMIT = 110;
 
-// gentle Broadway "curves" (artistic license): [fromZ, toZ, curvePerSeg]
-const CURVES = [
-  [0,80,0],[80,170,0.006],[170,250,-0.0045],[250,340,0],
-  [340,430,0.0065],[430,480,0],[480,560,-0.006],[560,700,0]
+// cross-section x (meters). negative = EAST (left, walking south).
+const X_BLDG_E = -9.2, X_WALK_E = [-6.9, -4.7];       // east sidewalk
+const X_BIKE   = [-4.5, -3.0];                        // Broadway Bikeway (two-way, east side)
+const X_ROAD   = [-3.0, 3.2];                         // roadway
+const TRACK_NB = -1.3, TRACK_SB = 1.5;                // streetcar track centers
+const X_PARK   = [3.2, 4.6];                          // parking strip, west curb
+const X_WALK_W = [4.6, 6.9];                          // west sidewalk
+const X_BLDG_W = 9.2;
+const PLAYER_MIN = -6.4, PLAYER_MAX = 6.4;
+
+// real cross streets, meters from start
+const CROSS = [
+  {z: 8,   name: 'Barbara Bailey Way', rainbow: false},
+  {z: 160, name: 'E Howell St',        rainbow: false},
+  {z: 322, name: 'E Pine St',          rainbow: true},
+  {z: 432, name: 'E Pike St',          rainbow: true},
+  {z: 650, name: 'E Union St',         rainbow: false},
 ];
-function curveAt(z){
-  for (const c of CURVES) if (z >= c[0] && z < c[1]) return c[2];
-  return 0;
-}
-
-// crosswalks: [z, isRainbow] — Cap Hill's rainbow crosswalks at Pine & Pike
-const CROSSWALKS = [[28,false],[120,false],[215,false],[420,true],[500,true],[583,false]];
+const CW_LEN = 7;
 function crosswalkAt(z){
-  for (const c of CROSSWALKS) if (z >= c[0] && z < c[0]+7) return c;
+  for (const c of CROSS) if (z >= c.z && z < c.z + CW_LEN) return c;
   return null;
 }
-// park stretch (Cal Anderson on the left)
-const PARK = [150, 330];
 
+/* buildings: {z0,z1,side:(-1 east|+1 west),h,color,name,awning,windows,glass} */
+const BUILDINGS = [
+  // EAST SIDE (left) — heading south
+  {z0:-20, z1: 14, side:-1, h: 8, color:'#5a6a78', name:'CAPITOL HILL STATION', glass:true},
+  {z0: 16, z1:156, side:-1, h:13, color:'#8c6f52', name:'SEATTLE CENTRAL COLLEGE', windows:true},
+  {z0:165, z1:290, side:-1, h: 2, color:'#3c4a3a', name:null, campus:true},      // campus plaza + trees
+  {z0:291, z1:309, side:-1, h:11, color:'#9c5f4a', name:'BROADWAY PERFORMANCE HALL', windows:true},
+  {z0:310, z1:321, side:-1, h: 8, color:'#7d7469', name:'BLICK ART MATERIALS', awning:'#2255aa', windows:true},
+  {z0:329, z1:358, side:-1, h: 9, color:'#6b5a6e', name:null, windows:true},
+  {z0:359, z1:392, side:-1, h: 7, color:'#22182a', name:'NEIGHBOURS', neon:true},
+  {z0:393, z1:428, side:-1, h: 9, color:'#75604e', name:null, windows:true},
+  {z0:440, z1:530, side:-1, h:10, color:'#6e5a48', name:null, windows:true},
+  {z0:531, z1:645, side:-1, h: 8, color:'#7a6a58', name:null, windows:true},
+  {z0:648, z1:700, side:-1, h: 9, color:'#d8cdb4', name:'STOUP BREWING', stoup:true},
+  // WEST SIDE (right)
+  {z0:-25, z1:  6, side: 1, h: 6, color:'#c9502e', name:"DICK'S DRIVE-IN", dicks:true},
+  {z0:  9, z1: 34, side: 1, h: 7, color:'#8a4f3d', name:'ANNAPURNA CAFE', awning:'#c03a2b', windows:true},
+  {z0: 36, z1: 95, side: 1, h: 9, color:'#5f6a52', name:null, windows:true},
+  {z0: 96, z1:158, side: 1, h:11, color:'#726058', name:null, windows:true},
+  {z0:168, z1:240, side: 1, h: 8, color:'#61565e', name:null, windows:true},
+  {z0:241, z1:318, side: 1, h:10, color:'#6a5a45', name:null, windows:true},
+  {z0:330, z1:428, side: 1, h: 9, color:'#5c5064', name:null, windows:true},
+  {z0:442, z1:512, side: 1, h: 9, color:'#7d2b35', name:'QFC · HARVARD MARKET', glass:true},
+  {z0:513, z1:618, side: 1, h: 3, color:'#4a4550', name:null, lot:true},         // Harvard Market center + parking
+  {z0:619, z1:700, side: 1, h: 8, color:'#6d5d4c', name:null, windows:true},
+];
+
+// toasts keyed to real landmarks
 const LANDMARKS = [
-  [8,   '🚉 Capitol Hill Station — GO GO GO!'],
-  [48,  "🍔 Dick's Drive-In… smells amazing. STAY FOCUSED."],
-  [160, '🌳 Cal Anderson Park on your left'],
-  [330, '🏫 Seattle Central College'],
-  [418, '🌈 E Pine St — rainbow crosswalk!'],
-  [498, '🌈 E Pike St — almost there!'],
-  [560, '🍺 There it is — STOUP BREWING!'],
+  [3,   '🚉 Barbara Bailey Way — 665 m to beer. GO.'],
+  [14,  "🍔 Dick's is back there across Broadway. NO. Book club."],
+  [26,  '🍛 Annapurna\'s Yeti Bar, down the stairs on your right'],
+  [70,  '🚋 streetcar terminus — those rails eat wheels'],
+  [162, 'E Howell St — Cal Anderson is one block east ⬅'],
+  [230, '🏫 Seattle Central — old Broadway High ground'],
+  [312, '🎸 Jimi Hendrix statue. Nod. Keep moving.'],
+  [324, '🌈 E Pine St — rainbow crosswalk!'],
+  [372, '🪩 Neighbours, holding it down since 1983'],
+  [434, '🌈 E Pike St — Harvard Market on your right'],
+  [590, '🍺 The old auto-row showroom is RIGHT THERE'],
+  [651, 'E Union St — cross it and you\'re in'],
 ];
 
 /* ---------------- state ---------------- */
-let state = 'title';   // title | playing | done
-let pos = 0, speed = 0, playerX = 0;
+let state = 'title';
+let pos = 0, speed = 0, playerX = -2.0;   // start near the east curb, by the station
 let stamina = 100, timeLeft = TIME_LIMIT;
 let stun = 0, invuln = 0, puddleSlow = 0;
 let coffees = 0, bumps = 0, walkPhase = 0;
 let toast = null, toastT = 0, seenLandmarks;
-let sprites = [], decor = [];
-let scooterTimer = 6;
-let finishedLate = false, finishT = 0;
+let sprites = [], streetcars = [];
+let scooterTimer = 8, bikeTimer = 3, carTimer = 6, tramTimer = 12;
+let shake = 0;
 
 const rnd = (a,b) => a + Math.random()*(b-a);
-const lanes = [-2.4,-1.2,0,1.2,2.4];
+const pick = arr => arr[(Math.random()*arr.length)|0];
 
 function buildWorld(){
-  sprites = []; decor = [];
-  // obstacles
-  let z = 18;
-  while (z < TRACK_LEN - 18){
-    z += rnd(11, 26);
+  sprites = []; streetcars = [];
+  const sidewalkX = () => (Math.random()<0.5 ? rnd(X_WALK_E[0]+0.4, X_WALK_E[1]-0.2) : rnd(X_WALK_W[0]+0.2, X_WALK_W[1]-0.4));
+
+  // pedestrians & dogs on the sidewalks, cones/puddles anywhere sensible
+  let z = 20;
+  while (z < TRACK_LEN - 15){
+    z += rnd(9, 20);
     if (crosswalkAt(z)) continue;
     const r = Math.random();
-    const x = lanes[(Math.random()*lanes.length)|0] + rnd(-0.25,0.25);
-    if (r < 0.40)      sprites.push({z, x, e:['🚶','🧍','👫','🕴️'][(Math.random()*4)|0], h:1.7, w:0.9, type:'ped', vz:rnd(0.9,1.5), vx:0, solid:true});
-    else if (r < 0.55) sprites.push({z, x, e:'🚧', h:1.0, w:0.9, type:'cone', vz:0, vx:0, solid:true});
-    else if (r < 0.67) sprites.push({z, x, e:'🐕', h:0.9, w:0.9, type:'dog', vz:rnd(1.0,1.6), vx:rnd(-0.7,0.7), solid:true});
-    else if (r < 0.86) sprites.push({z, x, e:null, h:0, w:1.5, type:'puddle', vz:0, vx:0, solid:true});
-    else               sprites.push({z, x, e:'🐀', h:0.45, w:0.7, type:'rat', vz:0, vx:(Math.random()<0.5?-1:1)*rnd(1.6,2.6), solid:true});
+    if (r < 0.42)      sprites.push({z, x:sidewalkX(), e:pick(['🚶','🧍','👫','🕴️','🧑‍🤝‍🧑']), h:1.7, w:0.9, type:'ped', vz:rnd(0.8,1.5), vx:0, solid:true});
+    else if (r < 0.54) sprites.push({z, x:sidewalkX(), e:'🐕', h:0.9, w:0.9, type:'dog', vz:rnd(1.0,1.6), vx:rnd(-0.5,0.5), solid:true});
+    else if (r < 0.66) sprites.push({z, x:pick([rnd(-4.2,-3.3), rnd(-2.6,2.6)]), e:'🚧', h:1.0, w:0.9, type:'cone', vz:0, vx:0, solid:true});
+    else if (r < 0.84) sprites.push({z, x:rnd(-5.8,5.8), e:null, h:0, w:1.5, type:'puddle', vz:0, vx:0, solid:true});
+    else               sprites.push({z, x:rnd(-6,6), e:'🐀', h:0.45, w:0.7, type:'rat', vz:0, vx:(Math.random()<0.5?-1:1)*rnd(1.8,2.8), solid:true});
   }
-  // coffee
-  for (let cz = 55; cz < TRACK_LEN - 30; cz += rnd(52, 72)){
-    sprites.push({z:cz, x:lanes[(Math.random()*lanes.length)|0], e:'☕', h:0.9, w:1.0, type:'coffee', vz:0, vx:0, solid:false});
+  // crossing pedestrians at the crosswalks
+  for (const c of CROSS){
+    if (c.z < 20) continue;
+    for (let i=0;i<2;i++){
+      sprites.push({z:c.z+rnd(1,CW_LEN-1), x:rnd(-6,6), e:pick(['🚶','🧍','🚶‍➡️']), h:1.7, w:0.9, type:'ped', vz:0, vx:(Math.random()<0.5?-1:1)*rnd(0.9,1.4), cross:true, solid:true});
+    }
   }
-  // roadside decor
-  const shops = ['🏪','☕','🍕','📚','🎸','🌮','💈','🍜','🏳️‍🌈'];
-  for (let dz = 6; dz < TRACK_LEN + 60; dz += rnd(6, 10)){
-    const side = Math.random() < 0.5 ? -1 : 1;
-    const inPark = dz > PARK[0] && dz < PARK[1];
-    let e;
-    if (inPark && side < 0) e = '🌳';
-    else e = Math.random() < 0.45 ? '🌳' : shops[(Math.random()*shops.length)|0];
-    decor.push({z:dz, x:side * rnd(5.6, 8.5), e, h: e==='🌳' ? rnd(3,4.5) : 2.4});
+  // coffee — it's Capitol Hill, it's everywhere
+  for (let cz = 50; cz < TRACK_LEN - 30; cz += rnd(52, 70)){
+    sprites.push({z:cz, x:pick([rnd(-6,-5), rnd(-2.5,2.5), rnd(5,6)]), e:'☕', h:0.9, w:1.1, type:'coffee', vz:0, vx:0, solid:false});
   }
-  // a couple of signature landmarks as big decor
-  decor.push({z:46, x:6.5, e:'🍔', h:3.6});   // Dick's
-  decor.push({z:332, x:7, e:'🏫', h:4.2});    // Seattle Central
+  // Jack Mackie's bronze dance steps — east sidewalk, Pine northward
+  sprites.push({z:225, x:-5.7, type:'dance', name:'Foxtrot', h:0, w:1.6, vz:0, vx:0, solid:false});
+  sprites.push({z:286, x:-5.7, type:'dance', name:'Tango',   h:0, w:1.6, vz:0, vx:0, solid:false});
+  sprites.push({z:150, x: 5.7, type:'dance', name:'Rumba',   h:0, w:1.6, vz:0, vx:0, solid:false});
+  // Jimi Hendrix statue — east sidewalk just north of Pine
+  sprites.push({z:314, x:-5.9, type:'jimi', h:1.9, w:1.2, vz:0, vx:0, solid:true});
+  // trees along the campus plaza + a few west side
+  for (let tz=170; tz<292; tz+=rnd(14,22)) sprites.push({z:tz, x:-7.6, e:'🌳', h:rnd(3.4,4.6), w:0, type:'decor', vz:0, vx:0});
+  for (let tz=45;  tz<640; tz+=rnd(45,80)) sprites.push({z:tz, x:7.6,  e:'🌳', h:rnd(3,4),     w:0, type:'decor', vz:0, vx:0});
+  // parked cars along the west curb
+  for (let pz=40; pz<640; pz+=rnd(28,55)){
+    if (crosswalkAt(pz) || (pz>60&&pz<130)) continue;
+    sprites.push({z:pz, x:3.9, type:'car', parked:true, h:1.4, w:1.9, len:4.4, vz:0, vx:0, solid:true, color:pick(['#7a8a99','#5d6b5a','#8a7a6a','#4a5568','#93867b'])});
+  }
+  // streetcar laying over at the terminus by the station's west entrance
+  streetcars.push({z:70, x:TRACK_SB, vz:0, len:20, bellDone:true, static:true});
+  // book club crowd at Stoup's corner door
+  sprites.push({z:TRACK_LEN+4, x:-5.2, e:'🙋', h:1.7, w:0, type:'decor', vz:0, vx:0});
+  sprites.push({z:TRACK_LEN+6, x:-4.2, e:'🧑‍🤝‍🧑', h:1.7, w:0, type:'decor', vz:0, vx:0});
+  sprites.push({z:TRACK_LEN+5, x:-6.1, e:'📚', h:1.0, w:0, type:'decor', vz:0, vx:0});
 }
 
 function reset(){
-  pos = 0; speed = 0; playerX = 0; stamina = 100; timeLeft = TIME_LIMIT;
+  pos = 0; speed = 0; playerX = -2.0; stamina = 100; timeLeft = TIME_LIMIT;
   stun = 0; invuln = 0; puddleSlow = 0; coffees = 0; bumps = 0;
   toast = null; toastT = 0; seenLandmarks = new Set();
-  scooterTimer = 6; finishedLate = false; finishT = 0;
+  scooterTimer = 8; bikeTimer = 3; carTimer = 6; tramTimer = 14; shake = 0;
   buildWorld();
 }
 
-/* ---------------- audio (tiny, optional) ---------------- */
+/* ---------------- audio ---------------- */
 let AC = null;
 function audio(){ if (!AC){ try{ AC = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ AC = false; } } return AC; }
 function beep(f, dur, type, vol, when){
@@ -209,8 +281,11 @@ function beep(f, dur, type, vol, when){
 }
 const sfx = {
   coffee(){ beep(880,.09,'square',.05); beep(1320,.12,'square',.05,.07); },
+  dance(){ [660,784,988].forEach((f,i)=>beep(f,.1,'triangle',.05,i*.09)); },
   bump(){ beep(110,.2,'sawtooth',.09); },
   splash(){ beep(300,.15,'sine',.06); beep(180,.2,'sine',.06,.05); },
+  bell(){ beep(1568,.4,'triangle',.07); beep(1568,.4,'triangle',.06,.5); },
+  bike(){ beep(2093,.06,'square',.04); beep(2093,.06,'square',.04,.1); },
   finish(){ [523,659,784,1047].forEach((f,i)=>beep(f,.18,'square',.06,i*.13)); },
   tick(){ beep(1000,.05,'square',.03); },
 };
@@ -220,8 +295,7 @@ const keys = {};
 window.addEventListener('keydown', e => {
   keys[e.code] = true;
   if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault();
-  if (state === 'title' && (e.code === 'Space' || e.code === 'Enter')) start();
-  if (state === 'done' && (e.code === 'Space' || e.code === 'Enter')) start();
+  if ((state === 'title' || state === 'done') && (e.code === 'Space' || e.code === 'Enter')) start();
 });
 window.addEventListener('keyup', e => { keys[e.code] = false; });
 
@@ -276,7 +350,7 @@ function finish(){
   let grade, msg, title;
   if (spare >= 25){ grade = '🏆 S — Power Walker of Pike/Pine';
     title = '🍻 You made it… EARLY?!';
-    msg = 'You beat everyone there. Save seats, order a flight, look smug.'; }
+    msg = 'You beat everyone to the beer hall. Grab the long table under the skylights and look smug.'; }
   else if (spare >= 10){ grade = '⭐ A — Casually early';
     title = '🍻 You made it!';
     msg = 'You stroll in like you planned it. The discussion hasn\'t started.'; }
@@ -298,7 +372,7 @@ function finish(){
   endOverlay.classList.remove('hidden');
 }
 
-function showToast(text){ toast = text; toastT = 2.6; }
+function showToast(text){ toast = text; toastT = 2.7; }
 
 /* ---------------- update ---------------- */
 let lastTick10 = -1;
@@ -308,232 +382,455 @@ function update(dt){
   const steer = getSteer();
   const sprint = getSprint() && stamina > 0 && stun <= 0;
 
-  // speed
   let target = sprint ? 9.6 : 4.8;
   if (puddleSlow > 0){ target *= 0.55; puddleSlow -= dt; }
   if (stun > 0){ target = 0.8; stun -= dt; }
   speed += (target - speed) * Math.min(1, dt*3.2);
 
-  // stamina
   stamina += (sprint ? -15 : 5.5) * dt;
   stamina = Math.max(0, Math.min(100, stamina));
 
-  // move
   pos += speed * dt;
   walkPhase += speed * dt * 2.2;
   playerX += steer * dt * (2.6 + speed*0.22);
-  playerX -= curveAt(pos) * speed * dt * 14;      // curves push you outward
-  playerX = Math.max(-3.2, Math.min(3.2, playerX));
+  playerX = Math.max(PLAYER_MIN, Math.min(PLAYER_MAX, playerX));
   if (invuln > 0) invuln -= dt;
+  if (shake > 0) shake -= dt;
 
-  // clock
   timeLeft -= dt;
   if (timeLeft <= 10 && timeLeft > -0.01){
     const t10 = Math.ceil(timeLeft);
     if (t10 !== lastTick10){ lastTick10 = t10; sfx.tick(); }
   }
 
-  // spawn oncoming scooters
+  // ---- traffic spawns ----
   scooterTimer -= dt;
-  if (scooterTimer <= 0 && pos < TRACK_LEN - 80){
-    scooterTimer = rnd(9, 15);
-    sprites.push({z:pos + 150, x:lanes[(Math.random()*lanes.length)|0], e:'🛴', h:1.5, w:0.9, type:'scooter', vz:-5.2, vx:rnd(-0.3,0.3), solid:true});
+  if (scooterTimer <= 0 && pos < TRACK_LEN - 90){
+    scooterTimer = rnd(10, 16);
+    sprites.push({z:pos + 150, x:pick([rnd(-4.2,-3.3), rnd(-2.6,2.6)]), e:'🛴', h:1.5, w:0.9, type:'scooter', vz:-5.2, vx:0, solid:true});
+  }
+  bikeTimer -= dt;   // Broadway Bikeway: two-way, east side
+  if (bikeTimer <= 0 && pos < TRACK_LEN - 60){
+    bikeTimer = rnd(5, 9);
+    const oncoming = Math.random() < 0.6;
+    sprites.push({z: oncoming ? pos+150 : pos-30, x: oncoming ? -4.1 : -3.4,
+      e:'🚴', h:1.6, w:1.0, type:'bike', vz: oncoming ? -7 : 8.5, vx:0, solid:true});
+  }
+  carTimer -= dt;    // road traffic
+  if (carTimer <= 0 && pos < TRACK_LEN - 90){
+    carTimer = rnd(9, 15);
+    const oncoming = Math.random() < 0.5;
+    sprites.push({z: oncoming ? pos+150 : pos-35, x: oncoming ? -2.4 : 2.5,
+      type:'car', h:1.4, w:1.9, len:4.4, vz: oncoming ? -8 : 9.5, vx:0, solid:true,
+      color:pick(['#33404f','#5a3a3a','#3d4a3d','#555','#6b5b7a'])});
+  }
+  tramTimer -= dt;   // First Hill Streetcar
+  if (tramTimer <= 0 && pos > 40 && pos < TRACK_LEN - 120){
+    tramTimer = rnd(24, 34);
+    const southbound = Math.random() < 0.55;
+    streetcars.push(southbound
+      ? {z: pos - 70, x:TRACK_SB, vz: 8.5, len:20, bellDone:false}   // overtakes you
+      : {z: pos + 160, x:TRACK_NB, vz: -7, len:20, bellDone:false}); // head-on
   }
 
-  // sprites
+  // ---- move sprites ----
   for (const s of sprites){
     if (s.vz) s.z += s.vz * dt;
     if (s.vx){
       s.x += s.vx * dt;
-      if (s.type === 'dog' && Math.abs(s.x) > 2.8) s.vx *= -1;
-      if (s.type === 'rat' && Math.abs(s.x) > 4.5) s.x = -Math.sign(s.x)*4.5, s.vx *= -1;
+      if (s.type === 'dog' && (s.x < -6.5 || s.x > 6.5)) s.vx *= -1;
+      if ((s.type === 'rat' || s.cross) && Math.abs(s.x) > 7){ s.x = Math.sign(s.x)*7; s.vx *= -1; }
     }
   }
-  sprites = sprites.filter(s => s.z > pos - 8 && !s.dead);
+  sprites = sprites.filter(s => s.z > pos - 12 && s.z < pos + 400 && !s.dead);
 
-  // collisions (the walker is drawn ~4 m ahead of the camera)
+  for (const t of streetcars){
+    if (t.vz) t.z += t.vz * dt;
+    if (!t.bellDone && Math.abs((t.z + (t.vz>0?t.len:0)) - pos) < 45){
+      t.bellDone = true; sfx.bell();
+      showToast(t.vz > 0 ? '🚋 STREETCAR coming up behind — off the tracks!' : '🚋 STREETCAR head-on — off the tracks!');
+    }
+  }
+  streetcars = streetcars.filter(t => t.static || (t.z > pos - 260 && t.z < pos + 320));
+
+  // ---- collisions ----
+  const pz = pos + 3.8;   // walker is drawn ~4 m ahead of camera
   for (const s of sprites){
-    if (Math.abs(s.z - (pos + 3.8)) > 1.2) continue;
+    const halfLen = s.len ? s.len/2 : 1.2;
+    if (Math.abs(s.z - pz) > halfLen) continue;
     if (Math.abs(s.x - playerX) > s.w/2 + 0.42) continue;
     if (s.type === 'coffee'){
       s.dead = true; coffees++; stamina = Math.min(100, stamina + 42);
       sfx.coffee(); showToast('☕ +stamina!');
+    } else if (s.type === 'dance'){
+      if (!s.hit){ s.hit = true; stamina = Math.min(100, stamina + 16);
+        sfx.dance(); showToast(`🕺 ${s.name}! (bronze dance steps, 1982) +pep`); }
     } else if (s.type === 'puddle'){
       if (puddleSlow <= 0){ puddleSlow = 1.4; sfx.splash(); showToast('💦 SPLASH — soggy shoes'); }
-    } else if (invuln <= 0){
-      stun = 0.8; invuln = 1.4; bumps++; sfx.bump();
+    } else if (s.solid && invuln <= 0){
+      stun = 0.8; invuln = 1.4; bumps++; sfx.bump(); shake = 0.3;
       showToast(s.type === 'ped' ? '"oh! sorry! sorry—"' :
                 s.type === 'dog' ? '🐕 tangled in a leash!' :
                 s.type === 'rat' ? '🐀 RAT! you jumped.' :
-                s.type === 'scooter' ? '🛴 scooter clip!' : '🚧 clipped a cone!');
+                s.type === 'bike' ? '🚴 "BIKE LANE, buddy!"' :
+                s.type === 'scooter' ? '🛴 scooter clip!' :
+                s.type === 'car' ? (s.parked ? '🚗 walked into a parked car' : '🚗 HEY! I\'m walkin\' here!') :
+                s.type === 'jimi' ? '🎸 you hugged the Hendrix statue' : '🚧 clipped a cone!');
+    }
+  }
+  for (const t of streetcars){
+    if (pz > t.z - 1 && pz < t.z + t.len + 1 && Math.abs(t.x - playerX) < 1.7 && invuln <= 0){
+      stun = 1.4; invuln = 2; bumps++; speed = 0.5; shake = 0.6;
+      sfx.bump(); sfx.bell();
+      showToast('🚋 CLIPPED BY THE STREETCAR — that\'s going in the group chat');
     }
   }
 
-  // landmarks
   for (const [lz, text] of LANDMARKS){
     if (pos >= lz && !seenLandmarks.has(lz)){ seenLandmarks.add(lz); showToast(text); }
   }
-
   if (toastT > 0) toastT -= dt;
 
-  // finish
   if (pos >= TRACK_LEN) finish();
 }
 
-/* ---------------- render ---------------- */
+/* ---------------- projection & render ---------------- */
 function project(worldX, worldY, worldZ){
   const dz = worldZ - pos;
   const scale = CAM_D / Math.max(dz, 0.12);
   return {
     x: W/2 + scale * (worldX - playerX) * (W/2),
-    y: H*0.42 + scale * (CAM_H - worldY) * (W/2),
+    y: H*0.40 + scale * (CAM_H - worldY) * (W/2),
     scale
   };
 }
+function quad(x1,y1,x2,y2,x3,y3,x4,y4){
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.lineTo(x3,y3); ctx.lineTo(x4,y4); ctx.closePath(); ctx.fill();
+}
+// ground strip between two x-bounds from zNear to zFar
+function groundStrip(xa, xb, zNear, zFar, color){
+  const n1 = project(xa, 0, zNear), n2 = project(xb, 0, zNear);
+  const f1 = project(xa, 0, zFar),  f2 = project(xb, 0, zFar);
+  ctx.fillStyle = color;
+  quad(n1.x, n1.y, n2.x, n2.y, f2.x, f2.y, f1.x, f1.y);
+}
 
-function skyAndSkyline(){
-  // dusk sky
-  const g = ctx.createLinearGradient(0,0,0,H*0.45);
+function sky(){
+  // dusk over First Hill; Mount Rainier SSE — dead ahead-left. No Space Needle (it's behind you).
+  const hy = H*0.40;
+  const g = ctx.createLinearGradient(0,0,0,hy);
   g.addColorStop(0,'#2b1b52'); g.addColorStop(0.55,'#6b3a78'); g.addColorStop(1,'#e8895f');
-  ctx.fillStyle = g; ctx.fillRect(0,0,W,H*0.45);
-  // parallax shift with curve
-  const shift = -curveAt(pos + 30) * 2600;
-  const hy = H*0.42;
-  ctx.fillStyle = '#241a44';
-  // downtown blocks off to the right (you're walking south)
-  const blocks = [[-0.46,58,70],[-0.34,80,56],[-0.22,46,90],[-0.08,70,64],[0.05,52,80],[0.18,88,52],[0.30,60,74],[0.44,74,60]];
-  for (const [fx,bw,bh] of blocks){
-    ctx.fillRect(W/2 + fx*W + shift*0.3 - bw/2, hy - bh*(W/900+0.5), bw*(W/900+0.5), bh*(W/900+0.5));
-  }
-  // Space Needle silhouette, off right of center
-  const nx = W/2 + 0.36*W + shift*0.3, nb = hy, s = (W/900+0.5);
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,hy);
+  const s = (W/900+0.5);
+  // Rainier: big, pale, alpenglow — slightly left of center
+  const rx = W/2 - 0.10*W, rw = 150*s, rh = 78*s;
+  ctx.fillStyle = 'rgba(235,190,190,.85)';
   ctx.beginPath();
-  ctx.moveTo(nx-3*s, nb); ctx.lineTo(nx-1.6*s, nb-86*s); ctx.lineTo(nx+1.6*s, nb-86*s); ctx.lineTo(nx+3*s, nb);
-  ctx.fill();
-  ctx.beginPath(); ctx.ellipse(nx, nb-92*s, 16*s, 7*s, 0, 0, Math.PI*2); ctx.fill();
-  ctx.fillRect(nx-1.2*s, nb-104*s, 2.4*s, 12*s);
-  // stars
+  ctx.moveTo(rx-rw, hy); ctx.lineTo(rx-rw*0.28, hy-rh);
+  ctx.lineTo(rx-rw*0.12, hy-rh*0.86); ctx.lineTo(rx, hy-rh*0.98);
+  ctx.lineTo(rx+rw*0.18, hy-rh*0.8); ctx.lineTo(rx+rw, hy);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = 'rgba(120,70,110,.35)';
+  ctx.beginPath(); ctx.moveTo(rx-rw, hy); ctx.lineTo(rx-rw*0.28, hy-rh); ctx.lineTo(rx-rw*0.05, hy-rh*0.7); ctx.lineTo(rx-rw*0.3, hy); ctx.closePath(); ctx.fill();
+  // First Hill towers ahead-right (Swedish et al.)
+  ctx.fillStyle = '#241a44';
+  const blocks = [[0.02,44,96],[0.10,58,72],[0.17,40,120],[0.25,66,88],[0.33,50,64],[0.40,72,50],[-0.08,40,54],[-0.20,52,40],[-0.32,60,30],[0.47,54,40]];
+  for (const [fx,bw,bh] of blocks) ctx.fillRect(W/2 + fx*W - bw*s/2, hy - bh*s, bw*s, bh*s);
+  ctx.fillStyle = 'rgba(255,220,150,.25)';
+  for (let i=0;i<40;i++){
+    const bx = W/2 + ((i*73%100)/100-0.3)*W*0.8, by = hy - (i*37%90)*s;
+    ctx.fillRect(bx, by, 2*s, 2.5*s);
+  }
   ctx.fillStyle = 'rgba(255,255,255,.5)';
-  for (let i=0;i<24;i++){
-    const sx = (i*97 % 100)/100*W, sy = (i*57 % 100)/100*H*0.2;
-    ctx.fillRect(sx, sy, 1.6, 1.6);
+  for (let i=0;i<22;i++) ctx.fillRect((i*97%100)/100*W, (i*57%100)/100*H*0.18, 1.6, 1.6);
+}
+
+function drawGround(){
+  const zN = pos + 2, zF = pos + DRAW_DIST;
+  // base strips: sidewalks, bikeway, road, parking
+  groundStrip(-30,        X_WALK_E[0], zN, zF, '#3a3344');
+  groundStrip(X_WALK_E[0],X_WALK_E[1], zN, zF, '#8b8494');   // east sidewalk
+  groundStrip(X_BIKE[0],  X_BIKE[1],   zN, zF, '#2e6b4f');   // bikeway green
+  groundStrip(X_ROAD[0],  X_ROAD[1],   zN, zF, '#524c5b');   // asphalt
+  groundStrip(X_PARK[0],  X_PARK[1],   zN, zF, '#47414f');   // parking strip
+  groundStrip(X_WALK_W[0],X_WALK_W[1], zN, zF, '#8b8494');   // west sidewalk
+  groundStrip(X_WALK_W[1],30,          zN, zF, '#3a3344');
+
+  // streetcar rails: two track pairs
+  ctx.globalAlpha = 0.9;
+  for (const tc of [TRACK_NB, TRACK_SB])
+    for (const off of [-0.72, 0.72])
+      groundStrip(tc+off-0.06, tc+off+0.06, zN, zF, '#9aa0ad');
+  ctx.globalAlpha = 1;
+
+  // sidewalk scoring + bikeway dashes, chunked
+  for (let z = Math.floor(pos/8)*8; z < pos + DRAW_DIST; z += 8){
+    if (z < zN) continue;
+    groundStrip(X_WALK_E[0], X_WALK_E[1], z, z+0.14, '#7b7484');
+    groundStrip(X_WALK_W[0], X_WALK_W[1], z, z+0.14, '#7b7484');
+    groundStrip((X_BIKE[0]+X_BIKE[1])/2-0.05, (X_BIKE[0]+X_BIKE[1])/2+0.05, z, z+2.6, '#d8d4a0');
+  }
+  // crosswalks: zebra stripes across the roadway (rainbow at Pine & Pike — real)
+  for (const c of CROSS){
+    if (c.z + CW_LEN < pos + 2 || c.z > pos + DRAW_DIST) continue;
+    const stripes = c.rainbow ? ['#e40303','#ff8c00','#ffed00','#008026','#24408e','#732982'] : Array(6).fill('#ded9e2');
+    const x0 = X_ROAD[0]+0.15, x1 = X_ROAD[1]-0.15, n = 6;
+    for (let i=0;i<n;i++){
+      const xa = x0 + (x1-x0)*(i/n), xb = xa + (x1-x0)*(0.62/n);
+      groundStrip(xa, xb, Math.max(c.z, pos+2), c.z + CW_LEN, stripes[i]);
+    }
+  }
+  // distance fog band at horizon
+  const f = project(0,0,zF);
+  ctx.fillStyle = 'rgba(43,27,82,.55)';
+  ctx.fillRect(0, f.y-1, W, project(0,0,zF*0.72+pos*0.28).y - f.y + 2);
+}
+
+function facade(b){
+  const zN = Math.max(b.z0, pos + 0.6), zF = Math.min(b.z1, pos + DRAW_DIST);
+  if (zN >= zF) return;
+  const x = b.side < 0 ? X_BLDG_E : X_BLDG_W;
+  const g1 = project(x, 0, zN), g2 = project(x, 0, zF);
+  const t1 = project(x, b.h, zN), t2 = project(x, b.h, zF);
+  const fog = Math.min(0.55, Math.max(0, (zN - pos)/DRAW_DIST)*1.1);
+  ctx.fillStyle = b.color;
+  quad(g1.x, g1.y, g2.x, g2.y, t2.x, t2.y, t1.x, t1.y);
+
+  if (b.glass){ // glassy curtain: horizontal bands
+    ctx.fillStyle = 'rgba(180,220,255,.16)';
+    for (let f=0.2; f<0.9; f+=0.22){
+      const a1 = project(x, b.h*f, zN), a2 = project(x, b.h*f, zF);
+      const b1 = project(x, b.h*(f+0.1), zN), b2 = project(x, b.h*(f+0.1), zF);
+      quad(a1.x, a1.y, a2.x, a2.y, b2.x, b2.y, b1.x, b1.y);
+    }
+  }
+  if (b.stoup){ // the auto-row showroom: huge pane windows, warm light inside
+    ctx.fillStyle = 'rgba(255,205,120,.5)';
+    for (let z = Math.ceil(zN/5)*5; z < zF-1; z += 5){
+      const a1 = project(x, 1.0, z), a2 = project(x, 1.0, z+3.6);
+      const b1 = project(x, b.h*0.72, z), b2 = project(x, b.h*0.72, z+3.6);
+      quad(a1.x, a1.y, a2.x, a2.y, b2.x, b2.y, b1.x, b1.y);
+    }
+  } else if (b.windows){
+    ctx.fillStyle = 'rgba(255,215,140,.28)';
+    for (let z = Math.ceil(zN/5)*5; z < zF-1; z += 5){
+      if (project(x,0,z).scale < 0.035) break;
+      for (let f=0.32; f<0.92; f+=0.26){
+        const a1 = project(x, b.h*f, z), a2 = project(x, b.h*f, z+2.2);
+        const b1 = project(x, b.h*(f+0.13), z), b2 = project(x, b.h*(f+0.13), z+2.2);
+        quad(a1.x, a1.y, a2.x, a2.y, b2.x, b2.y, b1.x, b1.y);
+      }
+    }
+  }
+  if (b.neon){ // Neighbours: dark club face, neon strip
+    ctx.fillStyle = 'rgba(255,60,180,.75)';
+    const a1 = project(x, b.h*0.55, zN), a2 = project(x, b.h*0.55, zF);
+    const b1 = project(x, b.h*0.62, zN), b2 = project(x, b.h*0.62, zF);
+    quad(a1.x, a1.y, a2.x, a2.y, b2.x, b2.y, b1.x, b1.y);
+  }
+  if (b.awning){
+    ctx.fillStyle = b.awning;
+    const a1 = project(x, 2.6, zN), a2 = project(x, 2.6, zF);
+    const c1 = project(x*0.93, 2.1, zN), c2 = project(x*0.93, 2.1, zF);
+    quad(a1.x, a1.y, a2.x, a2.y, c2.x, c2.y, c1.x, c1.y);
+  }
+  if (b.dicks){ // the orange Dick's sign pole, visible at the start
+    const p = project(x*0.9, 0, Math.max(b.z1-4, zN));
+    const ph = p.scale * 7 * (W/2);
+    if (ph > 8){
+      ctx.fillStyle = '#888'; ctx.fillRect(p.x-2, p.y-ph, 4, ph);
+      ctx.fillStyle = '#f60'; ctx.save(); ctx.translate(p.x, p.y-ph);
+      ctx.fillRect(-ph*0.16, -ph*0.13, ph*0.32, ph*0.13);
+      ctx.fillStyle='#fff'; ctx.font=`800 ${ph*0.08}px sans-serif`; ctx.textAlign='center';
+      ctx.fillText("DICK'S", 0, -ph*0.035);
+      ctx.restore();
+    }
+  }
+  // fog wash
+  if (fog > 0.08){ ctx.fillStyle = `rgba(43,27,82,${fog})`; quad(g1.x, g1.y, g2.x, g2.y, t2.x, t2.y, t1.x, t1.y); }
+
+  // sign: text along the facade — kept small and fading out as you reach it
+  if (b.name){
+    const zSign = Math.max(pos + 14, Math.min(b.z0 + 6, zF - 8));
+    if (zSign < b.z1 - 4 && zSign < zF){
+      const zEnd = Math.min(zSign + Math.min(24, (b.z1-b.z0)*0.8), zF);
+      const p1 = project(x, b.h*0.8, zSign), p2 = project(x, b.h*0.8, zEnd);
+      const size = Math.min(p1.scale * 1.5 * (W/2), 15);
+      const near = (zSign - pos - 14) / 10;               // fades as it approaches
+      const alpha = Math.max(0, Math.min(1, near)) * Math.min(1, (p1.scale*1.5*(W/2) - 5)/4);
+      if (size > 5 && alpha > 0.05){
+        let ang = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+        ang = Math.max(-0.5, Math.min(0.5, b.side < 0 ? ang : ang));
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(p1.x, p1.y); ctx.rotate(ang);
+        ctx.font = `800 ${size}px 'Arial Narrow',sans-serif`;
+        ctx.textAlign = b.side < 0 ? 'left' : 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(0,0,0,.45)';
+        const tw = ctx.measureText(b.name).width;
+        ctx.fillRect(b.side<0 ? -4 : -tw-4, -size*0.75, tw+8, size*1.5);
+        ctx.fillStyle = b.stoup ? '#ffd873' : '#fff';
+        ctx.fillText(b.name, 0, 0);
+        ctx.restore();
+        ctx.globalAlpha = 1;
+      }
+    }
+  }
+  if (b.campus){ // SCC plaza: low wall + big sign
+    const zSign = 230;
+    if (zSign > pos+4 && zSign < pos+120){
+      const p = project(X_BLDG_E*0.86, 0, zSign);
+      const s = p.scale * (W/2);
+      if (s*2 > 6){
+        ctx.fillStyle = '#b23a2e';
+        ctx.fillRect(p.x - s*1.9, p.y - s*2.6, s*3.8, s*2.2);
+        ctx.fillStyle = '#fff';
+        ctx.font = `800 ${Math.max(4,s*0.55)}px sans-serif`;
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('SEATTLE', p.x, p.y-s*1.95);
+        ctx.fillText('CENTRAL', p.x, p.y-s*1.35);
+      }
+    }
   }
 }
 
+function drawStreetcar(t){
+  // First Hill Streetcar: draw its near face + roof line
+  const zFace = t.vz > 0 ? t.z : t.z;                 // front for oncoming; rear at t.z for overtaking
+  const zNear = t.vz > 0 ? t.z : t.z;                 // (body extends z..z+len)
+  const zVisible = Math.max(t.z, pos + 2.7);
+  if (t.z + t.len < pos + 2.7) return;                // fully behind us
+  const zF = Math.min(t.z + t.len, pos + DRAW_DIST);
+  if (zVisible >= zF) return;
+  const hw = 1.35, hgt = 3.4;
+  // body side + face
+  const g1 = project(t.x - hw, 0, zVisible), g2 = project(t.x - hw, 0, zF);
+  const t1 = project(t.x - hw, hgt, zVisible), t2 = project(t.x - hw, hgt, zF);
+  const g1r = project(t.x + hw, 0, zVisible), t1r = project(t.x + hw, hgt, zVisible);
+  ctx.fillStyle = '#b8352c';                          // streetcar red-orange
+  // near face
+  quad(g1.x, g1.y, g1r.x, g1r.y, t1r.x, t1r.y, t1.x, t1.y);
+  // visible side
+  ctx.fillStyle = '#992c25';
+  quad(g1.x, g1.y, g2.x, g2.y, t2.x, t2.y, t1.x, t1.y);
+  // white band + windows on face
+  const b1 = project(t.x - hw, hgt*0.45, zVisible), b1r = project(t.x + hw, hgt*0.45, zVisible);
+  const b2 = project(t.x - hw, hgt*0.8, zVisible),  b2r = project(t.x + hw, hgt*0.8, zVisible);
+  ctx.fillStyle = 'rgba(230,235,240,.9)';
+  quad(b1.x, b1.y, b1r.x, b1r.y, b2r.x, b2r.y, b2.x, b2.y);
+  // headlight/taillight
+  const l = project(t.x, hgt*0.2, zVisible);
+  ctx.fillStyle = t.vz < 0 ? '#fff8c0' : '#ff5a5a';
+  ctx.beginPath(); ctx.arc(l.x, l.y, Math.max(2, l.scale*0.3*(W/2)), 0, Math.PI*2); ctx.fill();
+  const s = project(t.x, hgt+0.4, zVisible + 2);
+  const fs = s.scale * 0.9 * (W/2);
+  if (fs > 6){
+    ctx.fillStyle = '#fff'; ctx.font = `700 ${fs}px sans-serif`; ctx.textAlign='center';
+    ctx.fillText('FIRST HILL STREETCAR', s.x, s.y);
+  }
+}
+
+function drawJimi(p, size){
+  // bronze figure, guitar up — The Electric Lady Studio Guitar
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  const u = size/40;
+  ctx.fillStyle = '#6e5638';
+  ctx.beginPath(); ctx.ellipse(0, 0, 14*u, 3*u, 0, 0, Math.PI*2); ctx.fill();   // base
+  ctx.strokeStyle = '#7a5c3a'; ctx.lineCap='round';
+  ctx.lineWidth = 6*u;
+  ctx.beginPath(); ctx.moveTo(-4*u, -6*u); ctx.lineTo(2*u, -20*u); ctx.stroke();     // torso leaning back
+  ctx.lineWidth = 4.5*u;
+  ctx.beginPath(); ctx.moveTo(-4*u, -6*u); ctx.lineTo(-12*u, -2*u); ctx.stroke();    // kneeling leg
+  ctx.beginPath(); ctx.moveTo(2*u, -20*u); ctx.lineTo(14*u, -26*u); ctx.stroke();    // arm up the neck
+  ctx.fillStyle = '#7a5c3a';
+  ctx.beginPath(); ctx.arc(4*u, -25*u, 5.5*u, 0, Math.PI*2); ctx.fill();             // head + hair
+  ctx.beginPath(); ctx.ellipse(6*u, -14*u, 8*u, 4.5*u, -0.5, 0, Math.PI*2); ctx.fill(); // guitar body
+  ctx.strokeStyle = '#8a6a44'; ctx.lineWidth = 2*u;
+  ctx.beginPath(); ctx.moveTo(8*u, -16*u); ctx.lineTo(18*u, -28*u); ctx.stroke();    // guitar neck
+  ctx.restore();
+}
+
+function drawDance(p, size, name){
+  // bronze footprints inlaid in the sidewalk
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.fillStyle = 'rgba(170,130,70,.95)';
+  const u = size/40;
+  for (const [fx, fy, r] of [[-8,-3,-0.4],[6,-6,0.3],[-4,2,-0.1],[9,0,0.5]]){
+    ctx.save(); ctx.translate(fx*u, fy*u); ctx.rotate(r);
+    ctx.beginPath(); ctx.ellipse(0, 0, 2.6*u, 5*u, 0, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  if (size > 26){
+    ctx.fillStyle = 'rgba(170,130,70,.9)';
+    ctx.font = `700 ${7*u}px Georgia,serif`;
+    ctx.textAlign='center';
+    ctx.fillText(name.toUpperCase(), 0, 10*u);
+  }
+  ctx.restore();
+}
+
+function drawCar(s){
+  const zN = Math.max(s.z - s.len/2, pos + 2.7);
+  const zF = Math.min(s.z + s.len/2, pos + DRAW_DIST);
+  if (zN >= zF) return;
+  const hw = s.w/2 + 0.1;
+  const g1 = project(s.x - hw, 0, zN), g1r = project(s.x + hw, 0, zN);
+  const t1 = project(s.x - hw, s.h, zN), t1r = project(s.x + hw, s.h, zN);
+  const t2 = project(s.x - hw, s.h, zF), t2r = project(s.x + hw, s.h, zF);
+  ctx.fillStyle = s.color;
+  quad(g1.x, g1.y, g1r.x, g1r.y, t1r.x, t1r.y, t1.x, t1.y);   // rear/front face
+  ctx.fillStyle = 'rgba(0,0,0,.25)';
+  quad(t1.x, t1.y, t1r.x, t1r.y, t2r.x, t2r.y, t2.x, t2.y);   // roof
+  const l = project(s.x, s.h*0.35, zN);
+  const lr = Math.max(1.5, l.scale*0.22*(W/2));
+  ctx.fillStyle = (!s.parked && s.vz < 0) ? '#fff8c0' : '#c33';
+  ctx.beginPath(); ctx.arc(l.x - lr*2.2, l.y, lr, 0, Math.PI*2); ctx.arc(l.x + lr*2.2, l.y, lr, 0, Math.PI*2); ctx.fill();
+}
+
 function render(){
-  ctx.clearRect(0,0,W,H);
-  skyAndSkyline();
+  ctx.save();
+  if (shake > 0) ctx.translate(rnd(-4,4)*shake*3, rnd(-3,3)*shake*3);
+  ctx.clearRect(-8,-8,W+16,H+16);
+  sky();
+  drawGround();
 
-  const baseSeg = Math.floor(pos / SEG);
-  const basePct = (pos % SEG) / SEG;
+  // buildings far→near
+  const bs = BUILDINGS.filter(b => b.z1 > pos + 0.5 && b.z0 < pos + DRAW_DIST)
+                      .sort((a,b) => b.z0 - a.z0);
+  for (const b of bs) facade(b);
 
-  // accumulate curve offsets
-  let cx = 0, cdx = -(curveAt(pos) * basePct);
-  const rows = [];  // per-segment projected data
-  for (let n = 0; n < DRAW_SEGS; n++){
-    const segZ1 = (baseSeg + n) * SEG;
-    const segZ2 = segZ1 + SEG;
-    const p1 = project(cx, 0, segZ1);
-    cx += cdx; cdx += curveAt(segZ1) * SEG;
-    const p2 = project(cx, 0, segZ2);
-    rows.push({segZ1, p1, p2, xOff1: cx - cdx + (curveAt(segZ1)*SEG), xOff: cx});
-  }
+  // streetcars (before small sprites so peds read on top)
+  for (const t of streetcars) drawStreetcar(t);
 
-  // draw ground + road, near to far, with y clipping
-  let clipY = H + 2;
-  const spriteQueue = [];
-  for (let n = 0; n < DRAW_SEGS; n++){
-    const r = rows[n];
-    const {p1, p2, segZ1} = r;
-    if (p2.y >= clipY) continue;
-    const y2 = Math.max(p2.y, 0), y1 = Math.min(p1.y, clipY);
-    if (y1 <= y2 - 0.01 || p1.y < 0) { clipY = Math.min(clipY, p2.y); continue; }
-
-    const inPark = segZ1 > PARK[0] && segZ1 < PARK[1];
-    const alt = Math.floor(segZ1 / (SEG*3)) % 2 === 0;
-    const fog = Math.min(1, n / DRAW_SEGS * 1.15);
-
-    // ground band
-    ctx.fillStyle = inPark ? (alt ? '#3d5238' : '#37492f') : (alt ? '#4a4258' : '#443d52');
-    ctx.fillRect(0, y2, W, y1 - y2 + 1);
-
-    // road trapezoid with curb
-    const w1 = p1.scale * ROADW * (W/2), w2 = p2.scale * ROADW * (W/2);
-    ctx.fillStyle = alt ? '#8b8494' : '#847d8e';   // curb strip
-    quad(p1.x - w1*1.06, y1, p1.x + w1*1.06, y1, p2.x + w2*1.06, y2, p2.x - w2*1.06, y2);
-    const cw = crosswalkAt(segZ1);
-    ctx.fillStyle = alt ? '#56505f' : '#514b5a';   // asphalt
-    quad(p1.x - w1, y1, p1.x + w1, y1, p2.x + w2, y2, p2.x - w2, y2);
-
-    if (cw){
-      // zebra stripes (rainbow at Pine & Pike, Cap Hill style)
-      const stripes = cw[1] ? ['#e40303','#ff8c00','#ffed00','#008026','#24408e','#732982'] : Array(6).fill('#ded9e2');
-      for (let i = 0; i < 6; i++){
-        const fx = -0.78 + i * 0.31;
-        ctx.fillStyle = stripes[i];
-        quad(p1.x + w1*fx, y1, p1.x + w1*(fx+0.16), y1, p2.x + w2*(fx+0.16), y2, p2.x + w2*fx, y2);
-      }
-    } else if (alt){
-      // faint center dashes
-      ctx.fillStyle = 'rgba(230,225,240,.28)';
-      quad(p1.x - w1*0.012, y1, p1.x + w1*0.012, y1, p2.x + w2*0.012, y2, p2.x - w2*0.012, y2);
-    }
-
-    // fog
-    if (fog > 0.35){
-      ctx.fillStyle = `rgba(43,27,82,${(fog-0.35)*0.9})`;
-      ctx.fillRect(0, y2, W, y1 - y2 + 1);
-    }
-    clipY = Math.min(clipY, p2.y);
-
-    // queue sprites/decor on this segment
-    for (const s of sprites){
-      if (s.z >= segZ1 && s.z < segZ1 + SEG) spriteQueue.push({s, n, xOff: r.xOff});
-    }
-    for (const d of decor){
-      if (d.z >= segZ1 && d.z < segZ1 + SEG) spriteQueue.push({s:d, n, xOff: r.xOff, isDecor:true});
-    }
-  }
-
-  // finish arch
-  if (TRACK_LEN - pos < 150 && TRACK_LEN - pos > 0.5){
-    const row = rows[Math.min(DRAW_SEGS-1, Math.floor((TRACK_LEN - pos)/SEG))];
-    const pA = project(row.xOff - ROADW*1.15, 0, TRACK_LEN);
-    const pB = project(row.xOff + ROADW*1.15, 0, TRACK_LEN);
-    const ph = pA.scale * 4.6 * (W/2);
-    ctx.fillStyle = '#2e2540';
-    ctx.fillRect(pA.x-3, pA.y-ph, 6, ph);
-    ctx.fillRect(pB.x-3, pB.y-ph, 6, ph);
-    ctx.fillStyle = '#f5a83c';
-    ctx.fillRect(pA.x-3, pA.y-ph, (pB.x-pA.x)+6, ph*0.22);
-    const fs = Math.max(6, ph*0.13);
-    ctx.fillStyle = '#241539';
-    ctx.font = `800 ${fs}px sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('🍺 STOUP BREWING 🍺', (pA.x+pB.x)/2, pA.y - ph*0.89);
-  }
-
-  // sprites, far to near
-  spriteQueue.sort((a,b) => b.s.z - a.s.z);
-  for (const q of spriteQueue){
-    const s = q.s;
-    if (!q.isDecor && s.z - pos < 2.6) continue;  // already past the walker
-    const p = project(q.xOff + s.x, 0, s.z);
+  // sprites far→near
+  const q = sprites.filter(s => s.z > pos + 2.6 && s.z < pos + DRAW_DIST)
+                   .sort((a,b) => b.z - a.z);
+  for (const s of q){
+    const p = project(s.x, 0, s.z);
     if (p.scale <= 0) continue;
-    const fog = Math.max(0, 1 - ((s.z - pos)/ (DRAW_SEGS*SEG)) * 1.15);
-    ctx.globalAlpha = Math.min(1, fog + 0.1);
+    const fog = Math.max(0, 1 - ((s.z - pos)/DRAW_DIST) * 1.15);
+    ctx.globalAlpha = Math.min(1, fog + 0.08);
     if (s.type === 'puddle'){
       const pw = p.scale * s.w * (W/2);
       ctx.fillStyle = 'rgba(120,150,210,.55)';
       ctx.beginPath(); ctx.ellipse(p.x, p.y, pw, pw*0.28, 0, 0, Math.PI*2); ctx.fill();
       ctx.fillStyle = 'rgba(255,255,255,.25)';
       ctx.beginPath(); ctx.ellipse(p.x - pw*0.2, p.y - pw*0.06, pw*0.4, pw*0.1, 0, 0, Math.PI*2); ctx.fill();
+    } else if (s.type === 'dance'){
+      drawDance(p, p.scale * 1.8 * (W/2), s.name);
+    } else if (s.type === 'jimi'){
+      drawJimi(p, p.scale * s.h * (W/2));
+    } else if (s.type === 'car'){
+      drawCar(s);
     } else {
       const size = p.scale * s.h * (W/2);
       if (size > 2){
         ctx.font = `${size}px sans-serif`;
         ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-        if (s.type === 'scooter' || (s.vx && s.vx < 0)){
+        if (s.vz < 0 || (s.vx && s.vx < 0)){
           ctx.save(); ctx.translate(p.x, p.y); ctx.scale(-1,1); ctx.fillText(s.e, 0, 0); ctx.restore();
         } else {
           ctx.fillText(s.e, p.x, p.y);
@@ -543,17 +840,37 @@ function render(){
     ctx.globalAlpha = 1;
   }
 
+  // street name signs at upcoming crosswalks
+  for (const c of CROSS){
+    if (c.z < pos + 6 || c.z > pos + DRAW_DIST*0.85) continue;
+    const p = project(X_WALK_W[1] - 0.2, 3.4, c.z);
+    const fs = Math.max(0, p.scale * 0.85 * (W/2));
+    if (fs > 5){
+      ctx.font = `700 ${Math.min(fs,15)}px sans-serif`;
+      const tw = ctx.measureText(c.name).width;
+      ctx.fillStyle = '#1a5c38';
+      ctx.fillRect(p.x - 4, p.y - Math.min(fs,15)*0.8, tw + 8, Math.min(fs,15)*1.5);
+      ctx.fillStyle = '#fff'; ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.fillText(c.name, p.x, p.y);
+      ctx.fillStyle = '#888';
+      ctx.fillRect(p.x - 6, p.y, 3, project(X_WALK_W[1]-0.2, 0, c.z).y - p.y);
+    }
+  }
+
   drawPlayer();
+  ctx.restore();
   drawHUD();
 }
 
-function quad(x1,y1,x2,y2,x3,y3,x4,y4){
-  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.lineTo(x3,y3); ctx.lineTo(x4,y4); ctx.closePath(); ctx.fill();
+function roundRect(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
 }
 
 function drawPlayer(){
   const px = W/2, py = H*0.82;
-  const u = Math.min(W, H) / 420;                    // scale unit
+  const u = Math.min(W, H) / 420;
   const bob = Math.sin(walkPhase*2) * 2.5 * u * Math.min(1, speed/5);
   const swing = Math.sin(walkPhase*2);
   const lean = getSteer() * 0.12 + (speed > 7 ? 0.08 : 0);
@@ -564,36 +881,28 @@ function drawPlayer(){
   ctx.rotate(lean);
   if (flash) ctx.globalAlpha = 0.45;
 
-  // shadow
   ctx.fillStyle = 'rgba(0,0,0,.3)';
   ctx.beginPath(); ctx.ellipse(0, 34*u - bob, 22*u, 6*u, 0, 0, Math.PI*2); ctx.fill();
 
-  // legs (jeans)
   ctx.strokeStyle = '#3b4a6b'; ctx.lineCap = 'round'; ctx.lineWidth = 8*u;
   ctx.beginPath(); ctx.moveTo(-6*u, 6*u); ctx.lineTo(-6*u - swing*7*u, 32*u); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(6*u, 6*u); ctx.lineTo(6*u + swing*7*u, 32*u); ctx.stroke();
-  // shoes
   ctx.fillStyle = '#f0ede6';
   ctx.beginPath(); ctx.ellipse(-6*u - swing*7*u, 33*u, 6*u, 3.4*u, 0, 0, Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.ellipse(6*u + swing*7*u, 33*u, 6*u, 3.4*u, 0, 0, Math.PI*2); ctx.fill();
-  // hoodie torso
   ctx.fillStyle = '#2f8f85';
   roundRect(-14*u, -22*u, 28*u, 30*u, 9*u); ctx.fill();
-  // arms
   ctx.strokeStyle = '#2f8f85'; ctx.lineWidth = 7*u;
   ctx.beginPath(); ctx.moveTo(-13*u, -14*u); ctx.lineTo(-17*u + swing*6*u, 4*u); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(13*u, -14*u); ctx.lineTo(17*u - swing*6*u, 4*u); ctx.stroke();
-  // tote bag with the book (it's book club, you brought the book)
   ctx.fillStyle = '#d9c9a3';
   roundRect(15*u - swing*6*u - 6*u, 2*u, 13*u, 15*u, 2.5*u); ctx.fill();
   ctx.font = `${11*u}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText('📖', 15*u - swing*6*u + 0.5*u, 10*u);
-  // hood + head
   ctx.fillStyle = '#25756d';
   ctx.beginPath(); ctx.arc(0, -26*u, 11.5*u, 0, Math.PI*2); ctx.fill();
   ctx.fillStyle = '#8a5a3b';
   ctx.beginPath(); ctx.arc(0, -27*u, 8*u, 0, Math.PI*2); ctx.fill();
-  // stun stars
   if (stun > 0){
     ctx.font = `${13*u}px sans-serif`;
     ctx.fillText('💫', -16*u, -40*u); ctx.fillText('💫', 16*u, -44*u);
@@ -601,26 +910,18 @@ function drawPlayer(){
   ctx.restore();
 }
 
-function roundRect(x,y,w,h,r){
-  ctx.beginPath();
-  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
-  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
-}
-
 function drawHUD(){
   if (state === 'title') return;
   const pad = 12, u = Math.min(W, H)/420;
   ctx.textBaseline = 'middle';
 
-  // top bar
   ctx.fillStyle = 'rgba(16,10,34,.55)';
   roundRect(pad, pad, W - pad*2, 40, 12); ctx.fill();
 
-  // book club clock
   const late = timeLeft < 0;
   const t = Math.abs(timeLeft);
   const mm = Math.floor(t/60), ss = String(Math.floor(t%60)).padStart(2,'0');
-  ctx.font = `800 ${16}px sans-serif`;
+  ctx.font = `800 16px sans-serif`;
   ctx.textAlign = 'left';
   if (late){
     ctx.fillStyle = Math.floor(performance.now()/300)%2 ? '#ff6b6b' : '#ffd0d0';
@@ -630,22 +931,26 @@ function drawHUD(){
     ctx.fillText(`📖 club in ${mm}:${ss}`, pad+12, pad+20);
   }
 
-  // distance
   const dist = Math.max(0, Math.ceil(TRACK_LEN - pos));
   ctx.textAlign = 'right';
   ctx.fillStyle = '#f3efe6';
   ctx.fillText(`${dist} m → 🍺`, W - pad - 12, pad+20);
 
-  // progress strip under top bar
-  const bw = W - pad*2 - 24;
+  // progress bar with real cross-street ticks
+  const bw = W - pad*2 - 24, bx = pad+12, by = pad+44;
   ctx.fillStyle = 'rgba(255,255,255,.18)';
-  roundRect(pad+12, pad+44, bw, 5, 3); ctx.fill();
+  roundRect(bx, by, bw, 5, 3); ctx.fill();
   ctx.fillStyle = '#f5a83c';
-  roundRect(pad+12, pad+44, bw * Math.min(1, pos/TRACK_LEN), 5, 3); ctx.fill();
+  roundRect(bx, by, bw * Math.min(1, pos/TRACK_LEN), 5, 3); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.6)';
+  for (const c of CROSS){
+    if (c.z < 20) continue;
+    ctx.fillRect(bx + bw*(c.z/TRACK_LEN) - 1, by-2, 2, 9);
+  }
   ctx.font = '11px sans-serif'; ctx.textAlign='center';
-  ctx.fillText('🚶', pad+12 + bw*Math.min(1,pos/TRACK_LEN), pad+41);
+  ctx.fillText('🚶', bx + bw*Math.min(1,pos/TRACK_LEN), by-3);
 
-  // stamina (coffee meter)
+  // stamina
   const sw = Math.min(220, W*0.4);
   ctx.fillStyle = 'rgba(16,10,34,.55)';
   roundRect(pad, H - 46, sw + 44, 34, 12); ctx.fill();
@@ -656,16 +961,19 @@ function drawHUD(){
   ctx.fillStyle = stamina > 30 ? '#7ed957' : '#ff6b6b';
   roundRect(pad+34, H-36, sw * stamina/100, 14, 7); ctx.fill();
 
-  // toast
   if (toast && toastT > 0){
     ctx.globalAlpha = Math.min(1, toastT/0.5);
-    ctx.font = `800 ${Math.min(19, 15*u+4)}px sans-serif`;
+    let tfs = Math.min(19, 15*u+4);
+    ctx.font = `800 ${tfs}px sans-serif`;
+    while (tfs > 10 && ctx.measureText(toast).width > W - 56){
+      tfs -= 1; ctx.font = `800 ${tfs}px sans-serif`;
+    }
     ctx.textAlign = 'center';
     ctx.fillStyle = 'rgba(16,10,34,.65)';
     const tw = ctx.measureText(toast).width;
-    roundRect(W/2 - tw/2 - 16, H*0.3 - 18, tw + 32, 36, 12); ctx.fill();
+    roundRect(W/2 - tw/2 - 16, H*0.28 - 18, tw + 32, 36, 12); ctx.fill();
     ctx.fillStyle = '#ffe8b0';
-    ctx.fillText(toast, W/2, H*0.3);
+    ctx.fillText(toast, W/2, H*0.28);
     ctx.globalAlpha = 1;
   }
 }
@@ -681,8 +989,8 @@ function frame(now){
 }
 requestAnimationFrame(frame);
 
-// idle attract: slow forward drift behind the title card
-setInterval(() => { if (state === 'title'){ pos = (pos + 0.12) % (TRACK_LEN - 60); } }, 33);
+// idle attract behind the title card
+setInterval(() => { if (state === 'title'){ pos = (pos + 0.12) % (TRACK_LEN - 80); } }, 33);
 </script>
 </body>
 </html>
