@@ -173,9 +173,10 @@ const BUILDINGS = [
   {z0:168, z1:240, side: 1, h: 8, color:'#61565e', name:null, windows:true},
   {z0:241, z1:318, side: 1, h:10, color:'#6a5a45', name:null, windows:true},
   {z0:330, z1:428, side: 1, h: 9, color:'#5c5064', name:null, windows:true},
-  {z0:442, z1:512, side: 1, h: 9, color:'#7d2b35', name:'QFC · HARVARD MARKET', glass:true},
-  {z0:513, z1:618, side: 1, h: 3, color:'#4a4550', name:null, lot:true},         // Harvard Market center + parking
-  {z0:619, z1:700, side: 1, h: 8, color:'#6d5d4c', name:null, windows:true},
+  {z0:442, z1:472, side: 1, h: 7, color:'#8a5a48', name:'HARVARD MARKET', windows:true}, // Pike corner entry
+  {z0:473, z1:568, side: 1, h: 3, color:'#4a4550', name:null, lot:true},         // center + parking
+  {z0:569, z1:646, side: 1, h: 8, color:'#6e3a40', name:'QFC', windows:true, qfc:true}, // anchor at the Union end (marquee)
+  {z0:652, z1:700, side: 1, h: 8, color:'#6d5d4c', name:null, windows:true},
 ];
 
 // toasts keyed to real landmarks
@@ -241,9 +242,13 @@ function buildWorld(){
   sprites.push({z:150, x: 5.7, type:'dance', name:'Rumba',   h:0, w:1.6, vz:0, vx:0, solid:false});
   // Jimi Hendrix statue — east sidewalk just north of Pine
   sprites.push({z:314, x:-5.9, type:'jimi', h:1.9, w:1.2, vz:0, vx:0, solid:true});
-  // trees along the campus plaza + a few west side
+  // street trees line both sides (per Street View), densest at the campus plaza
   for (let tz=170; tz<292; tz+=rnd(14,22)) sprites.push({z:tz, x:-7.6, e:'🌳', h:rnd(3.4,4.6), w:0, type:'decor', vz:0, vx:0});
-  for (let tz=45;  tz<640; tz+=rnd(45,80)) sprites.push({z:tz, x:7.6,  e:'🌳', h:rnd(3,4),     w:0, type:'decor', vz:0, vx:0});
+  for (let tz=30;  tz<640; tz+=rnd(22,40)) sprites.push({z:tz, x:7.7,  e:'🌳', h:rnd(2.8,4),   w:0, type:'decor', vz:0, vx:0});
+  for (let tz=35;  tz<640; tz+=rnd(26,48)){
+    if (tz>165 && tz<295) continue;                    // campus handled above
+    sprites.push({z:tz, x:-7.7, e:'🌳', h:rnd(2.8,3.8), w:0, type:'decor', vz:0, vx:0});
+  }
   // parked cars along the west curb
   for (let pz=40; pz<640; pz+=rnd(28,55)){
     if (crosswalkAt(pz) || (pz>60&&pz<130)) continue;
@@ -550,11 +555,36 @@ function drawGround(){
   // base strips: sidewalks, bikeway, road, parking
   groundStrip(-30,        X_WALK_E[0], zN, zF, '#3a3344');
   groundStrip(X_WALK_E[0],X_WALK_E[1], zN, zF, '#8b8494');   // east sidewalk
-  groundStrip(X_BIKE[0],  X_BIKE[1],   zN, zF, '#2e6b4f');   // bikeway green
+  groundStrip(X_BIKE[0],  X_BIKE[1],   zN, zF, '#45404e');   // bikeway: asphalt (green only at crossings)
   groundStrip(X_ROAD[0],  X_ROAD[1],   zN, zF, '#524c5b');   // asphalt
   groundStrip(X_PARK[0],  X_PARK[1],   zN, zF, '#47414f');   // parking strip
   groundStrip(X_WALK_W[0],X_WALK_W[1], zN, zF, '#8b8494');   // west sidewalk
   groundStrip(X_WALK_W[1],30,          zN, zF, '#3a3344');
+
+  // bikeway edge lines + green paint through each crossing (per Street View)
+  groundStrip(X_BIKE[0]+0.02, X_BIKE[0]+0.12, zN, zF, 'rgba(230,228,238,.7)');
+  groundStrip(X_BIKE[1]-0.12, X_BIKE[1]-0.02, zN, zF, 'rgba(230,228,238,.7)');
+  for (const c of CROSS){
+    if (c.z + CW_LEN + 2 < zN || c.z - 2 > zF) continue;
+    groundStrip(X_BIKE[0]+0.1, X_BIKE[1]-0.1, Math.max(c.z-2, zN), Math.min(c.z+CW_LEN+2, zF), '#2f8f4f');
+  }
+  // double yellow center line, just west of the tracks — broken at each crosswalk
+  {
+    let segs = [[zN, zF]];
+    for (const c of CROSS){
+      segs = segs.flatMap(([a,b]) => {
+        if (c.z - 1 >= b || c.z + CW_LEN + 1 <= a) return [[a,b]];
+        const out = [];
+        if (a < c.z - 1) out.push([a, c.z - 1]);
+        if (c.z + CW_LEN + 1 < b) out.push([c.z + CW_LEN + 1, b]);
+        return out;
+      });
+    }
+    for (const [a,b] of segs){
+      groundStrip(-0.15, -0.07, a, b, '#c9a83c');
+      groundStrip( 0.05,  0.13, a, b, '#c9a83c');
+    }
+  }
 
   // streetcar rails: two track pairs
   ctx.globalAlpha = 0.9;
@@ -677,6 +707,26 @@ function facade(b){
       }
     }
   }
+  if (b.qfc){ // the QFC reader board at the Union end: BAKERY SUSHI SEAFOOD DELI FLORAL
+    const zM = b.z1 - 5;
+    if (zM > pos + 4 && zM < pos + 110){
+      const base = project(x*0.9, 0, zM);
+      const s = base.scale * (W/2);
+      if (s > 5){
+        const bw2 = s*1.5, bh2 = s*4.6, top = base.y - s*5.6;
+        ctx.fillStyle = '#666'; ctx.fillRect(base.x - s*0.08, base.y - s*5.6, s*0.16, s*5.6);
+        ctx.fillStyle = '#e8c84a'; ctx.fillRect(base.x - bw2/2, top, bw2, bh2);
+        ctx.fillStyle = '#333';
+        const words = ['QFC','BAKERY','SUSHI','SEAFOOD','DELI','FLORAL'];
+        const fs2 = Math.min(bw2*0.32, bh2/words.length*0.62);
+        if (fs2 > 3){
+          ctx.font = `800 ${fs2}px 'Arial Narrow',sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          words.forEach((wd,i) => ctx.fillText(wd, base.x, top + bh2*(i+0.5)/words.length));
+        }
+      }
+    }
+  }
   if (b.campus){ // SCC plaza: low wall + big sign
     const zSign = 230;
     if (zSign > pos+4 && zSign < pos+120){
@@ -691,6 +741,44 @@ function facade(b){
         ctx.fillText('SEATTLE', p.x, p.y-s*1.95);
         ctx.fillText('CENTRAL', p.x, p.y-s*1.35);
       }
+    }
+  }
+}
+
+function drawOverhead(){
+  // Broadway's wire canopy: streetcar catenary + trolleybus wires + cross-spans on poles
+  const zN = pos + 4, zF = pos + DRAW_DIST*0.92;
+  ctx.strokeStyle = 'rgba(28,22,48,.5)';
+  ctx.lineWidth = 1;
+  for (const wx of [-2.4,-1.8,TRACK_NB-0.3,TRACK_NB+0.3, TRACK_SB-0.3,TRACK_SB+0.3, 2.0,2.6]){
+    const a = project(wx, 5.6, zN), b = project(wx, 5.6, zF);
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  }
+  // cross-spans with a little sag, hung between poles
+  for (let z = Math.ceil(pos/30)*30; z < pos + DRAW_DIST*0.85; z += 30){
+    if (z < zN) continue;
+    const l = project(-8.4, 6.8, z), r = project(8.4, 6.8, z), m = project(0, 5.9, z);
+    ctx.strokeStyle = 'rgba(28,22,48,.7)';
+    ctx.lineWidth = Math.max(0.6, l.scale*0.05*(W/2));
+    ctx.beginPath(); ctx.moveTo(l.x, l.y); ctx.quadraticCurveTo(m.x, m.y, r.x, r.y); ctx.stroke();
+    for (const px of [-8.4, 8.4]){
+      const g = project(px, 0, z), t = project(px, 7.1, z);
+      ctx.strokeStyle = '#241d38';
+      ctx.lineWidth = Math.max(1, g.scale*0.22*(W/2));
+      ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(t.x, t.y); ctx.stroke();
+    }
+  }
+  // hanging signals over each crossing (green — you're not stopping anyway)
+  for (const c of CROSS){
+    if (c.z < pos + 5 || c.z > pos + DRAW_DIST*0.85) continue;
+    for (const sx of [-1.6, 1.9]){
+      const top = project(sx, 5.5, c.z - 1), bot = project(sx, 4.3, c.z - 1);
+      const bw2 = Math.max(1.5, top.scale*0.5*(W/2));
+      if (bw2 < 1.6) continue;
+      ctx.fillStyle = '#1c1a26';
+      ctx.fillRect(top.x - bw2/2, top.y, bw2, bot.y - top.y);
+      ctx.fillStyle = '#4be36b';
+      ctx.beginPath(); ctx.arc(top.x, bot.y - (bot.y-top.y)*0.18, bw2*0.28, 0, Math.PI*2); ctx.fill();
     }
   }
 }
@@ -801,6 +889,8 @@ function render(){
   const bs = BUILDINGS.filter(b => b.z1 > pos + 0.5 && b.z0 < pos + DRAW_DIST)
                       .sort((a,b) => b.z0 - a.z0);
   for (const b of bs) facade(b);
+
+  drawOverhead();
 
   // streetcars (before small sprites so peds read on top)
   for (const t of streetcars) drawStreetcar(t);
