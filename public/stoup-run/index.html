@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Late for Book Club — Stoup Run</title>
+<meta name="description" content="You're late for AI Book Club. Power-walk from Capitol Hill Station down Broadway to Stoup Brewing. Mario Kart, but you're walking.">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:#1a1230;touch-action:none;overscroll-behavior:none;
+    font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-user-select:none;user-select:none}
+  #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  canvas{display:block;background:#1a1230}
+  .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+    background:rgba(16,10,34,.82);backdrop-filter:blur(4px);z-index:10;padding:20px}
+  .card{max-width:420px;width:100%;text-align:center;color:#f3efe6;background:rgba(30,20,58,.92);
+    border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:28px 24px;box-shadow:0 18px 60px rgba(0,0,0,.5)}
+  .card h1{font-size:26px;line-height:1.15;margin-bottom:4px;letter-spacing:.3px}
+  .card h2{font-size:15px;font-weight:600;color:#ffcf6b;margin-bottom:14px}
+  .card p{font-size:14px;line-height:1.5;color:#cfc8e8;margin-bottom:10px}
+  .card .ctrl{font-size:12.5px;color:#9d94c4;line-height:1.6;margin:12px 0 16px}
+  .card .ctrl b{color:#e8e2ff}
+  .btn{display:inline-block;border:0;cursor:pointer;font-weight:800;font-size:17px;color:#241539;
+    background:linear-gradient(180deg,#ffd873,#f5a83c);padding:13px 34px;border-radius:999px;
+    box-shadow:0 6px 0 #b06f1a;transition:transform .08s}
+  .btn:active{transform:translateY(3px);box-shadow:0 3px 0 #b06f1a}
+  .stats{display:flex;justify-content:center;gap:18px;margin:14px 0 18px;font-size:13px;color:#cfc8e8}
+  .stats b{display:block;font-size:20px;color:#fff}
+  .grade{font-size:17px;font-weight:800;color:#ffd873;margin-bottom:6px}
+  #sprintBtn{position:fixed;right:16px;bottom:18px;z-index:5;width:86px;height:86px;border-radius:50%;
+    border:2px solid rgba(255,255,255,.35);background:rgba(255,190,80,.22);color:#ffe0a0;font-weight:800;
+    font-size:13px;display:none;align-items:center;justify-content:center;flex-direction:column;
+    -webkit-tap-highlight-color:transparent}
+  #sprintBtn span{font-size:26px;line-height:1}
+  #sprintBtn.on{background:rgba(255,190,80,.55);color:#241539}
+  .tiny{font-size:11px;color:#7f76a8;margin-top:12px}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="game"></canvas></div>
+<button id="sprintBtn"><span>⚡</span>SPRINT</button>
+
+<div class="overlay" id="titleOverlay">
+  <div class="card">
+    <h1>🚉 LATE FOR AI BOOK CLUB 🍺</h1>
+    <h2>Capitol Hill Station → Stoup Brewing</h2>
+    <p>The 6:30 book club is starting and you're still stepping off the light rail.
+       600&nbsp;meters down Broadway. Dodge slow walkers, dogs, scooters and puddles.
+       Grab ☕ to keep your power-walk fueled.</p>
+    <div class="ctrl">
+      <b>← →</b> steer &nbsp;·&nbsp; <b>↑ / shift / space</b> power-walk<br>
+      touch: <b>drag</b> to steer, hold <b>⚡SPRINT</b> to hustle
+    </div>
+    <button class="btn" id="startBtn">START WALKING</button>
+    <div class="tiny">Mario Kart, but you're walking. No rats were harmed.</div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="endOverlay">
+  <div class="card">
+    <h1 id="endTitle">🍻 You made it!</h1>
+    <div class="grade" id="endGrade"></div>
+    <p id="endMsg"></p>
+    <div class="stats">
+      <div><b id="stTime">0:00</b>result</div>
+      <div><b id="stCoffee">0</b>☕ grabbed</div>
+      <div><b id="stBumps">0</b>collisions</div>
+    </div>
+    <button class="btn" id="retryBtn">WALK IT AGAIN</button>
+    <div class="tiny">Next month's book gets picked with or without you.</div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ---------------------------------------------------------------
+   LATE FOR AI BOOK CLUB — a Cap Hill walking "kart" game.
+   Capitol Hill Station → Broadway → Stoup Brewing (600 m).
+   Single file, no dependencies, pseudo-3D segment renderer.
+---------------------------------------------------------------- */
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+let W = 480, H = 720, DPR = 1;
+
+function resize(){
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const aw = window.innerWidth, ah = window.innerHeight;
+  // fill the window, but keep logical coords
+  W = aw; H = ah;
+  canvas.width = Math.round(W * DPR);
+  canvas.height = Math.round(H * DPR);
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+/* ---------------- track ---------------- */
+const TRACK_LEN = 600;           // meters, station to Stoup
+const SEG = 2;                   // segment length m
+const DRAW_SEGS = 75;            // draw distance = 150 m
+const ROADW = 4.2;               // half road width m
+const CAM_H = 3.0, CAM_D = 2.0;  // camera height / depth (1/tan(fov/2))
+const TIME_LIMIT = 100;          // seconds until book club starts
+
+// gentle Broadway "curves" (artistic license): [fromZ, toZ, curvePerSeg]
+const CURVES = [
+  [0,80,0],[80,170,0.006],[170,250,-0.0045],[250,340,0],
+  [340,430,0.0065],[430,480,0],[480,560,-0.006],[560,700,0]
+];
+function curveAt(z){
+  for (const c of CURVES) if (z >= c[0] && z < c[1]) return c[2];
+  return 0;
+}
+
+// crosswalks: [z, isRainbow] — Cap Hill's rainbow crosswalks at Pine & Pike
+const CROSSWALKS = [[28,false],[120,false],[215,false],[420,true],[500,true],[583,false]];
+function crosswalkAt(z){
+  for (const c of CROSSWALKS) if (z >= c[0] && z < c[0]+7) return c;
+  return null;
+}
+// park stretch (Cal Anderson on the left)
+const PARK = [150, 330];
+
+const LANDMARKS = [
+  [8,   '🚉 Capitol Hill Station — GO GO GO!'],
+  [48,  "🍔 Dick's Drive-In… smells amazing. STAY FOCUSED."],
+  [160, '🌳 Cal Anderson Park on your left'],
+  [330, '🏫 Seattle Central College'],
+  [418, '🌈 E Pine St — rainbow crosswalk!'],
+  [498, '🌈 E Pike St — almost there!'],
+  [560, '🍺 There it is — STOUP BREWING!'],
+];
+
+/* ---------------- state ---------------- */
+let state = 'title';   // title | playing | done
+let pos = 0, speed = 0, playerX = 0;
+let stamina = 100, timeLeft = TIME_LIMIT;
+let stun = 0, invuln = 0, puddleSlow = 0;
+let coffees = 0, bumps = 0, walkPhase = 0;
+let toast = null, toastT = 0, seenLandmarks;
+let sprites = [], decor = [];
+let scooterTimer = 6;
+let finishedLate = false, finishT = 0;
+
+const rnd = (a,b) => a + Math.random()*(b-a);
+const lanes = [-2.4,-1.2,0,1.2,2.4];
+
+function buildWorld(){
+  sprites = []; decor = [];
+  // obstacles
+  let z = 18;
+  while (z < TRACK_LEN - 18){
+    z += rnd(11, 26);
+    if (crosswalkAt(z)) continue;
+    const r = Math.random();
+    const x = lanes[(Math.random()*lanes.length)|0] + rnd(-0.25,0.25);
+    if (r < 0.40)      sprites.push({z, x, e:['🚶','🧍','👫','🕴️'][(Math.random()*4)|0], h:1.7, w:0.9, type:'ped', vz:rnd(0.9,1.5), vx:0, solid:true});
+    else if (r < 0.55) sprites.push({z, x, e:'🚧', h:1.0, w:0.9, type:'cone', vz:0, vx:0, solid:true});
+    else if (r < 0.67) sprites.push({z, x, e:'🐕', h:0.9, w:0.9, type:'dog', vz:rnd(1.0,1.6), vx:rnd(-0.7,0.7), solid:true});
+    else if (r < 0.86) sprites.push({z, x, e:null, h:0, w:1.5, type:'puddle', vz:0, vx:0, solid:true});
+    else               sprites.push({z, x, e:'🐀', h:0.45, w:0.7, type:'rat', vz:0, vx:(Math.random()<0.5?-1:1)*rnd(1.6,2.6), solid:true});
+  }
+  // coffee
+  for (let cz = 55; cz < TRACK_LEN - 30; cz += rnd(52, 72)){
+    sprites.push({z:cz, x:lanes[(Math.random()*lanes.length)|0], e:'☕', h:0.9, w:1.0, type:'coffee', vz:0, vx:0, solid:false});
+  }
+  // roadside decor
+  const shops = ['🏪','☕','🍕','📚','🎸','🌮','💈','🍜','🏳️‍🌈'];
+  for (let dz = 6; dz < TRACK_LEN + 60; dz += rnd(6, 10)){
+    const side = Math.random() < 0.5 ? -1 : 1;
+    const inPark = dz > PARK[0] && dz < PARK[1];
+    let e;
+    if (inPark && side < 0) e = '🌳';
+    else e = Math.random() < 0.45 ? '🌳' : shops[(Math.random()*shops.length)|0];
+    decor.push({z:dz, x:side * rnd(5.6, 8.5), e, h: e==='🌳' ? rnd(3,4.5) : 2.4});
+  }
+  // a couple of signature landmarks as big decor
+  decor.push({z:46, x:6.5, e:'🍔', h:3.6});   // Dick's
+  decor.push({z:332, x:7, e:'🏫', h:4.2});    // Seattle Central
+}
+
+function reset(){
+  pos = 0; speed = 0; playerX = 0; stamina = 100; timeLeft = TIME_LIMIT;
+  stun = 0; invuln = 0; puddleSlow = 0; coffees = 0; bumps = 0;
+  toast = null; toastT = 0; seenLandmarks = new Set();
+  scooterTimer = 6; finishedLate = false; finishT = 0;
+  buildWorld();
+}
+
+/* ---------------- audio (tiny, optional) ---------------- */
+let AC = null;
+function audio(){ if (!AC){ try{ AC = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ AC = false; } } return AC; }
+function beep(f, dur, type, vol, when){
+  const ac = audio(); if (!ac) return;
+  try{
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type||'square'; o.frequency.value = f;
+    const t = ac.currentTime + (when||0);
+    g.gain.setValueAtTime(vol||0.06, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t+dur);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+dur);
+  }catch(e){/* noop */}
+}
+const sfx = {
+  coffee(){ beep(880,.09,'square',.05); beep(1320,.12,'square',.05,.07); },
+  bump(){ beep(110,.2,'sawtooth',.09); },
+  splash(){ beep(300,.15,'sine',.06); beep(180,.2,'sine',.06,.05); },
+  finish(){ [523,659,784,1047].forEach((f,i)=>beep(f,.18,'square',.06,i*.13)); },
+  tick(){ beep(1000,.05,'square',.03); },
+};
+
+/* ---------------- input ---------------- */
+const keys = {};
+window.addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault();
+  if (state === 'title' && (e.code === 'Space' || e.code === 'Enter')) start();
+  if (state === 'done' && (e.code === 'Space' || e.code === 'Enter')) start();
+});
+window.addEventListener('keyup', e => { keys[e.code] = false; });
+
+let touchSteer = null, touchSprint = false;
+const sprintBtn = document.getElementById('sprintBtn');
+const isTouch = matchMedia('(pointer: coarse)').matches;
+
+canvas.addEventListener('pointerdown', e => { touchSteer = e.clientX; canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointermove', e => { if (touchSteer !== null) touchSteer = e.clientX; });
+canvas.addEventListener('pointerup',   () => { touchSteer = null; });
+canvas.addEventListener('pointercancel', () => { touchSteer = null; });
+sprintBtn.addEventListener('pointerdown', e => { e.preventDefault(); touchSprint = true; sprintBtn.classList.add('on'); });
+sprintBtn.addEventListener('pointerup',   () => { touchSprint = false; sprintBtn.classList.remove('on'); });
+sprintBtn.addEventListener('pointercancel',() => { touchSprint = false; sprintBtn.classList.remove('on'); });
+
+function getSteer(){
+  let s = 0;
+  if (keys.ArrowLeft || keys.KeyA) s -= 1;
+  if (keys.ArrowRight || keys.KeyD) s += 1;
+  if (touchSteer !== null){
+    const dx = (touchSteer - W/2) / (W*0.28);
+    s = Math.max(-1, Math.min(1, dx));
+  }
+  return s;
+}
+function getSprint(){
+  return !!(keys.ArrowUp || keys.KeyW || keys.Space || keys.ShiftLeft || keys.ShiftRight || touchSprint);
+}
+
+/* ---------------- game flow ---------------- */
+const titleOverlay = document.getElementById('titleOverlay');
+const endOverlay = document.getElementById('endOverlay');
+document.getElementById('startBtn').addEventListener('click', start);
+document.getElementById('retryBtn').addEventListener('click', start);
+
+function start(){
+  audio();
+  reset();
+  state = 'playing';
+  titleOverlay.classList.add('hidden');
+  endOverlay.classList.add('hidden');
+  if (isTouch) sprintBtn.style.display = 'flex';
+}
+
+function finish(){
+  state = 'done';
+  sprintBtn.style.display = 'none';
+  sfx.finish();
+  const spare = timeLeft;
+  const el = id => document.getElementById(id);
+  const fmt = t => `${Math.floor(Math.abs(t)/60)}:${String(Math.floor(Math.abs(t)%60)).padStart(2,'0')}`;
+  let grade, msg, title;
+  if (spare >= 25){ grade = '🏆 S — Power Walker of Pike/Pine';
+    title = '🍻 You made it… EARLY?!';
+    msg = 'You beat everyone there. Save seats, order a flight, look smug.'; }
+  else if (spare >= 10){ grade = '⭐ A — Casually early';
+    title = '🍻 You made it!';
+    msg = 'You stroll in like you planned it. The discussion hasn\'t started.'; }
+  else if (spare >= 0){ grade = '✅ B — Right on time';
+    title = '🍻 Just in time!';
+    msg = 'You slide into the last chair as someone says "so, first impressions?"'; }
+  else if (spare > -15){ grade = '😅 C — Fashionably late';
+    title = '🍺 You made it… barely late';
+    msg = 'Everyone looks up. "We waited five minutes for you." Worth it.'; }
+  else { grade = '💀 D — "We already discussed the ending"';
+    title = '🍺 You arrived. Eventually.';
+    msg = 'They\'ve moved on to picking next month\'s book. It\'s 900 pages. You don\'t get a vote.'; }
+  el('endTitle').textContent = title;
+  el('endGrade').textContent = grade;
+  el('endMsg').textContent = msg;
+  el('stTime').textContent = (spare >= 0 ? fmt(spare) + ' early' : fmt(spare) + ' late');
+  el('stCoffee').textContent = coffees;
+  el('stBumps').textContent = bumps;
+  endOverlay.classList.remove('hidden');
+}
+
+function showToast(text){ toast = text; toastT = 2.6; }
+
+/* ---------------- update ---------------- */
+let lastTick10 = -1;
+function update(dt){
+  if (state !== 'playing') return;
+
+  const steer = getSteer();
+  const sprint = getSprint() && stamina > 0 && stun <= 0;
+
+  // speed
+  let target = sprint ? 9.6 : 4.8;
+  if (puddleSlow > 0){ target *= 0.55; puddleSlow -= dt; }
+  if (stun > 0){ target = 0.8; stun -= dt; }
+  speed += (target - speed) * Math.min(1, dt*3.2);
+
+  // stamina
+  stamina += (sprint ? -15 : 5.5) * dt;
+  stamina = Math.max(0, Math.min(100, stamina));
+
+  // move
+  pos += speed * dt;
+  walkPhase += speed * dt * 2.2;
+  playerX += steer * dt * (2.6 + speed*0.22);
+  playerX -= curveAt(pos) * speed * dt * 14;      // curves push you outward
+  playerX = Math.max(-3.2, Math.min(3.2, playerX));
+  if (invuln > 0) invuln -= dt;
+
+  // clock
+  timeLeft -= dt;
+  if (timeLeft <= 10 && timeLeft > -0.01){
+    const t10 = Math.ceil(timeLeft);
+    if (t10 !== lastTick10){ lastTick10 = t10; sfx.tick(); }
+  }
+
+  // spawn oncoming scooters
+  scooterTimer -= dt;
+  if (scooterTimer <= 0 && pos < TRACK_LEN - 80){
+    scooterTimer = rnd(9, 15);
+    sprites.push({z:pos + 150, x:lanes[(Math.random()*lanes.length)|0], e:'🛴', h:1.5, w:0.9, type:'scooter', vz:-5.2, vx:rnd(-0.3,0.3), solid:true});
+  }
+
+  // sprites
+  for (const s of sprites){
+    if (s.vz) s.z += s.vz * dt;
+    if (s.vx){
+      s.x += s.vx * dt;
+      if (s.type === 'dog' && Math.abs(s.x) > 2.8) s.vx *= -1;
+      if (s.type === 'rat' && Math.abs(s.x) > 4.5) s.x = -Math.sign(s.x)*4.5, s.vx *= -1;
+    }
+  }
+  sprites = sprites.filter(s => s.z > pos - 8 && !s.dead);
+
+  // collisions (the walker is drawn ~4 m ahead of the camera)
+  for (const s of sprites){
+    if (Math.abs(s.z - (pos + 3.8)) > 1.2) continue;
+    if (Math.abs(s.x - playerX) > s.w/2 + 0.42) continue;
+    if (s.type === 'coffee'){
+      s.dead = true; coffees++; stamina = Math.min(100, stamina + 42);
+      sfx.coffee(); showToast('☕ +stamina!');
+    } else if (s.type === 'puddle'){
+      if (puddleSlow <= 0){ puddleSlow = 1.4; sfx.splash(); showToast('💦 SPLASH — soggy shoes'); }
+    } else if (invuln <= 0){
+      stun = 0.8; invuln = 1.4; bumps++; sfx.bump();
+      showToast(s.type === 'ped' ? '"oh! sorry! sorry—"' :
+                s.type === 'dog' ? '🐕 tangled in a leash!' :
+                s.type === 'rat' ? '🐀 RAT! you jumped.' :
+                s.type === 'scooter' ? '🛴 scooter clip!' : '🚧 clipped a cone!');
+    }
+  }
+
+  // landmarks
+  for (const [lz, text] of LANDMARKS){
+    if (pos >= lz && !seenLandmarks.has(lz)){ seenLandmarks.add(lz); showToast(text); }
+  }
+
+  if (toastT > 0) toastT -= dt;
+
+  // finish
+  if (pos >= TRACK_LEN) finish();
+}
+
+/* ---------------- render ---------------- */
+function project(worldX, worldY, worldZ){
+  const dz = worldZ - pos;
+  const scale = CAM_D / Math.max(dz, 0.12);
+  return {
+    x: W/2 + scale * (worldX - playerX) * (W/2),
+    y: H*0.42 + scale * (CAM_H - worldY) * (W/2),
+    scale
+  };
+}
+
+function skyAndSkyline(){
+  // dusk sky
+  const g = ctx.createLinearGradient(0,0,0,H*0.45);
+  g.addColorStop(0,'#2b1b52'); g.addColorStop(0.55,'#6b3a78'); g.addColorStop(1,'#e8895f');
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H*0.45);
+  // parallax shift with curve
+  const shift = -curveAt(pos + 30) * 2600;
+  const hy = H*0.42;
+  ctx.fillStyle = '#241a44';
+  // downtown blocks off to the right (you're walking south)
+  const blocks = [[-0.46,58,70],[-0.34,80,56],[-0.22,46,90],[-0.08,70,64],[0.05,52,80],[0.18,88,52],[0.30,60,74],[0.44,74,60]];
+  for (const [fx,bw,bh] of blocks){
+    ctx.fillRect(W/2 + fx*W + shift*0.3 - bw/2, hy - bh*(W/900+0.5), bw*(W/900+0.5), bh*(W/900+0.5));
+  }
+  // Space Needle silhouette, off right of center
+  const nx = W/2 + 0.36*W + shift*0.3, nb = hy, s = (W/900+0.5);
+  ctx.beginPath();
+  ctx.moveTo(nx-3*s, nb); ctx.lineTo(nx-1.6*s, nb-86*s); ctx.lineTo(nx+1.6*s, nb-86*s); ctx.lineTo(nx+3*s, nb);
+  ctx.fill();
+  ctx.beginPath(); ctx.ellipse(nx, nb-92*s, 16*s, 7*s, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillRect(nx-1.2*s, nb-104*s, 2.4*s, 12*s);
+  // stars
+  ctx.fillStyle = 'rgba(255,255,255,.5)';
+  for (let i=0;i<24;i++){
+    const sx = (i*97 % 100)/100*W, sy = (i*57 % 100)/100*H*0.2;
+    ctx.fillRect(sx, sy, 1.6, 1.6);
+  }
+}
+
+function render(){
+  ctx.clearRect(0,0,W,H);
+  skyAndSkyline();
+
+  const baseSeg = Math.floor(pos / SEG);
+  const basePct = (pos % SEG) / SEG;
+
+  // accumulate curve offsets
+  let cx = 0, cdx = -(curveAt(pos) * basePct);
+  const rows = [];  // per-segment projected data
+  for (let n = 0; n < DRAW_SEGS; n++){
+    const segZ1 = (baseSeg + n) * SEG;
+    const segZ2 = segZ1 + SEG;
+    const p1 = project(cx, 0, segZ1);
+    cx += cdx; cdx += curveAt(segZ1) * SEG;
+    const p2 = project(cx, 0, segZ2);
+    rows.push({segZ1, p1, p2, xOff1: cx - cdx + (curveAt(segZ1)*SEG), xOff: cx});
+  }
+
+  // draw ground + road, near to far, with y clipping
+  let clipY = H + 2;
+  const spriteQueue = [];
+  for (let n = 0; n < DRAW_SEGS; n++){
+    const r = rows[n];
+    const {p1, p2, segZ1} = r;
+    if (p2.y >= clipY) continue;
+    const y2 = Math.max(p2.y, 0), y1 = Math.min(p1.y, clipY);
+    if (y1 <= y2 - 0.01 || p1.y < 0) { clipY = Math.min(clipY, p2.y); continue; }
+
+    const inPark = segZ1 > PARK[0] && segZ1 < PARK[1];
+    const alt = Math.floor(segZ1 / (SEG*3)) % 2 === 0;
+    const fog = Math.min(1, n / DRAW_SEGS * 1.15);
+
+    // ground band
+    ctx.fillStyle = inPark ? (alt ? '#3d5238' : '#37492f') : (alt ? '#4a4258' : '#443d52');
+    ctx.fillRect(0, y2, W, y1 - y2 + 1);
+
+    // road trapezoid with curb
+    const w1 = p1.scale * ROADW * (W/2), w2 = p2.scale * ROADW * (W/2);
+    ctx.fillStyle = alt ? '#8b8494' : '#847d8e';   // curb strip
+    quad(p1.x - w1*1.06, y1, p1.x + w1*1.06, y1, p2.x + w2*1.06, y2, p2.x - w2*1.06, y2);
+    const cw = crosswalkAt(segZ1);
+    ctx.fillStyle = alt ? '#56505f' : '#514b5a';   // asphalt
+    quad(p1.x - w1, y1, p1.x + w1, y1, p2.x + w2, y2, p2.x - w2, y2);
+
+    if (cw){
+      // zebra stripes (rainbow at Pine & Pike, Cap Hill style)
+      const stripes = cw[1] ? ['#e40303','#ff8c00','#ffed00','#008026','#24408e','#732982'] : Array(6).fill('#ded9e2');
+      for (let i = 0; i < 6; i++){
+        const fx = -0.78 + i * 0.31;
+        ctx.fillStyle = stripes[i];
+        quad(p1.x + w1*fx, y1, p1.x + w1*(fx+0.16), y1, p2.x + w2*(fx+0.16), y2, p2.x + w2*fx, y2);
+      }
+    } else if (alt){
+      // faint center dashes
+      ctx.fillStyle = 'rgba(230,225,240,.28)';
+      quad(p1.x - w1*0.012, y1, p1.x + w1*0.012, y1, p2.x + w2*0.012, y2, p2.x - w2*0.012, y2);
+    }
+
+    // fog
+    if (fog > 0.35){
+      ctx.fillStyle = `rgba(43,27,82,${(fog-0.35)*0.9})`;
+      ctx.fillRect(0, y2, W, y1 - y2 + 1);
+    }
+    clipY = Math.min(clipY, p2.y);
+
+    // queue sprites/decor on this segment
+    for (const s of sprites){
+      if (s.z >= segZ1 && s.z < segZ1 + SEG) spriteQueue.push({s, n, xOff: r.xOff});
+    }
+    for (const d of decor){
+      if (d.z >= segZ1 && d.z < segZ1 + SEG) spriteQueue.push({s:d, n, xOff: r.xOff, isDecor:true});
+    }
+  }
+
+  // finish arch
+  if (TRACK_LEN - pos < 150 && TRACK_LEN - pos > 0.5){
+    const row = rows[Math.min(DRAW_SEGS-1, Math.floor((TRACK_LEN - pos)/SEG))];
+    const pA = project(row.xOff - ROADW*1.15, 0, TRACK_LEN);
+    const pB = project(row.xOff + ROADW*1.15, 0, TRACK_LEN);
+    const ph = pA.scale * 4.6 * (W/2);
+    ctx.fillStyle = '#2e2540';
+    ctx.fillRect(pA.x-3, pA.y-ph, 6, ph);
+    ctx.fillRect(pB.x-3, pB.y-ph, 6, ph);
+    ctx.fillStyle = '#f5a83c';
+    ctx.fillRect(pA.x-3, pA.y-ph, (pB.x-pA.x)+6, ph*0.22);
+    const fs = Math.max(6, ph*0.13);
+    ctx.fillStyle = '#241539';
+    ctx.font = `800 ${fs}px sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('🍺 STOUP BREWING 🍺', (pA.x+pB.x)/2, pA.y - ph*0.89);
+  }
+
+  // sprites, far to near
+  spriteQueue.sort((a,b) => b.s.z - a.s.z);
+  for (const q of spriteQueue){
+    const s = q.s;
+    if (!q.isDecor && s.z - pos < 2.6) continue;  // already past the walker
+    const p = project(q.xOff + s.x, 0, s.z);
+    if (p.scale <= 0) continue;
+    const fog = Math.max(0, 1 - ((s.z - pos)/ (DRAW_SEGS*SEG)) * 1.15);
+    ctx.globalAlpha = Math.min(1, fog + 0.1);
+    if (s.type === 'puddle'){
+      const pw = p.scale * s.w * (W/2);
+      ctx.fillStyle = 'rgba(120,150,210,.55)';
+      ctx.beginPath(); ctx.ellipse(p.x, p.y, pw, pw*0.28, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.25)';
+      ctx.beginPath(); ctx.ellipse(p.x - pw*0.2, p.y - pw*0.06, pw*0.4, pw*0.1, 0, 0, Math.PI*2); ctx.fill();
+    } else {
+      const size = p.scale * s.h * (W/2);
+      if (size > 2){
+        ctx.font = `${size}px sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+        if (s.type === 'scooter' || (s.vx && s.vx < 0)){
+          ctx.save(); ctx.translate(p.x, p.y); ctx.scale(-1,1); ctx.fillText(s.e, 0, 0); ctx.restore();
+        } else {
+          ctx.fillText(s.e, p.x, p.y);
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  drawPlayer();
+  drawHUD();
+}
+
+function quad(x1,y1,x2,y2,x3,y3,x4,y4){
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.lineTo(x3,y3); ctx.lineTo(x4,y4); ctx.closePath(); ctx.fill();
+}
+
+function drawPlayer(){
+  const px = W/2, py = H*0.82;
+  const u = Math.min(W, H) / 420;                    // scale unit
+  const bob = Math.sin(walkPhase*2) * 2.5 * u * Math.min(1, speed/5);
+  const swing = Math.sin(walkPhase*2);
+  const lean = getSteer() * 0.12 + (speed > 7 ? 0.08 : 0);
+  const flash = invuln > 0 && Math.floor(invuln*10) % 2 === 0;
+
+  ctx.save();
+  ctx.translate(px, py + bob);
+  ctx.rotate(lean);
+  if (flash) ctx.globalAlpha = 0.45;
+
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,.3)';
+  ctx.beginPath(); ctx.ellipse(0, 34*u - bob, 22*u, 6*u, 0, 0, Math.PI*2); ctx.fill();
+
+  // legs (jeans)
+  ctx.strokeStyle = '#3b4a6b'; ctx.lineCap = 'round'; ctx.lineWidth = 8*u;
+  ctx.beginPath(); ctx.moveTo(-6*u, 6*u); ctx.lineTo(-6*u - swing*7*u, 32*u); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(6*u, 6*u); ctx.lineTo(6*u + swing*7*u, 32*u); ctx.stroke();
+  // shoes
+  ctx.fillStyle = '#f0ede6';
+  ctx.beginPath(); ctx.ellipse(-6*u - swing*7*u, 33*u, 6*u, 3.4*u, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(6*u + swing*7*u, 33*u, 6*u, 3.4*u, 0, 0, Math.PI*2); ctx.fill();
+  // hoodie torso
+  ctx.fillStyle = '#2f8f85';
+  roundRect(-14*u, -22*u, 28*u, 30*u, 9*u); ctx.fill();
+  // arms
+  ctx.strokeStyle = '#2f8f85'; ctx.lineWidth = 7*u;
+  ctx.beginPath(); ctx.moveTo(-13*u, -14*u); ctx.lineTo(-17*u + swing*6*u, 4*u); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(13*u, -14*u); ctx.lineTo(17*u - swing*6*u, 4*u); ctx.stroke();
+  // tote bag with the book (it's book club, you brought the book)
+  ctx.fillStyle = '#d9c9a3';
+  roundRect(15*u - swing*6*u - 6*u, 2*u, 13*u, 15*u, 2.5*u); ctx.fill();
+  ctx.font = `${11*u}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('📖', 15*u - swing*6*u + 0.5*u, 10*u);
+  // hood + head
+  ctx.fillStyle = '#25756d';
+  ctx.beginPath(); ctx.arc(0, -26*u, 11.5*u, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#8a5a3b';
+  ctx.beginPath(); ctx.arc(0, -27*u, 8*u, 0, Math.PI*2); ctx.fill();
+  // stun stars
+  if (stun > 0){
+    ctx.font = `${13*u}px sans-serif`;
+    ctx.fillText('💫', -16*u, -40*u); ctx.fillText('💫', 16*u, -44*u);
+  }
+  ctx.restore();
+}
+
+function roundRect(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+
+function drawHUD(){
+  if (state === 'title') return;
+  const pad = 12, u = Math.min(W, H)/420;
+  ctx.textBaseline = 'middle';
+
+  // top bar
+  ctx.fillStyle = 'rgba(16,10,34,.55)';
+  roundRect(pad, pad, W - pad*2, 40, 12); ctx.fill();
+
+  // book club clock
+  const late = timeLeft < 0;
+  const t = Math.abs(timeLeft);
+  const mm = Math.floor(t/60), ss = String(Math.floor(t%60)).padStart(2,'0');
+  ctx.font = `800 ${16}px sans-serif`;
+  ctx.textAlign = 'left';
+  if (late){
+    ctx.fillStyle = Math.floor(performance.now()/300)%2 ? '#ff6b6b' : '#ffd0d0';
+    ctx.fillText(`📖 LATE ${mm}:${ss}`, pad+12, pad+20);
+  } else {
+    ctx.fillStyle = timeLeft < 20 ? '#ffb04d' : '#f3efe6';
+    ctx.fillText(`📖 club in ${mm}:${ss}`, pad+12, pad+20);
+  }
+
+  // distance
+  const dist = Math.max(0, Math.ceil(TRACK_LEN - pos));
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#f3efe6';
+  ctx.fillText(`${dist} m → 🍺`, W - pad - 12, pad+20);
+
+  // progress strip under top bar
+  const bw = W - pad*2 - 24;
+  ctx.fillStyle = 'rgba(255,255,255,.18)';
+  roundRect(pad+12, pad+44, bw, 5, 3); ctx.fill();
+  ctx.fillStyle = '#f5a83c';
+  roundRect(pad+12, pad+44, bw * Math.min(1, pos/TRACK_LEN), 5, 3); ctx.fill();
+  ctx.font = '11px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('🚶', pad+12 + bw*Math.min(1,pos/TRACK_LEN), pad+41);
+
+  // stamina (coffee meter)
+  const sw = Math.min(220, W*0.4);
+  ctx.fillStyle = 'rgba(16,10,34,.55)';
+  roundRect(pad, H - 46, sw + 44, 34, 12); ctx.fill();
+  ctx.font = '16px sans-serif'; ctx.textAlign='left';
+  ctx.fillText('☕', pad+10, H-29);
+  ctx.fillStyle = 'rgba(255,255,255,.18)';
+  roundRect(pad+34, H-36, sw, 14, 7); ctx.fill();
+  ctx.fillStyle = stamina > 30 ? '#7ed957' : '#ff6b6b';
+  roundRect(pad+34, H-36, sw * stamina/100, 14, 7); ctx.fill();
+
+  // toast
+  if (toast && toastT > 0){
+    ctx.globalAlpha = Math.min(1, toastT/0.5);
+    ctx.font = `800 ${Math.min(19, 15*u+4)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(16,10,34,.65)';
+    const tw = ctx.measureText(toast).width;
+    roundRect(W/2 - tw/2 - 16, H*0.3 - 18, tw + 32, 36, 12); ctx.fill();
+    ctx.fillStyle = '#ffe8b0';
+    ctx.fillText(toast, W/2, H*0.3);
+    ctx.globalAlpha = 1;
+  }
+}
+
+/* ---------------- main loop ---------------- */
+let last = performance.now();
+function frame(now){
+  const dt = Math.min(0.05, (now - last)/1000);
+  last = now;
+  update(dt);
+  render();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// idle attract: slow forward drift behind the title card
+setInterval(() => { if (state === 'title'){ pos = (pos + 0.12) % (TRACK_LEN - 60); } }, 33);
+</script>
+</body>
+</html>
