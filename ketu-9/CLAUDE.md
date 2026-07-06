@@ -40,6 +40,14 @@ scattering is far less finicky there. Swapping to the WebGPU renderer / TSL is a
 optimization once the look is locked — do NOT do it mid-milestone.
 
 ## Current milestone
-Milestones 0–2 are DONE (scaffold, atmosphere, WorldClock + sun spiral + fog crossfade).
-**Next: Milestone 3 — chunked LOD terrain** (fjords + Splinterlands + Weld + ice sheets),
-per KETU-9-GAME-PLAN.md §6 and §8. Do not regress the WorldClock contract.
+Milestones 0–3 are DONE (scaffold, atmosphere, WorldClock + sun spiral + fog crossfade,
+chunked LOD terrain). M3 added `src/terrain/`: a deterministic heightfield
+(`heightfield.ts` — 79% ocean, domain-warped fjords/Splinterlands, the Weld dome +
+volcanic arc + vent refugia, glacial flattening above the snowline), biome
+classification + placeholder vertex colors (`biome.ts`), and a camera-centered
+quadtree of cached, skirted chunks (`Terrain.tsx`). Terrain/sea season tint derives
+from `dayness()` per the WorldClock contract. Spawn (0,0) is a Splinterlands coast;
+world offset + LOD knobs live in `TERRAIN` in `config.ts`.
+**Next: Milestone 4 — triplanar PBR terrain shader + snowline + biome blend**
+(replaces the vertex-color placeholder), per KETU-9-GAME-PLAN.md §7 and §8.
+Do not regress the WorldClock contract.

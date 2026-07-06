@@ -11,6 +11,7 @@ import {
 } from "three";
 
 import { Atmosphere } from "./sky/Atmosphere";
+import { Terrain } from "./terrain/Terrain";
 import { useWorldClock, selectPhase } from "./world/WorldClock";
 import { sunDirection, sunLight, dayness, seasonLabel } from "./world/sun";
 import { PALETTE, mix } from "./world/palettes";
@@ -67,21 +68,27 @@ function Lighting() {
   );
 }
 
-/** Placeholder ground so aerial perspective + light direction are visible. */
-function GroundPlaceholder() {
-  const groundColor = useMemo(() => new Color(), []);
+/**
+ * Placeholder sea surface at sea level so the drowned fjord valleys read as
+ * water. Follows the camera so it never runs out. Replaced by the real Ocean
+ * (waves, reflections, ember-run rivers) in Milestone 6.
+ */
+function OceanPlaceholder() {
+  const seaColor = useMemo(() => new Color(), []);
   const matRef = useRef<any>(null);
+  const meshRef = useRef<any>(null);
 
-  useFrame(() => {
+  useFrame(({ camera }) => {
     const d = dayness(useWorldClock.getState().phase);
-    groundColor.copy(mix(PALETTE.groundDark, PALETTE.groundBright, d));
-    if (matRef.current) matRef.current.color.copy(groundColor);
+    seaColor.copy(mix(PALETTE.seaDark, PALETTE.seaBright, d));
+    if (matRef.current) matRef.current.color.copy(seaColor);
+    if (meshRef.current) meshRef.current.position.set(camera.position.x, 0, camera.position.z);
   });
 
   return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-      <planeGeometry args={[KETU.groundSize, KETU.groundSize, 1, 1]} />
-      <meshStandardMaterial ref={matRef} roughness={1} metalness={0} />
+    <mesh ref={meshRef} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[60000, 60000, 1, 1]} />
+      <meshStandardMaterial ref={matRef} roughness={0.35} metalness={0} transparent opacity={0.92} />
     </mesh>
   );
 }
@@ -149,15 +156,16 @@ export default function App() {
     <>
       <Canvas
         shadows
-        camera={{ position: [0, 60, 260], fov: 55, near: 1, far: 20000 }}
-        gl={{ antialias: true }}
+        camera={{ position: [-450, 800, 2600], fov: 55, near: 1, far: 20000 }}
+        gl={{ antialias: true, logarithmicDepthBuffer: true }}
       >
         <ClockDriver />
         <Atmosphere sunIntensity={sunIntensity} exposure={exposure} />
         <Lighting />
-        <GroundPlaceholder />
+        <Terrain />
+        <OceanPlaceholder />
         <OrbitControls
-          target={[0, 20, 0]}
+          target={[0, 30, 0]}
           maxPolarAngle={Math.PI * 0.52}
           enableDamping
           dampingFactor={0.08}

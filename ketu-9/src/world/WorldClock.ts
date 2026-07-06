@@ -38,3 +38,9 @@ export const useWorldClock = create<WorldClockState>((set, get) => ({
 
 // Convenience selectors (avoid re-render churn by subscribing narrowly).
 export const selectPhase = (s: WorldClockState) => s.phase;
+
+// Dev affordance: expose the clock in the console so the year can be scrubbed
+// from devtools / automation (e.g. __ketuClock.getState().setPhase(0.5)).
+if (typeof window !== "undefined") {
+  (window as unknown as Record<string, unknown>).__ketuClock = useWorldClock;
+}

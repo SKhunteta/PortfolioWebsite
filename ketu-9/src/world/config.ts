@@ -34,3 +34,26 @@ export const KETU = {
 } as const;
 
 export type KetuConfig = typeof KETU;
+
+// --- Milestone 3: terrain -----------------------------------------------------
+// Gameplay-facing terrain constants. Noise wavelengths/amplitudes (the "geology")
+// live next to the generator in src/terrain/heightfield.ts; these are the knobs
+// the rest of the game reads.
+export const TERRAIN = {
+  seaLevelM: 0, // sea level is the world origin plane — everything references it
+  snowlineM: 380, // above this, land is glacial ice sheet (~2/3 of land, per canon)
+
+  // World-space offset baked in so that (0,0) spawns on a Splinterlands coast
+  // with fjords in view (found empirically by scanning the heightfield).
+  originX: 6650,
+  originZ: 3370,
+
+  // Chunked LOD quadtree.
+  rootSize: 24576, // meters covered by the quadtree root (camera-centered)
+  minChunk: 192, // finest chunk size in meters (leaf cell ≈ 6 m at res 33)
+  chunkRes: 33, // vertices per chunk side
+  lodFactor: 1.25, // subdivide while cameraDist < size * lodFactor
+  rebuildDistance: 180, // recompute the tile set when the camera moves this far
+} as const;
+
+export type TerrainConfig = typeof TERRAIN;

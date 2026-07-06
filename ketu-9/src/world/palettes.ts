@@ -16,6 +16,15 @@ export const PALETTE = {
   groundBright: new Color("#6b7d5a"), // warm sugarfield-tundra green
   groundDark: new Color("#2a3550"), // cold, blued-out
 
+  // Terrain material tint over Bright-neutral vertex colors (Milestone 3).
+  // Near-white keeps the biome albedo honest in Bright; the Dark blues it out.
+  terrainTintBright: new Color("#fff7ea"),
+  terrainTintDark: new Color("#5a6a94"),
+
+  // Placeholder sea surface (real Ocean lands in Milestone 6).
+  seaBright: new Color("#3d5f72"),
+  seaDark: new Color("#0e1830"),
+
   // Aurora hue (used later in the Dark).
   aurora: new Color("#3affb0"),
 } as const;
