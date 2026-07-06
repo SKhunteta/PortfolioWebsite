@@ -80,4 +80,12 @@
     </image:image>
   </url>
 
+  <!-- Ketu-9: The Long Cold (procedural WebGL planet experiment) -->
+  <url>
+    <loc>https://builtbyshrey.com/ketu-9/</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
 </urlset> 

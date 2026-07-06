@@ -34,6 +34,13 @@ is the planet surface, the sky, and the seasonal swing.
 - Keep it hot-reloadable and visually verifiable each milestone.
 - Use `leva` for live-tuning; bake tuned values back into `config.ts` / `palettes.ts`.
 
+## Hosting + mobile
+Deployed at builtbyshrey.com/ketu-9/ — the portfolio's Pages workflow builds this
+project (`base: /ketu-9/`) and copies its dist into the site artifact; the
+Playground page links to it. Touch devices get a lighter profile in `App.tsx`
+(`IS_TOUCH`): capped DPR, reduced atmosphere march steps (shader defines), and a
+collapsed Leva panel. Keep new expensive effects behind the same switch.
+
 ## Renderer note
 The seed uses the classic **WebGL + ShaderMaterial (raw GLSL)** path because handwritten
 scattering is far less finicky there. Swapping to the WebGPU renderer / TSL is a later

@@ -48,6 +48,18 @@ describe("PlaygroundPage", () => {
     expect(links.length).toBeGreaterThan(0);
   });
 
+  it("renders the Ketu-9 static experiment card in the standalone section", () => {
+    renderPage();
+    // The title also appears as a footer link, so use the *AllBy* variant.
+    expect(
+      screen.getAllByText("Ketu-9 — The Long Cold").length
+    ).toBeGreaterThan(0);
+    const links = screen
+      .getAllByRole("link")
+      .filter((el) => el.getAttribute("href") === "/ketu-9/");
+    expect(links.length).toBeGreaterThan(0);
+  });
+
   it("renders a view-source link for every demo", () => {
     renderPage();
     const sourceLinks = screen.getAllByLabelText(/View source for/);

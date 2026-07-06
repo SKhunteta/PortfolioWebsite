@@ -1,7 +1,7 @@
 import { useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { useControls, folder } from "leva";
+import { Leva, useControls, folder } from "leva";
 import {
   Color,
   DirectionalLight,
@@ -16,6 +16,12 @@ import { useWorldClock, selectPhase } from "./world/WorldClock";
 import { sunDirection, sunLight, dayness, seasonLabel } from "./world/sun";
 import { PALETTE, mix } from "./world/palettes";
 import { KETU } from "./world/config";
+
+// Touch devices get the mobile profile: capped devicePixelRatio and fewer
+// atmosphere march steps (the sky shader is per-pixel expensive, and phones
+// render at DPR 3), plus a collapsed Leva panel so it doesn't eat the screen.
+const IS_TOUCH =
+  typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
 
 /** Advances the WorldClock once per frame. Nothing else touches time. */
 function ClockDriver() {
@@ -100,8 +106,8 @@ function SeasonHUD() {
     <div
       style={{
         position: "absolute",
-        top: 16,
-        left: 16,
+        top: "calc(16px + env(safe-area-inset-top))",
+        left: "calc(16px + env(safe-area-inset-left))",
         font: "600 13px/1.4 ui-monospace, monospace",
         color: "#e8eef6",
         textShadow: "0 1px 3px rgba(0,0,0,0.6)",
@@ -156,11 +162,17 @@ export default function App() {
     <>
       <Canvas
         shadows
+        dpr={IS_TOUCH ? [1, 1.5] : [1, 2]}
         camera={{ position: [-450, 800, 2600], fov: 55, near: 1, far: 20000 }}
         gl={{ antialias: true, logarithmicDepthBuffer: true }}
       >
         <ClockDriver />
-        <Atmosphere sunIntensity={sunIntensity} exposure={exposure} />
+        <Atmosphere
+          sunIntensity={sunIntensity}
+          exposure={exposure}
+          primarySteps={IS_TOUCH ? 10 : 16}
+          lightSteps={IS_TOUCH ? 4 : 8}
+        />
         <Lighting />
         <Terrain />
         <OceanPlaceholder />
@@ -173,6 +185,7 @@ export default function App() {
       </Canvas>
       <SeasonHUD />
       <ClockControls />
+      <Leva collapsed={IS_TOUCH} />
     </>
   );
 }
