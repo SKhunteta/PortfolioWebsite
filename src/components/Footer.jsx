@@ -104,6 +104,14 @@ const Footer = () => {
                 </a>
               </li>
               <li>
+                <a
+                  href="/ketu-9/"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Ketu-9 — The Long Cold
+                </a>
+              </li>
+              <li>
                 <Link
                   to="/playground"
                   className="text-accent hover:text-white transition-colors"

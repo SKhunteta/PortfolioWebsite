@@ -10,13 +10,22 @@ import { KETU } from "../world/config";
 interface AtmosphereProps {
   sunIntensity?: number;
   exposure?: number;
+  /** Primary/secondary ray-march step counts. Lower on mobile: the shader is
+   *  per-pixel fill-rate bound and phones render at high devicePixelRatio. */
+  primarySteps?: number;
+  lightSteps?: number;
 }
 
 /**
  * A large inverted sphere, kept centered on the camera, rendered with the
  * scattering shader. Drives its sun direction from the WorldClock every frame.
  */
-export function Atmosphere({ sunIntensity = 22, exposure = 1.1 }: AtmosphereProps) {
+export function Atmosphere({
+  sunIntensity = 22,
+  exposure = 1.1,
+  primarySteps = 16,
+  lightSteps = 8,
+}: AtmosphereProps) {
   const meshRef = useRef<Mesh>(null);
   const { camera } = useThree();
 
@@ -36,11 +45,12 @@ export function Atmosphere({ sunIntensity = 22, exposure = 1.1 }: AtmosphereProp
       new ShaderMaterial({
         vertexShader: atmosphereVertex,
         fragmentShader: atmosphereFragment,
+        defines: { PRIMARY_STEPS: primarySteps, LIGHT_STEPS: lightSteps },
         uniforms,
         side: BackSide,
         depthWrite: false,
       }),
-    [uniforms]
+    [uniforms, primarySteps, lightSteps]
   );
 
   const nightScratch = useMemo(() => new Color(), []);

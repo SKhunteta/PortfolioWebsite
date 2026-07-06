@@ -26,6 +26,12 @@ jobs:
       - run: npm ci
       - run: npx vitest run
       - run: npm run build
+      # Ketu-9 is a standalone Vite project served at /ketu-9/ alongside the site.
+      - run: npm ci
+        working-directory: ketu-9
+      - run: npm run build
+        working-directory: ketu-9
+      - run: mkdir -p dist/ketu-9 && cp -r ketu-9/dist/. dist/ketu-9/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist

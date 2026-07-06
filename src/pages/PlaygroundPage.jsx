@@ -95,6 +95,32 @@ const DemoCard = ({ demo }) => {
   );
 };
 
+// Statically-hosted experiments live outside the SPA (own full-page builds
+// served from subpaths), so they get their own cards outside the DEMOS array.
+// Ketu-9 is built from /ketu-9 in this repo and deployed to /ketu-9/ by the
+// Pages workflow. Its theme mirrors the game's Dark palette.
+const STATIC_STANDALONE = [
+  {
+    id: "ketu-9",
+    title: "Ketu-9 — The Long Cold",
+    kindLabel: "WebGL world",
+    tagline: "A procedural planet with a year-long day.",
+    description:
+      "A living slice of an alien planet: a physically-modeled scattering sky, fjord archipelagos generated from seeded noise, and one world clock that spirals the sun from the months-long Bright down into the aurora-dark winter. Scrub the year and watch the same coast become two different worlds.",
+    tags: ["three.js", "procedural", "shaders"],
+    cta: "Land on Ketu-9",
+    href: "/ketu-9/",
+    urlLabel: "builtbyshrey.com/ketu-9",
+    theme: {
+      bg: "#0b1326",
+      text: "#e8eef6",
+      muted: "#8fa3c4",
+      accent: "#3affb0",
+      ctaText: "#05070f",
+    },
+  },
+];
+
 // Static in-world artifacts live under public/ (not React routes), so they
 // get their own cards outside the DEMOS array. Each theme mirrors the
 // artifact's own palette.
@@ -160,7 +186,7 @@ const StaticArtifactCard = ({ artifact }) => {
               color: theme.muted,
             }}
           >
-            In-world artifact
+            {artifact.kindLabel || "In-world artifact"}
           </span>
         </div>
         <p
@@ -250,6 +276,9 @@ const PlaygroundPage = () => {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {standalone.map((demo) => (
                 <DemoCard key={demo.id} demo={demo} />
+              ))}
+              {STATIC_STANDALONE.map((artifact) => (
+                <StaticArtifactCard key={artifact.id} artifact={artifact} />
               ))}
             </div>
           </div>

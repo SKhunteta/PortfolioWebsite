@@ -39,8 +39,14 @@ export const atmosphereFragment = /* glsl */ `
   const float Hm = 1200.0;   // Mie scale height
   const float g  = 0.76;     // Mie anisotropy
 
-  const int PRIMARY = 16;
-  const int LIGHT   = 8;
+  // March step counts. Overridable via ShaderMaterial defines so mobile can
+  // trade twilight-band fidelity for fill rate (see Atmosphere.tsx).
+  #ifndef PRIMARY_STEPS
+  #define PRIMARY_STEPS 16
+  #endif
+  #ifndef LIGHT_STEPS
+  #define LIGHT_STEPS 8
+  #endif
 
   // Far intersection of ray (o,d) with sphere radius r centered at origin.
   bool raySphere(vec3 o, vec3 d, float r, out float t0, out float t1) {
@@ -66,7 +72,7 @@ export const atmosphereFragment = /* glsl */ `
     float p0, p1;
     if (raySphere(origin, dir, Rp, p0, p1) && p0 > 0.0) t1 = min(t1, p0);
 
-    float segLen = (t1 - t0) / float(PRIMARY);
+    float segLen = (t1 - t0) / float(PRIMARY_STEPS);
     float tCur = t0;
 
     vec3 sumR = vec3(0.0);
@@ -81,7 +87,7 @@ export const atmosphereFragment = /* glsl */ `
       ((1.0 - g2) * (1.0 + mu * mu)) /
       ((2.0 + g2) * pow(1.0 + g2 - 2.0 * g * mu, 1.5));
 
-    for (int i = 0; i < PRIMARY; i++) {
+    for (int i = 0; i < PRIMARY_STEPS; i++) {
       vec3 sp = origin + dir * (tCur + segLen * 0.5);
       float h = length(sp) - Rp;
       float hr = exp(-h / Hr) * segLen;
@@ -92,13 +98,13 @@ export const atmosphereFragment = /* glsl */ `
       // Secondary march toward the sun.
       float l0, l1;
       raySphere(sp, sunDir, Ra, l0, l1);
-      float lSeg = l1 / float(LIGHT);
+      float lSeg = l1 / float(LIGHT_STEPS);
       float lt = 0.0;
       float lodR = 0.0;
       float lodM = 0.0;
       bool inShadow = false;
 
-      for (int j = 0; j < LIGHT; j++) {
+      for (int j = 0; j < LIGHT_STEPS; j++) {
         vec3 lp = sp + sunDir * (lt + lSeg * 0.5);
         float lh = length(lp) - Rp;
         if (lh < 0.0) { inShadow = true; break; } // planet blocks the sun
