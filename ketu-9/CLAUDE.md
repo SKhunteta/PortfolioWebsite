@@ -58,3 +58,17 @@ world offset + LOD knobs live in `TERRAIN` in `config.ts`.
 **Next: Milestone 4 — triplanar PBR terrain shader + snowline + biome blend**
 (replaces the vertex-color placeholder), per KETU-9-GAME-PLAN.md §7 and §8.
 Do not regress the WorldClock contract.
+
+## Observer Mode (added out-of-band, after M3)
+`src/observer/ObserverMode.tsx` — one button (◉ OBSERVE), a looping cinematic
+director: authored shots (dolly + drifting look target + caption + target season
+phase) touring the falls, the leviathan pod, the stormwing gyre, the glassbears,
+and a Dark-falls timelapse finale. It drives the season ONLY via WorldClock
+setPhase (like the scrub slider) and restores camera+clock on exit. Early fauna
+placeholders shipped with it (final versions land in their own milestones):
+`life/Glassbears.tsx` (transmission shimmer, M11), `life/Leviathans.tsx`,
+`life/SkyEagles.tsx` (M9-ish), `water/Waterfalls.tsx` (M6 rivers/ocean),
+`world/locations.ts` (POIs found by offline heightfield scans — re-scan if the
+geology changes). Dev handles: `__ketuClock`, `__ketuObserver` (`jumpTo(i)`).
+**Warning:** do NOT enable `logarithmicDepthBuffer` — three.js doesn't patch raw
+ShaderMaterials for log depth, which silently hides them (cost a debugging hour).

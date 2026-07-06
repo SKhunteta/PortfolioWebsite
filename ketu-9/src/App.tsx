@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { Leva, useControls, folder } from "leva";
@@ -12,16 +12,17 @@ import {
 
 import { Atmosphere } from "./sky/Atmosphere";
 import { Terrain } from "./terrain/Terrain";
+import { Waterfalls } from "./water/Waterfalls";
+import { Glassbears } from "./life/Glassbears";
+import { Leviathans } from "./life/Leviathans";
+import { SkyEagles } from "./life/SkyEagles";
+import { ObserverMode, useObserver } from "./observer/ObserverMode";
 import { useWorldClock, selectPhase } from "./world/WorldClock";
 import { sunDirection, sunLight, dayness, seasonLabel } from "./world/sun";
 import { PALETTE, mix } from "./world/palettes";
 import { KETU } from "./world/config";
 
-// Touch devices get the mobile profile: capped devicePixelRatio and fewer
-// atmosphere march steps (the sky shader is per-pixel expensive, and phones
-// render at DPR 3), plus a collapsed Leva panel so it doesn't eat the screen.
-const IS_TOUCH =
-  typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+import { IS_TOUCH } from "./world/device";
 
 /** Advances the WorldClock once per frame. Nothing else touches time. */
 function ClockDriver() {
@@ -94,7 +95,8 @@ function OceanPlaceholder() {
   return (
     <mesh ref={meshRef} rotation={[-Math.PI / 2, 0, 0]}>
       <planeGeometry args={[60000, 60000, 1, 1]} />
-      <meshStandardMaterial ref={matRef} roughness={0.35} metalness={0} transparent opacity={0.92} />
+      {/* Slightly see-through so the leviathan pod reads as shadows below. */}
+      <meshStandardMaterial ref={matRef} roughness={0.35} metalness={0} transparent opacity={0.84} />
     </mesh>
   );
 }
@@ -118,6 +120,82 @@ function SeasonHUD() {
       <div style={{ fontSize: 16, letterSpacing: 1 }}>{seasonLabel(phase)}</div>
       <div style={{ opacity: 0.7 }}>phase {phase.toFixed(3)}</div>
     </div>
+  );
+}
+
+/** Observer Mode chrome: start/stop button, cinematic captions, shot fades. */
+function ObserverUI() {
+  const active = useObserver((s) => s.active);
+  const caption = useObserver((s) => s.caption);
+  const sub = useObserver((s) => s.sub);
+  const fade = useObserver((s) => s.fade);
+  const start = useObserver((s) => s.start);
+  const stop = useObserver((s) => s.stop);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") stop();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [stop]);
+
+  return (
+    <>
+      {/* Shot-boundary fade */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "#000",
+          opacity: active ? fade : 0,
+          pointerEvents: "none",
+          zIndex: 5,
+        }}
+      />
+      {/* Lower-third caption */}
+      {active && (
+        <div
+          style={{
+            position: "absolute",
+            left: "calc(28px + env(safe-area-inset-left))",
+            bottom: "calc(84px + env(safe-area-inset-bottom))",
+            pointerEvents: "none",
+            userSelect: "none",
+            opacity: 1 - fade,
+            zIndex: 6,
+            color: "#e8eef6",
+            textShadow: "0 1px 8px rgba(0,0,0,0.7)",
+            font: "600 13px/1.5 ui-monospace, monospace",
+          }}
+        >
+          <div style={{ fontSize: 30, letterSpacing: 5, fontWeight: 700 }}>{caption}</div>
+          <div style={{ opacity: 0.75, letterSpacing: 1 }}>{sub}</div>
+        </div>
+      )}
+      {/* The one button */}
+      <button
+        onClick={active ? stop : start}
+        style={{
+          position: "absolute",
+          left: "50%",
+          transform: "translateX(-50%)",
+          bottom: "calc(20px + env(safe-area-inset-bottom))",
+          zIndex: 7,
+          font: "600 13px/1 ui-monospace, monospace",
+          letterSpacing: 2,
+          color: "#e8eef6",
+          background: "rgba(8, 12, 24, 0.55)",
+          border: "1px solid rgba(232, 238, 246, 0.35)",
+          borderRadius: 999,
+          padding: "12px 22px",
+          cursor: "pointer",
+          backdropFilter: "blur(6px)",
+        }}
+      >
+        {active ? "✕ EXIT" : "◉ OBSERVE"}
+      </button>
+    </>
   );
 }
 
@@ -151,6 +229,7 @@ function ClockControls() {
 }
 
 export default function App() {
+  const observing = useObserver((s) => s.active);
   const { sunIntensity, exposure } = useControls("Atmosphere", {
     render: folder({
       sunIntensity: { value: 22, min: 0, max: 60, step: 0.5 },
@@ -164,7 +243,10 @@ export default function App() {
         shadows
         dpr={IS_TOUCH ? [1, 1.5] : [1, 2]}
         camera={{ position: [-450, 800, 2600], fov: 55, near: 1, far: 20000 }}
-        gl={{ antialias: true, logarithmicDepthBuffer: true }}
+        // NOTE: no logarithmicDepthBuffer — it silently breaks depth testing
+        // for raw ShaderMaterials (waterfalls, future aurora/rivers), which
+        // don't get three's log-depth patching. 1..20000 m is fine without it.
+        gl={{ antialias: true }}
       >
         <ClockDriver />
         <Atmosphere
@@ -176,7 +258,13 @@ export default function App() {
         <Lighting />
         <Terrain />
         <OceanPlaceholder />
+        <Waterfalls />
+        <Glassbears />
+        <Leviathans />
+        <SkyEagles />
+        <ObserverMode />
         <OrbitControls
+          enabled={!observing}
           target={[0, 30, 0]}
           maxPolarAngle={Math.PI * 0.52}
           enableDamping
@@ -184,8 +272,9 @@ export default function App() {
         />
       </Canvas>
       <SeasonHUD />
+      <ObserverUI />
       <ClockControls />
-      <Leva collapsed={IS_TOUCH} />
+      <Leva collapsed={IS_TOUCH} hidden={observing} />
     </>
   );
 }
