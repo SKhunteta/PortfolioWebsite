@@ -37,9 +37,20 @@ const POD = [
 ];
 
 const CRUISE_DEPTH = 16; // × size — a moving shadow under the sea
-const WINDUP_DEPTH = 34; // × size — where the rise begins
+const WINDUP_DEPTH = 26; // × size — where the rise begins
 const APEX_HEIGHT = 14; // × size — keel fully clear of the water
 const HALF_HANG = (BREACH.REENTRY_AT - BREACH.BREAK_AT) / 2; // parabola half-width
+
+// C1 stitching: every phase boundary matches VELOCITY, not just position, so
+// the body never hitches. V_PARA is the parabola's speed (per unit size) at
+// both surface crossings; the rise exponent and the re-entry drag constant are
+// derived from it so the whale leaves the water exactly as fast as it was
+// climbing, and plunges exactly as fast as it fell.
+const V_PARA = (2 * APEX_HEIGHT) / HALF_HANG; // |dy/du| at the crossings, × size
+const RISE_T = BREACH.BREAK_AT - BREACH.windup;
+const RISE_K = (V_PARA * RISE_T) / WINDUP_DEPTH; // power curve exit speed == V_PARA
+const PLUNGE_TAU = (CRUISE_DEPTH * 1.15) / V_PARA; // drag: asymptote just under the cruise line
+const SETTLE_T = BREACH.TOTAL - BREACH.REENTRY_AT;
 
 /** Whale hull: 14-point profile, 64 radial segments, a faint undulation so
  *  flank highlights ripple instead of reading as a perfect solid of revolution. */
@@ -151,13 +162,15 @@ interface TentacleProps {
   position: [number, number, number];
   baseYaw: number;
   swayPhase: number;
+  /** Whole-limb scale: forelimbs are massive, the rear pairs taper with the hull. */
+  limbScale: number;
   /** Shared performance signal: 1 = streamlined against the body for the rise. */
   perf: { streamline: number };
 }
 
 /** Four nested, tapering segments; rocking each joint bends the whole limb.
  *  During a breach the limbs sweep back and trail — rowing would read wrong. */
-function Tentacle({ material, position, baseYaw, swayPhase, perf }: TentacleProps) {
+function Tentacle({ material, position, baseYaw, swayPhase, limbScale, perf }: TentacleProps) {
   const joints = useRef<(Group | null)[]>([]);
 
   useFrame((state) => {
@@ -194,7 +207,7 @@ function Tentacle({ material, position, baseYaw, swayPhase, perf }: TentacleProp
   }
 
   return (
-    <group position={position} rotation={[0, baseYaw, 0]}>
+    <group position={position} rotation={[0, baseYaw, 0]} scale={limbScale}>
       {chain}
     </group>
   );
@@ -212,6 +225,7 @@ interface LevState {
   prevY: number;
   lastSeq: number;
   spoutFired: boolean;
+  lastRain: number; // last airborne water-shed emission (perf clock)
   nextAmbient: number;
 }
 
@@ -249,6 +263,7 @@ function Leviathan({
     prevY: -CRUISE_DEPTH,
     lastSeq: 0,
     spoutFired: false,
+    lastRain: 0,
     nextAmbient: 30 + phase * 12,
   });
   const perf = useMemo(() => ({ streamline: 0 }), []);
@@ -287,7 +302,13 @@ function Leviathan({
     }
 
     // --- Trajectory. ---------------------------------------------------------
-    const cruiseY = () => -CRUISE_DEPTH * size + Math.sin(s.time * dive + phase * 1.7) * 3 * size;
+    // Cruise: two incommensurate sines so the depth-holding reads as a living
+    // swimmer breathing against the water column, not a metronome bob.
+    const cruiseY = () =>
+      -CRUISE_DEPTH * size +
+      (Math.sin(s.time * dive + phase * 1.7) * 2.1 +
+        Math.sin(s.time * dive * 0.41 + phase * 3.3) * 1.4) *
+        size;
     let y: number;
     let speedMult = 1;
     let roll = 0;
@@ -299,14 +320,16 @@ function Leviathan({
         s.nextAmbient = s.time + 55 + ((index * 13.7 + Math.floor(s.time)) % 45);
         y = cruiseY();
       } else if (u < BREACH.windup) {
-        // Sink and gather speed.
+        // The dive-in: an unhurried, tail-up sink to the windup depth.
         y = MathUtils.lerp(s.yStart, -WINDUP_DEPTH * size, MathUtils.smoothstep(u, 0, BREACH.windup));
         speedMult = MathUtils.lerp(1, 1.7, u / BREACH.windup);
         streamlineTarget = 1;
       } else if (u < BREACH.BREAK_AT) {
         // The rise: slow and ominous out of the deep, explosive at the surface.
-        const p = (u - BREACH.windup) / (BREACH.BREAK_AT - BREACH.windup);
-        y = -WINDUP_DEPTH * size * (1 - Math.pow(p, 2.4));
+        // RISE_K makes the exit speed equal the parabola's entry speed — the
+        // break is velocity-continuous, so the launch reads as one motion.
+        const p = (u - BREACH.windup) / RISE_T;
+        y = -WINDUP_DEPTH * size * (1 - Math.pow(p, RISE_K));
         speedMult = 1.7;
         streamlineTarget = 1;
       } else if (u < BREACH.REENTRY_AT) {
@@ -318,11 +341,16 @@ function Leviathan({
         roll = 0.85 * Math.sin(Math.PI * MathUtils.clamp((u - (BREACH.BREAK_AT + 0.3)) / 1.8, 0, 1));
         streamlineTarget = 1;
       } else {
-        // Dive back to the cruise line (evaluated live so the hand-off is C0).
-        const p = MathUtils.smoothstep(u, BREACH.REENTRY_AT, BREACH.TOTAL);
-        y = MathUtils.lerp(0, cruiseY(), p);
-        speedMult = MathUtils.lerp(1.7, 1, p);
-        streamlineTarget = 1 - p;
+        // Re-entry: the body punches through at full parabola speed and the
+        // water bleeds it off exponentially (velocity-matched at the surface —
+        // no more slam-then-freeze), then the tail of the phase blends onto
+        // the live cruise line.
+        const w = u - BREACH.REENTRY_AT;
+        const plunge = -V_PARA * size * PLUNGE_TAU * (1 - Math.exp(-w / PLUNGE_TAU));
+        const settle = MathUtils.smoothstep(w, SETTLE_T * 0.55, SETTLE_T);
+        y = MathUtils.lerp(plunge, cruiseY(), settle);
+        speedMult = MathUtils.lerp(1.7, 1, settle);
+        streamlineTarget = 1 - settle;
       }
     } else {
       y = cruiseY();
@@ -373,6 +401,21 @@ function Leviathan({
         count: 200, baseSpeed: 15 * Math.sqrt(size), spread: 0, life: 2.4, size: 4.5,
       });
     }
+    // Water sheeting off the airborne hull — a falling glitter-trail that makes
+    // ninety meters of wet animal read as WET, not as a dry model in the air.
+    if (s.mode === "breach") {
+      const u = s.time - s.stateStart;
+      if (u > BREACH.BREAK_AT + 0.25 && u < BREACH.REENTRY_AT && y > 2 && s.time - s.lastRain > 0.12) {
+        s.lastRain = s.time;
+        const fx = Math.sin(g.rotation.y);
+        const fz = Math.cos(g.rotation.y);
+        scratch.current.v.set(x - fx * 11 * size, y + 1.5 * size, z - fz * 11 * size);
+        emitBurst({
+          kind: "splash", origin: scratch.current.v, dir: up,
+          count: 28, baseSpeed: 4, spread: 0.9, life: 1.4, size: 2.4,
+        });
+      }
+    }
     if (s.mode === "breach" && !s.spoutFired && s.time - s.stateStart >= BREACH.BREAK_AT + 0.35) {
       s.spoutFired = true;
       const fx = Math.sin(g.rotation.y);
@@ -403,15 +446,26 @@ function Leviathan({
     }
   });
 
-  // Eight limbs: four per side along the rear half.
+  // Eight limbs: four per side, staggered nose-to-tail down the ventral hull.
+  // Each pair is socketed at the LOCAL hull radius (r, from the lathe profile)
+  // so the row follows the body's taper, and the limbs themselves shrink
+  // rearward — big forelimb "oars" up front, trailing steerers at the back.
+  const LIMB_ROW = [
+    { z: 14, r: 4.9, limbScale: 1.1 },
+    { z: 5.5, r: 5.35, limbScale: 0.95 },
+    { z: -3.5, r: 4.6, limbScale: 0.82 },
+    { z: -13, r: 3.05, limbScale: 0.66 },
+  ];
   const tentacles: TentacleProps[] = [];
-  for (let i = 0; i < 4; i++) {
-    const zPos = -6 - i * 5.5;
+  LIMB_ROW.forEach(({ z, r, limbScale }, i) => {
+    const lx = r * 0.8;
+    const ly = -r * 0.45; // ventral-lateral socket on the flattened hull
+    const yaw = 0.68 - i * 0.27; // front pairs rake forward, rear pairs trail
     tentacles.push(
-      { material, position: [4.2, -2.5, zPos], baseYaw: 0.5, swayPhase: i * 1.4, perf },
-      { material, position: [-4.2, -2.5, zPos], baseYaw: -0.5, swayPhase: i * 1.4 + 0.9, perf }
+      { material, position: [lx, ly, z], baseYaw: yaw, swayPhase: i * 1.4, limbScale, perf },
+      { material, position: [-lx, ly, z], baseYaw: -yaw, swayPhase: i * 1.4 + 0.9, limbScale, perf }
     );
-  }
+  });
 
   return (
     <group ref={root} scale={size}>

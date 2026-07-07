@@ -50,6 +50,7 @@ interface BearState {
   step: number; // integrated gait phase
   lastSeq: number;
   pulses: number; // vapor pulses fired this roar
+  lastFall: number; // gait half-cycle of the last footfall puff
   nextAmbient: number; // next self-directed roar (outside Observer tours)
 }
 
@@ -80,6 +81,7 @@ function Bear({
     step: phase * 3.1,
     lastSeq: 0,
     pulses: 0,
+    lastFall: -999,
     nextAmbient: 25 + phase * 11,
   });
 
@@ -168,16 +170,44 @@ function Bear({
     const dirZ = Math.cos(a) * Math.sign(speed);
     g.rotation.y = Math.atan2(dirX, dirZ);
 
+    // Footfall kick-up: each planted forepaw chips a little burst of ice
+    // crystals off the bench. A transparent predator is visible mostly by
+    // what it disturbs — the puffs sell both the weight and the presence.
+    if (!IS_TOUCH && moveFactor > 0.5) {
+      const fall = Math.floor((s.step - 0.7) / Math.PI);
+      if (fall !== s.lastFall) {
+        s.lastFall = fall;
+        const side = fall % 2 === 0 ? 1 : -1;
+        const fwdX = Math.sin(g.rotation.y);
+        const fwdZ = Math.cos(g.rotation.y);
+        scratch.current.headPos.set(
+          x + fwdX * 0.8 + fwdZ * 0.85 * side,
+          g.position.y + 0.12,
+          z + fwdZ * 0.8 - fwdX * 0.85 * side
+        );
+        emitBurst({
+          kind: "vapor", origin: scratch.current.headPos,
+          count: 8, baseSpeed: 0.8, spread: 1, life: 1.0, size: 0.4,
+        });
+      }
+    }
+
     // --- Pose: hips pivot lifts the whole front half for the rear-up. --------
     const step = s.step;
     hips.current.rotation.x = -0.62 * rear;
+    // Pacing gait rolls the whole body away from the striding side — the
+    // shambling side-to-side sway IS the bear-walk read at any distance.
+    hips.current.rotation.z = 0.06 * Math.sin(step) * moveFactor * (1 - rear);
     hips.current.position.y = 0.98 + 0.03 * Math.sin(2 * step) * moveFactor;
 
-    // Two-beat diagonal gait; joints blend toward the roar pose as `rear` rises.
+    // Two-beat PACING gait (same-side legs swing together, hind leading the
+    // front by a beat) — bears amble, they don't trot. Joints blend toward the
+    // roar pose as `rear` rises.
     for (let i = 0; i < 2; i++) {
       const sideSign = i === 0 ? 1 : -1;
-      const frontSwing = 0.42 * Math.sin(step + (i === 0 ? 0 : Math.PI)) * moveFactor;
-      const hindSwing = 0.42 * Math.sin(step + (i === 0 ? Math.PI : 0)) * moveFactor;
+      const sidePhase = i === 0 ? 0 : Math.PI;
+      const frontSwing = 0.42 * Math.sin(step + sidePhase) * moveFactor;
+      const hindSwing = 0.42 * Math.sin(step + sidePhase + 0.55) * moveFactor;
 
       const shoulder = frontShoulders.current[i];
       const elbow = frontElbows.current[i];
@@ -186,7 +216,7 @@ function Bear({
         shoulder.rotation.x = frontSwing * (1 - rear) - 1.15 * rear;
         shoulder.rotation.z = -0.12 * rear * sideSign;
         elbow.rotation.x =
-          Math.max(0, -Math.sin(step + (i === 0 ? 0 : Math.PI) - 0.6)) * 0.7 * moveFactor * (1 - rear) +
+          Math.max(0, -Math.sin(step + sidePhase - 0.6)) * 0.7 * moveFactor * (1 - rear) +
           1.3 * rear;
       }
       const hip = hindHips.current[i];
@@ -196,15 +226,17 @@ function Bear({
         hip.rotation.x = hindSwing * (1 - rear) + 0.62 * rear;
         knee.rotation.x =
           HOCK_REST +
-          Math.max(0, -Math.sin(step + (i === 0 ? Math.PI : 0) - 0.6)) * 0.7 * moveFactor * (1 - rear) -
+          Math.max(0, -Math.sin(step + sidePhase - 0.05)) * 0.7 * moveFactor * (1 - rear) -
           0.2 * rear;
       }
     }
 
-    // Neck: carried low on the amble, thrown up and back for the roar.
+    // Neck: carried low on the amble, thrown up and back for the roar. The
+    // head swings WITH the gait (counter to the body roll) plus a slow wander.
     if (neck.current) {
       neck.current.rotation.x = NECK_REST - 0.85 * rear;
-      neck.current.rotation.y = Math.sin(t * 0.4 + phase) * 0.3 * (1 - rear) * moveFactor;
+      neck.current.rotation.y =
+        (Math.sin(t * 0.4 + phase) * 0.25 + Math.sin(step) * 0.09) * (1 - rear) * moveFactor;
     }
     if (head.current) {
       const tremor = jawOpen * (0.05 * Math.sin(t * 31) + 0.03 * Math.sin(t * 17));
@@ -230,94 +262,116 @@ function Bear({
   return (
     <group ref={root} scale={SCALE}>
       <group ref={hips} position={[0, 0.98, -0.75]}>
-        {/* pelvis + torso sloping down to the rear + deep chest */}
-        <mesh material={material} position={[0, 0.02, -0.1]} scale={[0.82, 0.75, 1.0]}>
-          <sphereGeometry args={[0.55, 20, 14]} />
+        {/* hindquarters: a big rounded rump set LOWER than the shoulder */}
+        <mesh material={material} position={[0, -0.02, -0.15]} scale={[0.9, 0.82, 1.05]}>
+          <sphereGeometry args={[0.56, 20, 14]} />
         </mesh>
-        <mesh material={material} position={[0, 0.1, 0.62]} rotation={[Math.PI / 2 + 0.1, 0, 0]}>
-          <capsuleGeometry args={[0.48, 0.85, 6, 16]} />
+        {/* barrel — slopes up toward the withers */}
+        <mesh material={material} position={[0, 0.08, 0.6]} rotation={[Math.PI / 2 + 0.14, 0, 0]}>
+          <capsuleGeometry args={[0.5, 0.85, 6, 16]} />
         </mesh>
-        <mesh material={material} position={[0, 0.2, 1.15]} scale={[0.88, 0.95, 1.05]}>
+        {/* deep belly line — bears are heavy underneath */}
+        <mesh material={material} position={[0, -0.14, 0.35]} rotation={[Math.PI / 2, 0, 0]}>
+          <capsuleGeometry args={[0.4, 0.7, 6, 14]} />
+        </mesh>
+        {/* chest */}
+        <mesh material={material} position={[0, 0.22, 1.12]} scale={[0.9, 1.0, 1.05]}>
           <sphereGeometry args={[0.52, 20, 14]} />
         </mesh>
         {/* the shoulder hump — highest point of the animal, the grizzly marker */}
-        <mesh material={material} position={[0, 0.62, 1.05]} scale={[0.8, 0.75, 1.0]}>
-          <sphereGeometry args={[0.34, 16, 12]} />
+        <mesh material={material} position={[0, 0.68, 1.0]} scale={[0.78, 0.85, 1.15]}>
+          <sphereGeometry args={[0.4, 16, 12]} />
+        </mesh>
+        {/* stub tail */}
+        <mesh material={material} position={[0, 0.14, -0.72]} scale={[1, 0.85, 1.1]}>
+          <sphereGeometry args={[0.11, 10, 8]} />
         </mesh>
 
         {/* neck (thick, short, carried low) → head → hinged jaw */}
         <group ref={neck} position={[0, 0.42, 1.5]} rotation={[NECK_REST, 0, 0]}>
           <mesh material={material} position={[0, 0, 0.3]} rotation={[Math.PI / 2, 0, 0]}>
-            <capsuleGeometry args={[0.26, 0.4, 6, 12]} />
+            <capsuleGeometry args={[0.3, 0.4, 6, 12]} />
           </mesh>
           <group ref={head} position={[0, 0.02, 0.62]} rotation={[HEAD_REST, 0, 0]}>
-            <mesh material={material} scale={[0.8, 0.85, 1.0]}>
+            <mesh material={material} scale={[0.85, 0.9, 1.05]}>
               <sphereGeometry args={[0.3, 16, 12]} />
             </mesh>
+            {/* domed forehead + brow ridge stepping down to the muzzle */}
             <mesh material={material} position={[0, 0.1, 0.12]} scale={[1, 0.8, 0.9]}>
               <sphereGeometry args={[0.2, 12, 10]} />
             </mesh>
-            {/* muzzle + nose */}
-            <mesh material={material} position={[0, -0.03, 0.36]} rotation={[Math.PI / 2, 0, 0]}>
-              <capsuleGeometry args={[0.13, 0.26, 4, 10]} />
+            <mesh material={material} position={[0, 0.06, 0.28]} scale={[1.35, 0.55, 0.8]}>
+              <sphereGeometry args={[0.13, 12, 8]} />
             </mesh>
-            <mesh material={material} position={[0, 0, 0.56]}>
-              <sphereGeometry args={[0.075, 10, 8]} />
+            {/* long tapered muzzle + nose */}
+            <mesh material={material} position={[0, -0.03, 0.42]} rotation={[Math.PI / 2, 0, 0]}>
+              <capsuleGeometry args={[0.14, 0.36, 4, 10]} />
+            </mesh>
+            <mesh material={material} position={[0, 0.0, 0.64]} scale={[1, 0.85, 1]}>
+              <sphereGeometry args={[0.08, 10, 8]} />
             </mesh>
             {/* cheeks */}
-            <mesh material={material} position={[0.14, -0.1, 0.18]}>
-              <sphereGeometry args={[0.13, 10, 8]} />
+            <mesh material={material} position={[0.15, -0.1, 0.18]}>
+              <sphereGeometry args={[0.145, 10, 8]} />
             </mesh>
-            <mesh material={material} position={[-0.14, -0.1, 0.18]}>
-              <sphereGeometry args={[0.13, 10, 8]} />
+            <mesh material={material} position={[-0.15, -0.1, 0.18]}>
+              <sphereGeometry args={[0.145, 10, 8]} />
             </mesh>
-            {/* small round ears */}
-            <mesh material={material} position={[0.19, 0.24, -0.06]} scale={[1, 1.15, 0.55]}>
+            {/* small round ears, set wide on top of the skull */}
+            <mesh material={material} position={[0.21, 0.26, -0.05]} scale={[1, 1.15, 0.55]}>
               <sphereGeometry args={[0.09, 10, 8]} />
             </mesh>
-            <mesh material={material} position={[-0.19, 0.24, -0.06]} scale={[1, 1.15, 0.55]}>
+            <mesh material={material} position={[-0.21, 0.26, -0.05]} scale={[1, 1.15, 0.55]}>
               <sphereGeometry args={[0.09, 10, 8]} />
             </mesh>
             {/* jaw hinge under the skull */}
             <group ref={jaw} position={[0, -0.14, 0.1]}>
-              <mesh material={material} position={[0, -0.03, 0.24]} rotation={[Math.PI / 2, 0, 0]}>
-                <capsuleGeometry args={[0.09, 0.3, 4, 10]} />
+              <mesh material={material} position={[0, -0.03, 0.28]} rotation={[Math.PI / 2, 0, 0]}>
+                <capsuleGeometry args={[0.1, 0.36, 4, 10]} />
               </mesh>
-              <mesh material={material} position={[0, -0.04, 0.42]}>
+              <mesh material={material} position={[0, -0.04, 0.5]}>
                 <sphereGeometry args={[0.08, 10, 8]} />
               </mesh>
             </group>
           </group>
         </group>
 
-        {/* front legs: shoulder → upper → elbow → shank + oversized paw */}
-        {[0.38, -0.38].map((lx, i) => (
+        {/* front legs: thick columns — shoulder muscle → upper → elbow → shank
+            + oversized paw. Bear legs are pillars, not sticks. */}
+        {[0.44, -0.44].map((lx, i) => (
           <group key={`f${i}`} ref={(el) => (frontShoulders.current[i] = el)} position={[lx, 0.06, 1.12]}>
+            <mesh material={material} position={[0, -0.06, 0]} scale={[0.85, 1.2, 1]}>
+              <sphereGeometry args={[0.22, 12, 10]} />
+            </mesh>
             <mesh material={material} position={[0, -0.26, 0]}>
-              <capsuleGeometry args={[0.16, 0.42, 4, 10]} />
+              <capsuleGeometry args={[0.2, 0.42, 4, 10]} />
             </mesh>
             <group ref={(el) => (frontElbows.current[i] = el)} position={[0, -0.52, 0]}>
               <mesh material={material} position={[0, -0.24, 0]}>
-                <capsuleGeometry args={[0.115, 0.4, 4, 10]} />
+                <capsuleGeometry args={[0.15, 0.4, 4, 10]} />
               </mesh>
-              <mesh material={material} position={[0, -0.5, 0.05]} scale={[0.14, 0.07, 0.2]}>
+              <mesh material={material} position={[0, -0.5, 0.06]} scale={[0.19, 0.09, 0.27]}>
                 <sphereGeometry args={[1, 10, 8]} />
               </mesh>
             </group>
           </group>
         ))}
 
-        {/* hind legs: thicker thighs, hocks angled back */}
-        {[0.36, -0.36].map((lx, i) => (
-          <group key={`h${i}`} ref={(el) => (hindHips.current[i] = el)} position={[lx, 0.02, -0.05]}>
+        {/* hind legs: massive haunches, hocks angled back, long flat feet
+            (bears walk on their whole sole — the plantigrade read) */}
+        {[0.42, -0.42].map((lx, i) => (
+          <group key={`h${i}`} ref={(el) => (hindHips.current[i] = el)} position={[lx, 0.02, -0.08]}>
+            <mesh material={material} position={[0, -0.04, -0.02]} scale={[0.8, 1.15, 1.1]}>
+              <sphereGeometry args={[0.3, 14, 10]} />
+            </mesh>
             <mesh material={material} position={[0, -0.24, 0.02]}>
-              <capsuleGeometry args={[0.19, 0.4, 4, 10]} />
+              <capsuleGeometry args={[0.24, 0.4, 4, 10]} />
             </mesh>
             <group ref={(el) => (hindKnees.current[i] = el)} position={[0, -0.48, 0.02]} rotation={[HOCK_REST, 0, 0]}>
               <mesh material={material} position={[0, -0.24, 0]}>
-                <capsuleGeometry args={[0.115, 0.4, 4, 10]} />
+                <capsuleGeometry args={[0.15, 0.4, 4, 10]} />
               </mesh>
-              <mesh material={material} position={[0, -0.5, 0.05]} scale={[0.14, 0.07, 0.2]}>
+              <mesh material={material} position={[0, -0.5, 0.08]} scale={[0.2, 0.09, 0.32]}>
                 <sphereGeometry args={[1, 10, 8]} />
               </mesh>
             </group>
