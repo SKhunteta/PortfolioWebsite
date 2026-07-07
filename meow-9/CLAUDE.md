@@ -17,6 +17,14 @@ room, one dial, sixteen adorable black cats.
 - Secondary: the **laser pointer** (LASER pill arms it; drag paints the dot).
   Grounded cats chase and pounce (crouch → butt-wiggle → leap); drifting cats
   paddle toward it and push off walls.
+- Contact is REAL: cats resolve against furniture, each other, and the toys.
+  `station/colliders.ts` holds the furniture circle colliders + the
+  SCRATCH_POSTS registry; a trotting cat bats a toy (full ballistics, floor
+  restitution, rolling friction — it stays where it rolls), balls collide
+  with each other, and cats have a `scratch` mode (walk to a sisal post,
+  rise on hind legs, alternating strokes) cueable by the Observer.
+- The two hero cats wear collars (spec.collar "A" gold tag / "B" blue) —
+  they're modelled on the real girls. Whiskers + slit pupils on everyone.
 
 ## Architecture rules
 - One **GravityDial** (`src/world/GravityDial.ts`, `g ∈ [0,1]`) drives
@@ -54,4 +62,5 @@ no composer, collapsed Leva.
 
 ## Dev handles
 `__meowGravity` (setG/setRunning), `__meowObserver` (`jumpTo(i)`),
-`__meowDirector` (`direct({kind:"pounce",index:0})`).
+`__meowDirector` (`direct({kind:"pounce"|"groom"|"scratch",index:0})`),
+`__meowTrack` (`point(key)` / `yaw(key)` / `bodies` — live track registry).

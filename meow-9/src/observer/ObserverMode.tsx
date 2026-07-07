@@ -2,6 +2,7 @@ import { useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { MathUtils, PerspectiveCamera, Quaternion, Vector3 } from "three";
 import { create } from "zustand";
+import { ROOM } from "../world/config";
 import { useGravity } from "../world/GravityDial";
 import {
   directionFlags,
@@ -133,14 +134,34 @@ function buildShots(): Shot[] {
       cue: { at: 5, cue: { kind: "groom", index: 0 } },
     },
     {
+      // The hero girl trots to the sisal post, rises on her hind legs, and
+      // gets her claws in — the camera rides her the whole way there.
+      caption: "The Post",
+      sub: "Claws in, worries out",
+      anchor: "cat0",
+      yawFollow: true,
+      from: new Vector3(1.05, 0.95, 1.75),
+      to: new Vector3(0.7, 0.5, 1.1),
+      look: new Vector3(0, 0.25, 0),
+      lookDrift: new Vector3(0, 0.05, 0.1),
+      fovFrom: 50,
+      fovTo: 42,
+      dof: { key: "cat0Head", range: 1.8, bokeh: 3.5 },
+      duration: 14,
+      gravity: 1,
+      cue: { at: 0.4, cue: { kind: "scratch", index: 0 } },
+    },
+    {
       // The whole shot is the room letting go: a slow glide to zero while the
-      // camera holds the corner wide. Props lift, neon rises, cats push off.
+      // camera holds the corner wide — and the aim stays on the hero cat, so
+      // you watch HER lift away from the post as the deck gives up on her.
       caption: "Spin-down",
       sub: "The dial goes to zero",
+      lookAnchor: "cat0",
       from: new Vector3(5.9, 1.5, 4.1),
       to: new Vector3(5.3, 2.5, 3.6),
-      look: new Vector3(-0.5, 1.3, -0.5),
-      lookDrift: new Vector3(0, 0.5, 0),
+      look: new Vector3(0, 0.3, 0),
+      lookDrift: new Vector3(0, 0.45, 0),
       duration: 20,
       gravity: 0,
       gravityRate: 0.14,
@@ -186,8 +207,12 @@ function buildShots(): Shot[] {
       sub: "The nebula doesn't care",
       from: new Vector3(0, 1.7, 3.9),
       to: new Vector3(0, 1.9, 0.4),
-      look: new Vector3(0, 2.2, -6),
+      look: new Vector3(0, 2.0, -6),
       lookDrift: new Vector3(0.6, 0.2, 0),
+      // Wide enough that the drifting cats cross the frame on the push-in —
+      // silhouettes against the nebula, not an empty room.
+      fovFrom: 62,
+      fovTo: 52,
       duration: 15,
       gravity: 0,
       cutIn: true,
@@ -349,6 +374,14 @@ export function ObserverMode() {
       sc.pos.add(sc.shake);
       sc.look.addScaledVector(sc.shake, 0.4);
     }
+
+    // The camera respects the hull too: anchored shots ride cats wherever
+    // they wander, and a cat idling by a wall must not push the lens inside
+    // the panels (which reads as a black frame).
+    const CAM_M = 0.35;
+    sc.pos.x = MathUtils.clamp(sc.pos.x, -(ROOM.w / 2 - CAM_M), ROOM.w / 2 - CAM_M);
+    sc.pos.y = MathUtils.clamp(sc.pos.y, 0.12, ROOM.h - CAM_M);
+    sc.pos.z = MathUtils.clamp(sc.pos.z, -(ROOM.d / 2 - CAM_M), ROOM.d / 2 - CAM_M);
 
     cam.position.copy(sc.pos);
     cam.lookAt(sc.look);

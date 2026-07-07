@@ -17,6 +17,12 @@ export const MEOW = {
   // Laser pointer.
   chaseRadius: 4.5, // cats inside this notice the dot
   pounceRange: 1.05, // grounded cats commit to the pounce inside this
+
+  // Contact physics — cats, toys, furniture.
+  catBodyR: 0.22, // cat body circle radius at size 1 (separation + kicks)
+  kickSpeed: 1.35, // horizontal speed a trotting paw imparts to a toy
+  ballRestitution: 0.55, // kicked toys bouncing on the deck
+  rollFriction: 1.7, // 1/s horizontal bleed while a toy rolls under weight
 } as const;
 
 // The hab module interior. Floor at y = 0, walls at ±w/2 / ±d/2, ceiling at h.
