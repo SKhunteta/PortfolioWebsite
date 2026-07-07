@@ -112,6 +112,14 @@ const Footer = () => {
                 </a>
               </li>
               <li>
+                <a
+                  href="/meow-9/"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Meow-9 — The Drift
+                </a>
+              </li>
+              <li>
                 <Link
                   to="/playground"
                   className="text-accent hover:text-white transition-colors"
