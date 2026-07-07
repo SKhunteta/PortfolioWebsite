@@ -14,6 +14,7 @@ import {
 } from "three";
 
 import { Atmosphere } from "./sky/Atmosphere";
+import { Aurora } from "./sky/Aurora";
 import { Terrain } from "./terrain/Terrain";
 import { Waterfalls } from "./water/Waterfalls";
 import { Ocean } from "./water/Ocean";
@@ -21,7 +22,9 @@ import { ParticleField } from "./fx/particles";
 import { PostFX } from "./fx/PostFX";
 import { sampleHeight } from "./terrain/heightfield";
 import { Glassbears } from "./life/Glassbears";
+import { LanternWolves } from "./life/LanternWolves";
 import { Leviathans } from "./life/Leviathans";
+import { Mirehorns } from "./life/Mirehorns";
 import { SkyEagles } from "./life/SkyEagles";
 import { ObserverMode, useObserver } from "./observer/ObserverMode";
 import { useWorldClock, selectPhase } from "./world/WorldClock";
@@ -73,10 +76,13 @@ function Lighting() {
     }
     if (hemiRef.current) {
       skyColor.copy(mix(PALETTE.ambientDark, PALETTE.ambientBright, d));
+      // The Dark is aurora-lit (canon), not void-black: a green-teal skylight
+      // keeps the night landscape — and the life moving through it — readable.
+      skyColor.lerp(PALETTE.aurora, 0.2 * (1 - d));
       groundColor.copy(mix(PALETTE.groundDark, PALETTE.groundBright, d));
       hemiRef.current.color.copy(skyColor);
       hemiRef.current.groundColor.copy(groundColor);
-      hemiRef.current.intensity = MathUtils.lerp(0.25, 0.9, d);
+      hemiRef.current.intensity = MathUtils.lerp(0.58, 0.9, d);
     }
 
     // Aerial perspective: distant geometry dissolves into the horizon color.
@@ -297,12 +303,15 @@ export default function App() {
           lightSteps={IS_TOUCH ? 4 : 8}
         />
         <Lighting />
+        <Aurora />
         <Terrain />
         <Ocean />
         <Waterfalls />
         <Glassbears />
         <Leviathans />
         <SkyEagles />
+        <Mirehorns />
+        <LanternWolves />
         <ParticleField />
         <ObserverMode />
         <PostFX />

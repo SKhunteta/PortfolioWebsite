@@ -111,6 +111,18 @@ const FADE_TIME = 1.1;
 const BASE_FOV = 55;
 const UP = new Vector3(0, 1, 0);
 
+/** Shots are framed for a wide screen, but three.js FOV is VERTICAL — on a
+ *  portrait phone the same 47° crops the horizontal field to a ~24° keyhole
+ *  and a close-up subject swallows the whole frame. Below the reference
+ *  aspect, widen the vertical FOV to recover the authored horizontal field
+ *  (clamped before it goes fisheye — tall frames get sky and ground instead). */
+const REF_ASPECT = 16 / 9;
+function compensateFov(fov: number, aspect: number): number {
+  if (aspect >= REF_ASPECT) return fov;
+  const half = Math.atan(Math.tan((fov * Math.PI) / 360) * (REF_ASPECT / aspect));
+  return Math.min((half * 360) / Math.PI, 92);
+}
+
 /** Shortest signed distance between two phases on the [0,1) ring. */
 function phaseDelta(from: number, to: number): number {
   let d = (to - from) % 1;
@@ -129,6 +141,8 @@ function buildShots(): Shot[] {
     new Vector3(fall.x + fall.dirX * out + sideX * side, y, fall.z + fall.dirZ * out + sideZ * side);
 
   const peak = POI.eaglePeak;
+  const den = POI.wolfDen;
+  const denTop = sampleHeight(den.x, den.z);
 
   return [
     {
@@ -152,6 +166,36 @@ function buildShots(): Shot[] {
       lookDrift: new Vector3(0, -30, 0),
       duration: 16,
       phase: 0.08,
+    },
+    {
+      // Down in the shallows under that fall: a mirehorn bull wades the plunge
+      // pool. Cue timing: the drink is commanded at 1.4 s — muzzle under by
+      // ~3.3 s, and the head-lift cascade (1.4 + DRINK.LIFT_AT = 6 s) lands
+      // mid-shot with the antlers pouring backlit water.
+      caption: "Mirehorns",
+      sub: "They drink where the fall lands",
+      anchor: "moose0",
+      lookAnchor: "moose0Head",
+      // Fixed offsets in fall-space (not yawFollow): the camera hangs out over
+      // the open water and shoots back at the pool, so the fjord wall — and
+      // the fall itself — is the backdrop instead of the camera's problem.
+      // Skimming the pool, shooting slightly UP: the bull stands as a dark
+      // silhouette against the sunlit fjord wall, antlers catching the light,
+      // the whole fall towering out the top of the frame.
+      from: fallPt(26, 12, 5.5).sub(new Vector3(fall.x, 0, fall.z)),
+      to: fallPt(9.5, 3, 3.2).sub(new Vector3(fall.x, 0, fall.z)),
+      look: new Vector3(0, -0.8, 0), // chest — the offset rides the HEAD anchor
+      lookDrift: new Vector3(0, 0.4, 0),
+      fovFrom: BASE_FOV,
+      fovTo: 44,
+      shake: 0.04,
+      dof: { key: "moose0Head", range: 14, bokeh: 3 },
+      duration: 12,
+      // Earlier in the morning of the year than the Meltwater shot: the sun's
+      // spiral azimuth at 0.04 faces the fjord wall, so the pool — and the
+      // bull in it — is lit instead of drowned in the wall's shadow.
+      phase: 0.04,
+      cue: { at: 1.4, cue: { kind: "mooseDrink", index: 0 } },
     },
     {
       // The camera settles toward the water, staring down at a shadow that has
@@ -246,9 +290,9 @@ function buildShots(): Shot[] {
       cutIn: true,
     },
     {
-      // Finale: a slow timelapse — the whole shot is the sun leaving. Rate is
-      // tuned so sunset lands mid-shot and a twilight band survives to the
-      // cut; the loop then fades from that indigo back into peak Bright.
+      // A slow timelapse — the whole shot is the sun leaving. Rate is tuned so
+      // sunset lands mid-shot and a twilight band survives to the cut; the
+      // Dark shots below then open on what the night is actually like.
       caption: "The Long Cold",
       sub: "The sun will not rise again for a long time",
       from: new Vector3(-2600, 280, 1500),
@@ -259,6 +303,43 @@ function buildShots(): Shot[] {
       phase: 0.26,
       phaseRate: 0.125,
     },
+    {
+      // Deep Dark. Aurora curtains over the bench, and a loose ring of small
+      // green fires on the ice below — the wolf patrol, read first as lights.
+      caption: "The Long Dark",
+      sub: "Not everything sleeps",
+      // From the north, high enough to clear the bench swells (LOS-checked
+      // against the heightfield): the wolf ring as fires below, the curtain
+      // rising beyond the den as the look drifts up.
+      from: new Vector3(den.x + 30, denTop + 125, den.z + 185),
+      to: new Vector3(den.x, denTop + 62, den.z + 95),
+      look: new Vector3(den.x, denTop + 8, den.z),
+      lookDrift: new Vector3(0, 110, -70), // tilt up into the curtains
+      duration: 15,
+      phase: 0.5,
+    },
+    {
+      // Close on the pack leader. Cue timing: the howl is commanded at 1.6 s —
+      // muzzle tips back through ~3.5 s, the cry starts at 3.7 s (throat
+      // lantern flaring, breath climbing), and the rest of the pack choruses
+      // in ~0.9 s apart through the back half of the shot.
+      caption: "Lantern Wolves",
+      sub: "The Dark answers back",
+      anchor: "wolf0",
+      yawFollow: true,
+      lookAnchor: "wolf0Head",
+      from: new Vector3(-6.5, 3, 8.5),
+      to: new Vector3(-3, 1.6, 4.5),
+      look: new Vector3(0, 0.3, 0),
+      lookDrift: new Vector3(0, 0.7, 0), // ride the muzzle as it tips back
+      fovFrom: BASE_FOV,
+      fovTo: 44,
+      shake: 0.04,
+      dof: { key: "wolf0Head", range: 10, bokeh: 3.5 },
+      duration: 13,
+      phase: 0.5,
+      cue: { at: 1.6, cue: { kind: "wolfHowl", index: 0 } },
+    },
   ];
 }
 
@@ -267,6 +348,11 @@ const easeInOut = (t: number) => t * t * (3 - 2 * t);
 export function ObserverMode() {
   const { camera } = useThree();
   const shots = useMemo(buildShots, []);
+
+  // Dev affordance, same pattern as __ketuClock: inspect the live camera.
+  if (typeof window !== "undefined") {
+    (window as unknown as Record<string, unknown>).__ketuCam = camera;
+  }
 
   const state = useRef({
     wasActive: false,
@@ -282,6 +368,7 @@ export function ObserverMode() {
     anchorPos: new Vector3(),
     lookAnchorPos: new Vector3(),
     anchorYaw: 0,
+    frameYaw: 0,
   });
 
   const scratch = useRef({
@@ -290,6 +377,7 @@ export function ObserverMode() {
     right: new Vector3(),
     up: new Vector3(),
     shake: new Vector3(),
+    probe: new Vector3(),
   });
 
   /** Seed the damped anchors exactly at shot start — no swoop-in. */
@@ -302,6 +390,29 @@ export function ObserverMode() {
     if (la) s.lookAnchorPos.copy(la);
     else s.lookAnchorPos.copy(s.anchorPos);
     s.anchorYaw = (shot.anchor && getTrackYaw(shot.anchor)) || 0;
+
+    // Creatures stop wherever they like — often on a slope where the authored
+    // camera offset would be inside the hill (and the ground clamp would then
+    // shove the lens far above the framing). Like a real operator hunting for
+    // a tripod spot, swing the whole offset around the subject in growing
+    // steps until both endpoints of the dolly clear the terrain.
+    s.frameYaw = 0;
+    if (shot.anchor) {
+      const base = shot.yawFollow ? s.anchorYaw : 0;
+      const clears = (off: Vector3, extra: number) => {
+        const p = scratch.current.probe
+          .copy(off)
+          .applyAxisAngle(UP, base + extra)
+          .add(s.anchorPos);
+        return sampleHeight(p.x, p.z) + 1.5 <= p.y;
+      };
+      for (const c of [0, 0.5, -0.5, 1.0, -1.0, 1.6, -1.6, 2.2, -2.2, Math.PI]) {
+        if (clears(shot.from, c) && clears(shot.to, c)) {
+          s.frameYaw = c;
+          break;
+        }
+      }
+    }
   };
 
   useFrame((_, rawDt) => {
@@ -397,7 +508,9 @@ export function ObserverMode() {
     // Camera: eased dolly (absolute, or offset from the anchor — rotated into
     // the creature's frame when yawFollow) with a drifting look target.
     const e = easeInOut(t);
-    const yawRot = current.anchor && current.yawFollow ? s.anchorYaw : 0;
+    const yawRot = current.anchor
+      ? (current.yawFollow ? s.anchorYaw : 0) + s.frameYaw
+      : 0;
     sc.pos.lerpVectors(current.from, current.to, e);
     if (yawRot) sc.pos.applyAxisAngle(UP, yawRot);
     if (current.anchor) sc.pos.add(s.anchorPos);
@@ -423,11 +536,19 @@ export function ObserverMode() {
       sc.look.addScaledVector(sc.shake, 0.4);
     }
 
+    // Never put the lens underground: anchored offsets can dip below terrain
+    // when a creature stops on a slope (the analytic heightfield is cheap).
+    const groundY = sampleHeight(sc.pos.x, sc.pos.z);
+    if (sc.pos.y < groundY + 2) sc.pos.y = groundY + 2;
+
     cam.position.copy(sc.pos);
     cam.lookAt(sc.look);
 
-    // Cinematic zoom.
-    const fov = MathUtils.lerp(current.fovFrom ?? BASE_FOV, current.fovTo ?? BASE_FOV, e);
+    // Cinematic zoom (widened on tall screens — see compensateFov).
+    const fov = compensateFov(
+      MathUtils.lerp(current.fovFrom ?? BASE_FOV, current.fovTo ?? BASE_FOV, e),
+      cam.aspect
+    );
     if (Math.abs(cam.fov - fov) > 1e-3) {
       cam.fov = fov;
       cam.updateProjectionMatrix();

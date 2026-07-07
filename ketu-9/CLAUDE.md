@@ -61,25 +61,54 @@ Do not regress the WorldClock contract.
 
 ## Observer Mode (added out-of-band, after M3; cinematic overhaul after that)
 `src/observer/ObserverMode.tsx` — one button (◉ OBSERVE), a looping cinematic
-director, now 8 shots. Shots support FOV zoom (`fovFrom/fovTo`, restored on
-exit), live creature `anchor`/`lookAnchor` offsets (track points from
-`life/direction.ts`), handheld `shake`, `dof` hints (drives `fx/PostFX.tsx`),
+director, now 11 shots (Bright → falls/mirehorns → breach → bears → sunset
+timelapse → aurora Dark → wolf howl, then loops back to Bright). Shots support
+FOV zoom (`fovFrom/fovTo`, restored on exit), live creature `anchor`/`lookAnchor`
+offsets (track points from `life/direction.ts`; NOTE `look` adds to the
+lookAnchor point — aim offsets are relative to the HEAD, not the ground),
+handheld `shake`, `dof` hints (drives `fx/PostFX.tsx`),
 hard `cutIn/cutOut`, and performance `cue`s — the director COMMANDS a bear
-roar / leviathan breach at an exact shot offset via the direction bus, using
-the ROAR/BREACH timelines in `life/direction.ts` (the choreography contract).
+roar / leviathan breach / mirehorn drink / wolf howl at an exact shot offset
+via the direction bus, using the ROAR/BREACH/DRINK/HOWL timelines in
+`life/direction.ts` (the choreography contract).
 It drives the season ONLY via WorldClock setPhase (like the scrub slider) and
 restores camera+clock+FOV on exit. A ⏩ speed button (also the `.`/`>` key)
 cycles the tour's playback rate through `OBSERVER_SPEEDS` (1×/2×/4×) by scaling
 the director's `dt`, so shots, cues, phase glide and fades all fast-forward
-together. Fauna: `life/Glassbears.tsx` (articulated
-anatomy + roar FSM, transmission shimmer), `life/Leviathans.tsx` (deep-cruise +
+together. Camera safety: authored FOVs are widened on portrait aspects
+(`compensateFov` — three.js FOV is vertical; without this a phone crops
+close-ups to a keyhole), the lens is clamped above the analytic heightfield,
+and anchored shots hunt a `frameYaw` at shot start (rotating the whole offset
+around the subject until both dolly endpoints clear the terrain — creatures
+stop on slopes). Fauna: `life/Glassbears.tsx` (articulated
+anatomy + roar FSM, transmission shimmer; on touch the fake-glass material
+needs `depthWrite: true` or the overlapping spheres stack into an opaque
+balloon), `life/Leviathans.tsx` (deep-cruise +
 cued breach FSM, photophores), `life/SkyEagles.tsx` (M9-ish),
-`water/Waterfalls.tsx`, `water/Ocean.tsx` (Gerstner grid + skirt, raw GLSL),
+`life/Mirehorns.tsx` (moose-analog waders at the tour waterfall's plunge pool;
+deterministic mount-time scan for BELLY-DEEP spots — the LOD mesh deviates
+±1–2 m from the analytic heightfield, so ankle-deep water renders as dry
+seabed — plus a per-heading wading-radius profile so they never climb the
+bank; antler velvet glows teal in the Dark),
+`life/LanternWolves.tsx` (canon Dark-only pack on the bench near the bears:
+photophore rows + halo sprites so they read as moving fires at range, howl FSM
+with a pack chorus driven BY the leader's howl — so it fires during tours —
+whole group un-renders in the Bright), `sky/Aurora.tsx` (three serpentine
+shader curtains; opacity ∝ (1-dayness)²; with AdditiveBlending don't
+pre-multiply rgb by alpha — it dims quadratically), plus an aurora-green
+skylight floor on the Dark hemisphere light in `App.tsx` (canon: the Dark is
+aurora-lit, not void-black),
+`water/Waterfalls.tsx`, `water/Ocean.tsx` (Gerstner grid + skirt, raw GLSL;
+on touch there is NO grid so the skirt must sit at y=0 — at its usual −3 m
+every shoreline strands on dry seabed),
 `fx/particles.tsx` (pooled ballistic bursts: splash/spray/vapor),
 `fx/PostFX.tsx` (SMAA+Bloom+DoF+Vignette, desktop only — Bloom threshold >1 so
 only HDR sources ignite), `world/locations.ts` (POIs found by offline
 heightfield scans — re-scan if the geology changes). Dev handles: `__ketuClock`,
 `__ketuObserver` (`jumpTo(i)`), `__ketuDirector` (`direct({kind,index})`),
-`__ketuFX` (`emitBurst`).
+`__ketuFX` (`emitBurst`), `__ketuTracks` (`get/yaw` of live track points),
+`__ketuCam` (the live camera). Headless/CI note: under SwiftShader the frame
+clamp (dt ≤ 0.1) runs the tour ~3× slower than wall time — cue timings are
+correct on real hardware.
 **Warning:** do NOT enable `logarithmicDepthBuffer` — three.js doesn't patch raw
 ShaderMaterials for log depth, which silently hides them (cost a debugging hour).

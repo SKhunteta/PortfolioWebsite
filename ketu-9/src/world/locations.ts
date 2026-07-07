@@ -27,4 +27,7 @@ export const POI = {
 
   /** Highest summit near spawn (~534 m) — the stormwing gyre. */
   eaglePeak: { x: -200, z: -140, summit: 534 },
+
+  /** Flattest stretch of the glassbear bench (~416 m) — the lantern wolf patrol. */
+  wolfDen: { x: -150, z: -1300 },
 } as const;

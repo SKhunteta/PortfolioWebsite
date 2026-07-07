@@ -389,12 +389,19 @@ export function Glassbears() {
     const normalMap = makeNoiseNormalMap(256, 3, 1.4, 7);
     return IS_TOUCH
       ? // Mobile: transmission forces a second scene render — fake the glass
-        // with plain transparency instead.
+        // with plain transparency instead. depthWrite is load-bearing: the
+        // bear is a pile of overlapping spheres, and without it every
+        // internal layer blends again until the animal reads as an opaque
+        // white balloon. Writing depth keeps one surface per pixel, so the
+        // whole body reads as a single frosted-glass shell.
         new MeshPhysicalMaterial({
           transparent: true,
-          opacity: 0.32,
-          roughness: 0.15,
-          color: "#dcecee",
+          opacity: 0.38,
+          depthWrite: true,
+          roughness: 0.12,
+          color: "#d7e9ec",
+          clearcoat: 1.0,
+          clearcoatRoughness: 0.1,
           normalMap,
           normalScale: new Vector2(0.18, 0.18),
         })
