@@ -226,7 +226,10 @@ export function Ocean() {
         Math.round(cam.z / GRID_STEP) * GRID_STEP
       );
     }
-    if (skirtRef.current) skirtRef.current.position.set(cam.x, -SKIRT_DROP, cam.z);
+    // Touch has no grid, so the skirt IS the sea surface — it must sit at sea
+    // level or every shoreline strands 3 m up its bank on dry seabed. With the
+    // grid present it hides below the deepest trough as designed.
+    if (skirtRef.current) skirtRef.current.position.set(cam.x, IS_TOUCH ? 0 : -SKIRT_DROP, cam.z);
   });
 
   return (

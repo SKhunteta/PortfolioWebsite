@@ -13,7 +13,9 @@ import { create } from "zustand";
 
 export type PerformanceCue =
   | { kind: "bearRoar"; index: number }
-  | { kind: "leviathanBreach"; index: number };
+  | { kind: "leviathanBreach"; index: number }
+  | { kind: "mooseDrink"; index: number }
+  | { kind: "wolfHowl"; index: number };
 
 // Performance timelines (seconds from cue). These live here — not in the
 // creature files — because they are the CONTRACT between a creature and the
@@ -26,6 +28,22 @@ export const ROAR = {
   jawOpen: 2.7, // jaw snaps open
   roarEnd: 5.2, // jaw eases shut, body starts down
   total: 6.5, // back on all fours, ambling again
+} as const;
+
+export const DRINK = {
+  settle: 0.8, // wading drains out
+  dipEnd: 1.9, // muzzle underwater
+  LIFT_AT: 4.6, // head comes up — the cascade pours off the antlers
+  liftEnd: 5.6, // head held high, dripping
+  total: 8.0, // back to wading
+} as const;
+
+export const HOWL = {
+  settle: 0.7, // trot drains out
+  muzzleUp: 1.9, // head tips back
+  HOWL_AT: 2.1, // the cry starts (throat lantern flares, breath climbs)
+  howlEnd: 5.2, // tapers off
+  total: 6.4, // back on the move; packmates chorus in ~0.9 s apart
 } as const;
 
 export const BREACH = {
@@ -81,6 +99,11 @@ export function getTrackYaw(key: string): number | undefined {
 
 // Dev affordance, same pattern as __ketuClock / __ketuObserver:
 // __ketuDirector.getState().direct({ kind: "bearRoar", index: 0 })
+// __ketuTracks.get("wolf0") — inspect a live track point from the console.
 if (typeof window !== "undefined") {
   (window as unknown as Record<string, unknown>).__ketuDirector = useDirection;
+  (window as unknown as Record<string, unknown>).__ketuTracks = {
+    get: getTrackPoint,
+    yaw: getTrackYaw,
+  };
 }
