@@ -278,6 +278,12 @@ export default function App() {
           maxPolarAngle={Math.PI * 0.52}
           enableDamping
           dampingFactor={0.08}
+          // Fly-to-what-you-point-at: the wheel dollies toward the cursor and
+          // drags the orbit target with it, so you can actually reach the
+          // leviathan pool 4 km out (a fixed target caps zoom at the origin).
+          zoomToCursor
+          minDistance={4}
+          maxDistance={9000}
         />
       </Canvas>
       <SeasonHUD />

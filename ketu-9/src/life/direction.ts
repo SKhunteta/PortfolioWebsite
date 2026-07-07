@@ -29,7 +29,7 @@ export const ROAR = {
 } as const;
 
 export const BREACH = {
-  windup: 0.6, // sink + accelerate
+  windup: 1.7, // a real dive: tail-up sink to the windup depth, gathering speed
   BREAK_AT: 4.6, // surface up-crossing (windup + rise)
   APEX_AT: 5.75, // top of the parabola (midpoint of the two crossings), mid-roll
   REENTRY_AT: 6.9, // surface down-crossing
