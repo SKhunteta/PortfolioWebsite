@@ -68,7 +68,10 @@ hard `cutIn/cutOut`, and performance `cue`s — the director COMMANDS a bear
 roar / leviathan breach at an exact shot offset via the direction bus, using
 the ROAR/BREACH timelines in `life/direction.ts` (the choreography contract).
 It drives the season ONLY via WorldClock setPhase (like the scrub slider) and
-restores camera+clock+FOV on exit. Fauna: `life/Glassbears.tsx` (articulated
+restores camera+clock+FOV on exit. A ⏩ speed button (also the `.`/`>` key)
+cycles the tour's playback rate through `OBSERVER_SPEEDS` (1×/2×/4×) by scaling
+the director's `dt`, so shots, cues, phase glide and fades all fast-forward
+together. Fauna: `life/Glassbears.tsx` (articulated
 anatomy + roar FSM, transmission shimmer), `life/Leviathans.tsx` (deep-cruise +
 cued breach FSM, photophores), `life/SkyEagles.tsx` (M9-ish),
 `water/Waterfalls.tsx`, `water/Ocean.tsx` (Gerstner grid + skirt, raw GLSL),
