@@ -1,19 +1,33 @@
 import { useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Quaternion, Vector3 } from "three";
+import { MathUtils, PerspectiveCamera, Quaternion, Vector3 } from "three";
 import { create } from "zustand";
 import { sampleHeight } from "../terrain/heightfield";
 import { POI } from "../world/locations";
 import { useWorldClock } from "../world/WorldClock";
+import {
+  directionFlags,
+  getTrackPoint,
+  getTrackYaw,
+  useDirection,
+  type PerformanceCue,
+} from "../life/direction";
+import { dofChannel } from "../fx/PostFX";
 
 // Observer Mode — press the button, sit back, and the world reveals itself.
-// A cinematic director walks a loop of authored shots: each shot is a slow
-// camera dolly (eased from->to positions with a drifting look target), a
-// caption, and a target season phase. The season is driven through the ONE
-// WorldClock via its public setPhase() — exactly what the scrub slider does —
-// so the tour is also a tour of the year: waterfalls in the Bright, the pod at
-// golden hour, the Dark falling for the finale. Exiting restores the camera and
-// clock exactly as they were.
+// A cinematic director walks a loop of authored shots. Beyond the original
+// dolly + caption + season grammar, shots can now:
+//   • zoom      — fovFrom/fovTo lerped across the shot (restored on exit)
+//   • anchor    — from/to/look become OFFSETS from a damped live track point,
+//                 so a shot can ride a moving creature wherever it happens to be
+//   • cue       — fire a performance (bear roar, leviathan breach) at an exact
+//                 offset into the shot; timelines in direction.ts make the
+//                 choreography frame-accurate
+//   • cutIn/Out — suppress the fade at a boundary for a hard cut mid-action
+//   • shake     — two-frequency handheld sway for close-ups
+//   • dof       — drive the PostFX depth-of-field focus at a track point
+// The season is still driven ONLY through the ONE WorldClock via setPhase().
+// Exiting restores camera position, orientation, FOV, and clock exactly.
 
 interface Shot {
   caption: string;
@@ -27,6 +41,26 @@ interface Shot {
   /** How fast the season glides toward `phase` (default snappy). A small rate
    *  turns the shot into a visible timelapse — used for the Dark-falls finale. */
   phaseRate?: number;
+  /** Cinematic zoom: FOV lerps across the shot (default 55 → 55). */
+  fovFrom?: number;
+  fovTo?: number;
+  /** Track-point key; from/to become offsets from the (damped) live anchor. */
+  anchor?: string;
+  /** Rotate the offsets by the anchor's (damped) heading — offsets become
+   *  creature-local (+Z ahead of its face, +X to its right), so a close-up
+   *  frames the face no matter where on its loop the creature stopped. */
+  yawFollow?: boolean;
+  /** Separate live aim point (damped faster — a camera operator chasing). */
+  lookAnchor?: string;
+  /** Handheld micro-shake amplitude in meters. */
+  shake?: number;
+  /** Depth-of-field hint for the PostFX composer. */
+  dof?: { key: string; range?: number; bokeh?: number };
+  /** Fire a performance cue once, `at` seconds into the shot. */
+  cue?: { at: number; cue: PerformanceCue };
+  /** Hard cut (no fade) into / out of this shot. */
+  cutIn?: boolean;
+  cutOut?: boolean;
 }
 
 interface ObserverState {
@@ -59,6 +93,8 @@ if (typeof window !== "undefined") {
 }
 
 const FADE_TIME = 1.1;
+const BASE_FOV = 55;
+const UP = new Vector3(0, 1, 0);
 
 /** Shortest signed distance between two phases on the [0,1) ring. */
 function phaseDelta(from: number, to: number): number {
@@ -77,10 +113,7 @@ function buildShots(): Shot[] {
   const fallPt = (out: number, side: number, y: number) =>
     new Vector3(fall.x + fall.dirX * out + sideX * side, y, fall.z + fall.dirZ * out + sideZ * side);
 
-  const pool = POI.leviathanPool;
   const peak = POI.eaglePeak;
-  const ridge = POI.bearRidge;
-  const ridgeH = sampleHeight(ridge.x, ridge.z);
 
   return [
     {
@@ -106,15 +139,46 @@ function buildShots(): Shot[] {
       phase: 0.08,
     },
     {
-      // Camera sits sunward-opposite so the pod surfaces inside the glint lane.
+      // The camera settles toward the water, staring down at a shadow that has
+      // begun to climb. Cue timing: the breach is commanded at 3.6 s, the
+      // surface break lands at 3.6 + BREACH.BREAK_AT = 8.2 s — 0.2 s after the
+      // hard cut below, so the sea erupts as the next shot opens.
       caption: "The Pod",
-      sub: "Eight-limbed leviathans, surfacing at the hinge",
-      from: new Vector3(3080, 110, 200),
-      to: new Vector3(3850, 40, -300),
-      look: new Vector3(pool.x, 0, pool.z),
-      lookDrift: new Vector3(40, 8, -40),
-      duration: 20,
+      sub: "Something is rising",
+      anchor: "lev0Surface",
+      yawFollow: true,
+      lookAnchor: "lev0",
+      from: new Vector3(120, 26, 30),
+      to: new Vector3(62, 13, 15),
+      look: new Vector3(0, 4, 0),
+      lookDrift: new Vector3(0, 0, 0),
+      fovFrom: BASE_FOV,
+      fovTo: 46,
+      duration: 8,
       phase: 0.15,
+      cutOut: true,
+      cue: { at: 3.6, cue: { kind: "leviathanBreach", index: 0 } },
+    },
+    {
+      // Low over the water as ninety meters of leviathan goes airborne: the
+      // apex roll ~2 s in, the re-entry plume at ~3.3 s, the shadow diving
+      // away through the long tail of the shot.
+      caption: "The Pod",
+      sub: "Ninety meters of it, airborne",
+      anchor: "lev0Surface",
+      yawFollow: true,
+      lookAnchor: "lev0",
+      from: new Vector3(170, 6, -20),
+      to: new Vector3(115, 18, -45),
+      look: new Vector3(0, 8, 0),
+      lookDrift: new Vector3(0, 4, 0),
+      fovFrom: 46,
+      fovTo: 36,
+      shake: 0.06,
+      dof: { key: "lev0", range: 60, bokeh: 2.5 },
+      duration: 9,
+      phase: 0.15,
+      cutIn: true,
     },
     {
       caption: "Stormwings",
@@ -127,14 +191,44 @@ function buildShots(): Shot[] {
       phase: 0.1,
     },
     {
+      // Drift in on the hero bear. Cue timing: roar commanded at 6.6 s — the
+      // amble drains out, it rears at ~8 s, the jaw snaps open at 9.3 s, and
+      // the hard cut at 10 s lands mid-roar.
       caption: "Glassbears",
       sub: "Seen only by the way they bend the ice",
-      from: new Vector3(ridge.x - 95, ridgeH + 9, ridge.z + 70),
-      to: new Vector3(ridge.x + 65, ridgeH + 6, ridge.z + 48),
-      look: new Vector3(ridge.x, ridgeH + 2, ridge.z),
-      lookDrift: new Vector3(10, 0, -12),
-      duration: 18,
+      anchor: "bear0",
+      yawFollow: true,
+      from: new Vector3(-18, 9, 24),
+      to: new Vector3(-8, 5.5, 11),
+      look: new Vector3(0, 3.2, 0),
+      lookDrift: new Vector3(2, -0.5, 0),
+      fovFrom: BASE_FOV,
+      fovTo: 47,
+      duration: 10,
       phase: 0.06,
+      cutOut: true,
+      cue: { at: 6.6, cue: { kind: "bearRoar", index: 0 } },
+    },
+    {
+      // Low angle under the thrown-back head, pushing into the open jaw while
+      // the breath-vapor pulses backlight against the golden-hour sun. The
+      // roar ends ~1.8 s in; the bear settles and ambles off through the
+      // lens-warp of the ridge — that's the exit image.
+      caption: "Glassbears",
+      sub: "The ridge answers",
+      anchor: "bear0Head",
+      yawFollow: true,
+      from: new Vector3(3.2, 0.2, 5.8),
+      to: new Vector3(1.9, 0.7, 3.4),
+      look: new Vector3(0, 0.4, 0),
+      lookDrift: new Vector3(0, 0.2, 0),
+      fovFrom: 46,
+      fovTo: 34,
+      shake: 0.05,
+      dof: { key: "bear0Head", range: 8, bokeh: 4.5 },
+      duration: 9,
+      phase: 0.06,
+      cutIn: true,
     },
     {
       // Finale: a slow timelapse — the whole shot is the sun leaving. Rate is
@@ -163,39 +257,72 @@ export function ObserverMode() {
     wasActive: false,
     shotIndex: 0,
     shotTime: 0,
+    cueFired: false,
     savedPos: new Vector3(),
     savedQuat: new Quaternion(),
+    savedFov: BASE_FOV,
     savedPhase: 0,
     savedRunning: true,
     tourPhase: 0,
+    anchorPos: new Vector3(),
+    lookAnchorPos: new Vector3(),
+    anchorYaw: 0,
   });
 
-  const lookTarget = useRef(new Vector3());
+  const scratch = useRef({
+    look: new Vector3(),
+    pos: new Vector3(),
+    right: new Vector3(),
+    up: new Vector3(),
+    shake: new Vector3(),
+  });
+
+  /** Seed the damped anchors exactly at shot start — no swoop-in. */
+  const seedAnchors = (shot: Shot) => {
+    const s = state.current;
+    const a = shot.anchor ? getTrackPoint(shot.anchor) : undefined;
+    if (a) s.anchorPos.copy(a);
+    else s.anchorPos.set(0, 0, 0);
+    const la = shot.lookAnchor ? getTrackPoint(shot.lookAnchor) : undefined;
+    if (la) s.lookAnchorPos.copy(la);
+    else s.lookAnchorPos.copy(s.anchorPos);
+    s.anchorYaw = (shot.anchor && getTrackYaw(shot.anchor)) || 0;
+  };
 
   useFrame((_, rawDt) => {
     const dt = Math.min(rawDt, 0.1);
     const s = state.current;
+    const sc = scratch.current;
     const active = useObserver.getState().active;
     const clock = useWorldClock.getState();
+    const cam = camera as PerspectiveCamera;
 
     // --- Enter: save the player's camera + clock so exit is seamless. -------
     if (active && !s.wasActive) {
       s.wasActive = true;
       s.shotIndex = 0;
       s.shotTime = 0;
-      s.savedPos.copy(camera.position);
-      s.savedQuat.copy(camera.quaternion);
+      s.cueFired = false;
+      s.savedPos.copy(cam.position);
+      s.savedQuat.copy(cam.quaternion);
+      s.savedFov = cam.fov;
       s.savedPhase = clock.phase;
       s.savedRunning = clock.running;
       s.tourPhase = clock.phase;
       clock.setRunning(false);
+      directionFlags.observing = true;
+      seedAnchors(shots[0]);
     }
     if (!active && s.wasActive) {
       s.wasActive = false;
-      camera.position.copy(s.savedPos);
-      camera.quaternion.copy(s.savedQuat);
+      cam.position.copy(s.savedPos);
+      cam.quaternion.copy(s.savedQuat);
+      cam.fov = s.savedFov;
+      cam.updateProjectionMatrix();
       clock.setPhase(s.savedPhase);
       clock.setRunning(s.savedRunning);
+      directionFlags.observing = false;
+      dofChannel.enabled = false;
       return;
     }
     if (!active) return;
@@ -206,7 +333,9 @@ export function ObserverMode() {
     if (requested !== null) {
       s.shotIndex = ((requested % shots.length) + shots.length) % shots.length;
       s.shotTime = 0.01;
+      s.cueFired = false;
       s.tourPhase = shots[s.shotIndex].phase;
+      seedAnchors(shots[s.shotIndex]);
       useObserver.setState({ requestShot: null });
     }
 
@@ -215,17 +344,86 @@ export function ObserverMode() {
     if (s.shotTime >= shot.duration) {
       s.shotIndex = (s.shotIndex + 1) % shots.length;
       s.shotTime = 0;
+      s.cueFired = false;
+      seedAnchors(shots[s.shotIndex]);
     }
     const current = shots[s.shotIndex];
     const t = s.shotTime / current.duration;
 
-    // Camera: eased dolly with a drifting look target (cheap parallax).
+    // Performance cue: fired exactly once as shotTime crosses cue.at.
+    if (current.cue && !s.cueFired && s.shotTime >= current.cue.at) {
+      s.cueFired = true;
+      useDirection.getState().direct(current.cue.cue);
+    }
+
+    // Damped live anchors (the aim chases faster than the ride, like an
+    // operator tracking a subject).
+    if (current.anchor) {
+      const a = getTrackPoint(current.anchor);
+      if (a) s.anchorPos.lerp(a, 1 - Math.exp(-2.5 * dt));
+      if (current.yawFollow) {
+        const yaw = getTrackYaw(current.anchor);
+        if (yaw !== undefined) {
+          // Shortest-arc damping so the heading never unwinds the long way.
+          const dy = Math.atan2(Math.sin(yaw - s.anchorYaw), Math.cos(yaw - s.anchorYaw));
+          s.anchorYaw += dy * (1 - Math.exp(-2.5 * dt));
+        }
+      }
+    }
+    if (current.lookAnchor) {
+      const la = getTrackPoint(current.lookAnchor);
+      if (la) s.lookAnchorPos.lerp(la, 1 - Math.exp(-4 * dt));
+    }
+
+    // Camera: eased dolly (absolute, or offset from the anchor — rotated into
+    // the creature's frame when yawFollow) with a drifting look target.
     const e = easeInOut(t);
-    camera.position.lerpVectors(current.from, current.to, e);
-    lookTarget.current
+    const yawRot = current.anchor && current.yawFollow ? s.anchorYaw : 0;
+    sc.pos.lerpVectors(current.from, current.to, e);
+    if (yawRot) sc.pos.applyAxisAngle(UP, yawRot);
+    if (current.anchor) sc.pos.add(s.anchorPos);
+    sc.look
       .copy(current.look)
       .addScaledVector(current.lookDrift, e);
-    camera.lookAt(lookTarget.current);
+    if (yawRot) sc.look.applyAxisAngle(UP, yawRot);
+    if (current.lookAnchor) sc.look.add(s.lookAnchorPos);
+    else if (current.anchor) sc.look.add(s.anchorPos);
+
+    // Handheld micro-shake: two incommensurate frequencies per axis, applied
+    // to the camera and (fainter) to the aim so it reads as breathing, not
+    // an earthquake. Ramped in over the first second so cuts don't pop.
+    if (current.shake) {
+      const st = s.shotTime;
+      const amp = current.shake * Math.min(1, st);
+      const n1 = Math.sin(st * 1.7) + 0.5 * Math.sin(st * 3.9);
+      const n2 = Math.cos(st * 2.3) + 0.5 * Math.sin(st * 5.1);
+      sc.right.setFromMatrixColumn(cam.matrix, 0);
+      sc.up.setFromMatrixColumn(cam.matrix, 1);
+      sc.shake.copy(sc.right).multiplyScalar(n1 * amp).addScaledVector(sc.up, n2 * amp);
+      sc.pos.add(sc.shake);
+      sc.look.addScaledVector(sc.shake, 0.4);
+    }
+
+    cam.position.copy(sc.pos);
+    cam.lookAt(sc.look);
+
+    // Cinematic zoom.
+    const fov = MathUtils.lerp(current.fovFrom ?? BASE_FOV, current.fovTo ?? BASE_FOV, e);
+    if (Math.abs(cam.fov - fov) > 1e-3) {
+      cam.fov = fov;
+      cam.updateProjectionMatrix();
+    }
+
+    // Depth of field: focus rides a track point when the shot asks for it.
+    if (current.dof) {
+      const fp = getTrackPoint(current.dof.key);
+      if (fp) dofChannel.point.copy(fp);
+      dofChannel.range = current.dof.range ?? 18;
+      dofChannel.bokeh = current.dof.bokeh ?? 3.5;
+      dofChannel.enabled = true;
+    } else {
+      dofChannel.enabled = false;
+    }
 
     // Season: glide the ONE WorldClock toward the shot's phase (same public
     // API as the scrub slider). Reads as a gentle timelapse between shots.
@@ -233,14 +431,14 @@ export function ObserverMode() {
     s.tourPhase += d * Math.min(1, dt * (current.phaseRate ?? 1.4));
     clock.setPhase(s.tourPhase);
 
-    // Fade to black at shot boundaries; caption follows the current shot.
+    // Fade to black at shot boundaries (suppressed across hard cuts);
+    // caption follows the current shot.
     const untilEnd = current.duration - s.shotTime;
-    const fade = Math.max(
-      0,
-      Math.max(1 - s.shotTime / FADE_TIME, 1 - untilEnd / FADE_TIME)
-    );
+    const fadeIn = current.cutIn ? 0 : Math.max(0, 1 - s.shotTime / FADE_TIME);
+    const fadeOut = current.cutOut ? 0 : Math.max(0, 1 - untilEnd / FADE_TIME);
+    const fade = Math.max(fadeIn, fadeOut);
     const store = useObserver.getState();
-    if (store.caption !== current.caption || Math.abs(store.fade - fade) > 0.01) {
+    if (store.caption !== current.caption || store.sub !== current.sub || Math.abs(store.fade - fade) > 0.01) {
       useObserver.setState({ caption: current.caption, sub: current.sub, fade });
     }
   });
