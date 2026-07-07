@@ -8,11 +8,18 @@ import {
   FogExp2,
   HemisphereLight,
   MathUtils,
+  Object3D,
+  PCFSoftShadowMap,
+  Vector3,
 } from "three";
 
 import { Atmosphere } from "./sky/Atmosphere";
 import { Terrain } from "./terrain/Terrain";
 import { Waterfalls } from "./water/Waterfalls";
+import { Ocean } from "./water/Ocean";
+import { ParticleField } from "./fx/particles";
+import { PostFX } from "./fx/PostFX";
+import { sampleHeight } from "./terrain/heightfield";
 import { Glassbears } from "./life/Glassbears";
 import { Leviathans } from "./life/Leviathans";
 import { SkyEagles } from "./life/SkyEagles";
@@ -31,9 +38,12 @@ function ClockDriver() {
   return null;
 }
 
-/** Sun-driven directional light + hemisphere fill + seasonal fog. */
+/** Sun-driven directional light + hemisphere fill + seasonal fog. The shadow
+ *  frustum is a tight ortho box re-aimed every frame at a focus point ahead of
+ *  the camera (snapped to 16 m steps so the map doesn't shimmer) — crisp soft
+ *  shadows near the viewer instead of one mushy map over the whole world. */
 function Lighting() {
-  const { scene } = useThree();
+  const { scene, camera } = useThree();
   const sunRef = useRef<DirectionalLight>(null);
   const hemiRef = useRef<HemisphereLight>(null);
 
@@ -41,6 +51,9 @@ function Lighting() {
   const fogColor = useMemo(() => new Color(), []);
   const skyColor = useMemo(() => new Color(), []);
   const groundColor = useMemo(() => new Color(), []);
+  const sunTarget = useMemo(() => new Object3D(), []);
+  const focus = useMemo(() => new Vector3(), []);
+  const forward = useMemo(() => new Vector3(), []);
 
   useFrame(() => {
     const phase = useWorldClock.getState().phase;
@@ -48,7 +61,13 @@ function Lighting() {
     const { color, intensity } = sunLight(phase);
 
     if (sunRef.current) {
-      sunRef.current.position.copy(sunDirection(phase).multiplyScalar(3000));
+      camera.getWorldDirection(forward);
+      focus.copy(camera.position).addScaledVector(forward, 180);
+      focus.x = Math.round(focus.x / 16) * 16;
+      focus.z = Math.round(focus.z / 16) * 16;
+      focus.y = Math.round(Math.max(0, sampleHeight(focus.x, focus.z)) / 16) * 16;
+      sunTarget.position.copy(focus);
+      sunRef.current.position.copy(focus).addScaledVector(sunDirection(phase), 2500);
       sunRef.current.color.copy(color);
       sunRef.current.intensity = intensity;
     }
@@ -69,35 +88,23 @@ function Lighting() {
 
   return (
     <>
-      <directionalLight ref={sunRef} castShadow />
+      <directionalLight
+        ref={sunRef}
+        castShadow
+        target={sunTarget}
+        shadow-mapSize={IS_TOUCH ? [1024, 1024] : [2048, 2048]}
+        shadow-camera-left={-420}
+        shadow-camera-right={420}
+        shadow-camera-top={420}
+        shadow-camera-bottom={-420}
+        shadow-camera-near={1}
+        shadow-camera-far={6000}
+        shadow-bias={-0.0004}
+        shadow-normalBias={2.5}
+      />
+      <primitive object={sunTarget} />
       <hemisphereLight ref={hemiRef} />
     </>
-  );
-}
-
-/**
- * Placeholder sea surface at sea level so the drowned fjord valleys read as
- * water. Follows the camera so it never runs out. Replaced by the real Ocean
- * (waves, reflections, ember-run rivers) in Milestone 6.
- */
-function OceanPlaceholder() {
-  const seaColor = useMemo(() => new Color(), []);
-  const matRef = useRef<any>(null);
-  const meshRef = useRef<any>(null);
-
-  useFrame(({ camera }) => {
-    const d = dayness(useWorldClock.getState().phase);
-    seaColor.copy(mix(PALETTE.seaDark, PALETTE.seaBright, d));
-    if (matRef.current) matRef.current.color.copy(seaColor);
-    if (meshRef.current) meshRef.current.position.set(camera.position.x, 0, camera.position.z);
-  });
-
-  return (
-    <mesh ref={meshRef} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[60000, 60000, 1, 1]} />
-      {/* Slightly see-through so the leviathan pod reads as shadows below. */}
-      <meshStandardMaterial ref={matRef} roughness={0.35} metalness={0} transparent opacity={0.84} />
-    </mesh>
   );
 }
 
@@ -240,7 +247,7 @@ export default function App() {
   return (
     <>
       <Canvas
-        shadows
+        shadows={{ type: PCFSoftShadowMap }}
         dpr={IS_TOUCH ? [1, 1.5] : [1, 2]}
         camera={{ position: [-450, 800, 2600], fov: 55, near: 1, far: 20000 }}
         // NOTE: no logarithmicDepthBuffer — it silently breaks depth testing
@@ -257,12 +264,14 @@ export default function App() {
         />
         <Lighting />
         <Terrain />
-        <OceanPlaceholder />
+        <Ocean />
         <Waterfalls />
         <Glassbears />
         <Leviathans />
         <SkyEagles />
+        <ParticleField />
         <ObserverMode />
+        <PostFX />
         <OrbitControls
           enabled={!observing}
           target={[0, 30, 0]}

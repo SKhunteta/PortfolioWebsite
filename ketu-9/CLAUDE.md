@@ -59,16 +59,24 @@ world offset + LOD knobs live in `TERRAIN` in `config.ts`.
 (replaces the vertex-color placeholder), per KETU-9-GAME-PLAN.md §7 and §8.
 Do not regress the WorldClock contract.
 
-## Observer Mode (added out-of-band, after M3)
+## Observer Mode (added out-of-band, after M3; cinematic overhaul after that)
 `src/observer/ObserverMode.tsx` — one button (◉ OBSERVE), a looping cinematic
-director: authored shots (dolly + drifting look target + caption + target season
-phase) touring the falls, the leviathan pod, the stormwing gyre, the glassbears,
-and a Dark-falls timelapse finale. It drives the season ONLY via WorldClock
-setPhase (like the scrub slider) and restores camera+clock on exit. Early fauna
-placeholders shipped with it (final versions land in their own milestones):
-`life/Glassbears.tsx` (transmission shimmer, M11), `life/Leviathans.tsx`,
-`life/SkyEagles.tsx` (M9-ish), `water/Waterfalls.tsx` (M6 rivers/ocean),
-`world/locations.ts` (POIs found by offline heightfield scans — re-scan if the
-geology changes). Dev handles: `__ketuClock`, `__ketuObserver` (`jumpTo(i)`).
+director, now 8 shots. Shots support FOV zoom (`fovFrom/fovTo`, restored on
+exit), live creature `anchor`/`lookAnchor` offsets (track points from
+`life/direction.ts`), handheld `shake`, `dof` hints (drives `fx/PostFX.tsx`),
+hard `cutIn/cutOut`, and performance `cue`s — the director COMMANDS a bear
+roar / leviathan breach at an exact shot offset via the direction bus, using
+the ROAR/BREACH timelines in `life/direction.ts` (the choreography contract).
+It drives the season ONLY via WorldClock setPhase (like the scrub slider) and
+restores camera+clock+FOV on exit. Fauna: `life/Glassbears.tsx` (articulated
+anatomy + roar FSM, transmission shimmer), `life/Leviathans.tsx` (deep-cruise +
+cued breach FSM, photophores), `life/SkyEagles.tsx` (M9-ish),
+`water/Waterfalls.tsx`, `water/Ocean.tsx` (Gerstner grid + skirt, raw GLSL),
+`fx/particles.tsx` (pooled ballistic bursts: splash/spray/vapor),
+`fx/PostFX.tsx` (SMAA+Bloom+DoF+Vignette, desktop only — Bloom threshold >1 so
+only HDR sources ignite), `world/locations.ts` (POIs found by offline
+heightfield scans — re-scan if the geology changes). Dev handles: `__ketuClock`,
+`__ketuObserver` (`jumpTo(i)`), `__ketuDirector` (`direct({kind,index})`),
+`__ketuFX` (`emitBurst`).
 **Warning:** do NOT enable `logarithmicDepthBuffer` — three.js doesn't patch raw
 ShaderMaterials for log depth, which silently hides them (cost a debugging hour).
