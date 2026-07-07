@@ -649,24 +649,24 @@ export function Cat({
         <mesh geometry={geoms.barrel} material={mats.body} position={[0, 0.01, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow={CAST} />
         <mesh geometry={geoms.chest} material={mats.body} position={[0, 0.01, 0.13]} castShadow={CAST} />
 
-        {/* head — big and round, with chubby cheeks and fluffy tufted ears */}
+        {/* head — a neat sleek face with big pointed ears and big gold eyes */}
         <group ref={headG} position={[0, 0.085, 0.21]}>
           <mesh geometry={geoms.skull} material={mats.body} position={[0, 0.05, 0.03]} castShadow={CAST} />
-          <mesh geometry={geoms.muzzle} material={mats.body} position={[0, 0.0, 0.125]} scale={[1.05, 0.8, 0.95]} />
-          {/* chubby cheek fluff */}
-          <mesh geometry={geoms.cheek} material={mats.body} position={[0.062, 0.01, 0.07]} scale={[0.9, 0.85, 0.8]} castShadow={CAST} />
-          <mesh geometry={geoms.cheek} material={mats.body} position={[-0.062, 0.01, 0.07]} scale={[0.9, 0.85, 0.8]} castShadow={CAST} />
-          <mesh geometry={geoms.nose} material={mats.nose} position={[0, 0.025, 0.172]} />
-          <group ref={earL} position={[0.062, 0.15, -0.005]} rotation={[0, 0, 0.18]}>
+          <mesh geometry={geoms.muzzle} material={mats.body} position={[0, -0.002, 0.12]} scale={[1, 0.82, 1]} />
+          {/* a hint of cheek, kept sleek */}
+          <mesh geometry={geoms.cheek} material={mats.body} position={[0.05, 0.005, 0.065]} scale={[0.9, 0.85, 0.85]} castShadow={CAST} />
+          <mesh geometry={geoms.cheek} material={mats.body} position={[-0.05, 0.005, 0.065]} scale={[0.9, 0.85, 0.85]} castShadow={CAST} />
+          <mesh geometry={geoms.nose} material={mats.nose} position={[0, 0.022, 0.162]} />
+          <group ref={earL} position={[0.056, 0.155, -0.005]} rotation={[0, 0, 0.2]}>
             <mesh geometry={geoms.ear} material={mats.body} castShadow={CAST} />
-            <mesh geometry={geoms.earInner} material={mats.innerEar} position={[0, -0.004, 0.014]} />
+            <mesh geometry={geoms.earInner} material={mats.innerEar} position={[0, -0.006, 0.015]} />
           </group>
-          <group ref={earR} position={[-0.062, 0.15, -0.005]} rotation={[0, 0, -0.18]}>
+          <group ref={earR} position={[-0.056, 0.155, -0.005]} rotation={[0, 0, -0.2]}>
             <mesh geometry={geoms.ear} material={mats.body} castShadow={CAST} />
-            <mesh geometry={geoms.earInner} material={mats.innerEar} position={[0, -0.004, 0.014]} />
+            <mesh geometry={geoms.earInner} material={mats.innerEar} position={[0, -0.006, 0.015]} />
           </group>
-          <mesh ref={eyeL} geometry={geoms.eye} material={eyeMat} position={[0.052, 0.065, 0.105]} />
-          <mesh ref={eyeR} geometry={geoms.eye} material={eyeMat} position={[-0.052, 0.065, 0.105]} />
+          <mesh ref={eyeL} geometry={geoms.eye} material={eyeMat} position={[0.046, 0.062, 0.1]} />
+          <mesh ref={eyeR} geometry={geoms.eye} material={eyeMat} position={[-0.046, 0.062, 0.1]} />
         </group>
 
         {/* tail: four chained segments off the haunches */}

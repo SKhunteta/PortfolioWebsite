@@ -128,12 +128,17 @@ function GravitySlider() {
     <div
       style={{
         position: "absolute",
-        left: "calc(20px + env(safe-area-inset-left))",
+        // On phones, center the dial along the bottom so it clears the
+        // OBSERVE/LASER cluster (which stacks above it); on desktop it lives
+        // bottom-left as before.
+        left: IS_TOUCH ? "50%" : "calc(20px + env(safe-area-inset-left))",
+        transform: IS_TOUCH ? "translateX(-50%)" : undefined,
         bottom: "calc(20px + env(safe-area-inset-bottom))",
         zIndex: 7,
         display: "flex",
         alignItems: "center",
         gap: 10,
+        maxWidth: "calc(100vw - 32px)",
         background: "rgba(10, 8, 22, 0.55)",
         border: "1px solid rgba(242, 236, 250, 0.25)",
         borderRadius: 999,
@@ -161,7 +166,11 @@ function GravitySlider() {
           dial.setRunning(false);
           dial.setG(Number(e.target.value) / 1000);
         }}
-        style={{ width: "min(34vw, 220px)", accentColor: "#ff5ecf", cursor: "ew-resize" }}
+        style={{
+          width: IS_TOUCH ? "min(64vw, 240px)" : "min(34vw, 220px)",
+          accentColor: "#ff5ecf",
+          cursor: "ew-resize",
+        }}
         aria-label="Gravity dial"
       />
       <span
@@ -216,9 +225,6 @@ function ObserverUI() {
   }, [stop, cycleSpeed]);
 
   const pill: CSSProperties = {
-    position: "absolute",
-    bottom: "calc(20px + env(safe-area-inset-bottom))",
-    zIndex: 7,
     font: "600 13px/1 ui-monospace, monospace",
     letterSpacing: 2,
     color: "#f2ecfa",
@@ -228,6 +234,7 @@ function ObserverUI() {
     padding: "12px 22px",
     cursor: "pointer",
     backdropFilter: "blur(6px)",
+    whiteSpace: "nowrap",
   };
 
   return (
@@ -263,51 +270,68 @@ function ObserverUI() {
           <div style={{ opacity: 0.75, letterSpacing: 1 }}>{sub}</div>
         </div>
       )}
-      {/* The one button */}
-      <button
-        onClick={() => {
-          if (active) stop();
-          else {
-            useLaser.getState().setArmed(false);
-            start();
-          }
+      {/* Bottom control cluster: a centered flex row so the buttons lay out
+          responsively instead of colliding at fixed pixel offsets on narrow
+          phones. While observing it sits at the very bottom; otherwise (touch)
+          it rides above the centered gravity dial. */}
+      <div
+        style={{
+          position: "absolute",
+          left: "50%",
+          transform: "translateX(-50%)",
+          bottom: active
+            ? "calc(20px + env(safe-area-inset-bottom))"
+            : `calc(${IS_TOUCH ? "92px" : "20px"} + env(safe-area-inset-bottom))`,
+          zIndex: 7,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 10,
+          maxWidth: "calc(100vw - 24px)",
         }}
-        style={{ ...pill, left: "50%", transform: "translateX(-50%)" }}
       >
-        {active ? "✕ EXIT" : "◉ OBSERVE"}
-      </button>
-      {/* Laser arm toggle, left of OBSERVE. Hidden during tours. */}
-      {!active && (
+        {/* Laser arm toggle, left of OBSERVE. Hidden during tours. */}
+        {!active && (
+          <button
+            onClick={() => useLaser.getState().toggle()}
+            title="Arm the laser pointer — drag to play with the cats"
+            style={{
+              ...pill,
+              background: laserArmed ? "rgba(255, 40, 80, 0.4)" : "rgba(10, 8, 22, 0.55)",
+            }}
+          >
+            {laserArmed ? "● LASER" : "○ LASER"}
+          </button>
+        )}
+        {/* The one button */}
         <button
-          onClick={() => useLaser.getState().toggle()}
-          title="Arm the laser pointer — drag to play with the cats"
-          style={{
-            ...pill,
-            left: "50%",
-            transform: "translateX(calc(-50% - 118px))",
-            background: laserArmed ? "rgba(255, 40, 80, 0.4)" : "rgba(10, 8, 22, 0.55)",
+          onClick={() => {
+            if (active) stop();
+            else {
+              useLaser.getState().setArmed(false);
+              start();
+            }
           }}
+          style={pill}
         >
-          {laserArmed ? "● LASER" : "○ LASER"}
+          {active ? "✕ EXIT" : "◉ OBSERVE"}
         </button>
-      )}
-      {/* Fast-forward, right of EXIT, only while observing. */}
-      {active && (
-        <button
-          onClick={cycleSpeed}
-          title="Speed up the tour (. key)"
-          style={{
-            ...pill,
-            left: "50%",
-            transform: "translateX(calc(50% + 60px))",
-            padding: "12px 18px",
-            letterSpacing: 1,
-            background: speed > 1 ? "rgba(90, 130, 220, 0.55)" : "rgba(10, 8, 22, 0.55)",
-          }}
-        >
-          {`⏩ ${speed}×`}
-        </button>
-      )}
+        {/* Fast-forward, right of EXIT, only while observing. */}
+        {active && (
+          <button
+            onClick={cycleSpeed}
+            title="Speed up the tour (. key)"
+            style={{
+              ...pill,
+              padding: "12px 18px",
+              letterSpacing: 1,
+              background: speed > 1 ? "rgba(90, 130, 220, 0.55)" : "rgba(10, 8, 22, 0.55)",
+            }}
+          >
+            {`⏩ ${speed}×`}
+          </button>
+        )}
+      </div>
     </>
   );
 }
@@ -350,7 +374,7 @@ export default function App() {
       <Canvas
         shadows={{ type: PCFSoftShadowMap }}
         dpr={IS_TOUCH ? [1, 1.5] : [1, 2]}
-        camera={{ position: [4.6, 2.6, 4.6], fov: 55, near: 0.05, far: 200 }}
+        camera={{ position: [4.6, 2.6, 4.6], fov: IS_TOUCH ? 70 : 55, near: 0.05, far: 200 }}
         // NOTE: no logarithmicDepthBuffer — it silently breaks depth testing
         // for raw ShaderMaterials (the nebula, holo panels), which don't get
         // three's log-depth patching.
@@ -382,7 +406,7 @@ export default function App() {
       <GravitySlider />
       <ObserverUI />
       <DialControls />
-      <Leva collapsed={IS_TOUCH} hidden={observing} />
+      <Leva collapsed hidden={observing || IS_TOUCH} />
     </>
   );
 }
