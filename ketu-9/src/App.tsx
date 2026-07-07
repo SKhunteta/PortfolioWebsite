@@ -136,16 +136,23 @@ function ObserverUI() {
   const caption = useObserver((s) => s.caption);
   const sub = useObserver((s) => s.sub);
   const fade = useObserver((s) => s.fade);
+  const speed = useObserver((s) => s.speed);
   const start = useObserver((s) => s.start);
   const stop = useObserver((s) => s.stop);
+  const cycleSpeed = useObserver((s) => s.cycleSpeed);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") stop();
+      // Speed up the tour from the keyboard too (".", ">" — same key as the
+      // fast-forward glyph). Only while observing.
+      if (useObserver.getState().active && (e.key === "." || e.key === ">")) {
+        cycleSpeed();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [stop]);
+  }, [stop, cycleSpeed]);
 
   return (
     <>
@@ -202,6 +209,33 @@ function ObserverUI() {
       >
         {active ? "✕ EXIT" : "◉ OBSERVE"}
       </button>
+      {/* Fast-forward: cycle the tour speed to get through shots faster.
+          Sits just right of EXIT, only while observing. */}
+      {active && (
+        <button
+          onClick={cycleSpeed}
+          title="Speed up the tour (. key)"
+          style={{
+            position: "absolute",
+            left: "50%",
+            transform: "translateX(calc(50% + 96px))",
+            bottom: "calc(20px + env(safe-area-inset-bottom))",
+            zIndex: 7,
+            font: "600 13px/1 ui-monospace, monospace",
+            letterSpacing: 1,
+            color: "#e8eef6",
+            background:
+              speed > 1 ? "rgba(90, 130, 220, 0.55)" : "rgba(8, 12, 24, 0.55)",
+            border: "1px solid rgba(232, 238, 246, 0.35)",
+            borderRadius: 999,
+            padding: "12px 18px",
+            cursor: "pointer",
+            backdropFilter: "blur(6px)",
+          }}
+        >
+          {`⏩ ${speed}×`}
+        </button>
+      )}
     </>
   );
 }

@@ -63,27 +63,42 @@ interface Shot {
   cutOut?: boolean;
 }
 
+/** Playback rates the tour can run at — the speed button cycles through these. */
+export const OBSERVER_SPEEDS = [1, 2, 4] as const;
+
 interface ObserverState {
   active: boolean;
   caption: string;
   sub: string;
   fade: number; // 0 = clear, 1 = black — rendered by a DOM overlay
+  /** Time multiplier for the tour: scales the director's dt so shots, cues,
+   *  phase glide and fades all run faster together. 1 = real time. */
+  speed: number;
   /** One-frame request consumed by the director: jump straight to a shot. */
   requestShot: number | null;
   start: () => void;
   stop: () => void;
   jumpTo: (index: number) => void;
+  setSpeed: (speed: number) => void;
+  /** Step to the next rate in OBSERVER_SPEEDS, wrapping back to the start. */
+  cycleSpeed: () => void;
 }
 
-export const useObserver = create<ObserverState>((set) => ({
+export const useObserver = create<ObserverState>((set, get) => ({
   active: false,
   caption: "",
   sub: "",
   fade: 0,
+  speed: 1,
   requestShot: null,
   start: () => set({ active: true, fade: 1 }),
   stop: () => set({ active: false, fade: 0, caption: "", sub: "" }),
   jumpTo: (index) => set({ active: true, requestShot: index }),
+  setSpeed: (speed) => set({ speed }),
+  cycleSpeed: () => {
+    const i = OBSERVER_SPEEDS.indexOf(get().speed as (typeof OBSERVER_SPEEDS)[number]);
+    set({ speed: OBSERVER_SPEEDS[(i + 1) % OBSERVER_SPEEDS.length] });
+  },
 }));
 
 // Dev affordance, same pattern as __ketuClock: jump the tour from the console,
@@ -290,7 +305,11 @@ export function ObserverMode() {
   };
 
   useFrame((_, rawDt) => {
-    const dt = Math.min(rawDt, 0.1);
+    // Clamp against frame hitches first, then scale by the tour's playback rate
+    // so speeding up moves shots, cues, phase glide and fades in lockstep. The
+    // exp-based anchor damping and once-only cue check both stay correct under
+    // the larger steps this produces.
+    const dt = Math.min(rawDt, 0.1) * useObserver.getState().speed;
     const s = state.current;
     const sc = scratch.current;
     const active = useObserver.getState().active;
