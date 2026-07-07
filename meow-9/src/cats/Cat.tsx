@@ -45,9 +45,12 @@ export interface CatGeoms {
   skull: BufferGeometry;
   muzzle: BufferGeometry;
   nose: BufferGeometry;
+  cheek: BufferGeometry;
   ear: BufferGeometry;
+  earInner: BufferGeometry;
   eye: BufferGeometry;
   tailSeg: BufferGeometry;
+  tailTuft: BufferGeometry;
   thigh: BufferGeometry;
   shin: BufferGeometry;
   paw: BufferGeometry;
@@ -55,6 +58,7 @@ export interface CatGeoms {
 
 export interface CatMats {
   body: Material;
+  innerEar: Material;
   eye: Material;
   eyeAlt: Material;
   nose: Material;
@@ -98,6 +102,11 @@ interface CatState {
   blinkStart: number;
   earAt: number;
   earStart: number;
+  lookAt: number;
+  lookStart: number;
+  lookYaw: number;
+  flickAt: number;
+  flickStart: number;
   rand: () => number;
 }
 
@@ -147,6 +156,11 @@ export function Cat({
       blinkStart: -9,
       earAt: 2 + rand() * 5,
       earStart: -9,
+      lookAt: 2 + rand() * 5,
+      lookStart: -9,
+      lookYaw: 0,
+      flickAt: 1.5 + rand() * 4,
+      flickStart: -9,
       rand,
     };
   }
@@ -540,6 +554,32 @@ export function Cat({
     const eu = s.time - s.earStart;
     const earTwitch = eu < 0.28 ? Math.sin((eu / 0.28) * Math.PI * 2) * 0.3 : 0;
 
+    // Curiosity: at rest, cats swivel to "look" at something and perk their
+    // ears — the little head turns that make them feel alive, not posed.
+    const resting = s.mode === "sit" || s.mode === "loaf" || s.mode === "groom";
+    if (resting && s.time > s.lookAt) {
+      s.lookStart = s.time;
+      s.lookYaw = (s.rand() - 0.5) * 1.2;
+      s.lookAt = s.time + 2.6 + s.rand() * 5;
+      s.earStart = s.time; // ears perk toward whatever caught their eye
+    }
+    const lu = s.time - s.lookStart;
+    let lookYaw = 0;
+    let lookLift = 0;
+    if (resting && lu < 1.8) {
+      const env = Math.sin(Math.min(1, lu / 1.8) * Math.PI); // 0 → 1 → 0
+      lookYaw = s.lookYaw * env;
+      lookLift = 0.14 * env; // a curious little chin-up
+    }
+
+    // Tail-tip flick — a quick lash on its own timer, present even at rest.
+    if (s.time > s.flickAt) {
+      s.flickStart = s.time;
+      s.flickAt = s.time + 2.5 + s.rand() * 5;
+    }
+    const flu = s.time - s.flickStart;
+    const tailFlick = flu < 0.55 ? Math.sin((flu / 0.55) * Math.PI * 2) * 0.5 : 0;
+
     // --- Apply pose (damped per joint — transitions blend for free). --------
     const D = (cur: number, target: number, l = 10) => MathUtils.damp(cur, target, l, dt);
     bodyG.position.y = D(bodyG.position.y, bodyY);
@@ -548,8 +588,8 @@ export function Cat({
     bodyG.scale.y = D(bodyG.scale.y, bodySY);
 
     if (headG.current) {
-      headG.current.rotation.x = D(headG.current.rotation.x, headRX, 8);
-      headG.current.rotation.y = D(headG.current.rotation.y, headRY, 8);
+      headG.current.rotation.x = D(headG.current.rotation.x, headRX - lookLift, 8);
+      headG.current.rotation.y = D(headG.current.rotation.y, headRY + lookYaw, 8);
       headG.current.rotation.z = D(headG.current.rotation.z, headRZ, 8);
     }
     if (earL.current) earL.current.rotation.x = D(earL.current.rotation.x, earTwitch, 20);
@@ -567,8 +607,11 @@ export function Cat({
       const sway = Math.sin(t * tailSwayRate + k * 0.9 + spec.seed) * tailSwayAmp * (0.6 + k * 0.25);
       const wrapY = tailWrap * (k === 0 ? 1.1 : 0.55);
       const liftX = k === 0 ? -tailLift : -tailLift * 0.25 + tailWrap * 0.15;
+      // The flick lashes the tip hardest (k grows toward the tuft) and reads
+      // even on a wrapped tail — a curled tail-tip twitch is peak cat.
+      const flick = tailFlick * (0.25 + k * 0.28) * (0.45 + 0.55 * (1 - tailWrap));
       seg.rotation.x = D(seg.rotation.x, liftX, 6);
-      seg.rotation.y = D(seg.rotation.y, sway * (1 - tailWrap) + wrapY, 6);
+      seg.rotation.y = D(seg.rotation.y, sway * (1 - tailWrap) + wrapY + flick, 6);
     }
 
     for (let i = 0; i < 2; i++) {
@@ -606,19 +649,24 @@ export function Cat({
         <mesh geometry={geoms.barrel} material={mats.body} position={[0, 0.01, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow={CAST} />
         <mesh geometry={geoms.chest} material={mats.body} position={[0, 0.01, 0.13]} castShadow={CAST} />
 
-        {/* head */}
-        <group ref={headG} position={[0, 0.09, 0.2]}>
-          <mesh geometry={geoms.skull} material={mats.body} position={[0, 0.045, 0.03]} castShadow={CAST} />
-          <mesh geometry={geoms.muzzle} material={mats.body} position={[0, 0.005, 0.115]} scale={[1, 0.82, 1]} />
-          <mesh geometry={geoms.nose} material={mats.nose} position={[0, 0.03, 0.155]} />
-          <group ref={earL} position={[0.058, 0.135, -0.01]} rotation={[0, 0, 0.16]}>
+        {/* head — big and round, with chubby cheeks and fluffy tufted ears */}
+        <group ref={headG} position={[0, 0.085, 0.21]}>
+          <mesh geometry={geoms.skull} material={mats.body} position={[0, 0.05, 0.03]} castShadow={CAST} />
+          <mesh geometry={geoms.muzzle} material={mats.body} position={[0, 0.0, 0.125]} scale={[1.05, 0.8, 0.95]} />
+          {/* chubby cheek fluff */}
+          <mesh geometry={geoms.cheek} material={mats.body} position={[0.062, 0.01, 0.07]} scale={[0.9, 0.85, 0.8]} castShadow={CAST} />
+          <mesh geometry={geoms.cheek} material={mats.body} position={[-0.062, 0.01, 0.07]} scale={[0.9, 0.85, 0.8]} castShadow={CAST} />
+          <mesh geometry={geoms.nose} material={mats.nose} position={[0, 0.025, 0.172]} />
+          <group ref={earL} position={[0.062, 0.15, -0.005]} rotation={[0, 0, 0.18]}>
             <mesh geometry={geoms.ear} material={mats.body} castShadow={CAST} />
+            <mesh geometry={geoms.earInner} material={mats.innerEar} position={[0, -0.004, 0.014]} />
           </group>
-          <group ref={earR} position={[-0.058, 0.135, -0.01]} rotation={[0, 0, -0.16]}>
+          <group ref={earR} position={[-0.062, 0.15, -0.005]} rotation={[0, 0, -0.18]}>
             <mesh geometry={geoms.ear} material={mats.body} castShadow={CAST} />
+            <mesh geometry={geoms.earInner} material={mats.innerEar} position={[0, -0.004, 0.014]} />
           </group>
-          <mesh ref={eyeL} geometry={geoms.eye} material={eyeMat} position={[0.048, 0.065, 0.095]} />
-          <mesh ref={eyeR} geometry={geoms.eye} material={eyeMat} position={[-0.048, 0.065, 0.095]} />
+          <mesh ref={eyeL} geometry={geoms.eye} material={eyeMat} position={[0.052, 0.065, 0.105]} />
+          <mesh ref={eyeR} geometry={geoms.eye} material={eyeMat} position={[-0.052, 0.065, 0.105]} />
         </group>
 
         {/* tail: four chained segments off the haunches */}
@@ -630,6 +678,8 @@ export function Cat({
               <mesh geometry={geoms.tailSeg} material={mats.body} position={[0, 0, -0.045]} rotation={[Math.PI / 2, 0, 0]} />
               <group ref={(el) => (tail.current[3] = el)} position={[0, 0, -0.09]}>
                 <mesh geometry={geoms.tailSeg} material={mats.body} position={[0, 0, -0.04]} rotation={[Math.PI / 2, 0, 0]} scale={[0.8, 0.8, 0.8]} />
+                {/* fluffy tail tip */}
+                <mesh geometry={geoms.tailTuft} material={mats.body} position={[0, 0, -0.085]} scale={[0.85, 0.85, 1]} castShadow={CAST} />
               </group>
             </group>
           </group>

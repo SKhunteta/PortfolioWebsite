@@ -33,9 +33,9 @@ export function pickGroundedMode(r: number, lazy: number, playful: number): CatM
   const weights: [CatMode, number][] = [
     ["sit", 1],
     ["loaf", 1 + 2.2 * lazy],
-    ["walk", 0.9 + 1.6 * playful],
-    ["groom", 0.8],
-    ["sleep", 0.5 + 1.4 * lazy],
+    ["walk", 1.3 + 1.9 * playful], // roam a little more — a livelier room
+    ["groom", 1],
+    ["sleep", 0.45 + 1.3 * lazy],
   ];
   let total = 0;
   for (const [, w] of weights) total += w;
