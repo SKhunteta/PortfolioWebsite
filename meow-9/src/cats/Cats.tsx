@@ -53,39 +53,63 @@ function DriftTracker() {
 export function Cats() {
   const geoms = useMemo<CatGeoms>(
     () => ({
-      haunch: new SphereGeometry(0.13, 14, 10),
-      barrel: new CapsuleGeometry(0.11, 0.17, 6, 12),
-      chest: new SphereGeometry(0.115, 14, 10),
-      skull: new SphereGeometry(0.1, 16, 12),
-      muzzle: new SphereGeometry(0.05, 10, 8),
-      nose: new SphereGeometry(0.016, 8, 6),
-      ear: new ConeGeometry(0.042, 0.095, 4),
-      eye: new SphereGeometry(0.023, 10, 8),
-      tailSeg: new CapsuleGeometry(0.02, 0.075, 4, 8),
-      thigh: new CapsuleGeometry(0.032, 0.085, 4, 8),
-      shin: new CapsuleGeometry(0.023, 0.085, 4, 8),
-      paw: new SphereGeometry(0.032, 8, 6),
+      // Rounder, chubbier body + a big kitten head with saucer eyes — the
+      // proportions that read as "adorable", not "anatomical".
+      haunch: new SphereGeometry(0.14, 14, 10),
+      barrel: new CapsuleGeometry(0.12, 0.16, 6, 12),
+      chest: new SphereGeometry(0.125, 14, 10),
+      skull: new SphereGeometry(0.118, 16, 12),
+      muzzle: new SphereGeometry(0.055, 10, 8),
+      nose: new SphereGeometry(0.018, 8, 6),
+      cheek: new SphereGeometry(0.05, 10, 8), // chubby cheek fluff
+      ear: new ConeGeometry(0.052, 0.11, 6), // bigger, softer ears
+      earInner: new ConeGeometry(0.032, 0.078, 6), // dusty-pink inner ear
+      eye: new SphereGeometry(0.032, 14, 12), // big glowing kitten eyes
+      tailSeg: new CapsuleGeometry(0.03, 0.07, 5, 10), // plush, fluffier tail
+      tailTuft: new SphereGeometry(0.052, 10, 8), // fluffy tail tip
+      thigh: new CapsuleGeometry(0.036, 0.085, 4, 8),
+      shin: new CapsuleGeometry(0.025, 0.085, 4, 8),
+      paw: new SphereGeometry(0.036, 8, 6),
     }),
     []
   );
 
   const mats = useMemo<CatMats>(() => {
-    const furNormal = makeNoiseNormalMap(256, 6, 1.1, 21);
+    const furNormal = makeNoiseNormalMap(256, 6, 1.4, 21);
+    // A soft charcoal-plum plush, not wet vinyl: low clearcoat + high roughness
+    // + strong sheen give a fuzzy backlit-fur rim so the silhouette reads even
+    // in the drift's dim light. A faint cool emissive floor keeps the cats from
+    // ever sinking into pure black (well under the 1.05 bloom threshold).
     const body = IS_TOUCH
-      ? new MeshStandardMaterial({ color: "#101016", roughness: 0.5 })
+      ? new MeshStandardMaterial({
+          color: "#2c2a38",
+          roughness: 0.72,
+          metalness: 0.05,
+          emissive: new Color("#191b2c"),
+          emissiveIntensity: 0.4,
+        })
       : new MeshPhysicalMaterial({
-          color: "#0d0d12",
-          roughness: 0.42,
-          clearcoat: 0.9,
-          clearcoatRoughness: 0.3,
-          sheen: 0.5,
-          sheenColor: new Color("#39405c"),
-          sheenRoughness: 0.6,
+          color: "#2c2a38",
+          roughness: 0.66,
+          clearcoat: 0.28,
+          clearcoatRoughness: 0.6,
+          sheen: 1,
+          sheenColor: new Color("#8b93c8"),
+          sheenRoughness: 0.4,
+          emissive: new Color("#191b2c"),
+          emissiveIntensity: 0.4,
           normalMap: furNormal,
-          normalScale: new Vector2(0.35, 0.35),
+          normalScale: new Vector2(0.6, 0.6),
         });
     return {
       body,
+      // Soft dusty-pink inner ears — a matte, gently self-lit cuteness accent.
+      innerEar: new MeshStandardMaterial({
+        color: "#d69aa6",
+        roughness: 0.85,
+        emissive: new Color("#d69aa6"),
+        emissiveIntensity: 0.25,
+      }),
       // Emissive ABOVE the bloom threshold — the glowing eyes are HDR sources.
       eye: new MeshStandardMaterial({
         color: "#000000",
@@ -100,9 +124,9 @@ export function Cats() {
         roughness: 0.3,
       }),
       nose: new MeshStandardMaterial({
-        color: "#b56576",
-        emissive: "#b56576",
-        emissiveIntensity: 0.3,
+        color: "#e08696",
+        emissive: "#e08696",
+        emissiveIntensity: 0.45,
       }),
     };
   }, []);

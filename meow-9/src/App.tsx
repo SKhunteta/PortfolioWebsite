@@ -45,11 +45,12 @@ function Lighting() {
     if (hemiRef.current) {
       hemiRef.current.color.copy(mix(PALETTE.ambientDrift, PALETTE.ambientSpin, g));
       hemiRef.current.groundColor.copy(mix(PALETTE.groundDrift, PALETTE.groundSpin, g));
-      hemiRef.current.intensity = MathUtils.lerp(0.45, 1.0, g);
+      // Higher floor so the cats stay readable even in the drift's low-g gloom.
+      hemiRef.current.intensity = MathUtils.lerp(0.78, 1.15, g);
     }
     if (keyRef.current) {
       keyRef.current.color.copy(mix(PALETTE.keyDrift, PALETTE.keySpin, g));
-      keyRef.current.intensity = MathUtils.lerp(0.4, 1.9, g);
+      keyRef.current.intensity = MathUtils.lerp(0.85, 2.0, g);
     }
     const warm = MathUtils.lerp(2, 48, g);
     if (warmARef.current) warmARef.current.intensity = warm;

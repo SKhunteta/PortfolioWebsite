@@ -41,7 +41,7 @@ function Effects() {
       <SMAA />
       <Bloom mipmapBlur intensity={0.7} luminanceThreshold={1.05} luminanceSmoothing={0.15} />
       <DepthOfField ref={dofRef} bokehScale={0} worldFocusDistance={5} worldFocusRange={4} />
-      <Vignette offset={0.28} darkness={0.55} />
+      <Vignette offset={0.32} darkness={0.42} />
     </EffectComposer>
   );
 }
