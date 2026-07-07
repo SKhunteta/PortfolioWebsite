@@ -32,6 +32,12 @@ jobs:
       - run: npm run build
         working-directory: ketu-9
       - run: mkdir -p dist/ketu-9 && cp -r ketu-9/dist/. dist/ketu-9/
+      # Meow-9 is a standalone Vite project served at /meow-9/ alongside the site.
+      - run: npm ci
+        working-directory: meow-9
+      - run: npm run build
+        working-directory: meow-9
+      - run: mkdir -p dist/meow-9 && cp -r meow-9/dist/. dist/meow-9/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist

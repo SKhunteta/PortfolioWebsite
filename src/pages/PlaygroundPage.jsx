@@ -119,6 +119,25 @@ const STATIC_STANDALONE = [
       ctaText: "#05070f",
     },
   },
+  {
+    id: "meow-9",
+    title: "Meow-9 — The Drift",
+    kindLabel: "WebGL toy",
+    tagline: "An orbital cat sanctuary with one gravity dial.",
+    description:
+      "Sixteen adorable black cats aboard a neon-lit station module, and one dial that runs the place: scrub gravity from full spin down to zero and watch loafs become slow-tumbling drifters past the nebula in the porthole. Arm the laser pointer if you want a riot; press Observe to sit back and let the tour run.",
+    tags: ["three.js", "r3f", "simulation"],
+    cta: "Board the sanctuary",
+    href: "/meow-9/",
+    urlLabel: "builtbyshrey.com/meow-9",
+    theme: {
+      bg: "#0d0a1a",
+      text: "#f2ecfa",
+      muted: "#9a8fc4",
+      accent: "#ff5ecf",
+      ctaText: "#0d0a1a",
+    },
+  },
 ];
 
 // Static in-world artifacts live under public/ (not React routes), so they
