@@ -7,6 +7,7 @@ import {
   OVERWHELM,
   CLOUD_WORDS,
   CLOUD_SIZES,
+  explorePositionFor,
 } from "../constants";
 
 const CATEGORIES = ["alive", "dead", "fake"];
@@ -67,6 +68,30 @@ describe("Hype Check choices and tiers", () => {
     expect(OVERWHELM.CORRECT_DELTA).toBeLessThan(0);
     expect(OVERWHELM.WRONG_DELTA).toBeGreaterThan(0);
     expect(OVERWHELM.RISING_AT).toBeLessThan(OVERWHELM.OVERLOAD_AT);
+  });
+});
+
+describe("Hype Check explore layout", () => {
+  it("is deterministic and keeps every term on the stage", () => {
+    for (let i = 0; i < TERMS.length; i += 1) {
+      const pos = explorePositionFor(i);
+      // Same index, same position — no randomness at render time.
+      expect(explorePositionFor(i)).toEqual(pos);
+      expect(pos.top).toBeGreaterThanOrEqual(0);
+      expect(pos.top).toBeLessThanOrEqual(90);
+      expect(pos.left).toBeGreaterThanOrEqual(0);
+      // Leave ≥30% of the stage width so buttons never overflow.
+      expect(pos.left).toBeLessThanOrEqual(70);
+    }
+  });
+
+  it("never stacks two terms on the same spot", () => {
+    const seen = new Set();
+    for (let i = 0; i < TERMS.length; i += 1) {
+      const { top, left } = explorePositionFor(i);
+      seen.add(`${top}:${left}`);
+    }
+    expect(seen.size).toBe(TERMS.length);
   });
 });
 
