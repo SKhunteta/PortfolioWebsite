@@ -36,7 +36,9 @@ const EndScreen = ({ game }) => {
         </p>
         <button
           type="button"
-          onClick={restart}
+          // Arrow so the click event never leaks into restart's
+          // injectable `webgl` parameter.
+          onClick={() => restart()}
           className="inline-flex items-center justify-center min-h-[44px] px-8 py-3 rounded-md bg-hype-text text-hype-bg text-sm sm:text-base font-semibold font-sans-ele transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-hype-text focus-visible:ring-offset-2 focus-visible:ring-offset-hype-bg"
         >
           Face it again
