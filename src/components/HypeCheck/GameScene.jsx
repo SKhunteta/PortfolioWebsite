@@ -8,6 +8,14 @@ import { CHOICES, STATES } from "./constants";
 // Swirl speed: calm ≈ slow ambient drift, overload ≈ frantic.
 const speedFor = (overwhelm) => `${Math.max(2.5, 10 - overwhelm / 14)}s`;
 
+// The figure itself reacts to the meter: lifted and warm when calm,
+// sagging, drained, and sweating at overload. Variants crossfade.
+const FIGURE_VARIANTS = [
+  { intensity: "calm", src: "/images/hype-check/figure-calm.jpg" },
+  { intensity: "rising", src: "/images/hype-check/figure.jpg" },
+  { intensity: "overload", src: "/images/hype-check/figure-overload.jpg" },
+];
+
 const GameScene = ({ game }) => {
   const reducedMotion = useReducedMotion();
   const {
@@ -36,14 +44,23 @@ const GameScene = ({ game }) => {
       <WordCloud />
 
       {/* The slumped figure, cropped from the original meme. */}
-      <img
-        src="/images/hype-check/figure.jpg"
-        alt=""
+      <div
         aria-hidden="true"
-        className={`absolute bottom-0 right-0 sm:right-[6%] h-[42vh] sm:h-[56vh] w-auto object-contain opacity-90 pointer-events-none select-none [mask-image:radial-gradient(ellipse_at_center,black_55%,transparent_82%)] ${
+        className={`absolute bottom-0 right-0 sm:right-[6%] h-[42vh] sm:h-[56vh] aspect-[445/465] pointer-events-none select-none ${
           intensity === "overload" && !reducedMotion ? "animate-hype-shake" : ""
         }`}
-      />
+      >
+        {FIGURE_VARIANTS.map((variant) => (
+          <img
+            key={variant.intensity}
+            src={variant.src}
+            alt=""
+            className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-1000 [mask-image:radial-gradient(ellipse_at_center,black_55%,transparent_82%)] ${
+              intensity === variant.intensity ? "opacity-90" : "opacity-0"
+            }`}
+          />
+        ))}
+      </div>
 
       {/* Vignette that breathes harder as overwhelm climbs. */}
       {!reducedMotion && (
