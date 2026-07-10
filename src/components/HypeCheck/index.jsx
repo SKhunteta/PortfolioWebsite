@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import ViewSourceLink from "../ViewSourceLink";
@@ -7,6 +7,10 @@ import IntroScene from "./IntroScene";
 import GameScene from "./GameScene";
 import EndScreen from "./EndScreen";
 import { STATES } from "./constants";
+
+// The 3D room pulls in three.js — lazy-loaded so the chunk is only
+// downloaded when someone actually enters the room.
+const DioramaScene = lazy(() => import("./diorama/DioramaScene"));
 
 const HypeCheck = () => {
   const game = useHypeCheck();
@@ -44,12 +48,25 @@ const HypeCheck = () => {
               key="intro"
               onStart={game.start}
               onStartExplore={game.startExplore}
+              onStartDiorama={game.startDiorama}
             />
           )}
 
-          {(game.phase === STATES.PLAYING || game.phase === STATES.REVEAL) && (
-            <GameScene key="game" game={game} />
-          )}
+          {(game.phase === STATES.PLAYING || game.phase === STATES.REVEAL) &&
+            (game.mode === "diorama" ? (
+              <Suspense
+                key="diorama"
+                fallback={
+                  <p className="flex-1 flex items-center justify-center text-hype-muted text-sm font-sans-ele">
+                    Setting up the room…
+                  </p>
+                }
+              >
+                <DioramaScene game={game} />
+              </Suspense>
+            ) : (
+              <GameScene key="game" game={game} />
+            ))}
 
           {game.phase === STATES.DONE && <EndScreen key="end" game={game} />}
         </AnimatePresence>

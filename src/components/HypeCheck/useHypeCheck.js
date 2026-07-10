@@ -1,5 +1,10 @@
 import { useMemo, useReducer } from "react";
 import { STATES, TERMS, TIERS, OVERWHELM } from "./constants";
+import { supportsWebGL } from "./diorama/dioramaUtils";
+
+// Explore and diorama share the same click-a-word gameplay; only the
+// stage differs (2D cloud vs 3D room).
+const isFreeRoam = (mode) => mode === "explore" || mode === "diorama";
 
 const clamp = (value) =>
   Math.min(OVERWHELM.MAX, Math.max(OVERWHELM.MIN, value));
@@ -22,6 +27,9 @@ const initialState = (terms) => ({
   overwhelm: OVERWHELM.START,
   answers: [],
   selectedTermId: null,
+  // Set when "Enter the room" had to fall back to explore because the
+  // browser has no WebGL context.
+  dioramaFallback: false,
 });
 
 const reducer = (terms) => (state, action) => {
@@ -39,9 +47,17 @@ const reducer = (terms) => (state, action) => {
         ...initialState(terms),
         phase: STATES.PLAYING,
         mode: "explore",
+        dioramaFallback: Boolean(action.fromDiorama),
+      };
+    case "START_DIORAMA":
+      // Same free-roam rules as explore, staged as a 3D room.
+      return {
+        ...initialState(terms),
+        phase: STATES.PLAYING,
+        mode: "diorama",
       };
     case "SELECT_TERM": {
-      if (state.mode !== "explore" || state.phase !== STATES.PLAYING)
+      if (!isFreeRoam(state.mode) || state.phase !== STATES.PLAYING)
         return state;
       if (!state.order.includes(action.termId)) return state;
       if (state.answers.some((a) => a.termId === action.termId)) return state;
@@ -49,16 +65,15 @@ const reducer = (terms) => (state, action) => {
     }
     case "CLOSE_TERM": {
       // Backing out of an unanswered popup costs nothing.
-      if (state.mode !== "explore" || state.phase !== STATES.PLAYING)
+      if (!isFreeRoam(state.mode) || state.phase !== STATES.PLAYING)
         return state;
       return { ...state, selectedTermId: null };
     }
     case "ANSWER": {
       if (state.phase !== STATES.PLAYING) return state;
-      const termId =
-        state.mode === "explore"
-          ? state.selectedTermId
-          : state.order[state.roundIndex];
+      const termId = isFreeRoam(state.mode)
+        ? state.selectedTermId
+        : state.order[state.roundIndex];
       const term = terms.find((t) => t.id === termId);
       if (!term) return state;
       const correct = action.choice === term.category;
@@ -78,7 +93,7 @@ const reducer = (terms) => (state, action) => {
     }
     case "NEXT": {
       if (state.phase !== STATES.REVEAL) return state;
-      if (state.mode === "explore") {
+      if (isFreeRoam(state.mode)) {
         if (state.answers.length >= state.order.length) {
           return { ...state, phase: STATES.DONE, selectedTermId: null };
         }
@@ -118,7 +133,7 @@ const useHypeCheck = (terms = TERMS) => {
   const [state, dispatch] = useReducer(reducer(terms), terms, initialState);
 
   const currentTerm = useMemo(() => {
-    if (state.mode === "explore") {
+    if (isFreeRoam(state.mode)) {
       return terms.find((t) => t.id === state.selectedTermId) ?? null;
     }
     return terms.find((t) => t.id === state.order[state.roundIndex]) ?? null;
@@ -150,6 +165,13 @@ const useHypeCheck = (terms = TERMS) => {
     tier: tierFor(state.score),
     start: () => dispatch({ type: "START" }),
     startExplore: () => dispatch({ type: "START_EXPLORE" }),
+    // `webgl` is injectable so jsdom tests can force either branch.
+    startDiorama: (webgl = supportsWebGL()) =>
+      dispatch(
+        webgl
+          ? { type: "START_DIORAMA" }
+          : { type: "START_EXPLORE", fromDiorama: true }
+      ),
     selectTerm: (termId) => dispatch({ type: "SELECT_TERM", termId }),
     closeTerm: () => dispatch({ type: "CLOSE_TERM" }),
     answer: (choice) => dispatch({ type: "ANSWER", choice }),

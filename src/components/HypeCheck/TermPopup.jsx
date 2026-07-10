@@ -7,7 +7,16 @@ import { CHOICES } from "./constants";
 // term is clicked: first the three verdict choices (closable without
 // penalty), then the same RevealCard the quiz uses. Focus moves into
 // the dialog on open; GameScene returns it to the cloud on close.
-const TermPopup = ({ term, revealing, answer, isLast, onAnswer, onClose, onNext }) => {
+const TermPopup = ({
+  term,
+  revealing,
+  answer,
+  isLast,
+  onAnswer,
+  onClose,
+  onNext,
+  nextLabel = "Back to the cloud",
+}) => {
   const reducedMotion = useReducedMotion();
   const firstChoiceRef = useRef(null);
 
@@ -46,7 +55,7 @@ const TermPopup = ({ term, revealing, answer, isLast, onAnswer, onClose, onNext 
             answer={answer}
             isLast={isLast}
             onNext={onNext}
-            nextLabel="Back to the cloud"
+            nextLabel={nextLabel}
           />
         ) : (
           <motion.div
