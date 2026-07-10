@@ -64,7 +64,7 @@ npm run build   # production build to dist/
 - **LinkedIn**: [shreyans-khunteta](https://www.linkedin.com/in/shreyans-khunteta-3167247a/)
 - **GitHub**: [@SKhunteta](https://github.com/SKhunteta)
 - **Email**: shreyans.khunteta@gmail.com
-- **Blog**: [prompt-injection.ghost.io](https://prompt-injection.ghost.io/)
+- **Blog**: [builtbyshrey.com](https://builtbyshrey.com)
 
 ## 📝 License
 
