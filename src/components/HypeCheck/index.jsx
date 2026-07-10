@@ -40,7 +40,11 @@ const HypeCheck = () => {
       <main className="flex-1 flex flex-col">
         <AnimatePresence mode="wait">
           {game.phase === STATES.INTRO && (
-            <IntroScene key="intro" onStart={game.start} />
+            <IntroScene
+              key="intro"
+              onStart={game.start}
+              onStartExplore={game.startExplore}
+            />
           )}
 
           {(game.phase === STATES.PLAYING || game.phase === STATES.REVEAL) && (

@@ -263,6 +263,25 @@ export const CLOUD_WORDS = [
   { text: "still no io device", top: 90, left: 58, size: "sm", sway: -14, delay: 2.8 },
 ];
 
+// Explore mode: deterministic stage positions for the clickable term
+// buttons. A pure function of index — render never touches
+// Math.random — laying terms out in three loose columns with a small
+// per-row stagger so the cloud reads scattered, not gridded. Values
+// are percentages of the stage; left never exceeds ~68% so buttons
+// (capped at the remaining width) can't overflow narrow viewports.
+const EXPLORE_COLUMN_LEFTS = [4, 36, 64];
+
+export const explorePositionFor = (index) => {
+  const col = index % EXPLORE_COLUMN_LEFTS.length;
+  const row = Math.floor(index / EXPLORE_COLUMN_LEFTS.length);
+  return {
+    top: 12 + row * 11 + col * 2,
+    left: EXPLORE_COLUMN_LEFTS[col] + (row % 2) * 4,
+    sway: index % 2 === 0 ? 12 : -14,
+    delay: (index % 6) * 0.45,
+  };
+};
+
 export const CLOUD_SIZES = {
   sm: "text-sm sm:text-base",
   md: "text-base sm:text-xl",

@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import WordCloud from "./WordCloud";
+import ExploreCloud from "./ExploreCloud";
+import TermPopup from "./TermPopup";
 import OverwhelmMeter from "./OverwhelmMeter";
 import RevealCard from "./RevealCard";
 import { CHOICES, STATES } from "./constants";
@@ -8,29 +10,69 @@ import { CHOICES, STATES } from "./constants";
 // Swirl speed: calm ≈ slow ambient drift, overload ≈ frantic.
 const speedFor = (overwhelm) => `${Math.max(2.5, 10 - overwhelm / 14)}s`;
 
-// The figure itself reacts to the meter: lifted and warm when calm,
-// sagging, drained, and sweating at overload. Variants crossfade.
-const FIGURE_VARIANTS = [
-  { intensity: "calm", src: "/images/hype-check/figure-calm.jpg" },
-  { intensity: "rising", src: "/images/hype-check/figure.jpg" },
-  { intensity: "overload", src: "/images/hype-check/figure-overload.jpg" },
-];
+// The figure reacts to the meter across six states: 1 = serene, bright,
+// lifted … 6 = overloaded, sagging, sweating. Stages crossfade.
+const FIGURE_STAGES = [1, 2, 3, 4, 5, 6].map((stage) => ({
+  stage,
+  src: `/images/hype-check/figure-stage-${stage}.jpg`,
+}));
+
+// Only the top of the spectrum shakes.
+const SHAKE_AT_STAGE = 5;
 
 const GameScene = ({ game }) => {
   const reducedMotion = useReducedMotion();
   const {
     phase,
+    mode,
+    terms,
     currentTerm,
     roundIndex,
     total,
+    answers,
+    answeredById,
     overwhelm,
     intensity,
+    figureStage,
     lastAnswer,
+    selectedTermId,
+    selectTerm,
+    closeTerm,
     answer,
     next,
   } = game;
 
   const revealing = phase === STATES.REVEAL;
+  const exploring = mode === "explore";
+
+  // Explore focus management: remember which cloud button opened the
+  // popup and hand focus back when it closes. If that term is now
+  // answered (disabled), fall to the first unanswered term instead.
+  const termButtonsRef = useRef(new Map());
+  const lastSelectedRef = useRef(null);
+  const registerTermButton = (id, node) => {
+    if (node) termButtonsRef.current.set(id, node);
+    else termButtonsRef.current.delete(id);
+  };
+
+  useEffect(() => {
+    if (!exploring) return;
+    if (selectedTermId) {
+      lastSelectedRef.current = selectedTermId;
+      return;
+    }
+    if (!lastSelectedRef.current) return;
+    const last = termButtonsRef.current.get(lastSelectedRef.current);
+    lastSelectedRef.current = null;
+    if (last && !last.disabled) {
+      last.focus();
+      return;
+    }
+    const firstOpen = terms.find(
+      (t) => !termButtonsRef.current.get(t.id)?.disabled
+    );
+    if (firstOpen) termButtonsRef.current.get(firstOpen.id)?.focus();
+  }, [exploring, selectedTermId, terms]);
 
   return (
     <motion.section
@@ -41,22 +83,34 @@ const GameScene = ({ game }) => {
       className="relative flex-1 flex flex-col w-full overflow-hidden"
       style={{ "--hype-speed": speedFor(overwhelm) }}
     >
-      <WordCloud />
+      {/* Explore swaps the decorative chatter for the terms themselves. */}
+      {exploring ? (
+        <ExploreCloud
+          terms={terms}
+          answeredById={answeredById}
+          onSelect={selectTerm}
+          registerButton={registerTermButton}
+        />
+      ) : (
+        <WordCloud />
+      )}
 
       {/* The slumped figure, cropped from the original meme. */}
       <div
         aria-hidden="true"
         className={`absolute bottom-0 right-0 sm:right-[6%] h-[42vh] sm:h-[56vh] aspect-[445/465] pointer-events-none select-none ${
-          intensity === "overload" && !reducedMotion ? "animate-hype-shake" : ""
+          figureStage >= SHAKE_AT_STAGE && !reducedMotion
+            ? "animate-hype-shake"
+            : ""
         }`}
       >
-        {FIGURE_VARIANTS.map((variant) => (
+        {FIGURE_STAGES.map((variant) => (
           <img
-            key={variant.intensity}
+            key={variant.stage}
             src={variant.src}
             alt=""
             className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-1000 [mask-image:radial-gradient(ellipse_at_center,black_55%,transparent_82%)] ${
-              intensity === variant.intensity ? "opacity-90" : "opacity-0"
+              figureStage === variant.stage ? "opacity-90" : "opacity-0"
             }`}
           />
         ))}
@@ -75,50 +129,54 @@ const GameScene = ({ game }) => {
         />
       )}
 
-      <div className="relative z-10 flex-1 flex flex-col max-w-3xl w-full mx-auto px-4 sm:px-6 py-5 sm:py-8">
-        <div className="flex items-center justify-between gap-4 mb-6">
+      <div className="relative z-10 flex-1 flex flex-col max-w-3xl w-full mx-auto px-4 sm:px-6 py-5 sm:py-8 pointer-events-none">
+        <div className="flex items-center justify-between gap-4 mb-6 pointer-events-auto">
           <OverwhelmMeter value={overwhelm} />
           <p className="text-hype-muted text-xs font-sans-ele shrink-0">
-            {Math.min(roundIndex + 1, total)} / {total}
+            {exploring
+              ? `${answers.length} / ${total} answered`
+              : `${Math.min(roundIndex + 1, total)} / ${total}`}
           </p>
         </div>
 
         {/* Keyed remounts drive the enter animations; no AnimatePresence
             here so rapid clicking can never strand the stage mid-exit. */}
-        <div className="flex-1 flex flex-col items-center justify-center text-center">
-          {!revealing && currentTerm && (
-            <motion.div
-              key={`term-${currentTerm.id}`}
-              initial={
-                reducedMotion
-                  ? { opacity: 0 }
-                  : { opacity: 0, scale: 0.4, y: -120, rotate: -6 }
-              }
-              animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
-              transition={{ type: "spring", stiffness: 260, damping: 22 }}
-            >
-              <p className="text-hype-muted text-xs uppercase tracking-[0.3em] mb-4 font-sans-ele">
-                Verdict on
-              </p>
-              <h2 className="text-hype-text text-3xl sm:text-5xl font-bold font-sans-ele max-w-xl">
-                &ldquo;{currentTerm.term}&rdquo;
-              </h2>
-            </motion.div>
-          )}
+        {!exploring && (
+          <div className="flex-1 flex flex-col items-center justify-center text-center pointer-events-auto">
+            {!revealing && currentTerm && (
+              <motion.div
+                key={`term-${currentTerm.id}`}
+                initial={
+                  reducedMotion
+                    ? { opacity: 0 }
+                    : { opacity: 0, scale: 0.4, y: -120, rotate: -6 }
+                }
+                animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 260, damping: 22 }}
+              >
+                <p className="text-hype-muted text-xs uppercase tracking-[0.3em] mb-4 font-sans-ele">
+                  Verdict on
+                </p>
+                <h2 className="text-hype-text text-3xl sm:text-5xl font-bold font-sans-ele max-w-xl">
+                  &ldquo;{currentTerm.term}&rdquo;
+                </h2>
+              </motion.div>
+            )}
 
-          {revealing && currentTerm && lastAnswer && (
-            <RevealCard
-              key={`reveal-${currentTerm.id}`}
-              term={currentTerm}
-              answer={lastAnswer}
-              isLast={roundIndex + 1 >= total}
-              onNext={next}
-            />
-          )}
-        </div>
+            {revealing && currentTerm && lastAnswer && (
+              <RevealCard
+                key={`reveal-${currentTerm.id}`}
+                term={currentTerm}
+                answer={lastAnswer}
+                isLast={roundIndex + 1 >= total}
+                onNext={next}
+              />
+            )}
+          </div>
+        )}
 
-        {!revealing && (
-          <div className="sticky bottom-0 pb-[env(safe-area-inset-bottom)] pt-4">
+        {!exploring && !revealing && (
+          <div className="sticky bottom-0 pb-[env(safe-area-inset-bottom)] pt-4 pointer-events-auto">
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-center">
               {CHOICES.map((choice) => (
                 <button
@@ -134,6 +192,18 @@ const GameScene = ({ game }) => {
           </div>
         )}
       </div>
+
+      {exploring && currentTerm && (
+        <TermPopup
+          term={currentTerm}
+          revealing={revealing}
+          answer={lastAnswer}
+          isLast={answers.length >= total}
+          onAnswer={answer}
+          onClose={closeTerm}
+          onNext={next}
+        />
+      )}
     </motion.section>
   );
 };
