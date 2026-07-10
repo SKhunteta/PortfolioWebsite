@@ -21,7 +21,7 @@ const HypeCheck = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-hype-bg flex flex-col">
+    <div className="min-h-screen supports-[height:100dvh]:min-h-[100dvh] bg-hype-bg flex flex-col">
       <header className="border-b border-hype-border">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link

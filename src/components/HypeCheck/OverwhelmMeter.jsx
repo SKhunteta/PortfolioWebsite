@@ -8,7 +8,9 @@ const barColor = (value) => {
 };
 
 const OverwhelmMeter = ({ value }) => (
-  <div className="flex items-center gap-3">
+  // min-w-0 lets the bar give up width on narrow phones instead of
+  // shoving its HUD-row neighbors off the edge of the screen.
+  <div className="flex items-center gap-3 min-w-0">
     <span className="text-hype-muted text-[11px] uppercase tracking-[0.2em] font-sans-ele shrink-0">
       Overwhelm
     </span>
@@ -18,7 +20,7 @@ const OverwhelmMeter = ({ value }) => (
       aria-valuemin={OVERWHELM.MIN}
       aria-valuemax={OVERWHELM.MAX}
       aria-valuenow={value}
-      className="h-2 w-36 sm:w-60 rounded-full bg-hype-surface border border-hype-border overflow-hidden"
+      className="h-2 w-36 sm:w-60 min-w-[2.5rem] rounded-full bg-hype-surface border border-hype-border overflow-hidden"
     >
       <div
         className={`h-full rounded-full transition-all duration-500 ${barColor(value)}`}

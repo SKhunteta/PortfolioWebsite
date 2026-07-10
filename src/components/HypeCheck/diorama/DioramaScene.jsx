@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Billboard, OrbitControls, Text, useTexture } from "@react-three/drei";
 import { useReducedMotion } from "framer-motion";
 import OverwhelmMeter from "../OverwhelmMeter";
@@ -120,6 +120,17 @@ const TermWord = ({
   // so orbit speed can change with overwhelm without the words jumping.
   const angleRef = useRef(placement.angle);
 
+  // Fingertips are far wider than troika's per-glyph raycast, so each
+  // live word gets an invisible slab behind the text that pads the tap
+  // target out to roughly a fingertip's worth of world units.
+  const hitArea = useMemo(
+    () => [
+      (term.term.length + 3) * placement.fontSize * 0.6,
+      placement.fontSize * 2.6,
+    ],
+    [term.term.length, placement.fontSize]
+  );
+
   useFrame((state, delta) => {
     if (!groupRef.current || reducedMotion) return;
     angleRef.current +=
@@ -146,7 +157,31 @@ const TermWord = ({
         Math.sin(placement.angle) * placement.radius,
       ]}
     >
-      <Billboard>
+      {/* Handlers live on the billboard so hits on either the glyphs or
+          the padded slab bubble to the same place. */}
+      <Billboard
+        onClick={
+          appearance.interactive
+            ? (event) => {
+                event.stopPropagation();
+                setCursor("auto");
+                onSelect(term.id);
+              }
+            : undefined
+        }
+        onPointerOver={
+          appearance.interactive ? () => setCursor("pointer") : undefined
+        }
+        onPointerOut={
+          appearance.interactive ? () => setCursor("auto") : undefined
+        }
+      >
+        {appearance.interactive && (
+          <mesh position={[0, 0, -0.01]}>
+            <planeGeometry args={hitArea} />
+            <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+          </mesh>
+        )}
         <Text
           font={WORD_FONT}
           fontSize={placement.fontSize}
@@ -157,27 +192,28 @@ const TermWord = ({
           outlineOpacity={appearance.opacity * 0.9}
           anchorX="center"
           anchorY="middle"
-          onClick={
-            appearance.interactive
-              ? (event) => {
-                  event.stopPropagation();
-                  setCursor("auto");
-                  onSelect(term.id);
-                }
-              : undefined
-          }
-          onPointerOver={
-            appearance.interactive ? () => setCursor("pointer") : undefined
-          }
-          onPointerOut={
-            appearance.interactive ? () => setCursor("auto") : undefined
-          }
         >
           {`“${term.term}”`}
         </Text>
       </Billboard>
     </group>
   );
+};
+
+// Phones hold the room in portrait, where a fixed 45° vertical fov
+// crops the figure and pushes the orbiting words off-frame. Widen the
+// lens as the canvas narrows so the diorama stays framed without
+// moving the camera.
+const ResponsiveLens = () => {
+  const camera = useThree((state) => state.camera);
+  const aspect = useThree((state) => state.viewport.aspect);
+
+  useEffect(() => {
+    camera.fov = THREE.MathUtils.clamp(45 + (1.2 - aspect) * 20, 45, 62);
+    camera.updateProjectionMatrix();
+  }, [camera, aspect]);
+
+  return null;
 };
 
 // ——— Atmosphere ———
@@ -284,7 +320,9 @@ const DioramaScene = ({ game }) => {
 
   return (
     <section
-      className="relative flex-1 flex flex-col w-full overflow-hidden"
+      // min-h keeps the canvas usable when mobile chrome eats the
+      // viewport; the page scrolls a little instead of the room shrinking.
+      className="relative flex-1 flex flex-col w-full min-h-[480px] overflow-hidden"
       aria-label="The room — 3D diorama mode"
     >
       <div className="absolute inset-0">
@@ -292,6 +330,7 @@ const DioramaScene = ({ game }) => {
           camera={{ position: CAMERA.START, fov: 45, near: 0.1, far: 40 }}
           dpr={[1, 1.75]}
         >
+          <ResponsiveLens />
           <Suspense fallback={null}>
             <Room game={game} reducedMotion={reducedMotion} />
           </Suspense>
@@ -300,7 +339,10 @@ const DioramaScene = ({ game }) => {
 
       {/* DOM overlay: same HUD as the other modes. */}
       <div className="relative z-10 flex flex-col flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 py-5 sm:py-8 pointer-events-none">
-        <div className="flex items-center justify-between gap-4 pointer-events-auto">
+        {/* Nothing in the HUD row is interactive, so it stays
+            pointer-events-none — orbit drags that start on the meter
+            fall through to the canvas instead of dying on a phone. */}
+        <div className="flex items-center justify-between gap-4">
           <OverwhelmMeter value={overwhelm} />
           <p className="text-hype-muted text-xs font-sans-ele shrink-0">
             {answers.length} / {total} answered
@@ -308,17 +350,19 @@ const DioramaScene = ({ game }) => {
         </div>
 
         <p className="mt-3 text-hype-muted text-xs font-sans-ele pointer-events-none">
-          Drag to orbit · pinch or scroll to zoom · click a word to judge it
+          Drag to orbit · pinch or scroll to zoom · tap a word to judge it
         </p>
 
         <div className="mt-auto pb-[env(safe-area-inset-bottom)] pointer-events-auto">
           {/* Keyboard & screen-reader route into the room: the same
               words as plain buttons, since WebGL text isn't focusable. */}
-          <details className="inline-block rounded-md border border-hype-border bg-hype-surface/80 backdrop-blur px-3 py-2 max-w-full">
-            <summary className="cursor-pointer text-hype-muted text-xs font-sans-ele focus:outline-none focus-visible:ring-2 focus-visible:ring-hype-text rounded">
+          <details className="inline-block rounded-md border border-hype-border bg-hype-surface/80 backdrop-blur px-3 max-w-full">
+            {/* Padding lives on the summary so the whole 44px-tall chip
+                is tappable, not just the line of text. */}
+            <summary className="cursor-pointer min-h-[44px] py-3.5 text-hype-muted text-xs font-sans-ele focus:outline-none focus-visible:ring-2 focus-visible:ring-hype-text rounded">
               Keyboard &amp; screen-reader word list
             </summary>
-            <ul className="mt-2 flex flex-wrap gap-1 max-h-40 overflow-y-auto">
+            <ul className="pb-3 flex flex-wrap gap-1 max-h-48 overflow-y-auto">
               {terms.map((term) => {
                 const done = Boolean(answeredById[term.id]);
                 return (
@@ -327,7 +371,7 @@ const DioramaScene = ({ game }) => {
                       type="button"
                       disabled={done}
                       onClick={() => selectTerm(term.id)}
-                      className={`min-h-[32px] px-2 py-1 rounded text-xs font-sans-ele transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-hype-text ${
+                      className={`min-h-[44px] px-3 py-1 rounded text-xs font-sans-ele transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-hype-text ${
                         done
                           ? "text-hype-muted/60 line-through"
                           : "text-hype-text hover:bg-hype-bg/70"
