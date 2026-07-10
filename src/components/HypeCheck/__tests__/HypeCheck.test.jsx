@@ -11,10 +11,12 @@ const renderPage = () =>
     </MemoryRouter>
   );
 
+const termButtonName = (term) => `“${term.term}”`;
+
 // AnimatePresence exit animations are asynchronous even in jsdom, so all
 // phase changes are awaited via findBy* queries.
-const startGame = async () => {
-  fireEvent.click(screen.getByRole("button", { name: /face the timeline/i }));
+const switchToQuiz = async () => {
+  fireEvent.click(screen.getByRole("button", { name: /^quiz$/i }));
   return screen.findByRole("heading", { level: 2 });
 };
 
@@ -25,8 +27,8 @@ const currentTermFrom = (heading) => {
   return term;
 };
 
-// Answer the current round correctly and advance. Returns whether that
-// was the final round.
+// Answer the current quiz round correctly and advance. Returns whether
+// that was the final round.
 const playOneRound = async (heading) => {
   const term = currentTermFrom(heading);
   const choice = CHOICES.find((c) => c.id === term.category);
@@ -41,28 +43,46 @@ const playOneRound = async (heading) => {
 };
 
 describe("HypeCheck page", () => {
-  it("shows the original meme and framing on the intro", () => {
+  it("lands directly in free-roam with the framing blurb and mode toggle", () => {
     renderPage();
     expect(document.title).toContain("Hype Check");
-    expect(
-      screen.getByRole("img", { name: /may 2025 ai buzzwords/i })
-    ).toHaveAttribute("src", "/images/hype-check/meme-original.jpg");
-    expect(screen.getByText(/the timeline was a lot/i)).toBeInTheDocument();
+    // The compact framing replaces the old intro page.
+    expect(screen.getByText(/one year after the timeline/i)).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /back to portfolio/i })
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /view source on github/i })
     ).toBeInTheDocument();
-    // No answer buttons before starting.
+
+    // The segmented mode control, free-roam active by default.
+    const group = screen.getByRole("group", { name: /game mode/i });
+    expect(group).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /free-roam/i, pressed: true })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /^quiz$/i, pressed: false })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /3d room/i, pressed: false })
+    ).toBeInTheDocument();
+
+    // The explore cloud is already live — no intro page, no meme image.
+    expect(
+      screen.getByRole("button", { name: termButtonName(TERMS[0]) })
+    ).toBeEnabled();
+    expect(screen.getByText(`0 / ${TERMS.length} answered`)).toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: /may 2025/i })).not.toBeInTheDocument();
+    // No quiz verdict buttons floating outside a popup.
     expect(
       screen.queryByRole("button", { name: CHOICES[0].label })
     ).not.toBeInTheDocument();
   });
 
-  it("starts the game with the three verdict buttons and the meter", async () => {
+  it("switches to the quiz with the three verdict buttons and the meter", async () => {
     renderPage();
-    await startGame();
+    await switchToQuiz();
     for (const choice of CHOICES) {
       expect(
         screen.getByRole("button", { name: choice.label })
@@ -72,11 +92,14 @@ describe("HypeCheck page", () => {
       screen.getByRole("meter", { name: /overwhelm/i })
     ).toBeInTheDocument();
     expect(screen.getByText(`1 / ${TERMS.length}`)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /^quiz$/i, pressed: true })
+    ).toBeInTheDocument();
   });
 
   it("reveals a fact card after answering", async () => {
     renderPage();
-    const heading = await startGame();
+    const heading = await switchToQuiz();
     const term = currentTermFrom(heading);
 
     fireEvent.click(
@@ -90,9 +113,9 @@ describe("HypeCheck page", () => {
     expect(screen.getByText(term.verdictLabel)).toBeInTheDocument();
   });
 
-  it("plays through every round to the end screen and replays", async () => {
+  it("plays through every quiz round to the end screen and replays into free-roam", async () => {
     renderPage();
-    let heading = await startGame();
+    let heading = await switchToQuiz();
 
     for (let i = 0; i < TERMS.length; i += 1) {
       const finished = await playOneRound(heading);
@@ -116,39 +139,28 @@ describe("HypeCheck page", () => {
       screen.getByText(new RegExp(`through ${KNOWLEDGE_CUTOFF}`, "i"))
     ).toBeInTheDocument();
 
-    // Replay returns to the intro.
+    // The mode toggle stays available on the end screen.
+    expect(
+      screen.getByRole("group", { name: /game mode/i })
+    ).toBeInTheDocument();
+
+    // Replay drops straight back into a fresh free-roam run.
     fireEvent.click(screen.getByRole("button", { name: /face it again/i }));
     expect(
-      await screen.findByRole("button", { name: /face the timeline/i })
+      await screen.findByRole("button", { name: termButtonName(TERMS[0]) })
+    ).toBeEnabled();
+    expect(screen.getByText(`0 / ${TERMS.length} answered`)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /free-roam/i, pressed: true })
     ).toBeInTheDocument();
   });
 });
 
-// ——— Explore mode ———
-
-const termButtonName = (term) => `“${term.term}”`;
-
-const startExplore = async () => {
-  fireEvent.click(
-    screen.getByRole("button", { name: /free-roam: click the words/i })
-  );
-  return screen.findByRole("button", { name: termButtonName(TERMS[0]) });
-};
+// ——— Explore mode (the landing mode) ———
 
 describe("HypeCheck explore mode", () => {
-  it("offers the free-roam toggle on the intro", () => {
+  it("renders every term as a focusable cloud button with explore progress", () => {
     renderPage();
-    expect(
-      screen.getByRole("button", { name: /face the timeline/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /free-roam: click the words/i })
-    ).toBeInTheDocument();
-  });
-
-  it("renders every term as a focusable cloud button with explore progress", async () => {
-    renderPage();
-    await startExplore();
     for (const term of TERMS) {
       const button = screen.getByRole("button", {
         name: termButtonName(term),
@@ -166,7 +178,6 @@ describe("HypeCheck explore mode", () => {
 
   it("opens a popup, answers it, shows the fact, and dims the word", async () => {
     renderPage();
-    await startExplore();
     const term = TERMS[0];
     fireEvent.click(screen.getByRole("button", { name: termButtonName(term) }));
 
@@ -193,7 +204,6 @@ describe("HypeCheck explore mode", () => {
 
   it("lets the player close a question without penalty", async () => {
     renderPage();
-    await startExplore();
     const term = TERMS[1];
     fireEvent.click(screen.getByRole("button", { name: termButtonName(term) }));
     await screen.findByRole("dialog");
@@ -207,9 +217,8 @@ describe("HypeCheck explore mode", () => {
   });
 
   // 19 popup round-trips through jsdom run long; give it headroom.
-  it("plays every term through popups to the end screen and replays", { timeout: 20000 }, async () => {
+  it("plays every term through popups to the end screen, then the toggle starts a fresh quiz", { timeout: 20000 }, async () => {
     renderPage();
-    await startExplore();
 
     for (let i = 0; i < TERMS.length; i += 1) {
       const term = TERMS[i];
@@ -235,9 +244,67 @@ describe("HypeCheck explore mode", () => {
     expect(screen.getByText(/you are the timeline/i)).toBeInTheDocument();
     expect(screen.getByText(/the field guide/i)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /face it again/i }));
+    // Switching modes from the end screen starts a fresh run there.
+    fireEvent.click(screen.getByRole("button", { name: /^quiz$/i }));
     expect(
-      await screen.findByRole("button", { name: /free-roam: click the words/i })
+      await screen.findByText(`1 / ${TERMS.length}`)
     ).toBeInTheDocument();
+    for (const choice of CHOICES) {
+      expect(
+        screen.getByRole("button", { name: choice.label })
+      ).toBeInTheDocument();
+    }
+  });
+});
+
+// ——— Mode toggle semantics at the page level ———
+
+describe("HypeCheck mode toggle", () => {
+  const answerFirstTerm = async () => {
+    const term = TERMS[0];
+    fireEvent.click(screen.getByRole("button", { name: termButtonName(term) }));
+    await screen.findByRole("dialog");
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: CHOICES.find((c) => c.id === term.category).label,
+      })
+    );
+    fireEvent.click(
+      await screen.findByRole("button", { name: /back to the cloud/i })
+    );
+    await screen.findByText(`1 / ${TERMS.length} answered`);
+  };
+
+  it("resets the run when hopping between free-roam and quiz", async () => {
+    renderPage();
+    await answerFirstTerm();
+
+    // Free-roam → quiz: fresh sequential run.
+    await switchToQuiz();
+    expect(screen.getByText(`1 / ${TERMS.length}`)).toBeInTheDocument();
+
+    // Quiz → free-roam: the earlier explore progress is gone too.
+    fireEvent.click(screen.getByRole("button", { name: /free-roam/i }));
+    expect(
+      await screen.findByText(`0 / ${TERMS.length} answered`)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: termButtonName(TERMS[0]) })
+    ).toBeEnabled();
+    expect(
+      screen.getByRole("button", { name: /free-roam/i, pressed: true })
+    ).toBeInTheDocument();
+  });
+
+  it("re-picking the active mode changes nothing", async () => {
+    renderPage();
+    await answerFirstTerm();
+    fireEvent.click(
+      screen.getByRole("button", { name: /free-roam/i, pressed: true })
+    );
+    expect(screen.getByText(`1 / ${TERMS.length} answered`)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: termButtonName(TERMS[0]) })
+    ).toBeDisabled();
   });
 });

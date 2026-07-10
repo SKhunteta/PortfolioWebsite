@@ -233,9 +233,9 @@ export const DEMOS = [
     kindLabel: "Meme quiz",
     tagline: "May 2025's AI buzzwords, one year later. Which ones survived?",
     description:
-      "A playable update of the slumped-in-a-chair buzzword meme. Twenty terms from the timeline: call each one still everywhere, dead, or never real — then get the receipts.",
+      "A playable update of the slumped-in-a-chair buzzword meme. Twenty terms from the timeline: call each one still everywhere, dead, or never real — then get the receipts. Or enter the room and play it as an orbitable 3D diorama.",
     cta: "Check the hype",
-    tags: ["game", "AI culture", "trivia"],
+    tags: ["game", "AI culture", "trivia", "3D"],
     live: false,
     series: null,
     featured: false,

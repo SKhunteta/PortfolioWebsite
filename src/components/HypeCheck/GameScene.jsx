@@ -130,6 +130,17 @@ const GameScene = ({ game }) => {
       )}
 
       <div className="relative z-10 flex-1 flex flex-col max-w-3xl w-full mx-auto px-4 sm:px-6 py-5 sm:py-8 pointer-events-none">
+        {/* Shown when "Enter the room" couldn't get a WebGL context. */}
+        {game.dioramaFallback && (
+          <p
+            role="status"
+            className="mb-4 rounded-md border border-hype-border bg-hype-surface/80 px-3 py-2 text-hype-muted text-xs font-sans-ele pointer-events-auto"
+          >
+            The 3D room needs WebGL, which this browser doesn&rsquo;t
+            support — here&rsquo;s the free-roam cloud instead. Same words,
+            same stakes.
+          </p>
+        )}
         <div className="flex items-center justify-between gap-4 mb-6 pointer-events-auto">
           <OverwhelmMeter value={overwhelm} />
           <p className="text-hype-muted text-xs font-sans-ele shrink-0">
