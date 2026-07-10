@@ -226,6 +226,29 @@ export const DEMOS = [
       titleFont: '"DM Serif Display", Georgia, serif',
     },
   },
+  {
+    id: "hype-check",
+    route: "/hype-check",
+    title: "Hype Check — July 2026",
+    kindLabel: "Meme quiz",
+    tagline: "May 2025's AI buzzwords, one year later. Which ones survived?",
+    description:
+      "A playable update of the slumped-in-a-chair buzzword meme. Twenty terms from the timeline: call each one still everywhere, dead, or never real — then get the receipts.",
+    cta: "Check the hype",
+    tags: ["game", "AI culture", "trivia"],
+    live: false,
+    series: null,
+    featured: false,
+    sourceDir: "src/components/HypeCheck",
+    theme: {
+      bg: "#1E1E1E",
+      text: "#F5F5F5",
+      muted: "#8A8A8A",
+      accent: "#F5F5F5",
+      ctaText: "#1E1E1E",
+      titleFont: '"DM Sans", system-ui, sans-serif',
+    },
+  },
 ];
 
 export const FEATURED_DEMOS = DEMOS.filter((demo) => demo.featured);

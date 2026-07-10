@@ -90,6 +90,16 @@ export default {
         "mr-curiosity": "#8B5CF6",
         "mr-happiness": "#F59E0B",
         "mr-warning": "#EF4444",
+        // Hype Check (meme quiz) — palette matches the source meme's
+        // near-black background (#1E1E1E sampled from the image).
+        "hype-bg": "#1E1E1E",
+        "hype-surface": "#262626",
+        "hype-text": "#F5F5F5",
+        "hype-muted": "#8A8A8A",
+        "hype-border": "#3A3A3A",
+        "hype-alive": "#4ADE80",
+        "hype-dead": "#F87171",
+        "hype-fake": "#A78BFA",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
@@ -135,6 +145,10 @@ export default {
         "pt-double-tap-heart": "pt-double-tap-heart 1s ease-out forwards",
         // Monetized Reader
         "mr-pulse-warning": "mr-pulse-warning 2s ease-in-out infinite",
+        // Hype Check ambient effects (speed driven by --hype-speed)
+        "hype-drift": "hype-drift var(--hype-speed, 9s) ease-in-out infinite",
+        "hype-vignette": "hype-vignette var(--hype-speed, 9s) ease-in-out infinite",
+        "hype-shake": "hype-shake 0.4s linear infinite",
       },
       keyframes: {
         "ticker-scroll": {
@@ -263,6 +277,23 @@ export default {
         "mr-pulse-warning": {
           "0%, 100%": { borderColor: "rgba(239, 68, 68, 0.4)" },
           "50%": { borderColor: "rgba(239, 68, 68, 1)" },
+        },
+        // Hype Check
+        "hype-drift": {
+          "0%, 100%": { transform: "translate(0, 0)", opacity: "0.5" },
+          "25%": { transform: "translate(var(--sway, 14px), -10px)", opacity: "0.9" },
+          "50%": { transform: "translate(calc(var(--sway, 14px) * -0.6), 8px)", opacity: "0.6" },
+          "75%": { transform: "translate(6px, var(--bob, -14px))", opacity: "0.85" },
+        },
+        "hype-vignette": {
+          "0%, 100%": { opacity: "0.4" },
+          "50%": { opacity: "0.85" },
+        },
+        "hype-shake": {
+          "0%, 100%": { transform: "translate(0, 0)" },
+          "25%": { transform: "translate(-2px, 1px)" },
+          "50%": { transform: "translate(2px, -1px)" },
+          "75%": { transform: "translate(-1px, -2px)" },
         },
       },
     },

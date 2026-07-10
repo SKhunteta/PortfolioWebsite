@@ -22,6 +22,7 @@ const LinkTracker = lazy(() => import("./components/LinkTracker"));
 const CityQuiz = lazy(() => import("./components/CityQuiz"));
 const MonetizedReader = lazy(() => import("./components/MonetizedReader"));
 const AIChipLife = lazy(() => import("./components/AIChipLife"));
+const HypeCheck = lazy(() => import("./components/HypeCheck"));
 const PlaygroundPage = lazy(() => import("./pages/PlaygroundPage"));
 
 function ScrollToTop() {
@@ -191,6 +192,25 @@ function App() {
               }
             >
               <AIChipLife />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/hype-check"
+          element={
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center bg-[#1E1E1E]">
+                  <p
+                    className="text-[#8A8A8A] text-sm"
+                    style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}
+                  >
+                    &ldquo;loading&rdquo; &ldquo;buffering&rdquo; &ldquo;this changes everything&rdquo;
+                  </p>
+                </div>
+              }
+            >
+              <HypeCheck />
             </Suspense>
           }
         />
