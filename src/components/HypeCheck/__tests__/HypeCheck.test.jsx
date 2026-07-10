@@ -51,7 +51,7 @@ describe("HypeCheck page", () => {
     // No WebGL in jsdom → the 3D-room landing degrades with the note.
     expect(screen.getByRole("status")).toHaveTextContent(/webgl/i);
     // The compact framing replaces the old intro page.
-    expect(screen.getByText(/one year after the timeline/i)).toBeInTheDocument();
+    expect(screen.getByText(/buzzwords: which are/i)).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /back to portfolio/i })
     ).toBeInTheDocument();
