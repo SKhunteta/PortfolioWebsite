@@ -46,10 +46,9 @@ const HypeCheck = () => {
           one unobtrusive bar. The game itself is already running. */}
       <div className="max-w-5xl w-full mx-auto px-4 sm:px-6 pt-4 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <p className="text-hype-muted text-xs sm:text-sm leading-relaxed font-sans-ele max-w-xl">
-          It&rsquo;s {KNOWLEDGE_CUTOFF} — one year after the timeline was a
-          lot. {game.total} buzzwords: which are still everywhere, which are
-          dead, and which did we just make up? Click a word to judge it — or
-          take the quiz.
+          It&rsquo;s {KNOWLEDGE_CUTOFF}. {game.total} buzzwords: which are
+          still everywhere, which are dead, and which did we just make up?
+          Click a word to judge it — or take the quiz.
         </p>
         <ModeToggle mode={game.mode} onSwitch={game.switchMode} />
       </div>
