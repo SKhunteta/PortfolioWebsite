@@ -23,7 +23,7 @@ Dive deep into my blog, where I detail my thoughts on various aspects of life, t
 
 ### 📚 **[Personal Stories](https://prompt-injection.ghost.io/tag/stories/)**
 
-Beyond the code, discover my forays into short story writing. I recently wrote the story ["The Alignment"](https://prompt-injection.ghost.io/the-alignment/) which I'm quite proud of.
+Beyond the code, discover my forays into short story writing. I recently wrote the story ["Harold Nakamura Walks Into A Bar"](https://blog.builtbyshrey.com/harold-nakamura-walks-into-a-bar/) which I'm quite proud of.
 
 _I regularly update both sections with fresh content—bookmark them for the latest insights!_
 
