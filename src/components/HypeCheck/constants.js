@@ -2,8 +2,8 @@
 // folding chair surrounded by AI buzzwords" meme (May 2025 edition).
 // All facts reflect reporting as of July 2026; see KNOWLEDGE_CUTOFF.
 
+// There is no intro state — the page opens straight into free-roam play.
 export const STATES = {
-  INTRO: "intro",
   PLAYING: "playing",
   REVEAL: "reveal",
   DONE: "done",

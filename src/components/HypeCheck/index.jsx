@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import ViewSourceLink from "../ViewSourceLink";
 import useHypeCheck from "./useHypeCheck";
-import IntroScene from "./IntroScene";
 import GameScene from "./GameScene";
 import EndScreen from "./EndScreen";
-import { STATES } from "./constants";
+import ModeToggle from "./ModeToggle";
+import { STATES, KNOWLEDGE_CUTOFF } from "./constants";
 
 // The 3D room pulls in three.js — lazy-loaded so the chunk is only
 // downloaded when someone actually enters the room.
@@ -41,17 +41,20 @@ const HypeCheck = () => {
         </div>
       </header>
 
+      {/* Framing blurb + mode toggle — the intro page, compressed into
+          one unobtrusive bar. The game itself is already running. */}
+      <div className="max-w-5xl w-full mx-auto px-4 sm:px-6 pt-4 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <p className="text-hype-muted text-xs sm:text-sm leading-relaxed font-sans-ele max-w-xl">
+          It&rsquo;s {KNOWLEDGE_CUTOFF} — one year after the timeline was a
+          lot. {game.total} buzzwords: which are still everywhere, which are
+          dead, and which did we just make up? Click a word to judge it — or
+          take the quiz.
+        </p>
+        <ModeToggle mode={game.mode} onSwitch={game.switchMode} />
+      </div>
+
       <main className="flex-1 flex flex-col">
         <AnimatePresence mode="wait">
-          {game.phase === STATES.INTRO && (
-            <IntroScene
-              key="intro"
-              onStart={game.start}
-              onStartExplore={game.startExplore}
-              onStartDiorama={game.startDiorama}
-            />
-          )}
-
           {(game.phase === STATES.PLAYING || game.phase === STATES.REVEAL) &&
             (game.mode === "diorama" ? (
               <Suspense

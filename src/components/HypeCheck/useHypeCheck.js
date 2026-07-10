@@ -18,44 +18,61 @@ const shuffle = (items) => {
   return copy;
 };
 
+// There is no lobby: the page opens straight into free-roam explore.
 const initialState = (terms) => ({
-  phase: STATES.INTRO,
-  mode: "quiz",
+  phase: STATES.PLAYING,
+  mode: "explore",
   order: terms.map((t) => t.id),
   roundIndex: 0,
   score: 0,
   overwhelm: OVERWHELM.START,
   answers: [],
   selectedTermId: null,
-  // Set when "Enter the room" had to fall back to explore because the
+  // Set when the 3D room had to fall back to explore because the
   // browser has no WebGL context.
   dioramaFallback: false,
 });
 
+// A fresh run in `mode`. Quiz shuffles its round order; the free-roam
+// stages keep the authored order — their positions are deterministic,
+// so shuffling would buy nothing.
+const freshRun = (terms, mode, dioramaFallback = false) => ({
+  ...initialState(terms),
+  mode,
+  order:
+    mode === "quiz"
+      ? shuffle(terms).map((t) => t.id)
+      : terms.map((t) => t.id),
+  dioramaFallback,
+});
+
 const reducer = (terms) => (state, action) => {
   switch (action.type) {
-    case "START":
+    case "SWITCH_MODE": {
+      const { mode } = action;
+      const dioramaFallback = Boolean(action.dioramaFallback);
+      // Re-picking the active mode is a no-op.
+      if (mode === state.mode && dioramaFallback === state.dioramaFallback)
+        return state;
+      // Quiz is a different game (sequential, shuffled), and the end
+      // screen always hands out a fresh run — reset in both cases.
+      if (
+        mode === "quiz" ||
+        state.mode === "quiz" ||
+        state.phase === STATES.DONE
+      ) {
+        return freshRun(terms, mode, dioramaFallback);
+      }
+      // explore↔diorama mid-run: same game on a different stage. Keep
+      // answers/score/overwhelm, close any open popup, resume playing.
       return {
-        ...initialState(terms),
+        ...state,
+        mode,
+        dioramaFallback,
+        selectedTermId: null,
         phase: STATES.PLAYING,
-        order: shuffle(terms).map((t) => t.id),
       };
-    case "START_EXPLORE":
-      // Explore keeps the authored term order — positions on the stage
-      // are deterministic, so shuffling would buy nothing.
-      return {
-        ...initialState(terms),
-        phase: STATES.PLAYING,
-        mode: "explore",
-        dioramaFallback: Boolean(action.fromDiorama),
-      };
-    case "START_DIORAMA":
-      // Same free-roam rules as explore, staged as a 3D room.
-      return {
-        ...initialState(terms),
-        phase: STATES.PLAYING,
-        mode: "diorama",
-      };
+    }
     case "SELECT_TERM": {
       if (!isFreeRoam(state.mode) || state.phase !== STATES.PLAYING)
         return state;
@@ -106,6 +123,7 @@ const reducer = (terms) => (state, action) => {
       return { ...state, phase: STATES.PLAYING, roundIndex: nextIndex };
     }
     case "RESTART":
+      // Back to a fresh free-roam run — the same place the page opens.
       return initialState(terms);
     default:
       return state;
@@ -163,14 +181,14 @@ const useHypeCheck = (terms = TERMS) => {
     figureStage: figureStageFor(state.overwhelm),
     lastAnswer,
     tier: tierFor(state.score),
-    start: () => dispatch({ type: "START" }),
-    startExplore: () => dispatch({ type: "START_EXPLORE" }),
     // `webgl` is injectable so jsdom tests can force either branch.
-    startDiorama: (webgl = supportsWebGL()) =>
+    // Picking the 3D room without WebGL degrades to explore and raises
+    // the dioramaFallback flag (GameScene shows the note for it).
+    switchMode: (mode, webgl = supportsWebGL()) =>
       dispatch(
-        webgl
-          ? { type: "START_DIORAMA" }
-          : { type: "START_EXPLORE", fromDiorama: true }
+        mode === "diorama" && !webgl
+          ? { type: "SWITCH_MODE", mode: "explore", dioramaFallback: true }
+          : { type: "SWITCH_MODE", mode }
       ),
     selectTerm: (termId) => dispatch({ type: "SELECT_TERM", termId }),
     closeTerm: () => dispatch({ type: "CLOSE_TERM" }),

@@ -4,7 +4,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import HypeCheck from "..";
 import useHypeCheck from "../useHypeCheck";
-import { TERMS, OVERWHELM, STATES } from "../constants";
+import { TERMS, CHOICES, OVERWHELM, STATES } from "../constants";
 import {
   CAMERA,
   CATEGORY_COLORS,
@@ -136,7 +136,7 @@ describe("supportsWebGL", () => {
 describe("useHypeCheck diorama mode", () => {
   it("enters diorama mode with explore-parity gameplay", () => {
     const { result } = renderHook(() => useHypeCheck(TERMS));
-    act(() => result.current.startDiorama(true));
+    act(() => result.current.switchMode("diorama", true));
     expect(result.current.mode).toBe("diorama");
     expect(result.current.phase).toBe(STATES.PLAYING);
     expect(result.current.dioramaFallback).toBe(false);
@@ -164,7 +164,7 @@ describe("useHypeCheck diorama mode", () => {
 
   it("reaches the end screen after all terms are answered", () => {
     const { result } = renderHook(() => useHypeCheck(TERMS));
-    act(() => result.current.startDiorama(true));
+    act(() => result.current.switchMode("diorama", true));
     for (const term of TERMS) {
       act(() => result.current.selectTerm(term.id));
       act(() => result.current.answer(term.category));
@@ -177,15 +177,15 @@ describe("useHypeCheck diorama mode", () => {
   it("falls back to explore mode when WebGL is unavailable", () => {
     const { result } = renderHook(() => useHypeCheck(TERMS));
     // Default arg runs the real capability check, which fails in jsdom.
-    act(() => result.current.startDiorama());
+    act(() => result.current.switchMode("diorama"));
     expect(result.current.mode).toBe("explore");
     expect(result.current.dioramaFallback).toBe(true);
     expect(result.current.phase).toBe(STATES.PLAYING);
   });
 
-  it("does not flag a fallback for a plain explore start", () => {
+  it("does not flag a fallback for the plain free-roam landing", () => {
     const { result } = renderHook(() => useHypeCheck(TERMS));
-    act(() => result.current.startExplore());
+    expect(result.current.mode).toBe("explore");
     expect(result.current.dioramaFallback).toBe(false);
   });
 });
@@ -198,24 +198,52 @@ describe("HypeCheck diorama entry (jsdom)", () => {
       </MemoryRouter>
     );
 
-  it("offers the room toggle on the intro", () => {
+  it("offers the 3D room option in the mode toggle", () => {
     renderPage();
     expect(
-      screen.getByRole("button", { name: /enter the room/i })
+      screen.getByRole("button", { name: /3d room/i, pressed: false })
     ).toBeInTheDocument();
   });
 
   it("falls back to the explore cloud with a note when WebGL is missing", async () => {
     renderPage();
-    fireEvent.click(screen.getByRole("button", { name: /enter the room/i }));
+    fireEvent.click(screen.getByRole("button", { name: /3d room/i }));
     // jsdom has no WebGL, so the room degrades to the 2D cloud…
     expect(await screen.findByRole("status")).toHaveTextContent(/webgl/i);
-    // …with the full free-roam game intact.
+    // …with the full free-roam game intact, and Free-roam shown active.
     expect(
       screen.getByRole("button", { name: `“${TERMS[0].term}”` })
     ).toBeInTheDocument();
     expect(
       screen.getByText(`0 / ${TERMS.length} answered`)
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /free-roam/i, pressed: true })
+    ).toBeInTheDocument();
+  });
+
+  it("keeps free-roam progress across a fallback trip through the 3D toggle", async () => {
+    renderPage();
+    // Answer the first term in the landing free-roam cloud.
+    const term = TERMS[0];
+    fireEvent.click(screen.getByRole("button", { name: `“${term.term}”` }));
+    await screen.findByRole("dialog");
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: CHOICES.find((c) => c.id === term.category).label,
+      })
+    );
+    fireEvent.click(
+      await screen.findByRole("button", { name: /back to the cloud/i })
+    );
+    await screen.findByText(`1 / ${TERMS.length} answered`);
+
+    // The 3D toggle falls back, but it's a stage swap — not a reset.
+    fireEvent.click(screen.getByRole("button", { name: /3d room/i }));
+    expect(await screen.findByRole("status")).toHaveTextContent(/webgl/i);
+    expect(
+      screen.getByText(`1 / ${TERMS.length} answered`)
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: `“${term.term}”` })).toBeDisabled();
   });
 });
