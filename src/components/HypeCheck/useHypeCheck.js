@@ -18,10 +18,11 @@ const shuffle = (items) => {
   return copy;
 };
 
-// There is no lobby: the page opens straight into free-roam explore.
-const initialState = (terms) => ({
+// There is no lobby: the page opens straight into the 3D room — or the
+// free-roam cloud, with the fallback note raised, when WebGL is missing.
+const initialState = (terms, webgl = false) => ({
   phase: STATES.PLAYING,
-  mode: "explore",
+  mode: webgl ? "diorama" : "explore",
   order: terms.map((t) => t.id),
   roundIndex: 0,
   score: 0,
@@ -30,7 +31,7 @@ const initialState = (terms) => ({
   selectedTermId: null,
   // Set when the 3D room had to fall back to explore because the
   // browser has no WebGL context.
-  dioramaFallback: false,
+  dioramaFallback: !webgl,
 });
 
 // A fresh run in `mode`. Quiz shuffles its round order; the free-roam
@@ -123,8 +124,9 @@ const reducer = (terms) => (state, action) => {
       return { ...state, phase: STATES.PLAYING, roundIndex: nextIndex };
     }
     case "RESTART":
-      // Back to a fresh free-roam run — the same place the page opens.
-      return initialState(terms);
+      // Back to a fresh run in the same place the page opens: the 3D
+      // room, or the explore cloud when WebGL is missing.
+      return initialState(terms, action.webgl);
     default:
       return state;
   }
@@ -146,9 +148,12 @@ export const figureStageFor = (overwhelm) => {
 };
 
 // Core game state machine. `terms` is injectable so tests can pass a
-// fixed, unshuffled dataset.
-const useHypeCheck = (terms = TERMS) => {
-  const [state, dispatch] = useReducer(reducer(terms), terms, initialState);
+// fixed, unshuffled dataset; `webgl` so jsdom tests can force either
+// landing (left undefined, the real capability check runs once).
+const useHypeCheck = (terms = TERMS, webgl) => {
+  const [state, dispatch] = useReducer(reducer(terms), terms, (t) =>
+    initialState(t, webgl ?? supportsWebGL())
+  );
 
   const currentTerm = useMemo(() => {
     if (isFreeRoam(state.mode)) {
@@ -194,7 +199,9 @@ const useHypeCheck = (terms = TERMS) => {
     closeTerm: () => dispatch({ type: "CLOSE_TERM" }),
     answer: (choice) => dispatch({ type: "ANSWER", choice }),
     next: () => dispatch({ type: "NEXT" }),
-    restart: () => dispatch({ type: "RESTART" }),
+    // Also probes WebGL so the fresh run lands on the same stage a page
+    // load would. Injectable for the same reason as switchMode.
+    restart: (webgl = supportsWebGL()) => dispatch({ type: "RESTART", webgl }),
   };
 };
 

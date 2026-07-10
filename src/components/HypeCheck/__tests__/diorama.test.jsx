@@ -183,10 +183,17 @@ describe("useHypeCheck diorama mode", () => {
     expect(result.current.phase).toBe(STATES.PLAYING);
   });
 
-  it("does not flag a fallback for the plain free-roam landing", () => {
+  it("lands in the 3D room when WebGL is available", () => {
+    const { result } = renderHook(() => useHypeCheck(TERMS, true));
+    expect(result.current.mode).toBe("diorama");
+    expect(result.current.dioramaFallback).toBe(false);
+  });
+
+  it("lands in the explore cloud with the flag raised when WebGL is missing", () => {
+    // The default webgl arg runs the real capability check — false in jsdom.
     const { result } = renderHook(() => useHypeCheck(TERMS));
     expect(result.current.mode).toBe("explore");
-    expect(result.current.dioramaFallback).toBe(false);
+    expect(result.current.dioramaFallback).toBe(true);
   });
 });
 

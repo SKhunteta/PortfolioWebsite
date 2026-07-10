@@ -1,6 +1,7 @@
-// The three stages the game can play on. "explore" is the free-roam
-// default; the diorama entry may fall back to explore (see switchMode),
-// in which case Free-roam correctly shows as the active option.
+// The three stages the game can play on. The page lands in the diorama
+// (3D room); when WebGL is missing it falls back to explore (see
+// switchMode), in which case Free-roam correctly shows as the active
+// option.
 const MODES = [
   { id: "explore", label: "Free-roam" },
   { id: "quiz", label: "Quiz" },

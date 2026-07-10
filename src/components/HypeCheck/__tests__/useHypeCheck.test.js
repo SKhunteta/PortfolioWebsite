@@ -20,16 +20,24 @@ describe("useHypeCheck", () => {
     vi.restoreAllMocks();
   });
 
-  it("lands directly in free-roam play with a fresh meter — no intro phase", () => {
-    const { result } = renderHook(() => useHypeCheck(FIXED_TERMS));
+  it("lands directly in the 3D room with a fresh meter — no intro phase", () => {
+    const { result } = renderHook(() => useHypeCheck(FIXED_TERMS, true));
     expect(result.current.phase).toBe(STATES.PLAYING);
-    expect(result.current.mode).toBe("explore");
+    expect(result.current.mode).toBe("diorama");
     expect(result.current.selectedTermId).toBeNull();
     expect(result.current.dioramaFallback).toBe(false);
     expect(result.current.overwhelm).toBe(OVERWHELM.START);
     expect(result.current.score).toBe(0);
     expect(result.current.answers).toHaveLength(0);
     expect(result.current.total).toBe(FIXED_TERMS.length);
+  });
+
+  it("lands in the explore cloud with the fallback note when WebGL is missing", () => {
+    // The default webgl arg runs the real capability check — false in jsdom.
+    const { result } = renderHook(() => useHypeCheck(FIXED_TERMS));
+    expect(result.current.phase).toBe(STATES.PLAYING);
+    expect(result.current.mode).toBe("explore");
+    expect(result.current.dioramaFallback).toBe(true);
   });
 
   it("enters quiz mode with a current term via switchMode", () => {
@@ -127,6 +135,17 @@ describe("useHypeCheck", () => {
     expect(result.current.overwhelm).toBe(OVERWHELM.START);
     expect(result.current.answers).toHaveLength(0);
     expect(result.current.selectedTermId).toBeNull();
+  });
+
+  it("restart lands back in the 3D room when WebGL allows", () => {
+    const { result } = renderHook(() => useHypeCheck(FIXED_TERMS, true));
+    act(() => result.current.switchMode("quiz"));
+    act(() => result.current.answer("alive"));
+    act(() => result.current.restart(true));
+    expect(result.current.phase).toBe(STATES.PLAYING);
+    expect(result.current.mode).toBe("diorama");
+    expect(result.current.dioramaFallback).toBe(false);
+    expect(result.current.answers).toHaveLength(0);
   });
 
   it("plays the real dataset end to end", () => {
@@ -382,7 +401,10 @@ describe("useHypeCheck mode switching", () => {
   });
 
   it("switching to the current mode is a no-op", () => {
-    const { result } = renderHook(() => useHypeCheck(FIXED_TERMS));
+    // Land with WebGL and hop to the cloud so the fallback flag is down —
+    // a jsdom landing raises it, and clearing it wouldn't be a no-op.
+    const { result } = renderHook(() => useHypeCheck(FIXED_TERMS, true));
+    act(() => result.current.switchMode("explore"));
     answerOne(result);
     act(() => result.current.selectTerm("b"));
     act(() => result.current.switchMode("explore"));

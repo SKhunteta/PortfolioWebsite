@@ -8,8 +8,9 @@ import EndScreen from "./EndScreen";
 import ModeToggle from "./ModeToggle";
 import { STATES, KNOWLEDGE_CUTOFF } from "./constants";
 
-// The 3D room pulls in three.js — lazy-loaded so the chunk is only
-// downloaded when someone actually enters the room.
+// The 3D room pulls in three.js — lazy-loaded so the main bundle stays
+// light and browsers without WebGL (which land in the explore cloud)
+// never download the chunk.
 const DioramaScene = lazy(() => import("./diorama/DioramaScene"));
 
 const HypeCheck = () => {

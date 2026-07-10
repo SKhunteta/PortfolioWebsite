@@ -43,9 +43,13 @@ const playOneRound = async (heading) => {
 };
 
 describe("HypeCheck page", () => {
-  it("lands directly in free-roam with the framing blurb and mode toggle", () => {
+  // The page lands in the 3D room when WebGL exists; jsdom has none, so
+  // these page-level tests exercise the free-roam fallback landing.
+  it("lands directly in free-roam (the WebGL fallback) with the framing blurb and mode toggle", () => {
     renderPage();
     expect(document.title).toContain("Hype Check");
+    // No WebGL in jsdom → the 3D-room landing degrades with the note.
+    expect(screen.getByRole("status")).toHaveTextContent(/webgl/i);
     // The compact framing replaces the old intro page.
     expect(screen.getByText(/one year after the timeline/i)).toBeInTheDocument();
     expect(
