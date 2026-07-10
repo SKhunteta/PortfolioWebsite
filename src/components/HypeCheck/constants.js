@@ -61,7 +61,7 @@ export const TERMS = [
     category: "alive",
     verdictLabel: "Still everywhere. One of the last IDEs standing.",
     fact:
-      "Cursor 3 shipped in April 2026 with a dedicated agents window and Composer 2, its own frontier coding model. Of the dozens of 2025 'AI IDEs,' roughly five names now take almost all of the paid usage — Cursor leads them.",
+      "Cursor 3 shipped April 2026 with a dedicated Agents window and Composer 2 — a model Cursor trained itself, though it admitted the base was Moonshot's Kimi K2.5. Of 2025's dozens of 'AI IDEs,' a handful now take most paid usage; Cursor leads on revenue.",
     factDate: "April 2026",
   },
   {
@@ -88,7 +88,7 @@ export const TERMS = [
     category: "alive",
     verdictLabel: "Still everywhere. It ate Windsurf.",
     fact:
-      "The 'AI software engineer' everyone dunked on in 2025 outlived the joke: Cognition bought Windsurf's remains and relaunched the IDE as Devin Desktop in June 2026. Devin is now one of the top five paid coding tools.",
+      "The 'AI software engineer' everyone dunked on in 2025 outlived the joke: Cognition bought Windsurf's remains in July 2025 and relaunched the IDE as Devin Desktop on June 2, 2026. 2026 roundups place Cognition in the top five paid coding vendors.",
     factDate: "June 2026",
   },
   {
@@ -115,7 +115,16 @@ export const TERMS = [
     category: "alive",
     verdictLabel: "Still everywhere. Painfully real.",
     fact:
-      "The 2026 word for AI-generated output that looks like work but says nothing, sibling of 'promptslop' and 'deckslop.' Coined as backlash; now unavoidable in every thinkpiece about AI at work.",
+      "Coined September 2025 by BetterUp Labs and Stanford researchers in Harvard Business Review: AI output that masquerades as good work but says nothing. Its parent word 'slop' was Merriam-Webster's 2025 Word of the Year.",
+    factDate: "September 2025",
+  },
+  {
+    id: "bolt",
+    term: "bolt",
+    category: "alive",
+    verdictLabel: "Still here. Lovable took the crown, though.",
+    fact:
+      "Bolt didn't fade — it's still one of the two dominant text-to-app builders in 2026, with a Microsoft Azure partnership and deep enterprise reach. But Lovable overtook it, crossing $200M ARR, and Bolt never cracked the top tier of paid AI coding tools.",
     factDate: "2026",
   },
   // ——— Dead or absorbed ———
@@ -138,15 +147,6 @@ export const TERMS = [
     factDate: "2025",
   },
   {
-    id: "swe-1",
-    term: "SWE-1",
-    category: "dead",
-    verdictLabel: "Dead. Went down with the ship.",
-    fact:
-      "Windsurf's in-house frontier model family, launched May 2025. When the company was carved up and the brand retired, SWE-1 quietly disappeared with it.",
-    factDate: "2026",
-  },
-  {
     id: "gemini-2-5",
     term: "gemini 2.5",
     category: "dead",
@@ -161,8 +161,8 @@ export const TERMS = [
     category: "dead",
     verdictLabel: "Superseded. Its slop lives on.",
     fact:
-      "The video model that broke the internet at Google I/O 2025 was leapfrogged by newer Veo generations within a year. The AI-slop aesthetic it pioneered, however, turned out to be immortal.",
-    factDate: "2026",
+      "The video model that broke the internet at Google I/O 2025 was superseded within a year — first by Veo 3.1, then by Gemini Omni, which replaced Veo in the Gemini app at I/O 2026. A 'Veo 4' never shipped. The slop aesthetic, however, is immortal.",
+    factDate: "May 2026",
   },
   {
     id: "prompt-engineering",
@@ -171,15 +171,6 @@ export const TERMS = [
     verdictLabel: "Dead as a job title.",
     fact:
       "2023's 'career of the future' quietly vanished from job boards. By 2026 the skill was renamed 'context engineering' — less magic words, more curating what the model sees — and everyone pretended it was new.",
-    factDate: "2026",
-  },
-  {
-    id: "bolt",
-    term: "bolt",
-    category: "dead",
-    verdictLabel: "Faded. A consolidation casualty.",
-    fact:
-      "One of the dozens of text-to-app builders that raised in 2025. The market consolidated to a handful of names by 2026, and bolt wasn't one of them.",
     factDate: "2026",
   },
   // ——— Never existed ———
@@ -225,17 +216,17 @@ export const TERMS = [
 // `min` is the minimum number of correct answers (out of TERMS.length).
 export const TIERS = [
   {
-    min: 19,
+    min: 18,
     title: "You Are the Timeline",
     blurb: "Log off. The chair is waiting for you.",
   },
   {
-    min: 16,
+    min: 15,
     title: "Terminally Online",
     blurb: "You knew about the rebrand before the press release.",
   },
   {
-    min: 11,
+    min: 10,
     title: "Chronically Informed",
     blurb: "You know what MCP stands for. Seek sunlight.",
   },
