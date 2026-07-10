@@ -37,3 +37,6 @@ qdrant_data/
 # Temporary files
 tmp/
 temp/ 
+
+# Claude Code agent worktrees
+.claude/worktrees/
