@@ -80,7 +80,9 @@ const GameScene = ({ game }) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4 }}
-      className="relative flex-1 flex flex-col w-full overflow-hidden"
+      // min-h gives the explore cloud enough stage on small phones that
+      // the drifting term buttons don't pile onto each other.
+      className="relative flex-1 flex flex-col w-full min-h-[480px] overflow-hidden"
       style={{ "--hype-speed": speedFor(overwhelm) }}
     >
       {/* Explore swaps the decorative chatter for the terms themselves. */}

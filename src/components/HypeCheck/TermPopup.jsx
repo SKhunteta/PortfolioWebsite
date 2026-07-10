@@ -34,7 +34,7 @@ const TermPopup = ({
   }, [revealing, onClose]);
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center p-4 sm:p-6">
+    <div className="fixed inset-0 z-40 flex items-center justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6">
       {/* Backdrop; dismisses only before an answer is locked in. */}
       <div
         className="absolute inset-0 bg-black/70 backdrop-blur-[2px]"
@@ -46,7 +46,9 @@ const TermPopup = ({
         role="dialog"
         aria-modal="true"
         aria-label={`Verdict on ${term.term}`}
-        className="relative w-full max-w-xl max-h-[85vh] overflow-y-auto"
+        // svh (where supported) measures the viewport with mobile browser
+        // chrome expanded, so a tall card never slides under the toolbar.
+        className="relative w-full max-w-xl max-h-[85vh] supports-[height:100svh]:max-h-[85svh] overflow-y-auto"
       >
         {revealing && answer ? (
           <RevealCard
