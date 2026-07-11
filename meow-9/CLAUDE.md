@@ -61,9 +61,20 @@ room, one dial, sixteen adorable black cats.
   numerous, identical, no articulation.
 - Bloom threshold is 1.05 — only deliberate HDR sources ignite (neon strips,
   cat eyes, laser dot). Keep everything else under 1.0.
-- Keep expensive things behind `IS_TOUCH` (`world/device.ts`): DPR, cat
-  count, composer (desktop-only), shadow map size, nebula FBM octaves,
-  physical-vs-standard cat material.
+- Keep expensive things behind `PROFILE` (`world/device.ts`): three tiers —
+  phone / tablet / desktop — on two independent axes (`TIER` = rendering
+  budget, `INPUT_TOUCH` = ergonomics). Every knob (DPR, cat count, composer
+  off/lite/full, shadow map, nebula octaves, physical-vs-standard cat
+  material, fuzz shells, label supersampling) lives in the PROFILE table;
+  new expensive effects pick their tier THERE, never with ad-hoc flags.
+  iPadOS masquerades as macOS with a trackpad attached — device.ts has the
+  maxTouchPoints check; don't reintroduce UA-only or pointer-only detection.
+  `?tier=` query param forces a tier (debugging + tests).
+- FOV is aspect-compensated (`fovForAspect`): baseFov values are authored
+  at 16:9 and widened on portrait screens (three.js FOV is vertical — an
+  uncompensated 55° is a keyhole on a phone). The resting camera re-derives
+  on resize (AdaptiveFov in App.tsx); Observer shots run their lerped FOV
+  through the same helper.
 - Use `leva` for live-tuning; bake tuned values back into `config.ts` /
   `palettes.ts`.
 
@@ -72,11 +83,18 @@ Never enable `logarithmicDepthBuffer` — three.js doesn't patch raw
 ShaderMaterials (nebula, holo panels) for log depth, which silently hides
 them (cost ketu-9 a debugging hour).
 
-## Hosting + mobile
+## Hosting + devices
 Deployed at builtbyshrey.com/meow-9/ — the portfolio's Pages workflow builds
 this project (`base: /meow-9/`) and copies its dist into the site artifact;
-the Playground page + footer link to it. Touch profile: capped DPR, 10 cats,
-no composer, collapsed Leva.
+the Playground page + footer link to it. Device tiers (world/device.ts):
+phone = DPR ≤1.5, 10 cats, no composer, no cat shadows, no Leva even in dev;
+tablet = full roster, lite composer (bloom+vignette, MSAA 4×), DPR 2 — iPads
+get the neon bloom; desktop = full stack (SMAA, bloom, DoF, vignette).
+Touch ergonomics ride INPUT_TOUCH regardless of tier: 44 px hit targets,
+wrapping button cluster, phone-only stacked bottom controls, pointer-type
+tap slop (18 px touch / 8 px mouse), and two-finger camera while the laser
+is armed. `scripts/device-smoke.mjs` is the per-tier regression harness
+(playwright-core, chromium at /opt/pw-browsers/chromium).
 
 ## Dev handles
 `__meowGravity` (setG/setRunning), `__meowObserver` (`jumpTo(i)`),

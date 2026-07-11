@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { BufferGeometry, Group, MathUtils, Material, Mesh, Quaternion, Vector3 } from "three";
 import { MEOW, ROOM } from "../world/config";
 import { useGravity } from "../world/GravityDial";
-import { IS_TOUCH } from "../world/device";
+import { PROFILE } from "../world/device";
 import { mulberry32 } from "../world/rng";
 import * as sfx from "../audio/engine";
 import { laserChannel } from "../interact/LaserPointer";
@@ -1005,7 +1005,7 @@ export function Cat({
     if (s.mode === "drift") reportDrift(rootG.position, s.vel.length());
   });
 
-  const CAST = !IS_TOUCH;
+  const CAST = PROFILE.catShadows;
   const eyeMat = index % 3 === 0 ? mats.eyeAlt : mats.eye;
 
   return (
@@ -1016,8 +1016,8 @@ export function Cat({
         <mesh geometry={geoms.barrel} material={mats.body} position={[0, 0.01, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow={CAST} />
         <mesh geometry={geoms.chest} material={mats.body} position={[0, 0.01, 0.13]} castShadow={CAST} />
         {/* fuzz halos: inflated translucent shells fray the big silhouettes
-            (desktop only — the touch profile skips the extra draw calls) */}
-        {!IS_TOUCH && (
+            (tablet/desktop — the phone profile skips the extra draw calls) */}
+        {PROFILE.fuzzShells && (
           <>
             <mesh geometry={geoms.haunch} material={mats.fuzz} position={[0, 0, -0.14]} scale={[0.975, 0.975, 1.113]} renderOrder={2} />
             <mesh geometry={geoms.barrel} material={mats.fuzz} position={[0, 0.01, 0]} rotation={[Math.PI / 2, 0, 0]} scale={1.06} renderOrder={2} />
@@ -1028,7 +1028,7 @@ export function Cat({
         {/* head — a neat sleek face with big pointed ears and big gold eyes */}
         <group ref={headG} position={[0, 0.085, 0.21]}>
           <mesh geometry={geoms.skull} material={mats.body} position={[0, 0.05, 0.03]} castShadow={CAST} />
-          {!IS_TOUCH && (
+          {PROFILE.fuzzShells && (
             <mesh geometry={geoms.skull} material={mats.fuzz} position={[0, 0.05, 0.03]} scale={1.06} renderOrder={2} />
           )}
           <mesh geometry={geoms.muzzle} material={mats.body} position={[0, -0.002, 0.12]} scale={[1, 0.82, 1]} />
@@ -1120,7 +1120,7 @@ export function Cat({
                 <mesh geometry={geoms.tailSeg} material={mats.body} position={[0, 0, -0.04]} rotation={[Math.PI / 2, 0, 0]} scale={[0.8, 0.8, 0.8]} />
                 {/* fluffy tail tip — a touch fuller than the old sleek nub */}
                 <mesh geometry={geoms.tailTuft} material={mats.body} position={[0, 0, -0.085]} scale={[1, 1, 1.15]} castShadow={CAST} />
-                {!IS_TOUCH && (
+                {PROFILE.fuzzShells && (
                   <mesh geometry={geoms.tailTuft} material={mats.fuzz} position={[0, 0, -0.085]} scale={[1.08, 1.08, 1.24]} renderOrder={2} />
                 )}
               </group>

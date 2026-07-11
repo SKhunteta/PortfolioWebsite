@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import { BackSide, ShaderMaterial } from "three";
-import { IS_TOUCH } from "../world/device";
+import { PROFILE } from "../world/device";
 
 // The view out the porthole: an inward-facing sky sphere carrying a
 // domain-warped FBM nebula (violet + teal dye) and two scales of hash-sparkle
@@ -146,7 +146,7 @@ export function Nebula() {
         vertexShader: NEBULA_VERT,
         fragmentShader: NEBULA_FRAG,
         uniforms: { uTime: { value: 0 } },
-        defines: { OCTAVES: IS_TOUCH ? 3 : 4 },
+        defines: { OCTAVES: PROFILE.nebulaOctaves },
         side: BackSide,
         depthWrite: false,
       }),

@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useThree } from "@react-three/fiber";
 import { Raycaster, Sphere, Vector2, Vector3 } from "three";
+import { TIER } from "../world/device";
 import { catBodies, directionFlags, useDirection } from "../cats/direction";
 import { useLaser } from "./LaserPointer";
 
@@ -9,10 +10,14 @@ import { useLaser } from "./LaserPointer";
 // The nearest hit gets a "pet" cue on the same direction bus the Observer
 // uses. Yields the pointer entirely to the laser when armed, and never
 // interrupts a choreographed tour.
+//
+// Budgets are pointer-type aware: a mouse click is surgical, a real thumb
+// tap wobbles 10–20 px — the old flat 8 px slop made phone pets fail
+// silently, which reads as "the cats ignore me".
 
-const TAP_MS = 300; // press-to-release budget for a tap
-const TAP_PX = 8; // movement slop — beyond this it's an orbit drag
-const HIT_R = 1.6; // hit-sphere inflation over the body radius (fat-finger pad)
+const tapBudgetMs = (t: string) => (t === "touch" ? 350 : 300);
+const tapSlopPx = (t: string) => (t === "touch" ? 18 : 8);
+const HIT_R = TIER === "phone" ? 1.8 : 1.6; // hit-sphere inflation (fat-finger pad)
 
 export function PetPointer() {
   const { camera, gl } = useThree();
@@ -43,10 +48,17 @@ export function PetPointer() {
       downId = e.pointerId;
     };
 
+    // iOS fires pointercancel when the browser steals a gesture (scroll,
+    // system edge swipe) — without this the NEXT tap could pair with a
+    // stale down and mis-measure the slop.
+    const onCancel = () => {
+      downId = -1;
+    };
+
     const onUp = (e: PointerEvent) => {
       if (e.pointerId !== downId) return;
-      if (performance.now() - downT > TAP_MS) return;
-      if (Math.hypot(e.clientX - downX, e.clientY - downY) > TAP_PX) return;
+      if (performance.now() - downT > tapBudgetMs(e.pointerType)) return;
+      if (Math.hypot(e.clientX - downX, e.clientY - downY) > tapSlopPx(e.pointerType)) return;
       // The laser owns the pointer while armed; tours are choreographed.
       if (useLaser.getState().armed || directionFlags.observing) return;
 
@@ -86,9 +98,11 @@ export function PetPointer() {
 
     el.addEventListener("pointerdown", onDown);
     el.addEventListener("pointerup", onUp);
+    el.addEventListener("pointercancel", onCancel);
     return () => {
       el.removeEventListener("pointerdown", onDown);
       el.removeEventListener("pointerup", onUp);
+      el.removeEventListener("pointercancel", onCancel);
     };
   }, [camera, gl, sc]);
 

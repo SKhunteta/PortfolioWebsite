@@ -14,6 +14,7 @@ import {
 import { ROOM } from "../world/config";
 import { PALETTE } from "../world/palettes";
 import { useGravity } from "../world/GravityDial";
+import { PROFILE } from "../world/device";
 import { makeNoiseNormalMap } from "../fx/noiseTextures";
 import { makeLabelTexture } from "../fx/labels";
 import { registerSurface } from "./surfaces";
@@ -173,7 +174,9 @@ export function Room() {
 
   // Canvas-drawn signage (fx/labels.ts) — the station names itself and its
   // sections, and posts the duty roster. Painted light, not lit slabs.
+  // PROFILE.labelScale supersamples the canvases on tablet/desktop.
   const signMats = useMemo(() => {
+    const LS = PROFILE.labelScale;
     const mat = (tex: ReturnType<typeof makeLabelTexture>) =>
       new MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false });
     return {
@@ -183,7 +186,7 @@ export function Room() {
             { text: "MEOW-9", size: 104, color: "#ff5ecf" },
             { text: "ORBITAL CAT SANCTUARY · HAB 3", size: 30, color: "#5ee9ff", gap: 14 },
           ],
-          { width: 1024, height: 256 }
+          { width: 1024, height: 256, scale: LS }
         )
       ),
       roster: mat(
@@ -197,21 +200,21 @@ export function Room() {
               gap: 12,
             })),
           ],
-          { width: 512, height: 512 }
+          { width: 512, height: 512, scale: LS }
         )
       ),
-      command: mat(makeLabelTexture([{ text: "COMMAND", size: 58, color: "#7dffb0" }], { width: 512, height: 128 })),
-      spin: mat(makeLabelTexture([{ text: "SPIN CONTROL", size: 50, color: "#ff8a3a" }], { width: 512, height: 128 })),
-      medbay: mat(makeLabelTexture([{ text: "MED BAY", size: 58, color: "#5effc9" }], { width: 512, height: 128 })),
-      comms: mat(makeLabelTexture([{ text: "COMMS", size: 58, color: "#5ee9ff" }], { width: 512, height: 128 })),
-      hydro: mat(makeLabelTexture([{ text: "HYDROPONICS", size: 46, color: "#7dffb0" }], { width: 512, height: 128 })),
+      command: mat(makeLabelTexture([{ text: "COMMAND", size: 58, color: "#7dffb0" }], { width: 512, height: 128, scale: LS })),
+      spin: mat(makeLabelTexture([{ text: "SPIN CONTROL", size: 50, color: "#ff8a3a" }], { width: 512, height: 128, scale: LS })),
+      medbay: mat(makeLabelTexture([{ text: "MED BAY", size: 58, color: "#5effc9" }], { width: 512, height: 128, scale: LS })),
+      comms: mat(makeLabelTexture([{ text: "COMMS", size: 58, color: "#5ee9ff" }], { width: 512, height: 128, scale: LS })),
+      hydro: mat(makeLabelTexture([{ text: "HYDROPONICS", size: 46, color: "#7dffb0" }], { width: 512, height: 128, scale: LS })),
       cargo: mat(
         makeLabelTexture(
           [
             { text: "MEOW-9 LOGISTICS", size: 42, color: "#ffd75e" },
             { text: "TUNA · 24 CT", size: 34, color: "#5ee9ff", gap: 10 },
           ],
-          { width: 512, height: 192 }
+          { width: 512, height: 192, scale: LS }
         )
       ),
     };

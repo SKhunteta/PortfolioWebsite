@@ -10,7 +10,7 @@ import {
 } from "three";
 import { MEOW, ROOM } from "../world/config";
 import { useGravity } from "../world/GravityDial";
-import { IS_TOUCH } from "../world/device";
+import { PROFILE } from "../world/device";
 import { resolveCircles } from "./colliders";
 
 // The loose clutter — toy balls, kibble, mugs — and the one place instancing
@@ -302,7 +302,7 @@ function DriftInstances({
 const BALL_COLORS = ["#ff6b9d", "#5ee9ff", "#ffd75e", "#9d6bff", "#7dffb0"].map((c) => new Color(c));
 
 export function Props() {
-  const counts = IS_TOUCH ? { balls: 6, kibble: 5, mugs: 2 } : { balls: 10, kibble: 8, mugs: 3 };
+  const counts = PROFILE.props;
 
   const sims = useMemo(
     () => ({

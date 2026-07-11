@@ -14,7 +14,7 @@ import {
   Vector2,
 } from "three";
 import { CREW, CREW_INDEX_BASE, type CrewRole } from "../station/crew";
-import { IS_TOUCH } from "../world/device";
+import { PROFILE } from "../world/device";
 import { useGravity } from "../world/GravityDial";
 import { mulberry32 } from "../world/rng";
 import { PALETTE, mix } from "../world/palettes";
@@ -27,7 +27,7 @@ import { catBodies, publishDriftCat } from "./direction";
 // one geometry set (sixteen cats × identical parts — worth sharing, unlike
 // Ketu-9's three bears); each gets its own seed, size, and personality.
 
-const COUNT = IS_TOUCH ? 10 : 16;
+const COUNT = PROFILE.catCount;
 
 const CATS: CatSpec[] = (() => {
   const r = mulberry32(909);
@@ -142,7 +142,7 @@ export function Cats() {
     // + strong sheen give a fuzzy backlit-fur rim so the silhouette reads even
     // in the drift's dim light. A faint cool emissive floor keeps the cats from
     // ever sinking into pure black (well under the 1.05 bloom threshold).
-    const body = IS_TOUCH
+    const body = !PROFILE.physicalCatMat
       ? new MeshStandardMaterial({
           color: "#191519",
           roughness: 0.52,

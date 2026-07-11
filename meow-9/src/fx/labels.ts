@@ -1,4 +1,4 @@
-import { CanvasTexture, LinearFilter, SRGBColorSpace } from "three";
+import { CanvasTexture, SRGBColorSpace } from "three";
 
 // Canvas-drawn signage (no external assets — the station labels itself in
 // code). Glow text on a transparent ground; pair with a MeshBasicMaterial
@@ -14,12 +14,19 @@ export interface LabelLine {
 
 export function makeLabelTexture(
   lines: LabelLine[],
-  { width = 512, height = 256 }: { width?: number; height?: number } = {}
+  {
+    width = 512,
+    height = 256,
+    scale = 1,
+  }: { width?: number; height?: number; scale?: number } = {}
 ): CanvasTexture {
   const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
+  // `scale` supersamples the whole canvas (PROFILE.labelScale — 2 on
+  // tablet/desktop) so close-up signage stays crisp on hi-DPI screens.
+  canvas.width = width * scale;
+  canvas.height = height * scale;
   const ctx = canvas.getContext("2d")!;
+  ctx.scale(scale, scale);
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   // Stencil tracking, where the browser supports it (harmless where not).
@@ -45,7 +52,8 @@ export function makeLabelTexture(
 
   const tex = new CanvasTexture(canvas);
   tex.colorSpace = SRGBColorSpace;
-  tex.minFilter = LinearFilter;
-  tex.anisotropy = 4;
+  // Mipmapped minification (the CanvasTexture default) — a plain LinearFilter
+  // here made distant signs shimmer, and silently disabled anisotropy too.
+  tex.anisotropy = 8;
   return tex;
 }

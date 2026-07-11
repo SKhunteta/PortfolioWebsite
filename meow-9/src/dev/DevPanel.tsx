@@ -2,7 +2,7 @@ import { Leva, useControls } from "leva";
 import { useGravity } from "../world/GravityDial";
 import { useObserver } from "../observer/ObserverMode";
 import { MEOW } from "../world/config";
-import { IS_TOUCH } from "../world/device";
+import { TIER } from "../world/device";
 
 // Dev-only tuning chrome. This module is loaded lazily behind
 // `import.meta.env.DEV` in App.tsx, so leva never ships in the prod bundle —
@@ -45,7 +45,8 @@ export default function DevPanel() {
   return (
     <>
       <DialControls />
-      <Leva collapsed hidden={observing || IS_TOUCH} />
+      {/* Phones have no room for tuning chrome; iPads in dev sessions do. */}
+      <Leva collapsed hidden={observing || TIER === "phone"} />
     </>
   );
 }
