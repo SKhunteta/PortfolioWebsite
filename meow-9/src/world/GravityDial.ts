@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { MEOW } from "./config";
+import { REDUCED_MOTION } from "./device";
 
 // THE HEART OF THE GAME.
 // One value — `g` in [0,1] — drives everything. Cat behavior, prop lift-off,
@@ -32,7 +33,9 @@ interface GravityState {
 export const useGravity = create<GravityState>((set, get) => ({
   g: MEOW.startG,
   t: 0,
-  running: true,
+  // Reduced motion: boot calm at full spin — the breath only starts if the
+  // visitor asks for it (the AUTO pill), which is consented motion.
+  running: !REDUCED_MOTION,
   secondsPerCycle: MEOW.secondsPerCycle,
 
   tick: (dt) => {

@@ -4,6 +4,7 @@ import { BufferGeometry, Group, MathUtils, Material, Mesh, Quaternion, Vector3 }
 import { MEOW, ROOM } from "../world/config";
 import { useGravity } from "../world/GravityDial";
 import { IS_TOUCH } from "../world/device";
+import { mulberry32 } from "../world/rng";
 import { laserChannel } from "../interact/LaserPointer";
 import { CAT_SPOTS } from "../station/Room";
 import { SCRATCH_POSTS, resolveCircles } from "../station/colliders";
@@ -83,17 +84,6 @@ const HALF_W = ROOM.w / 2 - ROOM.margin;
 const HALF_D = ROOM.d / 2 - ROOM.margin;
 const CEIL = ROOM.h - ROOM.margin;
 const UP = new Vector3(0, 1, 0);
-
-function mulberry32(seed: number) {
-  let a = seed >>> 0;
-  return () => {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
 const shortestArc = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 

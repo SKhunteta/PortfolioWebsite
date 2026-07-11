@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import {
   CapsuleGeometry,
@@ -14,24 +14,14 @@ import {
 } from "three";
 import { IS_TOUCH } from "../world/device";
 import { useGravity } from "../world/GravityDial";
+import { mulberry32 } from "../world/rng";
 import { makeNoiseNormalMap } from "../fx/noiseTextures";
 import { Cat, type CatGeoms, type CatMats, type CatSpec } from "./Cat";
-import { publishDriftCat } from "./direction";
+import { catBodies, publishDriftCat } from "./direction";
 
 // The sanctuary roster. Every cat shares one glossy-black body material and
 // one geometry set (sixteen cats × identical parts — worth sharing, unlike
 // Ketu-9's three bears); each gets its own seed, size, and personality.
-
-function mulberry32(seed: number) {
-  let a = seed >>> 0;
-  return () => {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
 const COUNT = IS_TOUCH ? 10 : 16;
 
@@ -55,9 +45,26 @@ const CATS: CatSpec[] = (() => {
 })();
 
 /** Publishes the fastest-tumbling cat as the "driftCat" track point.
- *  Mounted after the cats so their reports for this frame are already in. */
+ *  Mounted after the cats so their reports for this frame are already in
+ *  (R3F runs same-priority useFrame subscribers in mount order). The dev
+ *  guard below catches an accidental reorder: if this ran first, no cat
+ *  would have registered its body yet on our first frame. */
 function DriftTracker() {
-  useFrame(() => publishDriftCat());
+  const checked = useRef(false);
+  useFrame(() => {
+    if (import.meta.env.DEV && !checked.current) {
+      checked.current = true;
+      let n = 0;
+      for (const b of catBodies) if (b) n++;
+      if (n < COUNT) {
+        console.error(
+          `[meow-9] DriftTracker ran before the cats (${n}/${COUNT} registered). ` +
+            "It must mount AFTER all <Cat/>s — see publishDriftCat() in direction.ts."
+        );
+      }
+    }
+    publishDriftCat();
+  });
   return null;
 }
 

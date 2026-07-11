@@ -1,7 +1,6 @@
-import { useEffect, useRef, type CSSProperties } from "react";
+import { lazy, Suspense, useEffect, useRef, type CSSProperties } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { Leva, useControls } from "leva";
 import {
   DirectionalLight,
   HemisphereLight,
@@ -20,7 +19,6 @@ import { ObserverMode, useObserver } from "./observer/ObserverMode";
 import { PostFX } from "./fx/PostFX";
 import { useGravity, selectG, gravityLabel } from "./world/GravityDial";
 import { PALETTE, mix } from "./world/palettes";
-import { MEOW } from "./world/config";
 import { IS_TOUCH } from "./world/device";
 
 /** Advances the GravityDial once per frame. Nothing else touches time. */
@@ -336,34 +334,10 @@ function ObserverUI() {
   );
 }
 
-/** Leva panel wired to the GravityDial — dev tuning next to the hero slider. */
-function DialControls() {
-  const setG = useGravity((s) => s.setG);
-  const setRunning = useGravity((s) => s.setRunning);
-  const setSecondsPerCycle = useGravity((s) => s.setSecondsPerCycle);
-
-  useControls("Gravity Dial", {
-    running: { value: true, onChange: setRunning },
-    "seconds / cycle": {
-      value: MEOW.secondsPerCycle,
-      min: 20,
-      max: 600,
-      step: 5,
-      onChange: setSecondsPerCycle,
-    },
-    scrub: {
-      value: MEOW.startG,
-      min: 0,
-      max: 1,
-      step: 0.001,
-      onChange: (v: number) => {
-        useGravity.getState().setRunning(false);
-        setG(v);
-      },
-    },
-  });
-  return null;
-}
+// Dev tuning chrome (leva) loads lazily and ONLY in dev — Vite folds
+// `import.meta.env.DEV` to `false` in prod builds, so the whole leva chunk
+// is dropped from the shipped bundle.
+const DevPanel = import.meta.env.DEV ? lazy(() => import("./dev/DevPanel")) : null;
 
 export default function App() {
   const observing = useObserver((s) => s.active);
@@ -405,8 +379,11 @@ export default function App() {
       <GravityHUD />
       <GravitySlider />
       <ObserverUI />
-      <DialControls />
-      <Leva collapsed hidden={observing || IS_TOUCH} />
+      {DevPanel && (
+        <Suspense fallback={null}>
+          <DevPanel />
+        </Suspense>
+      )}
     </>
   );
 }
