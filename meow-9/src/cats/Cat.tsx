@@ -60,6 +60,7 @@ export interface CatGeoms {
   ear: BufferGeometry;
   earInner: BufferGeometry;
   eye: BufferGeometry;
+  catchlight: BufferGeometry;
   tailSeg: BufferGeometry;
   tailTuft: BufferGeometry;
   thigh: BufferGeometry;
@@ -81,6 +82,7 @@ export interface CatMats {
   innerEar: Material;
   eye: Material;
   eyeAlt: Material;
+  catchlight: Material;
   nose: Material;
   whisker: Material;
   pupil: Material;
@@ -927,10 +929,12 @@ export function Cat({
     const lu = s.time - s.lookStart;
     let lookYaw = 0;
     let lookLift = 0;
+    let lookRoll = 0;
     if (resting && lu < 1.8) {
       const env = Math.sin(Math.min(1, lu / 1.8) * Math.PI); // 0 → 1 → 0
       lookYaw = s.lookYaw * env;
       lookLift = 0.14 * env; // a curious little chin-up
+      lookRoll = 0.26 * Math.sign(s.lookYaw) * env; // the quizzical head-tilt
     }
 
     // Tail-tip flick — a quick lash on its own timer, present even at rest.
@@ -951,7 +955,7 @@ export function Cat({
     if (headG.current) {
       headG.current.rotation.x = D(headG.current.rotation.x, headRX - lookLift, 8);
       headG.current.rotation.y = D(headG.current.rotation.y, headRY + lookYaw, 8);
-      headG.current.rotation.z = D(headG.current.rotation.z, headRZ, 8);
+      headG.current.rotation.z = D(headG.current.rotation.z, headRZ + lookRoll, 8);
     }
     if (earL.current) earL.current.rotation.x = D(earL.current.rotation.x, earTwitch, 20);
     if (earR.current)
@@ -1025,8 +1029,10 @@ export function Cat({
           </>
         )}
 
-        {/* head — a neat sleek face with big pointed ears and big gold eyes */}
-        <group ref={headG} position={[0, 0.085, 0.21]}>
+        {/* head — oversized kitten head, big low eyes, chubby cheeks. Scaled
+            up as one cluster (the single biggest neoteny lever) and seated a
+            touch lower/back so the big round head nestles into the chest. */}
+        <group ref={headG} position={[0, 0.072, 0.205]} scale={1.13}>
           <mesh geometry={geoms.skull} material={mats.body} position={[0, 0.05, 0.03]} castShadow={CAST} />
           {PROFILE.fuzzShells && (
             <mesh geometry={geoms.skull} material={mats.fuzz} position={[0, 0.05, 0.03]} scale={1.06} renderOrder={2} />
@@ -1044,12 +1050,16 @@ export function Cat({
             <mesh geometry={geoms.ear} material={mats.body} castShadow={CAST} />
             <mesh geometry={geoms.earInner} material={mats.innerEar} position={[0, -0.006, 0.015]} />
           </group>
-          <mesh ref={eyeL} geometry={geoms.eye} material={eyeMat} position={[0.046, 0.062, 0.1]}>
+          {/* big low-set eyes. Slit pupil (canon) + a crisp white catchlight
+              up-and-inboard so each eye reads wet and alive, not a flat orb. */}
+          <mesh ref={eyeL} geometry={geoms.eye} material={eyeMat} position={[0.05, 0.05, 0.103]}>
             {/* vertical slit pupil — rides the blink with its parent */}
-            <mesh geometry={geoms.pupil} material={mats.pupil} position={[0.004, 0, 0.0245]} />
+            <mesh geometry={geoms.pupil} material={mats.pupil} position={[0.004, 0, 0.031]} />
+            <mesh geometry={geoms.catchlight} material={mats.catchlight} position={[-0.011, 0.014, 0.03]} />
           </mesh>
-          <mesh ref={eyeR} geometry={geoms.eye} material={eyeMat} position={[-0.046, 0.062, 0.1]}>
-            <mesh geometry={geoms.pupil} material={mats.pupil} position={[-0.004, 0, 0.0245]} />
+          <mesh ref={eyeR} geometry={geoms.eye} material={eyeMat} position={[-0.05, 0.05, 0.103]}>
+            <mesh geometry={geoms.pupil} material={mats.pupil} position={[-0.004, 0, 0.031]} />
+            <mesh geometry={geoms.catchlight} material={mats.catchlight} position={[0.011, 0.014, 0.03]} />
           </mesh>
           {/* whiskers — three a side, flared forward-out like the real girls' */}
           {[1, -1].map((sd) =>
