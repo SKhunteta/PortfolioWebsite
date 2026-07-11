@@ -15,7 +15,9 @@ import {
 import { IS_TOUCH } from "../world/device";
 import { useGravity } from "../world/GravityDial";
 import { mulberry32 } from "../world/rng";
-import { makeNoiseNormalMap } from "../fx/noiseTextures";
+import { PALETTE, mix } from "../world/palettes";
+import { makeFurAlphaMap, makeNoiseNormalMap, makeNoiseRoughnessMap } from "../fx/noiseTextures";
+import { applyFurRim, furUniforms, makeFuzzMaterial } from "./fur";
 import { Cat, type CatGeoms, type CatMats, type CatSpec } from "./Cat";
 import { catBodies, publishDriftCat } from "./direction";
 
@@ -69,11 +71,16 @@ function DriftTracker() {
 }
 
 /** The fur's faint self-light rides the dial: as the room dims into the
- *  drift, the cats brighten just enough to stay readable in every shot. */
+ *  drift, the cats brighten just enough to stay readable in every shot.
+ *  The Fresnel rim rides along — warm plum under the lamps, neon-violet
+ *  and a touch stronger in the drift (fur reads more backlit in the dark). */
 function CatGlow({ mats }: { mats: CatMats }) {
   useFrame(() => {
     const g = useGravity.getState().g;
     (mats.body as MeshStandardMaterial).emissiveIntensity = MathUtils.lerp(0.58, 0.3, g);
+    // copy() — mix() returns a shared scratch Color.
+    furUniforms.rimColor.value.copy(mix(PALETTE.furRimDrift, PALETTE.furRimSpin, g));
+    furUniforms.rimStrength.value = MathUtils.lerp(0.68, 0.5, g);
   });
   return null;
 }
@@ -114,6 +121,9 @@ export function Cats() {
 
   const mats = useMemo<CatMats>(() => {
     const furNormal = makeNoiseNormalMap(256, 6, 1.1, 21);
+    // Streaky micro-variation so light breaks across the coat like guard
+    // hairs instead of one uniform sheen.
+    const furRough = makeNoiseRoughnessMap(256, 5, 0.42, 0.78, 33);
     // A soft charcoal-plum plush, not wet vinyl: low clearcoat + high roughness
     // + strong sheen give a fuzzy backlit-fur rim so the silhouette reads even
     // in the drift's dim light. A faint cool emissive floor keeps the cats from
@@ -125,6 +135,7 @@ export function Cats() {
           metalness: 0.1,
           emissive: new Color("#241a20"),
           emissiveIntensity: 0.32,
+          roughnessMap: furRough,
         })
       : new MeshPhysicalMaterial({
           color: "#191519",
@@ -138,9 +149,14 @@ export function Cats() {
           emissiveIntensity: 0.32,
           normalMap: furNormal,
           normalScale: new Vector2(0.35, 0.35),
+          roughnessMap: furRough,
         });
+    // The Fresnel fur rim rides both device profiles (same shader chunks).
+    applyFurRim(body);
     return {
       body,
+      // Halo shells for the big masses — desktop-only meshes in Cat.tsx.
+      fuzz: makeFuzzMaterial(makeFurAlphaMap(256, 47)),
       // Soft dusty-pink inner ears — a matte, gently self-lit cuteness accent.
       innerEar: new MeshStandardMaterial({
         color: "#b47f8b",

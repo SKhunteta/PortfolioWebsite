@@ -23,6 +23,11 @@ export const PALETTE = {
   // Neon strip hues (HDR-multiplied at runtime so they bloom).
   neonA: new Color("#ff5ecf"), // magenta
   neonB: new Color("#5ee9ff"), // cyan
+
+  // The cats' fur rim — the backlit fuzz on every silhouette. Warm plum
+  // under the lamps, cool neon-violet in the drift (in-family with keyDrift).
+  furRimSpin: new Color("#8a7686"),
+  furRimDrift: new Color("#6f7fd0"),
 } as const;
 
 const scratch = new Color();

@@ -7,8 +7,16 @@ import { mulberry32 } from "../world/rng";
 // map (surface chisel for the cats' fur break-up, panel grain for the
 // station hull) and a matching roughness map.
 
-/** Tileable FBM: sample the noise on a torus embedded in 4D-ish (two circles). */
-function tileableFbm(size: number, scale: number, octaves: number, seed: number): Float32Array {
+/** Tileable FBM: sample the noise on a torus embedded in 4D-ish (two circles).
+ *  An optional `scaleV` stretches the second axis independently — unequal
+ *  frequencies smear the noise into streaks (hair runs along the V axis). */
+function tileableFbm(
+  size: number,
+  scale: number,
+  octaves: number,
+  seed: number,
+  scaleV = scale
+): Float32Array {
   const noiseA = createNoise2D(mulberry32(seed));
   const noiseB = createNoise2D(mulberry32(seed + 101));
   const field = new Float32Array(size * size);
@@ -20,8 +28,8 @@ function tileableFbm(size: number, scale: number, octaves: number, seed: number)
       // Torus trick: two 2D noise reads on circle coordinates tile perfectly.
       const cx = Math.cos(u) * scale;
       const sx = Math.sin(u) * scale;
-      const cy = Math.cos(v) * scale;
-      const sy = Math.sin(v) * scale;
+      const cy = Math.cos(v) * scaleV;
+      const sy = Math.sin(v) * scaleV;
       let amp = 1;
       let freq = 1;
       let sum = 0;
@@ -54,6 +62,25 @@ export function makeNoiseNormalMap(size = 256, scale = 3, strength = 1.5, seed =
       data[i + 2] = (inv * 0.5 + 0.5) * 255;
       data[i + 3] = 255;
     }
+  }
+  const tex = new DataTexture(data, size, size, RGBAFormat, UnsignedByteType);
+  tex.wrapS = tex.wrapT = RepeatWrapping;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+/** Streaky hair alpha for the fur halo shells: high frequency across U,
+ *  low along V smears the FBM into strands; a hard smoothstep threshold
+ *  keeps only the spiky tips. (alphaMap reads the green channel.) */
+export function makeFurAlphaMap(size = 256, seed = 47): DataTexture {
+  const h = tileableFbm(size, 14, 3, seed, 2.2);
+  const data = new Uint8Array(size * size * 4);
+  for (let i = 0; i < size * size; i++) {
+    const n = h[i] * 0.5 + 0.5;
+    const e = Math.min(1, Math.max(0, (n - 0.45) / 0.45));
+    const a = e * e * (3 - 2 * e) * 255; // smoothstep(0.45, 0.9, n)
+    data[i * 4] = data[i * 4 + 1] = data[i * 4 + 2] = a;
+    data[i * 4 + 3] = 255;
   }
   const tex = new DataTexture(data, size, size, RGBAFormat, UnsignedByteType);
   tex.wrapS = tex.wrapT = RepeatWrapping;

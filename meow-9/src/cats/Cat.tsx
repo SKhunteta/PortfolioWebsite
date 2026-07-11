@@ -70,6 +70,7 @@ export interface CatGeoms {
 
 export interface CatMats {
   body: Material;
+  fuzz: Material; // translucent halo shells — the silhouette fray (desktop)
   innerEar: Material;
   eye: Material;
   eyeAlt: Material;
@@ -917,10 +918,22 @@ export function Cat({
         <mesh geometry={geoms.haunch} material={mats.body} position={[0, 0, -0.14]} scale={[0.92, 0.92, 1.05]} castShadow={CAST} />
         <mesh geometry={geoms.barrel} material={mats.body} position={[0, 0.01, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow={CAST} />
         <mesh geometry={geoms.chest} material={mats.body} position={[0, 0.01, 0.13]} castShadow={CAST} />
+        {/* fuzz halos: inflated translucent shells fray the big silhouettes
+            (desktop only — the touch profile skips the extra draw calls) */}
+        {!IS_TOUCH && (
+          <>
+            <mesh geometry={geoms.haunch} material={mats.fuzz} position={[0, 0, -0.14]} scale={[0.975, 0.975, 1.113]} renderOrder={2} />
+            <mesh geometry={geoms.barrel} material={mats.fuzz} position={[0, 0.01, 0]} rotation={[Math.PI / 2, 0, 0]} scale={1.06} renderOrder={2} />
+            <mesh geometry={geoms.chest} material={mats.fuzz} position={[0, 0.01, 0.13]} scale={1.06} renderOrder={2} />
+          </>
+        )}
 
         {/* head — a neat sleek face with big pointed ears and big gold eyes */}
         <group ref={headG} position={[0, 0.085, 0.21]}>
           <mesh geometry={geoms.skull} material={mats.body} position={[0, 0.05, 0.03]} castShadow={CAST} />
+          {!IS_TOUCH && (
+            <mesh geometry={geoms.skull} material={mats.fuzz} position={[0, 0.05, 0.03]} scale={1.06} renderOrder={2} />
+          )}
           <mesh geometry={geoms.muzzle} material={mats.body} position={[0, -0.002, 0.12]} scale={[1, 0.82, 1]} />
           {/* a hint of cheek, kept sleek */}
           <mesh geometry={geoms.cheek} material={mats.body} position={[0.05, 0.005, 0.065]} scale={[0.9, 0.85, 0.85]} castShadow={CAST} />
@@ -953,6 +966,19 @@ export function Cat({
               />
             ))
           )}
+          {/* brow whiskers — two shorter ones per side above the eyes */}
+          {[1, -1].map((sd) =>
+            [0, 1].map((i) => (
+              <mesh
+                key={`b${sd}${i}`}
+                geometry={geoms.whisker}
+                material={mats.whisker}
+                position={[sd * 0.036, 0.098, 0.09]}
+                rotation={[-0.25, sd * -0.35, sd * -(0.45 + i * 0.28)]}
+                scale={0.6}
+              />
+            ))
+          )}
         </group>
 
         {/* her collar — thin strap at the neck base, little tag under the chin */}
@@ -977,8 +1003,11 @@ export function Cat({
               <mesh geometry={geoms.tailSeg} material={mats.body} position={[0, 0, -0.045]} rotation={[Math.PI / 2, 0, 0]} />
               <group ref={(el) => (tail.current[3] = el)} position={[0, 0, -0.09]}>
                 <mesh geometry={geoms.tailSeg} material={mats.body} position={[0, 0, -0.04]} rotation={[Math.PI / 2, 0, 0]} scale={[0.8, 0.8, 0.8]} />
-                {/* fluffy tail tip */}
-                <mesh geometry={geoms.tailTuft} material={mats.body} position={[0, 0, -0.085]} scale={[0.85, 0.85, 1]} castShadow={CAST} />
+                {/* fluffy tail tip — a touch fuller than the old sleek nub */}
+                <mesh geometry={geoms.tailTuft} material={mats.body} position={[0, 0, -0.085]} scale={[1, 1, 1.15]} castShadow={CAST} />
+                {!IS_TOUCH && (
+                  <mesh geometry={geoms.tailTuft} material={mats.fuzz} position={[0, 0, -0.085]} scale={[1.08, 1.08, 1.24]} renderOrder={2} />
+                )}
               </group>
             </group>
           </group>
