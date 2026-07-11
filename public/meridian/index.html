@@ -119,6 +119,12 @@
   .upsell b{color:var(--teal-dark)}
   .appraisal{margin-top:14px;font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);border-top:1px dashed var(--line);padding-top:12px}
   .notice .rl{margin-top:16px;font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+  .notice .qr{display:flex;gap:18px;align-items:center;margin-top:18px;background:var(--card);border:1px dashed var(--line);border-radius:10px;padding:16px 18px}
+  .notice .qr a.qr-code{flex-shrink:0;display:block;line-height:0}
+  .notice .qr svg{width:122px;height:122px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:8px}
+  .notice .qr b{color:var(--teal-dark)}
+  .notice .qr p{font-size:13.5px;color:var(--ink-soft);margin-top:4px}
+  @media(max-width:480px){.notice .qr{flex-direction:column;align-items:flex-start}}
 
   /* footer */
   footer{background:var(--ink);color:#b9c2bf;padding:52px 0 40px;font-size:13.5px}
@@ -649,6 +655,15 @@
       </div>
       <button class="btn" id="submit-btn">Submit for appraisal</button>
       <div class="notice" id="notice" role="status"></div>
+      <template id="qr-block">
+        <div class="qr">
+          <a class="qr-code" href="https://blog.builtbyshrey.com/?ref=meridian" target="_blank" rel="noopener" aria-label="Open blog.builtbyshrey.com"><svg viewBox="0 0 33 33" role="img" aria-label="QR code linking to blog.builtbyshrey.com" shape-rendering="crispEdges"><path fill="#28312f" d="M0 0h7v1h-7zM9 0h1v1h-1zM11 0h2v1h-2zM18 0h4v1h-4zM23 0h1v1h-1zM26 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM9 1h1v1h-1zM12 1h1v1h-1zM15 1h2v1h-2zM18 1h1v1h-1zM20 1h2v1h-2zM24 1h1v1h-1zM26 1h1v1h-1zM32 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM8 2h2v1h-2zM12 2h1v1h-1zM14 2h3v1h-3zM19 2h1v1h-1zM21 2h3v1h-3zM26 2h1v1h-1zM28 2h3v1h-3zM32 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h4v1h-4zM18 3h1v1h-1zM21 3h1v1h-1zM23 3h2v1h-2zM26 3h1v1h-1zM28 3h3v1h-3zM32 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM8 4h1v1h-1zM10 4h8v1h-8zM20 4h3v1h-3zM26 4h1v1h-1zM28 4h3v1h-3zM32 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM10 5h1v1h-1zM13 5h2v1h-2zM18 5h2v1h-2zM23 5h2v1h-2zM26 5h1v1h-1zM32 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h7v1h-7zM8 7h1v1h-1zM10 7h1v1h-1zM14 7h1v1h-1zM16 7h1v1h-1zM18 7h4v1h-4zM23 7h1v1h-1zM0 8h1v1h-1zM2 8h5v1h-5zM9 8h5v1h-5zM17 8h1v1h-1zM19 8h2v1h-2zM22 8h3v1h-3zM26 8h5v1h-5zM0 9h2v1h-2zM4 9h1v1h-1zM11 9h1v1h-1zM13 9h2v1h-2zM16 9h2v1h-2zM19 9h2v1h-2zM22 9h3v1h-3zM26 9h2v1h-2zM29 9h2v1h-2zM32 9h1v1h-1zM3 10h1v1h-1zM6 10h1v1h-1zM8 10h1v1h-1zM10 10h8v1h-8zM20 10h1v1h-1zM22 10h1v1h-1zM26 10h1v1h-1zM28 10h1v1h-1zM30 10h2v1h-2zM1 11h5v1h-5zM9 11h1v1h-1zM13 11h1v1h-1zM16 11h3v1h-3zM23 11h1v1h-1zM25 11h1v1h-1zM28 11h4v1h-4zM1 12h2v1h-2zM5 12h2v1h-2zM8 12h1v1h-1zM14 12h1v1h-1zM16 12h1v1h-1zM19 12h4v1h-4zM24 12h2v1h-2zM27 12h3v1h-3zM31 12h1v1h-1zM0 13h2v1h-2zM3 13h1v1h-1zM5 13h1v1h-1zM11 13h1v1h-1zM13 13h1v1h-1zM15 13h1v1h-1zM18 13h1v1h-1zM21 13h1v1h-1zM24 13h1v1h-1zM26 13h1v1h-1zM29 13h4v1h-4zM0 14h3v1h-3zM4 14h1v1h-1zM6 14h1v1h-1zM9 14h1v1h-1zM11 14h8v1h-8zM20 14h3v1h-3zM24 14h5v1h-5zM31 14h1v1h-1zM1 15h1v1h-1zM3 15h3v1h-3zM7 15h5v1h-5zM13 15h1v1h-1zM15 15h1v1h-1zM18 15h1v1h-1zM21 15h3v1h-3zM25 15h3v1h-3zM30 15h1v1h-1zM1 16h2v1h-2zM4 16h3v1h-3zM8 16h3v1h-3zM12 16h1v1h-1zM14 16h2v1h-2zM17 16h1v1h-1zM20 16h1v1h-1zM22 16h4v1h-4zM27 16h3v1h-3zM32 16h1v1h-1zM0 17h1v1h-1zM2 17h1v1h-1zM4 17h2v1h-2zM8 17h1v1h-1zM10 17h1v1h-1zM12 17h2v1h-2zM16 17h1v1h-1zM18 17h4v1h-4zM23 17h1v1h-1zM26 17h2v1h-2zM29 17h2v1h-2zM32 17h1v1h-1zM1 18h8v1h-8zM10 18h3v1h-3zM15 18h2v1h-2zM18 18h1v1h-1zM21 18h1v1h-1zM25 18h1v1h-1zM27 18h2v1h-2zM30 18h2v1h-2zM0 19h1v1h-1zM9 19h4v1h-4zM14 19h1v1h-1zM19 19h1v1h-1zM21 19h3v1h-3zM27 19h4v1h-4zM32 19h1v1h-1zM0 20h2v1h-2zM3 20h1v1h-1zM5 20h2v1h-2zM8 20h5v1h-5zM14 20h2v1h-2zM18 20h1v1h-1zM21 20h1v1h-1zM23 20h3v1h-3zM28 20h2v1h-2zM0 21h1v1h-1zM4 21h2v1h-2zM7 21h1v1h-1zM10 21h1v1h-1zM12 21h2v1h-2zM15 21h2v1h-2zM20 21h1v1h-1zM22 21h2v1h-2zM26 21h1v1h-1zM29 21h1v1h-1zM32 21h1v1h-1zM0 22h1v1h-1zM3 22h1v1h-1zM6 22h2v1h-2zM9 22h2v1h-2zM12 22h2v1h-2zM19 22h1v1h-1zM21 22h1v1h-1zM29 22h3v1h-3zM0 23h1v1h-1zM7 23h4v1h-4zM13 23h1v1h-1zM16 23h1v1h-1zM19 23h4v1h-4zM24 23h1v1h-1zM26 23h1v1h-1zM29 23h4v1h-4zM0 24h1v1h-1zM3 24h1v1h-1zM5 24h3v1h-3zM13 24h1v1h-1zM17 24h1v1h-1zM19 24h1v1h-1zM22 24h1v1h-1zM24 24h5v1h-5zM32 24h1v1h-1zM8 25h3v1h-3zM16 25h2v1h-2zM19 25h2v1h-2zM24 25h1v1h-1zM28 25h1v1h-1zM30 25h3v1h-3zM0 26h7v1h-7zM9 26h1v1h-1zM12 26h2v1h-2zM15 26h1v1h-1zM17 26h1v1h-1zM22 26h3v1h-3zM26 26h1v1h-1zM28 26h1v1h-1zM30 26h2v1h-2zM0 27h1v1h-1zM6 27h1v1h-1zM8 27h4v1h-4zM14 27h1v1h-1zM16 27h3v1h-3zM20 27h1v1h-1zM23 27h2v1h-2zM28 27h5v1h-5zM0 28h1v1h-1zM2 28h3v1h-3zM6 28h1v1h-1zM8 28h2v1h-2zM13 28h1v1h-1zM16 28h1v1h-1zM20 28h3v1h-3zM24 28h6v1h-6zM31 28h2v1h-2zM0 29h1v1h-1zM2 29h3v1h-3zM6 29h1v1h-1zM8 29h3v1h-3zM12 29h1v1h-1zM15 29h1v1h-1zM17 29h2v1h-2zM24 29h2v1h-2zM28 29h2v1h-2zM32 29h1v1h-1zM0 30h1v1h-1zM2 30h3v1h-3zM6 30h1v1h-1zM8 30h4v1h-4zM14 30h3v1h-3zM18 30h1v1h-1zM20 30h4v1h-4zM26 30h2v1h-2zM29 30h2v1h-2zM0 31h1v1h-1zM6 31h1v1h-1zM9 31h1v1h-1zM12 31h4v1h-4zM21 31h1v1h-1zM26 31h1v1h-1zM28 31h3v1h-3zM0 32h7v1h-7zM8 32h2v1h-2zM13 32h3v1h-3zM17 32h2v1h-2zM20 32h1v1h-1zM22 32h4v1h-4zM27 32h1v1h-1zM31 32h1v1h-1z"/></svg></a>
+          <div>
+            <b>Take the market with you.</b>
+            <p>Scan to receive Meridian market dispatches on any handheld interface — delivered, in this timeline, as the author’s blog at <a href="https://blog.builtbyshrey.com/?ref=meridian" target="_blank" rel="noopener">blog.builtbyshrey.com</a>.</p>
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 </section>
@@ -764,6 +779,7 @@
         });
       }
     }
+    n.appendChild(document.getElementById('qr-block').content.cloneNode(true));
     n.scrollIntoView({behavior:'smooth', block:'nearest'});
   });
 })();
