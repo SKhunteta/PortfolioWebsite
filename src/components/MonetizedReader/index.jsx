@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useReducedMotion } from "framer-motion";
 import useNeuralSession from "./useNeuralSession";
 import useParagraphObserver from "./useParagraphObserver";
@@ -31,6 +31,14 @@ const MonetizedReader = () => {
     stats,
     progressPercent,
   } = session;
+
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = "The Monetized Reader";
+    return () => {
+      document.title = previousTitle;
+    };
+  }, []);
 
   const handleParagraphEnter = useCallback(
     (id) => {

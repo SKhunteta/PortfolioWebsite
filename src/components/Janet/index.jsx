@@ -20,6 +20,14 @@ const Janet = () => {
   }, []);
 
   useEffect(() => {
+    const previousTitle = document.title;
+    document.title = "JANET — Talk to the AI";
+    return () => {
+      document.title = previousTitle;
+    };
+  }, []);
+
+  useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 

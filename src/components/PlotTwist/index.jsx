@@ -298,6 +298,14 @@ const PlotTwist = () => {
     resetPreferences,
   } = useStoryFeed();
 
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = "Plot Twist — Swipe Through Stories";
+    return () => {
+      document.title = previousTitle;
+    };
+  }, []);
+
   const [showWelcome, setShowWelcome] = useState(() => {
     try {
       return !localStorage.getItem(STORAGE_KEYS.visited);

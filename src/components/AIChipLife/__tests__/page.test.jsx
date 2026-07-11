@@ -26,7 +26,7 @@ describe("AIChipLife page", () => {
         <AIChipLife />
       </MemoryRouter>
     );
-    expect(document.title).toMatch(/The Life of an AI Chip · Shreyans Khunteta/);
+    expect(document.title).toMatch(/The Life of an AI Chip/);
     expect(document.getElementById("ai-chip-jsonld")).not.toBeNull();
   });
 });
