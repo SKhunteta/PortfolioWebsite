@@ -25,6 +25,17 @@ export const MEOW = {
   rollFriction: 1.7, // 1/s horizontal bleed while a toy rolls under weight
 } as const;
 
+// The synthesized soundscape mix (see audio/engine.ts). Conservative on
+// purpose — the hum especially is an all-session drone.
+export const AUDIO = {
+  master: 0.5,
+  hum: 0.16, // hum gain at 1g (full spin — the motors work)
+  humFloor: 0.015, // hum gain at 0g (the drift is hushed)
+  whoosh: 0.22, // peak gravity-scrub whoosh
+  purr: 0.5, // purr voice level
+  thump: 0.5, // touchdown thud peak at full strength
+} as const;
+
 // The hab module interior. Floor at y = 0, walls at ±w/2 / ±d/2, ceiling at h.
 export const ROOM = {
   w: 14,

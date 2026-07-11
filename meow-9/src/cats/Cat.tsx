@@ -5,6 +5,7 @@ import { MEOW, ROOM } from "../world/config";
 import { useGravity } from "../world/GravityDial";
 import { IS_TOUCH } from "../world/device";
 import { mulberry32 } from "../world/rng";
+import * as sfx from "../audio/engine";
 import { laserChannel } from "../interact/LaserPointer";
 import { CAT_SPOTS } from "../station/Room";
 import { SCRATCH_POSTS, resolveCircles } from "../station/colliders";
@@ -355,6 +356,7 @@ export function Cat({
             s.mode = "scratch";
             s.stateStart = s.time;
             s.dur = modeDuration("scratch", s.rand());
+            sfx.purr(s.dur); // sisal under the claws — pure bliss
           } else {
             decide(s);
           }
@@ -435,6 +437,8 @@ export function Cat({
       if (s.pos.y <= 0.02 && s.vel.y <= 0) {
         s.pos.y = 0;
         if (g >= MEOW.landG || s.mode === "pounce") {
+          // Touchdown thud from the impact speed (before it's absorbed).
+          sfx.thump(Math.min(1, Math.abs(s.vel.y) / 3 + s.vel.length() * 0.1));
           s.mode = "land";
           s.stateStart = s.time;
           s.leaped = false;

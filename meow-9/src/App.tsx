@@ -15,6 +15,8 @@ import { Nebula } from "./station/Nebula";
 import { Props } from "./station/Props";
 import { Cats } from "./cats/Cats";
 import { LaserPointer, useLaser } from "./interact/LaserPointer";
+import { AudioDriver } from "./audio/AudioDriver";
+import { useSound } from "./audio/store";
 import { ObserverMode, useObserver } from "./observer/ObserverMode";
 import { PostFX } from "./fx/PostFX";
 import { useGravity, selectG, gravityLabel } from "./world/GravityDial";
@@ -207,6 +209,8 @@ function ObserverUI() {
   const stop = useObserver((s) => s.stop);
   const cycleSpeed = useObserver((s) => s.cycleSpeed);
   const laserArmed = useLaser((s) => s.armed);
+  const muted = useSound((s) => s.muted);
+  const toggleMute = useSound((s) => s.toggle);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -288,6 +292,19 @@ function ObserverUI() {
           maxWidth: "calc(100vw - 24px)",
         }}
       >
+        {/* Sound toggle — stays up during tours too (the hum swell through
+            a spin-down shot is half the show). */}
+        <button
+          onClick={toggleMute}
+          title={muted ? "Unmute the station" : "Mute the station"}
+          style={{
+            ...pill,
+            padding: "12px 16px",
+            opacity: muted ? 0.65 : 1,
+          }}
+        >
+          {muted ? "∅ SOUND" : "♪ SOUND"}
+        </button>
         {/* Laser arm toggle, left of OBSERVE. Hidden during tours. */}
         {!active && (
           <button
@@ -356,6 +373,7 @@ export default function App() {
       >
         <color attach="background" args={["#05030a"]} />
         <DialDriver />
+        <AudioDriver />
         <Lighting />
         <Nebula />
         <Room />
