@@ -85,16 +85,17 @@ function Lighting() {
       hemiRef.current.color.copy(mix(PALETTE.ambientDrift, PALETTE.ambientSpin, g));
       hemiRef.current.groundColor.copy(mix(PALETTE.groundDrift, PALETTE.groundSpin, g));
       // Higher floor so the cats stay readable even in the drift's low-g gloom.
-      hemiRef.current.intensity = MathUtils.lerp(0.78, 1.15, g);
+      // Dimmed ~8% overall for a slightly moodier, softer room.
+      hemiRef.current.intensity = MathUtils.lerp(0.72, 1.06, g);
     }
     if (keyRef.current) {
       keyRef.current.color.copy(mix(PALETTE.keyDrift, PALETTE.keySpin, g));
-      keyRef.current.intensity = MathUtils.lerp(0.85, 2.0, g);
+      keyRef.current.intensity = MathUtils.lerp(0.78, 1.84, g);
     }
-    const warm = MathUtils.lerp(2, 48, g);
+    const warm = MathUtils.lerp(1.8, 44, g);
     if (warmARef.current) warmARef.current.intensity = warm;
     if (warmBRef.current) warmBRef.current.intensity = warm * 0.85;
-    if (coolRef.current) coolRef.current.intensity = MathUtils.lerp(20, 1.2, g);
+    if (coolRef.current) coolRef.current.intensity = MathUtils.lerp(18, 1.1, g);
   });
 
   return (
