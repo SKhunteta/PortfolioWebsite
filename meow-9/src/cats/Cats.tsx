@@ -6,6 +6,7 @@ import {
   ConeGeometry,
   CylinderGeometry,
   MathUtils,
+  MeshBasicMaterial,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   SphereGeometry,
@@ -88,24 +89,26 @@ function CatGlow({ mats }: { mats: CatMats }) {
 export function Cats() {
   const geoms = useMemo<CatGeoms>(
     () => ({
-      // Modelled on two real sleek black-shorthair girls: a lithe, elegant
-      // body, a neat head with BIG pointed ears and big round eyes, and a long
-      // tapering tail. Cuteness lives in the ears + eyes, not in bulk.
-      haunch: new SphereGeometry(0.125, 14, 10),
-      barrel: new CapsuleGeometry(0.106, 0.19, 6, 12),
-      chest: new SphereGeometry(0.11, 14, 10),
-      skull: new SphereGeometry(0.106, 16, 12),
-      muzzle: new SphereGeometry(0.047, 10, 8),
-      nose: new SphereGeometry(0.016, 8, 6),
-      cheek: new SphereGeometry(0.036, 10, 8), // slight cheek, not chunky
-      ear: new ConeGeometry(0.058, 0.14, 6), // big pointed shorthair ears
-      earInner: new ConeGeometry(0.038, 0.105, 6),
-      eye: new SphereGeometry(0.031, 14, 12), // big round golden eyes
-      tailSeg: new CapsuleGeometry(0.023, 0.09, 5, 10), // long, sleek tail
-      tailTuft: new SphereGeometry(0.03, 10, 8), // slim tapered tip
-      thigh: new CapsuleGeometry(0.032, 0.09, 4, 8),
-      shin: new CapsuleGeometry(0.022, 0.09, 4, 8),
-      paw: new SphereGeometry(0.031, 8, 6),
+      // Modelled on two real black-shorthair girls, but pushed toward KITTEN
+      // proportions — adorable is neoteny: an oversized round head, big low
+      // eyes, chubby cheeks, a plump compact tummy, and stubby chunky paws.
+      // The elegant adult silhouette read as "a cat"; this reads as "aww".
+      haunch: new SphereGeometry(0.132, 14, 10), // rounder rump
+      barrel: new CapsuleGeometry(0.115, 0.155, 6, 12), // short, plump tummy
+      chest: new SphereGeometry(0.12, 14, 10), // fuller chest
+      skull: new SphereGeometry(0.118, 16, 12), // big baby head
+      muzzle: new SphereGeometry(0.044, 10, 8), // shorter, flatter face
+      nose: new SphereGeometry(0.017, 8, 6),
+      cheek: new SphereGeometry(0.046, 10, 8), // chubby kitten cheeks
+      ear: new ConeGeometry(0.058, 0.135, 6), // big pointed ears
+      earInner: new ConeGeometry(0.038, 0.102, 6),
+      eye: new SphereGeometry(0.037, 16, 14), // big round eyes — the charm
+      catchlight: new SphereGeometry(0.009, 8, 6), // the wet glint that lives
+      tailSeg: new CapsuleGeometry(0.025, 0.085, 5, 10),
+      tailTuft: new SphereGeometry(0.033, 10, 8),
+      thigh: new CapsuleGeometry(0.04, 0.085, 4, 8), // chunky little legs
+      shin: new CapsuleGeometry(0.03, 0.085, 4, 8),
+      paw: new SphereGeometry(0.038, 8, 6), // plump toe beans
       // Real-cat details: whiskers, vertical slit pupils, and the collar.
       whisker: (() => {
         const w = new CylinderGeometry(0.0013, 0.0008, 0.105, 3);
@@ -124,31 +127,33 @@ export function Cats() {
     // Streaky micro-variation so light breaks across the coat like guard
     // hairs instead of one uniform sheen.
     const furRough = makeNoiseRoughnessMap(256, 5, 0.42, 0.78, 33);
-    // A soft charcoal-plum plush, not wet vinyl: low clearcoat + high roughness
-    // + strong sheen give a fuzzy backlit-fur rim so the silhouette reads even
-    // in the drift's dim light. A faint cool emissive floor keeps the cats from
-    // ever sinking into pure black (well under the 1.05 bloom threshold).
+    // Matte plush, NOT wet vinyl. Glossy black eats the soft shading
+    // gradients that read as "round and cuddly", so we lift the black off
+    // pure #000 to a warm charcoal-plum, drop the clearcoat that was making
+    // it look like patent leather, and lean on high roughness + a warm sheen
+    // for a fuzzy backlit-fur rim. The lifted base keeps the round forms
+    // legible even in the drift's gloom (well under the 1.05 bloom threshold).
     const body = IS_TOUCH
       ? new MeshStandardMaterial({
-          color: "#191519",
-          roughness: 0.52,
-          metalness: 0.1,
-          emissive: new Color("#241a20"),
-          emissiveIntensity: 0.32,
+          color: "#241e25",
+          roughness: 0.66,
+          metalness: 0.04,
+          emissive: new Color("#2a1f27"),
+          emissiveIntensity: 0.34,
           roughnessMap: furRough,
         })
       : new MeshPhysicalMaterial({
-          color: "#191519",
-          roughness: 0.48,
-          clearcoat: 0.5,
-          clearcoatRoughness: 0.35,
+          color: "#241e25",
+          roughness: 0.64,
+          clearcoat: 0.12,
+          clearcoatRoughness: 0.6,
           sheen: 1,
-          sheenColor: new Color("#8a7686"),
-          sheenRoughness: 0.5,
-          emissive: new Color("#241a20"),
-          emissiveIntensity: 0.32,
+          sheenColor: new Color("#9a8390"),
+          sheenRoughness: 0.55,
+          emissive: new Color("#2a1f27"),
+          emissiveIntensity: 0.34,
           normalMap: furNormal,
-          normalScale: new Vector2(0.35, 0.35),
+          normalScale: new Vector2(0.32, 0.32),
           roughnessMap: furRough,
         });
     // The Fresnel fur rim rides both device profiles (same shader chunks).
@@ -159,12 +164,13 @@ export function Cats() {
       fuzz: makeFuzzMaterial(makeFurAlphaMap(256, 47)),
       // Soft dusty-pink inner ears — a matte, gently self-lit cuteness accent.
       innerEar: new MeshStandardMaterial({
-        color: "#b47f8b",
+        color: "#c98f9b",
         roughness: 0.9,
-        emissive: new Color("#b47f8b"),
-        emissiveIntensity: 0.12,
+        emissive: new Color("#c98f9b"),
+        emissiveIntensity: 0.14,
       }),
       // Emissive ABOVE the bloom threshold — the glowing eyes are HDR sources.
+      // Gold on most; canon says every third girl is GREEN-eyed (eyeAlt).
       eye: new MeshStandardMaterial({
         color: "#000000",
         emissive: "#ffc23a",
@@ -173,14 +179,19 @@ export function Cats() {
       }),
       eyeAlt: new MeshStandardMaterial({
         color: "#000000",
-        emissive: "#ffb02a",
-        emissiveIntensity: 2.4,
+        emissive: "#7bf0a2", // jade-green — the every-third-cat pop of color
+        emissiveIntensity: 2.3,
         roughness: 0.3,
       }),
+      // The catchlight: a tiny crisp white glint that makes an eye read as
+      // wet and alive instead of a flat glowing orb. Unlit + under the bloom
+      // threshold, so it's a sharp speck, not another glow.
+      catchlight: new MeshBasicMaterial({ color: "#fffaf0" }),
+      // A little pink kitten nose, self-lit just enough to read on black.
       nose: new MeshStandardMaterial({
-        color: "#6e5560",
-        emissive: "#6e5560",
-        emissiveIntensity: 0.15,
+        color: "#a86e77",
+        emissive: new Color("#a86e77"),
+        emissiveIntensity: 0.2,
       }),
       // Whiskers self-lit just enough to read against a black face.
       whisker: new MeshStandardMaterial({
