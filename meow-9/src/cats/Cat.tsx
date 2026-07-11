@@ -13,6 +13,7 @@ import { propChannel } from "../station/Props";
 import {
   GROOM_TOTAL,
   LAND_TOTAL,
+  PET_TOTAL,
   POUNCE,
   modeDuration,
   pickGroundedMode,
@@ -116,6 +117,7 @@ interface CatState {
   postX: number;
   postZ: number;
   hurry: boolean; // director-sent beeline (scratch cue) — trot, don't amble
+  petSide: number; // which flank the visitor's tap landed on (lean direction)
   rand: () => number;
 }
 
@@ -174,6 +176,7 @@ export function Cat({
       postX: 0,
       postZ: 0,
       hurry: false,
+      petSide: 1,
       rand,
     };
   }
@@ -271,6 +274,19 @@ export function Cat({
           s.mode = "groom";
           s.stateStart = s.time;
           s.dur = GROOM_TOTAL;
+        } else if (
+          dir.cue.kind === "pet" &&
+          !airborne &&
+          s.mode !== "land" &&
+          s.mode !== "pounce"
+        ) {
+          // A visitor's tap. Re-tapping mid-pet just restarts the clock —
+          // repeated petting extends the bliss.
+          s.mode = "pet";
+          s.stateStart = s.time;
+          s.dur = PET_TOTAL;
+          s.petSide = dir.cue.side;
+          sfx.purr(PET_TOTAL);
         } else if (dir.cue.kind === "scratch" && !airborne && s.mode !== "land") {
           startScratchApproach(s);
           s.hurry = true; // she knows exactly where she's going
@@ -303,6 +319,7 @@ export function Cat({
       s.mode !== "drift" &&
       s.mode !== "land" &&
       s.mode !== "scratch" && // mid-scratch bliss beats any dot
+      s.mode !== "pet" && // being petted beats the dot too
       s.mode !== "sleep" // sleepers have seen it all before
     ) {
       s.mode = "chase";
@@ -574,11 +591,13 @@ export function Cat({
         vel: new Vector3(),
         r: myR,
         airborne: false,
+        heading: 0,
       };
     }
     reg.pos.copy(s.pos);
     reg.vel.copy(s.vel);
     reg.airborne = airborne;
+    reg.heading = s.heading;
 
     // --- Root transform. ------------------------------------------------------
     rootG.position.copy(s.pos);
@@ -730,6 +749,30 @@ export function Cat({
           tailLift = 0.2;
           eyeOpen = 1.15;
         }
+        break;
+      }
+      case "pet": {
+        // Sit base pose, then melt into the hand: chin up, head rolled
+        // toward the tapped flank, eyes blissfully shut, a slow content
+        // tail. The envelope settles her in and reopens her eyes before
+        // the timer hands life back to decide().
+        bodyRX = -0.5;
+        bodyY = 0.21;
+        fsT[0] = fsT[1] = 0.52;
+        feT[0] = feT[1] = 0.05;
+        hhT[0] = hhT[1] = -1.25;
+        hkT[0] = hkT[1] = 2.0;
+        tailWrap = 1;
+        const env =
+          MathUtils.smoothstep(u, 0, 0.5) * (1 - MathUtils.smoothstep(u, PET_TOTAL - 0.6, PET_TOTAL));
+        headRX = -0.35 * env;
+        headRZ = 0.25 * s.petSide * env;
+        bodyRZ = 0.06 * s.petSide * env;
+        eyeOpen = 1 - 0.9 * env;
+        tailSwayRate = 1.1;
+        tailSwayAmp = 0.3;
+        // Pushing up into the hand — the little rhythmic lean-in.
+        bodyY += 0.012 * Math.sin(u * 5) * env;
         break;
       }
       case "land": {

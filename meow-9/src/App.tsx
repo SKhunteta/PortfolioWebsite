@@ -15,6 +15,7 @@ import { Nebula } from "./station/Nebula";
 import { Props } from "./station/Props";
 import { Cats } from "./cats/Cats";
 import { LaserPointer, useLaser } from "./interact/LaserPointer";
+import { PetPointer } from "./interact/PetPointer";
 import { AudioDriver } from "./audio/AudioDriver";
 import { useSound } from "./audio/store";
 import { ObserverMode, useObserver } from "./observer/ObserverMode";
@@ -381,6 +382,7 @@ export default function App() {
         <Props />
         <Cats />
         <LaserPointer />
+        <PetPointer />
         <ObserverMode />
         <PostFX />
         <OrbitControls
