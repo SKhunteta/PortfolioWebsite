@@ -54,6 +54,7 @@ const FeedControls = ({
   const [burstKey, setBurstKey] = useState(0);
   const [showBurst, setShowBurst] = useState(false);
   const burstTimerRef = useRef(null);
+  const prevReactionRef = useRef(reaction);
   const isLiked = reaction === "liked";
   const isDisliked = reaction === "disliked";
   const hasReacted = !!reaction;
@@ -64,12 +65,21 @@ const FeedControls = ({
     };
   }, []);
 
+  // Fire the burst on any transition into "liked" so keyboard, swipe,
+  // and double-tap likes celebrate the same way as the button.
+  useEffect(() => {
+    const prev = prevReactionRef.current;
+    prevReactionRef.current = reaction;
+    if (reaction === "liked" && !prev) {
+      setBurstKey((k) => k + 1);
+      setShowBurst(true);
+      if (burstTimerRef.current) clearTimeout(burstTimerRef.current);
+      burstTimerRef.current = setTimeout(() => setShowBurst(false), 800);
+    }
+  }, [reaction]);
+
   const handleLike = () => {
     if (hasReacted) return;
-    setBurstKey((k) => k + 1);
-    setShowBurst(true);
-    if (burstTimerRef.current) clearTimeout(burstTimerRef.current);
-    burstTimerRef.current = setTimeout(() => setShowBurst(false), 800);
     onLike();
   };
 

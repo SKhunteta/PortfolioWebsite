@@ -76,7 +76,15 @@ const StoryCard = ({
     };
   }, []);
 
+  const didDragRef = useRef(false);
+
   const handleTap = useCallback(() => {
+    // A swipe can still emit a click — don't let it count as a tap
+    if (didDragRef.current) {
+      didDragRef.current = false;
+      lastTapRef.current = 0;
+      return;
+    }
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
       // Double tap detected
@@ -134,6 +142,9 @@ const StoryCard = ({
   const dislikeOverlayOpacity = useTransform(dragX, [-120, 0], [0.35, 0]);
 
   const handleDragEnd = (_, info) => {
+    if (Math.abs(info.offset.x) > 10) {
+      didDragRef.current = true;
+    }
     if (hasReacted) return;
     if (info.offset.x > 100) {
       onLike();
@@ -489,6 +500,7 @@ const StoryCard = ({
             viewport={{ once: true }}
             className="flex-shrink-0 flex items-center"
             onPointerDownCapture={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
             <FeedControls
               onLike={onLike}

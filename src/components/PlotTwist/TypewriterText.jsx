@@ -41,15 +41,6 @@ const TypewriterText = ({ text, mode = "word", className, style }) => {
 
   const stagger = mode === "word" ? 0.025 : 0.1;
 
-  // If already played and re-rendered, show instantly
-  if (hasPlayed && !isVisible) {
-    return (
-      <div ref={ref} className={className} style={style}>
-        {text}
-      </div>
-    );
-  }
-
   return (
     <div ref={ref} className={className} style={style}>
       {segments.map((segment, i) => {

@@ -104,6 +104,9 @@ export const DEFAULT_PREFERENCES = {
   dislikedGenres: {},
   likedTags: {},
   dislikedTags: {},
+  // Actual reaction counts (1 per like/dislike) — genre/tag maps above carry
+  // recommendation weights and can be boosted by seeding and continuations.
+  stats: { liked: 0, disliked: 0 },
 };
 
 export const SWIPE_STAMPS = {

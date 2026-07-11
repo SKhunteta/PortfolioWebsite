@@ -45,7 +45,10 @@ export default function useStoryFeed() {
   const [continuations, setContinuations] = useState({}); // storyId → { texts: [], loading, error }
   const continuationsRef = useRef(continuations);
   continuationsRef.current = continuations;
+  const preferencesRef = useRef(preferences);
+  preferencesRef.current = preferences;
   const fetchingRef = useRef(false);
+  const requestIdRef = useRef(0);
   const prevGenreRef = useRef(genreFilter);
 
   // Load initial stories on mount
@@ -58,6 +61,7 @@ export default function useStoryFeed() {
   useEffect(() => {
     if (prevGenreRef.current === genreFilter) return;
     prevGenreRef.current = genreFilter;
+    requestIdRef.current += 1; // invalidate any in-flight fetch
     setStories([]);
     setError(null);
     fetchingRef.current = false; // allow a new fetch
@@ -68,15 +72,17 @@ export default function useStoryFeed() {
   const loadMore = useCallback(async () => {
     if (fetchingRef.current) return;
     fetchingRef.current = true;
+    const requestId = requestIdRef.current;
     setLoading(true);
     setError(null);
 
     try {
+      const prefs = preferencesRef.current;
       const apiPreferences = {
-        likedGenres: topKeys(preferences.likedGenres),
-        dislikedGenres: topKeys(preferences.dislikedGenres),
-        likedTags: topKeys(preferences.likedTags),
-        dislikedTags: topKeys(preferences.dislikedTags),
+        likedGenres: topKeys(prefs.likedGenres || {}),
+        dislikedGenres: topKeys(prefs.dislikedGenres || {}),
+        likedTags: topKeys(prefs.likedTags || {}),
+        dislikedTags: topKeys(prefs.dislikedTags || {}),
       };
 
       const response = await fetch(API_ENDPOINTS.stories, {
@@ -95,16 +101,20 @@ export default function useStoryFeed() {
       }
 
       const data = await response.json();
+      // A genre change invalidated this request while it was in flight
+      if (requestIdRef.current !== requestId) return;
       if (data.success && Array.isArray(data.stories)) {
         setStories((prev) => [...prev, ...data.stories]);
       }
     } catch (err) {
-      setError(err.message);
+      if (requestIdRef.current === requestId) setError(err.message);
     } finally {
-      setLoading(false);
-      fetchingRef.current = false;
+      if (requestIdRef.current === requestId) {
+        setLoading(false);
+        fetchingRef.current = false;
+      }
     }
-  }, [preferences, genreFilter]);
+  }, [genreFilter]);
 
   const likeStory = useCallback(
     (story) => {
@@ -128,6 +138,10 @@ export default function useStoryFeed() {
             [story.genre]: (prev.likedGenres[story.genre] || 0) + 1,
           },
           likedTags: { ...prev.likedTags },
+          stats: {
+            liked: (prev.stats?.liked || 0) + 1,
+            disliked: prev.stats?.disliked || 0,
+          },
         };
         (story.tags || []).forEach((tag) => {
           next.likedTags[tag] = (next.likedTags[tag] || 0) + 1;
@@ -159,6 +173,10 @@ export default function useStoryFeed() {
             [story.genre]: (prev.dislikedGenres[story.genre] || 0) + 1,
           },
           dislikedTags: { ...prev.dislikedTags },
+          stats: {
+            liked: prev.stats?.liked || 0,
+            disliked: (prev.stats?.disliked || 0) + 1,
+          },
         };
         (story.tags || []).forEach((tag) => {
           next.dislikedTags[tag] = (next.dislikedTags[tag] || 0) + 1;

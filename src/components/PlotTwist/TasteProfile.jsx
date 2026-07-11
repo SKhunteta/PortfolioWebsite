@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes, FaTrash } from "react-icons/fa";
 import { GENRE_ACCENT_COLORS, GENRE_LABELS } from "./constants";
 
-const RADAR_GENRES = [
+const DEFAULT_RADAR_GENRES = [
   "sci-fi",
   "fantasy",
   "horror",
@@ -14,16 +14,16 @@ const RADAR_GENRES = [
   "romance",
 ];
 
-const RadarChart = ({ values, size = 240 }) => {
+const RadarChart = ({ values, genres = DEFAULT_RADAR_GENRES, size = 240 }) => {
   const center = size / 2;
   const radius = size / 2 - 30;
-  const count = RADAR_GENRES.length;
+  const count = genres.length;
   const angleStep = (2 * Math.PI) / count;
 
   // Normalize values to 0-1 range
   const maxVal = Math.max(...Object.values(values), 1);
 
-  const points = RADAR_GENRES.map((genre, i) => {
+  const points = genres.map((genre, i) => {
     const angle = i * angleStep - Math.PI / 2;
     const val = (values[genre] || 0) / maxVal;
     return {
@@ -47,7 +47,7 @@ const RadarChart = ({ values, size = 240 }) => {
       {rings.map((ring) => (
         <polygon
           key={ring}
-          points={RADAR_GENRES.map((_, i) => {
+          points={genres.map((_, i) => {
             const angle = i * angleStep - Math.PI / 2;
             return `${center + Math.cos(angle) * radius * ring},${center + Math.sin(angle) * radius * ring}`;
           }).join(" ")}
@@ -58,7 +58,7 @@ const RadarChart = ({ values, size = 240 }) => {
       ))}
 
       {/* Axis lines */}
-      {RADAR_GENRES.map((_, i) => {
+      {genres.map((_, i) => {
         const angle = i * angleStep - Math.PI / 2;
         return (
           <line
@@ -141,12 +141,10 @@ const TasteProfile = ({ isOpen, onClose, preferences, onReset }) => {
 
   const stats = useMemo(() => {
     const likedGenres = preferences.likedGenres || {};
-    const dislikedGenres = preferences.dislikedGenres || {};
-    const totalLikes = Object.values(likedGenres).reduce((a, b) => a + b, 0);
-    const totalDislikes = Object.values(dislikedGenres).reduce(
-      (a, b) => a + b,
-      0
-    );
+    // Actual reaction counts — genre maps carry boosted recommendation
+    // weights (seeding, continuations) and would overcount.
+    const totalLikes = preferences.stats?.liked || 0;
+    const totalDislikes = preferences.stats?.disliked || 0;
     const totalRead = totalLikes + totalDislikes;
 
     // Find favorite genre
@@ -160,6 +158,21 @@ const TasteProfile = ({ isOpen, onClose, preferences, onReset }) => {
     }
 
     return { totalRead, totalLikes, totalDislikes, favoriteGenre };
+  }, [preferences]);
+
+  // Radar axes: the user's top liked genres first, padded with defaults,
+  // so the favorite genre is always plotted.
+  const radarGenres = useMemo(() => {
+    const axes = Object.entries(preferences.likedGenres || {})
+      .filter(([, count]) => count > 0)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, DEFAULT_RADAR_GENRES.length)
+      .map(([genre]) => genre);
+    for (const genre of DEFAULT_RADAR_GENRES) {
+      if (axes.length >= DEFAULT_RADAR_GENRES.length) break;
+      if (!axes.includes(genre)) axes.push(genre);
+    }
+    return axes;
   }, [preferences]);
 
   const hasData = stats.totalRead > 0;
@@ -214,7 +227,10 @@ const TasteProfile = ({ isOpen, onClose, preferences, onReset }) => {
                 <>
                   {/* Radar chart */}
                   <div className="flex justify-center mb-6">
-                    <RadarChart values={preferences.likedGenres || {}} />
+                    <RadarChart
+                      values={preferences.likedGenres || {}}
+                      genres={radarGenres}
+                    />
                   </div>
 
                   {/* Stats */}

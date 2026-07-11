@@ -49,12 +49,13 @@ describe("PlotTwist constants", () => {
     expect(STORAGE_KEYS.visited).toBe("plottwist-visited");
   });
 
-  it("exports DEFAULT_PREFERENCES with empty maps", () => {
+  it("exports DEFAULT_PREFERENCES with empty maps and zeroed stats", () => {
     expect(DEFAULT_PREFERENCES).toEqual({
       likedGenres: {},
       dislikedGenres: {},
       likedTags: {},
       dislikedTags: {},
+      stats: { liked: 0, disliked: 0 },
     });
   });
 });

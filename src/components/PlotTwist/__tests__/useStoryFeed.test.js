@@ -158,6 +158,131 @@ describe("useStoryFeed", () => {
     expect(result.current.savedStories).toHaveLength(0);
   });
 
+  it("counts actual reactions in stats, not seeded genre boosts", async () => {
+    const { result } = renderHook(() => useStoryFeed());
+
+    await vi.waitFor(() => {
+      expect(result.current.stories.length).toBe(2);
+    });
+
+    // Seeding (welcome card) boosts genre weights but is not a "read"
+    act(() => {
+      result.current.seedGenres(["fantasy", "noir"]);
+    });
+    expect(result.current.preferences.stats?.liked || 0).toBe(0);
+
+    act(() => {
+      result.current.likeStory(result.current.stories[0]);
+    });
+    act(() => {
+      result.current.dislikeStory(result.current.stories[1]);
+    });
+
+    expect(result.current.preferences.stats).toEqual({
+      liked: 1,
+      disliked: 1,
+    });
+
+    const prefs = JSON.parse(localStorage.getItem(STORAGE_KEYS.preferences));
+    expect(prefs.stats).toEqual({ liked: 1, disliked: 1 });
+    // Seeded weights still applied for recommendations
+    expect(prefs.likedGenres.fantasy).toBe(2);
+  });
+
+  it("does not count continuations as read stories", async () => {
+    const { result } = renderHook(() => useStoryFeed());
+
+    await vi.waitFor(() => {
+      expect(result.current.stories.length).toBe(2);
+    });
+
+    global.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ success: true, continuation: "And then..." }),
+      })
+    );
+
+    await act(async () => {
+      await result.current.continueStory(result.current.stories[0]);
+    });
+
+    expect(result.current.continuations["story-1"].texts).toEqual([
+      "And then...",
+    ]);
+    // Continue boosts the genre weight (2x) but not the read counters
+    expect(result.current.preferences.likedGenres["sci-fi"]).toBe(2);
+    expect(result.current.preferences.stats?.liked || 0).toBe(0);
+  });
+
+  it("ignores stale in-flight fetches after a genre change", async () => {
+    let resolveFirst;
+    const firstResponse = new Promise((resolve) => {
+      resolveFirst = resolve;
+    });
+    const staleBatch = {
+      success: true,
+      stories: [
+        {
+          id: "stale-1",
+          type: "premise",
+          title: "Stale Story",
+          content: "Old genre content",
+          genre: "sci-fi",
+          mood: "tense",
+          tags: [],
+        },
+      ],
+    };
+    const freshBatch = {
+      success: true,
+      stories: [
+        {
+          id: "fresh-1",
+          type: "premise",
+          title: "Fresh Story",
+          content: "New genre content",
+          genre: "horror",
+          mood: "eerie",
+          tags: [],
+        },
+      ],
+    };
+
+    let callCount = 0;
+    global.fetch = vi.fn(() => {
+      callCount += 1;
+      if (callCount === 1) return firstResponse;
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(freshBatch),
+      });
+    });
+
+    const { result } = renderHook(() => useStoryFeed());
+
+    // Change genre while the initial fetch is still in flight
+    act(() => {
+      result.current.setGenreFilter("horror");
+    });
+
+    await vi.waitFor(() => {
+      expect(result.current.stories.map((s) => s.id)).toEqual(["fresh-1"]);
+    });
+
+    // Let the stale request resolve — it must be discarded
+    await act(async () => {
+      resolveFirst({
+        ok: true,
+        json: () => Promise.resolve(staleBatch),
+      });
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+    expect(result.current.stories.map((s) => s.id)).toEqual(["fresh-1"]);
+    expect(result.current.loading).toBe(false);
+  });
+
   it("handles fetch errors gracefully", async () => {
     global.fetch = vi.fn(() =>
       Promise.resolve({
