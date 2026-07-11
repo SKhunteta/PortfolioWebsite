@@ -18,7 +18,7 @@ const CityQuiz = () => {
   const [answers, setAnswers] = useState([]);
 
   useEffect(() => {
-    document.title = "How Well Do You Know Your City? · Built by Shrey";
+    document.title = "City Quiz — Know Your City?";
   }, []);
 
   useEffect(() => {

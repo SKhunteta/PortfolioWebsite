@@ -15,7 +15,7 @@ const EmotionalLaborExchange = () => {
 
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = "Emotional Labor Exchange";
+    document.title = "The Emotional Labor Exchange";
     return () => {
       document.title = previousTitle;
     };

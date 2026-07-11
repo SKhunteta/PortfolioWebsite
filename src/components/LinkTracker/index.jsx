@@ -11,7 +11,7 @@ const LinkTracker = () => {
 
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = "Link Light Rail Tracker";
+    document.title = "Seattle Link Light Rail Tracker";
     return () => {
       document.title = previousTitle;
     };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FaGithub } from "react-icons/fa";
 import Navbar from "../components/navbar";
@@ -266,6 +266,14 @@ const PlaygroundPage = () => {
   const series = DEMOS.filter(
     (demo) => demo.series === HAPPINESS_LIABILITY_SERIES.id
   );
+
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = "Playground — Interactive Demos";
+    return () => {
+      document.title = previousTitle;
+    };
+  }, []);
 
   return (
     <div className="bg-light text-secondary relative overflow-hidden">

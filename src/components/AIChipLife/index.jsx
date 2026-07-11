@@ -76,7 +76,7 @@ const AIChipLife = () => {
   // restored on unmount (SPA, so this is best-effort for JS-running crawlers).
   useEffect(() => {
     const prevTitle = document.title;
-    document.title = "The Life of an AI Chip · Shreyans Khunteta";
+    document.title = "The Life of an AI Chip";
 
     const meta = document.querySelector('meta[name="description"]');
     const prevDescription = meta ? meta.getAttribute("content") : null;

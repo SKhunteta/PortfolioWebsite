@@ -17,7 +17,7 @@ const HypeCheck = () => {
   const game = useHypeCheck();
 
   useEffect(() => {
-    document.title = "Hype Check — July 2026 · Built by Shrey";
+    document.title = "Hype Check — AI Buzzwords, One Year Later";
   }, []);
 
   return (
