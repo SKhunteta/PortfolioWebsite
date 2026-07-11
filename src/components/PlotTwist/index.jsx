@@ -139,9 +139,11 @@ const MilestoneToast = ({ message, onDone }) => {
   const timerRef = useRef(null);
 
   useEffect(() => {
+    timerRef.current = setTimeout(onDone, 3000);
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -150,10 +152,6 @@ const MilestoneToast = ({ message, onDone }) => {
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: -60, opacity: 0 }}
       transition={{ type: "spring", damping: 20, stiffness: 300 }}
-      onAnimationComplete={(def) => {
-        if (def === "exit") return;
-        timerRef.current = setTimeout(onDone, 3000);
-      }}
       className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-pt-surface border border-pt-accent/30 rounded-full px-6 py-2.5 shadow-lg shadow-pt-accent/10"
     >
       <p
@@ -385,6 +383,15 @@ const PlotTwist = () => {
     },
     [remixTarget, remixLoading, remixStory]
   );
+
+  // Jump back to the top when the genre filter changes — the feed is
+  // cleared, so a stale scroll position would land mid-feed.
+  const prevFilterRef = useRef(genreFilter);
+  useEffect(() => {
+    if (prevFilterRef.current === genreFilter) return;
+    prevFilterRef.current = genreFilter;
+    scrollRef.current?.scrollTo({ top: 0 });
+  }, [genreFilter]);
 
   // Infinite scroll
   const handleScroll = useCallback(() => {

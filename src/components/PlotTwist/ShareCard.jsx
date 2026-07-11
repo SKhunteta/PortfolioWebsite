@@ -26,9 +26,9 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxY = Infinity) {
   let currentY = y;
   let truncated = false;
 
-  for (const para of paragraphs) {
+  for (let pi = 0; pi < paragraphs.length; pi++) {
     if (truncated) break;
-    const words = para.split(" ");
+    const words = paragraphs[pi].split(" ");
     let line = "";
 
     for (const word of words) {
@@ -48,7 +48,11 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxY = Infinity) {
       }
     }
     if (!truncated) {
-      if (currentY > maxY) {
+      // Same bound as above so the paragraph's final line can't spill
+      // into the footer zone; ellipsis only if content actually remains.
+      if (currentY + lineHeight > maxY) {
+        const hasMore = pi < paragraphs.length - 1;
+        ctx.fillText(line.trim() + (hasMore ? "..." : ""), x, currentY);
         truncated = true;
         break;
       }
@@ -204,13 +208,36 @@ const ShareCard = ({ story, isOpen, onClose, continuationTexts }) => {
   }, [isOpen, handleKeyDown]);
 
   useEffect(() => {
-    if (isOpen && story && canvasRef.current) {
-      generateShareImage(canvasRef.current, story, continuationTexts);
-      setImageUrl(canvasRef.current.toDataURL("image/png"));
-    }
     if (!isOpen) {
       setImageUrl(null);
+      return;
     }
+    if (!story) return;
+
+    let cancelled = false;
+    const draw = async () => {
+      // Wait for the webfonts the canvas uses, otherwise the image is
+      // drawn (and word-wrapped) with fallback fonts on first open.
+      if (document.fonts?.load) {
+        await Promise.all([
+          document.fonts.load('500 28px "DM Sans"'),
+          document.fonts.load('italic 24px "DM Sans"'),
+          document.fonts.load('32px "DM Sans"'),
+          document.fonts.load('500 20px "DM Sans"'),
+          document.fonts.load('22px "DM Sans"'),
+        ]).catch(() => {
+          // Fonts unavailable — draw with fallbacks
+        });
+      }
+      if (cancelled || !canvasRef.current) return;
+      generateShareImage(canvasRef.current, story, continuationTexts);
+      setImageUrl(canvasRef.current.toDataURL("image/png"));
+    };
+    draw();
+
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen, story, continuationTexts]);
 
   const handleDownload = () => {

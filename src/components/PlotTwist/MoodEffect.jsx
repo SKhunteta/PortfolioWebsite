@@ -45,6 +45,7 @@ const FloatingParticles = ({ color = "255,255,255", count = 12, direction = "up"
       Array.from({ length: count }, (_, i) => ({
         id: i,
         left: `${10 + Math.random() * 80}%`,
+        top: `${20 + Math.random() * 60}%`,
         delay: `${Math.random() * 4}s`,
         duration: `${4 + Math.random() * 4}s`,
         size: `${3 + Math.random() * 4}px`,
@@ -64,7 +65,7 @@ const FloatingParticles = ({ color = "255,255,255", count = 12, direction = "up"
             position: "absolute",
             left: p.left,
             bottom: direction === "up" ? "-5%" : undefined,
-            top: direction !== "up" ? `${20 + Math.random() * 60}%` : undefined,
+            top: direction !== "up" ? p.top : undefined,
             width: p.size,
             height: p.size,
             borderRadius: "50%",
