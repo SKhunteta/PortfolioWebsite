@@ -7,9 +7,11 @@ import { laserSurfaces } from "../station/surfaces";
 
 // The caretaker drone's laser pointer. A plain mutable channel (dofChannel
 // pattern — zero React churn): cats read it every frame from their own
-// useFrame loops. The pointer is ARMED via the pill button in App.tsx; while
-// armed, OrbitControls are disabled so dragging paints the dot instead of
-// orbiting — on mouse and touch alike.
+// useFrame loops. The pointer is ARMED via the pill button in App.tsx.
+// Mouse: arming disables OrbitControls entirely — the drag paints the dot.
+// Touch: ONE finger paints; TWO fingers yield to the camera gesture (App.tsx
+// re-enables OrbitControls with one-finger orbit off), and the dot goes dark
+// while a second finger is down so it never teleports between fingers.
 
 export const laserChannel = {
   active: false,
@@ -55,7 +57,11 @@ export function LaserPointer() {
     }
     const el = gl.domElement;
     el.style.cursor = "crosshair";
+    const pointers = new Set<number>();
     const onMove = (e: PointerEvent) => {
+      // A second finger means a camera gesture — the dot yields until the
+      // hand is back to one finger.
+      if (pointers.size >= 2) return;
       const r = el.getBoundingClientRect();
       scratch.ndc.set(
         ((e.clientX - r.left) / r.width) * 2 - 1,
@@ -63,17 +69,33 @@ export function LaserPointer() {
       );
       scratch.has = true;
     };
+    const onDown = (e: PointerEvent) => {
+      pointers.add(e.pointerId);
+      if (pointers.size >= 2) {
+        scratch.has = false;
+        laserChannel.active = false;
+        return;
+      }
+      onMove(e);
+    };
+    const onEnd = (e: PointerEvent) => {
+      pointers.delete(e.pointerId);
+    };
     const onLeave = () => {
       scratch.has = false;
       laserChannel.active = false;
     };
     el.addEventListener("pointermove", onMove);
-    el.addEventListener("pointerdown", onMove);
+    el.addEventListener("pointerdown", onDown);
+    el.addEventListener("pointerup", onEnd);
+    el.addEventListener("pointercancel", onEnd);
     el.addEventListener("pointerleave", onLeave);
     return () => {
       el.style.cursor = "";
       el.removeEventListener("pointermove", onMove);
-      el.removeEventListener("pointerdown", onMove);
+      el.removeEventListener("pointerdown", onDown);
+      el.removeEventListener("pointerup", onEnd);
+      el.removeEventListener("pointercancel", onEnd);
       el.removeEventListener("pointerleave", onLeave);
       laserChannel.active = false;
       scratch.has = false;

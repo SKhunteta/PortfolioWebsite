@@ -14,7 +14,8 @@ export type CatMode =
   | "scratch" // up on hind legs at a sisal post, alternating paw strokes
   | "drift" // low-g tumble + air-paddle
   | "land" // crouch-absorb after re-entry (cats land on their feet)
-  | "pet"; // a visitor's tap — settle, lean in, purr (cue-only, never picked)
+  | "pet" // a visitor's tap — settle, lean in, purr (cue-only, never picked)
+  | "duty"; // crew only: sat tall at her console — paw-taps, telemetry sweeps
 
 /** Pounce timeline (seconds from cue / commit). */
 export const POUNCE = {
@@ -34,8 +35,14 @@ export const PET_TOTAL = 3.2;
 /** Crouch-absorb after touchdown. */
 export const LAND_TOTAL = 0.85;
 
-/** Weighted grounded-mode pick, biased by personality. `r` in [0,1). */
-export function pickGroundedMode(r: number, lazy: number, playful: number): CatMode {
+/** Weighted grounded-mode pick, biased by personality. `r` in [0,1).
+ *  `dutiful` = the cat wears a harness: her shift comes up between naps. */
+export function pickGroundedMode(
+  r: number,
+  lazy: number,
+  playful: number,
+  dutiful = false
+): CatMode {
   const weights: [CatMode, number][] = [
     ["sit", 1],
     ["loaf", 1 + 2.2 * lazy],
@@ -43,6 +50,7 @@ export function pickGroundedMode(r: number, lazy: number, playful: number): CatM
     ["groom", 1],
     ["sleep", 0.45 + 1.3 * lazy],
     ["scratch", 0.5 + 1.0 * playful], // resolved as walk-to-post, then scratch
+    ["duty", dutiful ? 1.5 : 0], // resolved as walk-to-console, then duty
   ];
   let total = 0;
   for (const [, w] of weights) total += w;
@@ -70,6 +78,8 @@ export function modeDuration(mode: CatMode, r: number): number {
       return 4 + r * 6;
     case "scratch":
       return 4.5 + r * 3.5;
+    case "duty":
+      return 7 + r * 6; // a proper shift at the console, not a drive-by
     default:
       return 4;
   }
