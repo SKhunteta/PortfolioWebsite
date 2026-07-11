@@ -9,6 +9,7 @@ import * as sfx from "../audio/engine";
 import { laserChannel } from "../interact/LaserPointer";
 import { CAT_SPOTS } from "../station/Room";
 import { SCRATCH_POSTS, resolveCircles } from "../station/colliders";
+import { CREW_BY_ROLE, type CrewRole } from "../station/crew";
 import { propChannel } from "../station/Props";
 import {
   GROOM_TOTAL,
@@ -44,6 +45,8 @@ export interface CatSpec {
   seed: number;
   /** The real girls wear collars: "A" = gold tag, "B" = blue tag. */
   collar?: "A" | "B";
+  /** Duty crew wear a service harness and hold a post (station/crew.ts). */
+  role?: CrewRole;
 }
 
 export interface CatGeoms {
@@ -66,6 +69,10 @@ export interface CatGeoms {
   pupil: BufferGeometry;
   collar: BufferGeometry;
   tag: BufferGeometry;
+  vestBand: BufferGeometry;
+  vestPlate: BufferGeometry;
+  vestLight: BufferGeometry;
+  pip: BufferGeometry;
 }
 
 export interface CatMats {
@@ -80,6 +87,9 @@ export interface CatMats {
   collar: Material;
   tagA: Material;
   tagB: Material;
+  /** Service-harness materials per crew role (cloth + the little duty light). */
+  crew: Record<CrewRole, { cloth: Material; light: Material }>;
+  pip: Material; // the commander's rank pips
 }
 
 const BODY_REST_Y = 0.235;
@@ -115,7 +125,8 @@ interface CatState {
   flickAt: number;
   flickStart: number;
   wantScratch: boolean; // current walk ends at a post, claws out
-  postX: number;
+  wantDuty: boolean; // current walk ends at her console, on shift
+  postX: number; // what she squares up to on arrival (post or console)
   postZ: number;
   hurry: boolean; // director-sent beeline (scratch cue) — trot, don't amble
   petSide: number; // which flank the visitor's tap landed on (lean direction)
@@ -174,6 +185,7 @@ export function Cat({
       flickAt: 1.5 + rand() * 4,
       flickStart: -9,
       wantScratch: false,
+      wantDuty: false,
       postX: 0,
       postZ: 0,
       hurry: false,
@@ -189,13 +201,31 @@ export function Cat({
     headPos: new Vector3(),
   });
 
-  /** Walk to the nearest sisal post, then rise up and scratch on arrival. */
+  /** How many OTHER grounded cats are already hanging around a point.
+   *  The personal-space currency: walk targets, scratch posts, and nap picks
+   *  are all scored against it so the roster spreads across the hab instead
+   *  of piling into a knot around the cat tree. */
+  const crowdAt = (x: number, z: number, radius = 1.15) => {
+    let n = 0;
+    for (let j = 0; j < catBodies.length; j++) {
+      if (j === index) continue;
+      const b = catBodies[j];
+      if (!b || b.airborne) continue;
+      const dx = b.pos.x - x;
+      const dz = b.pos.z - z;
+      if (dx * dx + dz * dz < radius * radius) n++;
+    }
+    return n;
+  };
+
+  /** Walk to a sisal post, then rise up and scratch on arrival. Nearest wins,
+   *  but a post with company costs ~3 m of extra walk — no queueing. */
   const startScratchApproach = (s: CatState) => {
     let px = SCRATCH_POSTS[0][0];
     let pz = SCRATCH_POSTS[0][1];
     let best = Infinity;
     for (const [x, z] of SCRATCH_POSTS) {
-      const d = (x - s.pos.x) ** 2 + (z - s.pos.z) ** 2;
+      const d = (x - s.pos.x) ** 2 + (z - s.pos.z) ** 2 + 9 * crowdAt(x, z, 0.9);
       if (d < best) (best = d), (px = x), (pz = z);
     }
     s.postX = px;
@@ -213,12 +243,35 @@ export function Cat({
     s.dur = 9; // generous walk budget; the timeout below covers dead ends
   };
 
+  /** Crew only: walk to her duty post, sit the console on arrival. */
+  const startDutyApproach = (s: CatState) => {
+    const post = CREW_BY_ROLE[spec.role!].post;
+    s.postX = post.faceX;
+    s.postZ = post.faceZ;
+    s.target.set(post.x, 0, post.z);
+    s.wantDuty = true;
+    s.mode = "walk";
+    s.stateStart = s.time;
+    s.dur = 12; // her post can be clear across the hab
+  };
+
   const decide = (s: CatState) => {
     s.hurry = false;
     s.wantScratch = false;
-    const pick = pickGroundedMode(s.rand(), spec.lazy, spec.playful);
+    s.wantDuty = false;
+    let pick = pickGroundedMode(s.rand(), spec.lazy, spec.playful, !!spec.role);
+    // Personal space: never settle inside a knot of sisters. If she'd sit,
+    // loaf, or sleep where two others already are, she walks instead — cats
+    // like company at a polite distance.
+    if (pick !== "walk" && pick !== "scratch" && pick !== "duty" && crowdAt(s.pos.x, s.pos.z, 0.95) >= 2) {
+      pick = "walk";
+    }
     if (pick === "scratch") {
       startScratchApproach(s);
+      return;
+    }
+    if (pick === "duty") {
+      startDutyApproach(s);
       return;
     }
     s.mode = pick;
@@ -235,7 +288,11 @@ export function Cat({
           MathUtils.clamp(b.pos.z, -HALF_D + 0.3, HALF_D - 0.3)
         );
       } else if (s.rand() < 0.55) {
-        const [tx, tz] = CAT_SPOTS[Math.floor(s.rand() * CAT_SPOTS.length)];
+        // Two candidate spots, take the quieter one — the roster stops piling
+        // onto the cat tree the moment somebody's already loafing there.
+        const a = CAT_SPOTS[Math.floor(s.rand() * CAT_SPOTS.length)];
+        const b = CAT_SPOTS[Math.floor(s.rand() * CAT_SPOTS.length)];
+        const [tx, tz] = crowdAt(a[0], a[1]) <= crowdAt(b[0], b[1]) ? a : b;
         s.target.set(tx + (s.rand() - 0.5) * 1.2, 0, tz + (s.rand() - 0.5) * 1.2);
       } else {
         s.target.set((s.rand() * 2 - 1) * (HALF_W - 0.5), 0, (s.rand() * 2 - 1) * (HALF_D - 0.5));
@@ -291,6 +348,9 @@ export function Cat({
         } else if (dir.cue.kind === "scratch" && !airborne && s.mode !== "land") {
           startScratchApproach(s);
           s.hurry = true; // she knows exactly where she's going
+        } else if (dir.cue.kind === "duty" && spec.role && !airborne && s.mode !== "land") {
+          startDutyApproach(s);
+          s.hurry = true; // called to her post — she reports at a trot
         } else if (dir.cue.kind === "pounce") {
           if (s.mode === "drift") {
             // Zero-g "pounce": a committed push-off along the heading.
@@ -321,6 +381,7 @@ export function Cat({
       s.mode !== "land" &&
       s.mode !== "scratch" && // mid-scratch bliss beats any dot
       s.mode !== "pet" && // being petted beats the dot too
+      s.mode !== "duty" && // she's ON SHIFT — the dot can wait
       s.mode !== "sleep" // sleepers have seen it all before
     ) {
       s.mode = "chase";
@@ -375,6 +436,13 @@ export function Cat({
             s.stateStart = s.time;
             s.dur = modeDuration("scratch", s.rand());
             sfx.purr(s.dur); // sisal under the claws — pure bliss
+          } else if (s.wantDuty) {
+            // Reported to her post: sit the console, start the shift.
+            s.wantDuty = false;
+            s.hurry = false;
+            s.mode = "duty";
+            s.stateStart = s.time;
+            s.dur = modeDuration("duty", s.rand());
           } else {
             decide(s);
           }
@@ -384,8 +452,8 @@ export function Cat({
           decide(s);
         }
       }
-    } else if (s.mode === "scratch") {
-      // Planted at the approach point, squared up to the post.
+    } else if (s.mode === "scratch" || s.mode === "duty") {
+      // Planted at the approach point, squared up to the post (or console).
       const want = Math.atan2(s.postX - s.pos.x, s.postZ - s.pos.z);
       s.heading += shortestArc(want - s.heading) * Math.min(1, 6 * dt);
       const k = Math.min(1, 8 * dt);
@@ -786,6 +854,29 @@ export function Cat({
         tailLift = 0.8;
         break;
       }
+      case "duty": {
+        // On shift: sat tall at the console, chin up at the readouts. Every
+        // few seconds a burst of paw-taps at the panel; between bursts the
+        // head sweeps the telemetry. Competence, rendered in cat.
+        const rise = MathUtils.smoothstep(u, 0, 0.5);
+        bodyRX = -0.62 * rise; // more upright than a plain sit
+        bodyY = MathUtils.lerp(BODY_REST_Y, 0.255, rise);
+        hhT[0] = hhT[1] = -1.25 * rise;
+        hkT[0] = hkT[1] = 2.0 * rise;
+        tailWrap = 1;
+        const cycle = (u % 3.4) / 3.4; // work rhythm: tap burst, then watch
+        const tap = cycle < 0.3 ? Math.max(0, Math.sin(u * 15)) : 0;
+        fsT[0] = 0.52 * rise - 1.35 * tap;
+        feT[0] = 0.05 + 1.0 * tap;
+        fsT[1] = 0.52 * rise;
+        feT[1] = 0.05;
+        headRX = -0.14; // eyes on the screen
+        headRY = 0.3 * Math.sin(u * 0.7 + spec.seed); // scanning the readouts
+        eyeOpen = 1.05;
+        tailSwayAmp = 0.16;
+        tailSwayRate = 1.2;
+        break;
+      }
       case "scratch": {
         // Up on the hind legs, chest to the post, alternating full-arm
         // strokes down the sisal — pure bliss, eyes half-closed.
@@ -905,6 +996,12 @@ export function Cat({
         setTrackYaw("cat0Head", s.heading);
       }
     }
+    // The commander is trackable too — the Observer's "The Watch" shot rides
+    // her to the conn the same way the hero-cat shots ride cat0.
+    if (spec.role === "commander") {
+      setTrackPoint("cmdCat", rootG.position);
+      setTrackYaw("cmdCat", s.heading);
+    }
     if (s.mode === "drift") reportDrift(rootG.position, s.vel.length());
   });
 
@@ -991,6 +1088,24 @@ export function Cat({
               position={[0, -0.035, 0.102]}
               scale={[1, 1, 0.55]}
             />
+          </group>
+        )}
+
+        {/* the service harness — two girth bands, a spine plate, and the
+            role-colored duty light. Uniforms, but make it cat. */}
+        {spec.role && (
+          <group>
+            <mesh geometry={geoms.vestBand} material={mats.crew[spec.role].cloth} position={[0, 0.01, 0.055]} scale={[1, 0.97, 1]} />
+            <mesh geometry={geoms.vestBand} material={mats.crew[spec.role].cloth} position={[0, 0.005, -0.06]} scale={[1.04, 1, 1]} />
+            <mesh geometry={geoms.vestPlate} material={mats.crew[spec.role].cloth} position={[0, 0.121, 0]} castShadow={CAST} />
+            <mesh geometry={geoms.vestLight} material={mats.crew[spec.role].light} position={[0, 0.138, -0.048]} />
+            {/* rank pips — the commander outranks everyone but the girls */}
+            {spec.role === "commander" && (
+              <>
+                <mesh geometry={geoms.pip} material={mats.pip} position={[0.022, 0.137, 0.05]} />
+                <mesh geometry={geoms.pip} material={mats.pip} position={[-0.022, 0.137, 0.05]} />
+              </>
+            )}
           </group>
         )}
 

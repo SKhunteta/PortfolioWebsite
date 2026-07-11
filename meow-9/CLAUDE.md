@@ -25,6 +25,24 @@ room, one dial, sixteen adorable black cats.
   rise on hind legs, alternating strokes) cueable by the Observer.
 - The two hero cats wear collars (spec.collar "A" gold tag / "B" blue) —
   they're modelled on the real girls. Whiskers + slit pupils on everyone.
+- The station is CREWED — by cats. Five uniformed professionals in
+  role-colored service harnesses hold roster slots 2–6 (inside the touch
+  cut): Cmdr. BAST at the command console under the porthole, KEPLER the
+  spin engineer (her wall gauge's needle IS the Gravity Dial, diegetically),
+  MISO in the med bay, STATIC on comms, CLOVER in hydroponics (glowing
+  catnip rack). `station/crew.ts` is the registry — names, harness colors,
+  duty posts — and its ZONES table is the single source for console
+  footprints (colliders.ts derives the furniture circles from it). Crew
+  cats roll a `duty` mode between naps: walk to post → sit tall → paw-tap
+  bursts + telemetry head-sweeps. A duty cue exists for the director.
+  The girls (slots 0/1) wear no uniform: they own the place.
+- Signage is canvas-drawn (`fx/labels.ts`, still no external assets): the
+  MEOW-9 plaque over the porthole, the duty roster board, a label per
+  section, crate stencils. Painted-light MeshBasicMaterial, under bloom.
+- Cats keep PERSONAL SPACE: walk targets, scratch posts, and settle-downs
+  are crowd-scored (`crowdAt` in Cat.tsx) — a cat never settles where two
+  sisters already are, and busy posts cost extra walk — so the roster
+  spreads across the hab instead of piling around the cat tree.
 
 ## Architecture rules
 - One **GravityDial** (`src/world/GravityDial.ts`, `g ∈ [0,1]`) drives
@@ -62,5 +80,5 @@ no composer, collapsed Leva.
 
 ## Dev handles
 `__meowGravity` (setG/setRunning), `__meowObserver` (`jumpTo(i)`),
-`__meowDirector` (`direct({kind:"pounce"|"groom"|"scratch",index:0})`),
+`__meowDirector` (`direct({kind:"pounce"|"groom"|"scratch"|"duty",index:0})`),
 `__meowTrack` (`point(key)` / `yaw(key)` / `bodies` — live track registry).

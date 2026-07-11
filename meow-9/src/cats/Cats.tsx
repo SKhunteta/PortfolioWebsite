@@ -1,6 +1,7 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import {
+  BoxGeometry,
   CapsuleGeometry,
   Color,
   ConeGeometry,
@@ -12,6 +13,7 @@ import {
   TorusGeometry,
   Vector2,
 } from "three";
+import { CREW, CREW_INDEX_BASE, type CrewRole } from "../station/crew";
 import { IS_TOUCH } from "../world/device";
 import { useGravity } from "../world/GravityDial";
 import { mulberry32 } from "../world/rng";
@@ -43,6 +45,12 @@ const CATS: CatSpec[] = (() => {
   roster[0].size = 1.0;
   roster[1].collar = "B";
   roster[1].size = 0.95;
+  // The duty crew take roster slots 2..6 (inside the touch cut) — harnessed,
+  // named on the roster board, each with a console she actually works.
+  CREW.forEach((m, i) => {
+    const c = roster[CREW_INDEX_BASE + i];
+    if (c) c.role = m.role;
+  });
   return roster;
 })();
 
@@ -115,6 +123,12 @@ export function Cats() {
       pupil: new CapsuleGeometry(0.0058, 0.026, 3, 8),
       collar: new TorusGeometry(0.098, 0.013, 8, 22),
       tag: new SphereGeometry(0.02, 10, 8),
+      // The crew's service harness: girth bands ring the barrel (torus lies
+      // in XY, so it already wraps the +Z torso), spine plate on top.
+      vestBand: new TorusGeometry(0.118, 0.019, 8, 22),
+      vestPlate: new BoxGeometry(0.1, 0.026, 0.16),
+      vestLight: new SphereGeometry(0.013, 8, 8),
+      pip: new SphereGeometry(0.008, 6, 6),
     }),
     []
   );
@@ -205,6 +219,36 @@ export function Cats() {
         roughness: 0.4,
         emissive: new Color("#5ee9ff"),
         emissiveIntensity: 0.7,
+      }),
+      // Service harnesses: matte section-color cloth with a faint emissive
+      // floor (so a uniform reads on black fur in the drift's gloom) and the
+      // little duty light — glowing, but under the 1.05 bloom threshold.
+      crew: Object.fromEntries(
+        CREW.map((m) => [
+          m.role,
+          {
+            cloth: new MeshStandardMaterial({
+              color: m.cloth,
+              roughness: 0.85,
+              metalness: 0.05,
+              emissive: new Color(m.cloth),
+              emissiveIntensity: 0.22,
+            }),
+            light: new MeshStandardMaterial({
+              color: "#000000",
+              emissive: new Color(m.light),
+              emissiveIntensity: 0.95,
+              roughness: 0.4,
+            }),
+          },
+        ])
+      ) as Record<CrewRole, { cloth: MeshStandardMaterial; light: MeshStandardMaterial }>,
+      pip: new MeshStandardMaterial({
+        color: "#caa23a",
+        metalness: 0.6,
+        roughness: 0.35,
+        emissive: new Color("#ffb02a"),
+        emissiveIntensity: 0.8,
       }),
     };
   }, []);
