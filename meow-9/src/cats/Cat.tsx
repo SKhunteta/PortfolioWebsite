@@ -6,6 +6,8 @@ import { useGravity } from "../world/GravityDial";
 import { IS_TOUCH } from "../world/device";
 import { laserChannel } from "../interact/LaserPointer";
 import { CAT_SPOTS } from "../station/Room";
+import { SCRATCH_POSTS, resolveCircles } from "../station/colliders";
+import { propChannel } from "../station/Props";
 import {
   GROOM_TOTAL,
   LAND_TOTAL,
@@ -15,6 +17,7 @@ import {
   type CatMode,
 } from "./fsm";
 import {
+  catBodies,
   directionFlags,
   reportDrift,
   setTrackPoint,
@@ -36,6 +39,8 @@ export interface CatSpec {
   lazy: number;
   playful: number;
   seed: number;
+  /** The real girls wear collars: "A" = gold tag, "B" = blue tag. */
+  collar?: "A" | "B";
 }
 
 export interface CatGeoms {
@@ -54,6 +59,10 @@ export interface CatGeoms {
   thigh: BufferGeometry;
   shin: BufferGeometry;
   paw: BufferGeometry;
+  whisker: BufferGeometry;
+  pupil: BufferGeometry;
+  collar: BufferGeometry;
+  tag: BufferGeometry;
 }
 
 export interface CatMats {
@@ -62,6 +71,11 @@ export interface CatMats {
   eye: Material;
   eyeAlt: Material;
   nose: Material;
+  whisker: Material;
+  pupil: Material;
+  collar: Material;
+  tagA: Material;
+  tagB: Material;
 }
 
 const BODY_REST_Y = 0.235;
@@ -107,6 +121,10 @@ interface CatState {
   lookYaw: number;
   flickAt: number;
   flickStart: number;
+  wantScratch: boolean; // current walk ends at a post, claws out
+  postX: number;
+  postZ: number;
+  hurry: boolean; // director-sent beeline (scratch cue) — trot, don't amble
   rand: () => number;
 }
 
@@ -161,6 +179,10 @@ export function Cat({
       lookYaw: 0,
       flickAt: 1.5 + rand() * 4,
       flickStart: -9,
+      wantScratch: false,
+      postX: 0,
+      postZ: 0,
+      hurry: false,
       rand,
     };
   }
@@ -172,12 +194,52 @@ export function Cat({
     headPos: new Vector3(),
   });
 
+  /** Walk to the nearest sisal post, then rise up and scratch on arrival. */
+  const startScratchApproach = (s: CatState) => {
+    let px = SCRATCH_POSTS[0][0];
+    let pz = SCRATCH_POSTS[0][1];
+    let best = Infinity;
+    for (const [x, z] of SCRATCH_POSTS) {
+      const d = (x - s.pos.x) ** 2 + (z - s.pos.z) ** 2;
+      if (d < best) (best = d), (px = x), (pz = z);
+    }
+    s.postX = px;
+    s.postZ = pz;
+    // Approach radially from wherever the cat is, stopping a paw's reach out.
+    let dx = s.pos.x - px;
+    let dz = s.pos.z - pz;
+    const d = Math.hypot(dx, dz) || 1;
+    dx /= d;
+    dz /= d;
+    s.target.set(px + dx * 0.36, 0, pz + dz * 0.36);
+    s.wantScratch = true;
+    s.mode = "walk";
+    s.stateStart = s.time;
+    s.dur = 9; // generous walk budget; the timeout below covers dead ends
+  };
+
   const decide = (s: CatState) => {
-    s.mode = pickGroundedMode(s.rand(), spec.lazy, spec.playful);
+    s.hurry = false;
+    s.wantScratch = false;
+    const pick = pickGroundedMode(s.rand(), spec.lazy, spec.playful);
+    if (pick === "scratch") {
+      startScratchApproach(s);
+      return;
+    }
+    s.mode = pick;
     s.stateStart = s.time;
     s.dur = modeDuration(s.mode, s.rand());
     if (s.mode === "walk") {
-      if (s.rand() < 0.55) {
+      const balls = propChannel.groups[0]?.sims;
+      if (balls?.length && s.rand() < 0.12 + 0.3 * spec.playful) {
+        // A toy! Playful cats seek out a ball — batting it happens on contact.
+        const b = balls[Math.floor(s.rand() * balls.length)];
+        s.target.set(
+          MathUtils.clamp(b.pos.x, -HALF_W + 0.3, HALF_W - 0.3),
+          0,
+          MathUtils.clamp(b.pos.z, -HALF_D + 0.3, HALF_D - 0.3)
+        );
+      } else if (s.rand() < 0.55) {
         const [tx, tz] = CAT_SPOTS[Math.floor(s.rand() * CAT_SPOTS.length)];
         s.target.set(tx + (s.rand() - 0.5) * 1.2, 0, tz + (s.rand() - 0.5) * 1.2);
       } else {
@@ -218,6 +280,9 @@ export function Cat({
           s.mode = "groom";
           s.stateStart = s.time;
           s.dur = GROOM_TOTAL;
+        } else if (dir.cue.kind === "scratch" && !airborne && s.mode !== "land") {
+          startScratchApproach(s);
+          s.hurry = true; // she knows exactly where she's going
         } else if (dir.cue.kind === "pounce") {
           if (s.mode === "drift") {
             // Zero-g "pounce": a committed push-off along the heading.
@@ -246,6 +311,7 @@ export function Cat({
       s.mode !== "pounce" &&
       s.mode !== "drift" &&
       s.mode !== "land" &&
+      s.mode !== "scratch" && // mid-scratch bliss beats any dot
       s.mode !== "sleep" // sleepers have seen it all before
     ) {
       s.mode = "chase";
@@ -274,7 +340,8 @@ export function Cat({
         s.heading += shortestArc(want - s.heading) * Math.min(1, (chasing ? 7 : 3.5) * dt);
         // Light-paw band: strides slow and float as the deck lets go.
         const floaty = MathUtils.smoothstep(g, MEOW.driftG, MEOW.lightPawG);
-        moveSpeed = (chasing ? 1.5 : 0.42 + 0.35 * spec.playful) * (0.45 + 0.55 * floaty);
+        moveSpeed =
+          (chasing ? 1.5 : s.hurry ? 1.6 : 0.42 + 0.35 * spec.playful) * (0.45 + 0.55 * floaty);
         s.pos.x += Math.sin(s.heading) * moveSpeed * dt;
         s.pos.z += Math.cos(s.heading) * moveSpeed * dt;
         s.pos.x = MathUtils.clamp(s.pos.x, -HALF_W, HALF_W);
@@ -291,9 +358,30 @@ export function Cat({
           s.leaped = false;
           s.pounceTarget.copy(laserChannel.point);
         } else if (!chasing && dd < 0.18) {
+          if (s.wantScratch) {
+            // Made it to the post: square up, rise, claws in.
+            s.wantScratch = false;
+            s.hurry = false;
+            s.mode = "scratch";
+            s.stateStart = s.time;
+            s.dur = modeDuration("scratch", s.rand());
+          } else {
+            decide(s);
+          }
+        } else if (!chasing && s.time - s.stateStart > s.dur + 4) {
+          // Target turned out unreachable (a collider in the way, a toy that
+          // rolled off) — give up gracefully instead of walking forever.
           decide(s);
         }
       }
+    } else if (s.mode === "scratch") {
+      // Planted at the approach point, squared up to the post.
+      const want = Math.atan2(s.postX - s.pos.x, s.postZ - s.pos.z);
+      s.heading += shortestArc(want - s.heading) * Math.min(1, 6 * dt);
+      const k = Math.min(1, 8 * dt);
+      s.pos.x += (s.target.x - s.pos.x) * k;
+      s.pos.z += (s.target.z - s.pos.z) * k;
+      if (s.time - s.stateStart > s.dur) decide(s);
     } else if (s.mode === "pounce") {
       const u = s.time - s.stateStart;
       if (!s.leaped && u >= POUNCE.leap) {
@@ -309,8 +397,15 @@ export function Cat({
       }
       if (!s.leaped && u > POUNCE.total) decide(s); // never left the deck (edge case)
     } else if (s.mode === "land") {
+      // Carry a little touchdown slide, absorbed through the crouch.
+      s.pos.x = MathUtils.clamp(s.pos.x + s.vel.x * dt, -HALF_W, HALF_W);
+      s.pos.z = MathUtils.clamp(s.pos.z + s.vel.z * dt, -HALF_D, HALF_D);
+      const slide = Math.max(0, 1 - 6 * dt);
+      s.vel.x *= slide;
+      s.vel.z *= slide;
       if (s.time - s.stateStart > LAND_TOTAL) {
         s.chaseCool = s.time + 0.8;
+        s.vel.set(0, 0, 0);
         decide(s);
       }
     } else if (s.mode !== "drift") {
@@ -353,10 +448,15 @@ export function Cat({
           s.mode = "land";
           s.stateStart = s.time;
           s.leaped = false;
-          s.vel.set(0, 0, 0);
+          // Momentum doesn't vanish on touchdown: keep a damped slide that
+          // the landing crouch absorbs over LAND_TOTAL.
+          s.vel.y = 0;
+          s.vel.x *= 0.35;
+          s.vel.z *= 0.35;
           s.spin.set(0, 0, 0);
         } else {
           s.vel.y *= ROOM.bounce; // too weightless to stick — bounce on
+          if (s.vel.y < 0.06) s.vel.y = 0; // kill the micro-bounce jitter
           s.pos.y = 0.02;
         }
       }
@@ -368,11 +468,123 @@ export function Cat({
         s.spin.set((s.rand() - 0.5) * 1.4, (s.rand() - 0.5) * 1, (s.rand() - 0.5) * 1.4);
       }
 
-      // Re-landing pull: as the dial climbs, weight wins and tumble rights.
-      if (s.mode === "drift" && g >= MEOW.landG) {
-        s.spin.multiplyScalar(Math.max(0, 1 - 2.5 * dt));
+      // Air-righting: a real cat bleeds off tumble with her spine even in
+      // free fall (the falling-cat reflex), and weight only helps — the
+      // damping rate grows with g instead of switching on at a threshold.
+      if (s.mode === "drift") {
+        s.spin.multiplyScalar(Math.max(0, 1 - (0.35 + 2.2 * g) * dt));
       }
     }
+
+    // --- Contact: furniture, each other, and the toys. -----------------------
+    const myR = MEOW.catBodyR * spec.size;
+    if (!airborne) {
+      resolveCircles(s.pos, myR); // never walk through the tree or a post
+    } else {
+      const hit = resolveCircles(s.pos, myR);
+      if (hit) {
+        const vn = s.vel.x * hit.nx + s.vel.z * hit.nz;
+        if (vn < 0) {
+          s.vel.x -= 1.35 * vn * hit.nx;
+          s.vel.z -= 1.35 * vn * hit.nz;
+        }
+      }
+    }
+
+    // Cats resolve against each other: soft xz separation on the deck, full
+    // 3D when both are adrift. Each cat only ever moves itself.
+    for (let j = 0; j < catBodies.length; j++) {
+      if (j === index) continue;
+      const b = catBodies[j];
+      if (!b) continue;
+      const both3D = airborne && b.airborne;
+      const dy = s.pos.y - b.pos.y;
+      if (!both3D && Math.abs(dy) > 0.5) continue; // one sails over the other
+      const dx = s.pos.x - b.pos.x;
+      const dz = s.pos.z - b.pos.z;
+      const min = myR + b.r;
+      const d2 = dx * dx + dz * dz + (both3D ? dy * dy : 0);
+      if (d2 >= min * min || d2 < 1e-8) continue;
+      const d = Math.sqrt(d2);
+      const push = (min - d) * 0.5;
+      s.pos.x += (dx / d) * push;
+      s.pos.z += (dz / d) * push;
+      if (both3D) {
+        s.pos.y = Math.max(0, s.pos.y + (dy / d) * push);
+        // A gentle shove apart — two drifting sisters bump and part ways.
+        s.vel.x += (dx / d) * push * 2;
+        s.vel.y += (dy / d) * push * 2;
+        s.vel.z += (dz / d) * push * 2;
+      }
+      s.pos.x = MathUtils.clamp(s.pos.x, -HALF_W, HALF_W);
+      s.pos.z = MathUtils.clamp(s.pos.z, -HALF_D, HALF_D);
+    }
+
+    // Paws meet toys: a trotting cat bats whatever she runs into (it rolls
+    // off with real ballistics); adrift, toys bounce off her body and she
+    // feels the nudge back.
+    const centerY = s.pos.y + 0.22 * spec.size;
+    for (const gp of propChannel.groups) {
+      for (const p of gp.sims) {
+        const pr = gp.radius * p.scale;
+        const rr = pr + myR;
+        const dx = p.pos.x - s.pos.x;
+        const dy = p.pos.y - centerY;
+        const dz = p.pos.z - s.pos.z;
+        const d2 = dx * dx + dy * dy + dz * dz;
+        if (d2 >= rr * rr) continue;
+        const d = Math.sqrt(d2) || 1e-6;
+        const nx = dx / d;
+        const ny = dy / d;
+        const nz = dz / d;
+        if (p.floating || airborne) {
+          // Free bodies: separate, reflect the toy, nudge the cat.
+          p.pos.set(s.pos.x + nx * rr, Math.max(gp.restY, centerY + ny * rr), s.pos.z + nz * rr);
+          const rvn =
+            (p.vel.x - s.vel.x) * nx + (p.vel.y - s.vel.y) * ny + (p.vel.z - s.vel.z) * nz;
+          if (rvn < 0) {
+            p.vel.x -= 1.5 * rvn * nx;
+            p.vel.y -= 1.5 * rvn * ny;
+            p.vel.z -= 1.5 * rvn * nz;
+            if (airborne) {
+              s.vel.x += 0.2 * rvn * nx;
+              s.vel.y += 0.2 * rvn * ny;
+              s.vel.z += 0.2 * rvn * nz;
+            }
+          }
+          if (!p.floating) {
+            p.floating = true;
+            p.kicked = g > MEOW.liftG;
+          }
+        } else if (moveSpeed > 0.05) {
+          // The bat. Mostly along the contact normal, biased by her stride.
+          const spd = (MEOW.kickSpeed * 0.7 + moveSpeed * 1.2) * gp.kickMul;
+          let kx = nx * 0.65 + Math.sin(s.heading) * 0.35;
+          let kz = nz * 0.65 + Math.cos(s.heading) * 0.35;
+          const kd = Math.hypot(kx, kz) || 1;
+          kx /= kd;
+          kz /= kd;
+          p.floating = true;
+          p.kicked = true;
+          p.vel.set(kx * spd, 0.55 + spd * 0.3, kz * spd);
+          p.spin.set(p.vel.z, 0, -p.vel.x).multiplyScalar(1 / Math.max(0.05, pr));
+        }
+      }
+    }
+
+    // Publish this cat's body for the others (and next frame's pairs).
+    let reg = catBodies[index];
+    if (!reg) {
+      reg = catBodies[index] = {
+        pos: new Vector3(),
+        vel: new Vector3(),
+        r: myR,
+        airborne: false,
+      };
+    }
+    reg.pos.copy(s.pos);
+    reg.vel.copy(s.vel);
+    reg.airborne = airborne;
 
     // --- Root transform. ------------------------------------------------------
     rootG.position.copy(s.pos);
@@ -383,11 +595,11 @@ export function Cat({
         sc.q.setFromAxisAngle(sc.v, a);
         rootG.quaternion.premultiply(sc.q);
       }
-      // Cats always know which way is down: righting torque scales with g.
-      if (g > 0.1) {
-        sc.yawQ.setFromAxisAngle(UP, s.heading);
-        rootG.quaternion.slerp(sc.yawQ, 1 - Math.exp(-(0.5 + 4 * g) * dt));
-      }
+      // Cats always know which way is down. Even at 0g she can twist herself
+      // feet-down (zero-net-spin, the falling-cat trick) — weight just makes
+      // the righting faster.
+      sc.yawQ.setFromAxisAngle(UP, s.heading);
+      rootG.quaternion.slerp(sc.yawQ, 1 - Math.exp(-(0.18 + 4.3 * g) * dt));
     } else {
       sc.yawQ.setFromAxisAngle(UP, s.heading);
       rootG.quaternion.slerp(sc.yawQ, 1 - Math.exp(-(s.mode === "land" ? 8 : 12) * dt));
@@ -536,6 +748,26 @@ export function Cat({
         tailLift = 0.8;
         break;
       }
+      case "scratch": {
+        // Up on the hind legs, chest to the post, alternating full-arm
+        // strokes down the sisal — pure bliss, eyes half-closed.
+        const rise = MathUtils.smoothstep(u, 0, 0.6);
+        bodyRX = -1.05 * rise;
+        bodyY = MathUtils.lerp(BODY_REST_Y, 0.34, rise);
+        const stroke = Math.sin(u * 7.5);
+        fsT[0] = (-1.5 + 0.4 * stroke) * rise;
+        fsT[1] = (-1.5 - 0.4 * stroke) * rise;
+        feT[0] = 0.4 + 0.3 * Math.max(0, stroke);
+        feT[1] = 0.4 + 0.3 * Math.max(0, -stroke);
+        hhT[0] = hhT[1] = -1.15 * rise;
+        hkT[0] = hkT[1] = 1.9 * rise + 0.15;
+        headRX = -0.28 * rise; // chin up, eyes on her claws
+        eyeOpen = 0.8;
+        tailLift = 0.85;
+        tailSwayAmp = 0.3;
+        tailSwayRate = 2.2;
+        break;
+      }
     }
 
     // Blink + ear twitch on their own little timers (skipped while asleep).
@@ -665,9 +897,39 @@ export function Cat({
             <mesh geometry={geoms.ear} material={mats.body} castShadow={CAST} />
             <mesh geometry={geoms.earInner} material={mats.innerEar} position={[0, -0.006, 0.015]} />
           </group>
-          <mesh ref={eyeL} geometry={geoms.eye} material={eyeMat} position={[0.046, 0.062, 0.1]} />
-          <mesh ref={eyeR} geometry={geoms.eye} material={eyeMat} position={[-0.046, 0.062, 0.1]} />
+          <mesh ref={eyeL} geometry={geoms.eye} material={eyeMat} position={[0.046, 0.062, 0.1]}>
+            {/* vertical slit pupil — rides the blink with its parent */}
+            <mesh geometry={geoms.pupil} material={mats.pupil} position={[0.004, 0, 0.0245]} />
+          </mesh>
+          <mesh ref={eyeR} geometry={geoms.eye} material={eyeMat} position={[-0.046, 0.062, 0.1]}>
+            <mesh geometry={geoms.pupil} material={mats.pupil} position={[-0.004, 0, 0.0245]} />
+          </mesh>
+          {/* whiskers — three a side, flared forward-out like the real girls' */}
+          {[1, -1].map((sd) =>
+            [0, 1, 2].map((i) => (
+              <mesh
+                key={`w${sd}${i}`}
+                geometry={geoms.whisker}
+                material={mats.whisker}
+                position={[sd * 0.048, 0.012 - i * 0.009, 0.128]}
+                rotation={[0, sd * -0.42, sd * -(Math.PI / 2 - 0.3 + (i - 1) * 0.17)]}
+              />
+            ))
+          )}
         </group>
+
+        {/* her collar — thin strap at the neck base, little tag under the chin */}
+        {spec.collar && (
+          <group position={[0, 0.065, 0.175]} rotation={[0.28, 0, 0]}>
+            <mesh geometry={geoms.collar} material={mats.collar} rotation={[Math.PI / 2, 0, 0]} scale={[1, 1, 1.6]} />
+            <mesh
+              geometry={geoms.tag}
+              material={spec.collar === "A" ? mats.tagA : mats.tagB}
+              position={[0, -0.035, 0.102]}
+              scale={[1, 1, 0.55]}
+            />
+          </group>
+        )}
 
         {/* tail: four chained segments off the haunches */}
         <group ref={(el) => (tail.current[0] = el)} position={[0, 0.05, -0.24]}>

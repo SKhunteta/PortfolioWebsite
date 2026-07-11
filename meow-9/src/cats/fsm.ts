@@ -11,6 +11,7 @@ export type CatMode =
   | "sleep"
   | "chase" // running down the laser dot
   | "pounce" // crouch → butt-wiggle → leap (timeline below)
+  | "scratch" // up on hind legs at a sisal post, alternating paw strokes
   | "drift" // low-g tumble + air-paddle
   | "land"; // crouch-absorb after re-entry (cats land on their feet)
 
@@ -36,6 +37,7 @@ export function pickGroundedMode(r: number, lazy: number, playful: number): CatM
     ["walk", 1.3 + 1.9 * playful], // roam a little more — a livelier room
     ["groom", 1],
     ["sleep", 0.45 + 1.3 * lazy],
+    ["scratch", 0.5 + 1.0 * playful], // resolved as walk-to-post, then scratch
   ];
   let total = 0;
   for (const [, w] of weights) total += w;
@@ -59,6 +61,8 @@ export function modeDuration(mode: CatMode, r: number): number {
       return GROOM_TOTAL;
     case "walk":
       return 4 + r * 6;
+    case "scratch":
+      return 4.5 + r * 3.5;
     default:
       return 4;
   }

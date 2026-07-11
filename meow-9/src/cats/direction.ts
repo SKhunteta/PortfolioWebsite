@@ -14,7 +14,8 @@ import { create } from "zustand";
 
 export type PerformanceCue =
   | { kind: "pounce"; index: number }
-  | { kind: "groom"; index: number };
+  | { kind: "groom"; index: number }
+  | { kind: "scratch"; index: number }; // beeline to the nearest post, claws in
 
 /** Set by ObserverMode so ambient (self-directed) antics never collide with a
  *  choreographed tour. Plain mutable flag — read every frame. */
@@ -31,6 +32,17 @@ export const useDirection = create<DirectionState>((set) => ({
   cue: null,
   direct: (cue) => set((s) => ({ seq: s.seq + 1, cue })),
 }));
+
+// Cat body registry — every cat publishes its root position each frame so
+// cats can resolve against EACH OTHER (no more ghosting through a sleeping
+// sister). Plain mutable slots, written in useFrame, never through React.
+export interface CatBody {
+  pos: Vector3;
+  vel: Vector3;
+  r: number; // body circle radius (already includes the cat's size)
+  airborne: boolean;
+}
+export const catBodies: (CatBody | undefined)[] = [];
 
 // Live world-space track points, keyed by cat (e.g. "cat0", "cat0Head").
 const trackPoints = new Map<string, Vector3>();
@@ -82,4 +94,9 @@ export function publishDriftCat(): void {
 // __meowDirector.getState().direct({ kind: "pounce", index: 0 })
 if (typeof window !== "undefined") {
   (window as unknown as Record<string, unknown>).__meowDirector = useDirection;
+  (window as unknown as Record<string, unknown>).__meowTrack = {
+    point: getTrackPoint,
+    yaw: getTrackYaw,
+    bodies: catBodies,
+  };
 }

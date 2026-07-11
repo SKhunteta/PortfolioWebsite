@@ -14,6 +14,7 @@ import { PALETTE } from "../world/palettes";
 import { useGravity } from "../world/GravityDial";
 import { makeNoiseNormalMap } from "../fx/noiseTextures";
 import { registerSurface } from "./surfaces";
+import { SCRATCH_POSTS } from "./colliders";
 
 // The hab module: one hero room built entirely from primitives. Panel-grid
 // walls, ceiling ribs, neon edge strips, and the cat furniture (tree, wall
@@ -25,8 +26,8 @@ const { w: W, h: H, d: D } = ROOM;
 
 // Where cats like to be. Walk targets + loaf anchors (floor-level points).
 export const CAT_SPOTS: [number, number][] = [
-  [-4.5, -2.2], // by the cat tree
-  [5.2, 3.4], // food station
+  [-3.4, -2.6], // beside the cat tree (outside its collider)
+  [4.4, 3.2], // food station (outside the console collider)
   [0, -3.6], // under the porthole
   [-5.8, 3.2],
   [3.5, -3.2],
@@ -90,7 +91,19 @@ export function Room() {
         metalness: 0.45,
       }),
       trim: new MeshStandardMaterial({ color: "#383e4e", roughness: 0.5, metalness: 0.6 }),
-      carpet: new MeshStandardMaterial({ color: "#4a3f55", roughness: 0.95 }),
+      // Gray plush + beige sisal, straight from the girls' real cat tree.
+      carpet: new MeshStandardMaterial({
+        color: "#8f939e",
+        roughness: 0.98,
+        normalMap: panelNormal,
+        normalScale: new Vector2(0.5, 0.5),
+      }),
+      sisal: new MeshStandardMaterial({
+        color: "#c9b088",
+        roughness: 0.92,
+        normalMap: panelNormal,
+        normalScale: new Vector2(0.8, 0.8),
+      }),
       // The HDR sources. Intensity is driven per-frame off the dial.
       neonA: new MeshStandardMaterial({
         color: "#000000",
@@ -231,14 +244,21 @@ export function Room() {
         <planeGeometry args={[1.5, 0.9]} />
       </mesh>
 
-      {/* Cat tree — trunk + three carpeted platforms (laser targets too) */}
+      {/* Cat tree — sisal-wrapped trunk + gray plush platforms, modelled on
+          the girls' real tree (laser targets too) */}
       <group position={[-4.5, 0, -2.5]}>
-        <mesh material={mats.trim} position={[0, 0.06, 0]}>
+        <mesh material={mats.carpet} position={[0, 0.06, 0]}>
           <cylinderGeometry args={[0.55, 0.65, 0.12, 16]} />
         </mesh>
-        <mesh material={mats.carpet} position={[0, 1.2, 0]} castShadow>
+        <mesh material={mats.sisal} position={[0, 1.2, 0]} castShadow>
           <cylinderGeometry args={[0.11, 0.13, 2.4, 12]} />
         </mesh>
+        {/* rope-wrap ridges up the trunk */}
+        {[0.35, 0.75, 1.15, 1.55, 1.95].map((y) => (
+          <mesh key={`wrap${y}`} material={mats.sisal} position={[0, y, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[0.122, 0.012, 6, 18]} />
+          </mesh>
+        ))}
         {[
           [0.45, 0.9, 0.1],
           [-0.4, 1.6, -0.15],
@@ -256,6 +276,27 @@ export function Room() {
           </mesh>
         ))}
       </group>
+
+      {/* Scratching posts — sisal columns with plush caps. Cats walk up,
+          square off, and rise on their hind legs to get their claws in. */}
+      {SCRATCH_POSTS.map(([x, z], i) => (
+        <group key={`post${i}`} position={[x, 0, z]}>
+          <mesh material={mats.carpet} position={[0, 0.04, 0]} receiveShadow>
+            <cylinderGeometry args={[0.27, 0.31, 0.08, 16]} />
+          </mesh>
+          <mesh ref={registerSurface} material={mats.sisal} position={[0, 0.5, 0]} castShadow>
+            <cylinderGeometry args={[0.09, 0.09, 0.84, 12]} />
+          </mesh>
+          {[0.2, 0.36, 0.52, 0.68, 0.84].map((y) => (
+            <mesh key={`ring${y}`} material={mats.sisal} position={[0, y, 0]} rotation={[Math.PI / 2, 0, 0]}>
+              <torusGeometry args={[0.092, 0.011, 6, 16]} />
+            </mesh>
+          ))}
+          <mesh material={mats.carpet} position={[0, 0.955, 0]} castShadow>
+            <cylinderGeometry args={[0.13, 0.13, 0.07, 14]} />
+          </mesh>
+        </group>
+      ))}
 
       {/* Wall nap-pods: three half-domes set into the +x wall */}
       {[
