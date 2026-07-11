@@ -1,7 +1,6 @@
-import { useEffect, useRef, type CSSProperties } from "react";
+import { lazy, Suspense, useEffect, useRef, type CSSProperties } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { Leva, useControls } from "leva";
 import {
   DirectionalLight,
   HemisphereLight,
@@ -16,11 +15,13 @@ import { Nebula } from "./station/Nebula";
 import { Props } from "./station/Props";
 import { Cats } from "./cats/Cats";
 import { LaserPointer, useLaser } from "./interact/LaserPointer";
+import { PetPointer } from "./interact/PetPointer";
+import { AudioDriver } from "./audio/AudioDriver";
+import { useSound } from "./audio/store";
 import { ObserverMode, useObserver } from "./observer/ObserverMode";
 import { PostFX } from "./fx/PostFX";
 import { useGravity, selectG, gravityLabel } from "./world/GravityDial";
 import { PALETTE, mix } from "./world/palettes";
-import { MEOW } from "./world/config";
 import { IS_TOUCH } from "./world/device";
 
 /** Advances the GravityDial once per frame. Nothing else touches time. */
@@ -209,6 +210,8 @@ function ObserverUI() {
   const stop = useObserver((s) => s.stop);
   const cycleSpeed = useObserver((s) => s.cycleSpeed);
   const laserArmed = useLaser((s) => s.armed);
+  const muted = useSound((s) => s.muted);
+  const toggleMute = useSound((s) => s.toggle);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -290,6 +293,19 @@ function ObserverUI() {
           maxWidth: "calc(100vw - 24px)",
         }}
       >
+        {/* Sound toggle — stays up during tours too (the hum swell through
+            a spin-down shot is half the show). */}
+        <button
+          onClick={toggleMute}
+          title={muted ? "Unmute the station" : "Mute the station"}
+          style={{
+            ...pill,
+            padding: "12px 16px",
+            opacity: muted ? 0.65 : 1,
+          }}
+        >
+          {muted ? "∅ SOUND" : "♪ SOUND"}
+        </button>
         {/* Laser arm toggle, left of OBSERVE. Hidden during tours. */}
         {!active && (
           <button
@@ -336,34 +352,10 @@ function ObserverUI() {
   );
 }
 
-/** Leva panel wired to the GravityDial — dev tuning next to the hero slider. */
-function DialControls() {
-  const setG = useGravity((s) => s.setG);
-  const setRunning = useGravity((s) => s.setRunning);
-  const setSecondsPerCycle = useGravity((s) => s.setSecondsPerCycle);
-
-  useControls("Gravity Dial", {
-    running: { value: true, onChange: setRunning },
-    "seconds / cycle": {
-      value: MEOW.secondsPerCycle,
-      min: 20,
-      max: 600,
-      step: 5,
-      onChange: setSecondsPerCycle,
-    },
-    scrub: {
-      value: MEOW.startG,
-      min: 0,
-      max: 1,
-      step: 0.001,
-      onChange: (v: number) => {
-        useGravity.getState().setRunning(false);
-        setG(v);
-      },
-    },
-  });
-  return null;
-}
+// Dev tuning chrome (leva) loads lazily and ONLY in dev — Vite folds
+// `import.meta.env.DEV` to `false` in prod builds, so the whole leva chunk
+// is dropped from the shipped bundle.
+const DevPanel = import.meta.env.DEV ? lazy(() => import("./dev/DevPanel")) : null;
 
 export default function App() {
   const observing = useObserver((s) => s.active);
@@ -382,6 +374,7 @@ export default function App() {
       >
         <color attach="background" args={["#05030a"]} />
         <DialDriver />
+        <AudioDriver />
         <Lighting />
         <Nebula />
         <Room />
@@ -389,6 +382,7 @@ export default function App() {
         <Props />
         <Cats />
         <LaserPointer />
+        <PetPointer />
         <ObserverMode />
         <PostFX />
         <OrbitControls
@@ -405,8 +399,11 @@ export default function App() {
       <GravityHUD />
       <GravitySlider />
       <ObserverUI />
-      <DialControls />
-      <Leva collapsed hidden={observing || IS_TOUCH} />
+      {DevPanel && (
+        <Suspense fallback={null}>
+          <DevPanel />
+        </Suspense>
+      )}
     </>
   );
 }

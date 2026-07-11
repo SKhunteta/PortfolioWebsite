@@ -15,7 +15,8 @@ import { create } from "zustand";
 export type PerformanceCue =
   | { kind: "pounce"; index: number }
   | { kind: "groom"; index: number }
-  | { kind: "scratch"; index: number }; // beeline to the nearest post, claws in
+  | { kind: "scratch"; index: number } // beeline to the nearest post, claws in
+  | { kind: "pet"; index: number; side: number }; // a visitor's tap; side = lean direction
 
 /** Set by ObserverMode so ambient (self-directed) antics never collide with a
  *  choreographed tour. Plain mutable flag — read every frame. */
@@ -41,6 +42,7 @@ export interface CatBody {
   vel: Vector3;
   r: number; // body circle radius (already includes the cat's size)
   airborne: boolean;
+  heading: number; // yaw about +Y — lets a tap know which side it landed on
 }
 export const catBodies: (CatBody | undefined)[] = [];
 

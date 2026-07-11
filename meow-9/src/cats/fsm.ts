@@ -13,7 +13,8 @@ export type CatMode =
   | "pounce" // crouch → butt-wiggle → leap (timeline below)
   | "scratch" // up on hind legs at a sisal post, alternating paw strokes
   | "drift" // low-g tumble + air-paddle
-  | "land"; // crouch-absorb after re-entry (cats land on their feet)
+  | "land" // crouch-absorb after re-entry (cats land on their feet)
+  | "pet"; // a visitor's tap — settle, lean in, purr (cue-only, never picked)
 
 /** Pounce timeline (seconds from cue / commit). */
 export const POUNCE = {
@@ -25,6 +26,10 @@ export const POUNCE = {
 
 /** Grooming session length (used by the director's shot math). */
 export const GROOM_TOTAL = 3.8;
+
+/** Petting session length (same timing-contract convention — a future
+ *  Observer shot could cue it and do math against this). */
+export const PET_TOTAL = 3.2;
 
 /** Crouch-absorb after touchdown. */
 export const LAND_TOTAL = 0.85;
@@ -59,6 +64,8 @@ export function modeDuration(mode: CatMode, r: number): number {
       return 3 + r * 5;
     case "groom":
       return GROOM_TOTAL;
+    case "pet":
+      return PET_TOTAL;
     case "walk":
       return 4 + r * 6;
     case "scratch":

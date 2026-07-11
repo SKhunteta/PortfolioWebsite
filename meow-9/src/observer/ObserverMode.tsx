@@ -3,6 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { MathUtils, PerspectiveCamera, Quaternion, Vector3 } from "three";
 import { create } from "zustand";
 import { ROOM } from "../world/config";
+import { REDUCED_MOTION } from "../world/device";
 import { useGravity } from "../world/GravityDial";
 import {
   directionFlags,
@@ -362,8 +363,10 @@ export function ObserverMode() {
     else if (current.anchor) sc.look.add(s.anchorPos);
 
     // Handheld micro-shake: two incommensurate frequencies per axis, ramped
-    // in over the first second so cuts don't pop.
-    if (current.shake) {
+    // in over the first second so cuts don't pop. Stilled for visitors who
+    // prefer reduced motion — the tour itself is user-initiated, the wobble
+    // isn't.
+    if (current.shake && !REDUCED_MOTION) {
       const stime = s.shotTime;
       const amp = current.shake * Math.min(1, stime);
       const n1 = Math.sin(stime * 1.7) + 0.5 * Math.sin(stime * 3.9);

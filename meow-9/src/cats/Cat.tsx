@@ -4,6 +4,8 @@ import { BufferGeometry, Group, MathUtils, Material, Mesh, Quaternion, Vector3 }
 import { MEOW, ROOM } from "../world/config";
 import { useGravity } from "../world/GravityDial";
 import { IS_TOUCH } from "../world/device";
+import { mulberry32 } from "../world/rng";
+import * as sfx from "../audio/engine";
 import { laserChannel } from "../interact/LaserPointer";
 import { CAT_SPOTS } from "../station/Room";
 import { SCRATCH_POSTS, resolveCircles } from "../station/colliders";
@@ -11,6 +13,7 @@ import { propChannel } from "../station/Props";
 import {
   GROOM_TOTAL,
   LAND_TOTAL,
+  PET_TOTAL,
   POUNCE,
   modeDuration,
   pickGroundedMode,
@@ -67,6 +70,7 @@ export interface CatGeoms {
 
 export interface CatMats {
   body: Material;
+  fuzz: Material; // translucent halo shells — the silhouette fray (desktop)
   innerEar: Material;
   eye: Material;
   eyeAlt: Material;
@@ -83,17 +87,6 @@ const HALF_W = ROOM.w / 2 - ROOM.margin;
 const HALF_D = ROOM.d / 2 - ROOM.margin;
 const CEIL = ROOM.h - ROOM.margin;
 const UP = new Vector3(0, 1, 0);
-
-function mulberry32(seed: number) {
-  let a = seed >>> 0;
-  return () => {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
 const shortestArc = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
@@ -125,6 +118,7 @@ interface CatState {
   postX: number;
   postZ: number;
   hurry: boolean; // director-sent beeline (scratch cue) — trot, don't amble
+  petSide: number; // which flank the visitor's tap landed on (lean direction)
   rand: () => number;
 }
 
@@ -183,6 +177,7 @@ export function Cat({
       postX: 0,
       postZ: 0,
       hurry: false,
+      petSide: 1,
       rand,
     };
   }
@@ -280,6 +275,19 @@ export function Cat({
           s.mode = "groom";
           s.stateStart = s.time;
           s.dur = GROOM_TOTAL;
+        } else if (
+          dir.cue.kind === "pet" &&
+          !airborne &&
+          s.mode !== "land" &&
+          s.mode !== "pounce"
+        ) {
+          // A visitor's tap. Re-tapping mid-pet just restarts the clock —
+          // repeated petting extends the bliss.
+          s.mode = "pet";
+          s.stateStart = s.time;
+          s.dur = PET_TOTAL;
+          s.petSide = dir.cue.side;
+          sfx.purr(PET_TOTAL);
         } else if (dir.cue.kind === "scratch" && !airborne && s.mode !== "land") {
           startScratchApproach(s);
           s.hurry = true; // she knows exactly where she's going
@@ -312,6 +320,7 @@ export function Cat({
       s.mode !== "drift" &&
       s.mode !== "land" &&
       s.mode !== "scratch" && // mid-scratch bliss beats any dot
+      s.mode !== "pet" && // being petted beats the dot too
       s.mode !== "sleep" // sleepers have seen it all before
     ) {
       s.mode = "chase";
@@ -365,6 +374,7 @@ export function Cat({
             s.mode = "scratch";
             s.stateStart = s.time;
             s.dur = modeDuration("scratch", s.rand());
+            sfx.purr(s.dur); // sisal under the claws — pure bliss
           } else {
             decide(s);
           }
@@ -445,6 +455,8 @@ export function Cat({
       if (s.pos.y <= 0.02 && s.vel.y <= 0) {
         s.pos.y = 0;
         if (g >= MEOW.landG || s.mode === "pounce") {
+          // Touchdown thud from the impact speed (before it's absorbed).
+          sfx.thump(Math.min(1, Math.abs(s.vel.y) / 3 + s.vel.length() * 0.1));
           s.mode = "land";
           s.stateStart = s.time;
           s.leaped = false;
@@ -580,11 +592,13 @@ export function Cat({
         vel: new Vector3(),
         r: myR,
         airborne: false,
+        heading: 0,
       };
     }
     reg.pos.copy(s.pos);
     reg.vel.copy(s.vel);
     reg.airborne = airborne;
+    reg.heading = s.heading;
 
     // --- Root transform. ------------------------------------------------------
     rootG.position.copy(s.pos);
@@ -738,6 +752,30 @@ export function Cat({
         }
         break;
       }
+      case "pet": {
+        // Sit base pose, then melt into the hand: chin up, head rolled
+        // toward the tapped flank, eyes blissfully shut, a slow content
+        // tail. The envelope settles her in and reopens her eyes before
+        // the timer hands life back to decide().
+        bodyRX = -0.5;
+        bodyY = 0.21;
+        fsT[0] = fsT[1] = 0.52;
+        feT[0] = feT[1] = 0.05;
+        hhT[0] = hhT[1] = -1.25;
+        hkT[0] = hkT[1] = 2.0;
+        tailWrap = 1;
+        const env =
+          MathUtils.smoothstep(u, 0, 0.5) * (1 - MathUtils.smoothstep(u, PET_TOTAL - 0.6, PET_TOTAL));
+        headRX = -0.35 * env;
+        headRZ = 0.25 * s.petSide * env;
+        bodyRZ = 0.06 * s.petSide * env;
+        eyeOpen = 1 - 0.9 * env;
+        tailSwayRate = 1.1;
+        tailSwayAmp = 0.3;
+        // Pushing up into the hand — the little rhythmic lean-in.
+        bodyY += 0.012 * Math.sin(u * 5) * env;
+        break;
+      }
       case "land": {
         const k = MathUtils.smoothstep(u / LAND_TOTAL, 0, 1);
         bodyY = MathUtils.lerp(0.12, BODY_REST_Y, k);
@@ -880,10 +918,22 @@ export function Cat({
         <mesh geometry={geoms.haunch} material={mats.body} position={[0, 0, -0.14]} scale={[0.92, 0.92, 1.05]} castShadow={CAST} />
         <mesh geometry={geoms.barrel} material={mats.body} position={[0, 0.01, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow={CAST} />
         <mesh geometry={geoms.chest} material={mats.body} position={[0, 0.01, 0.13]} castShadow={CAST} />
+        {/* fuzz halos: inflated translucent shells fray the big silhouettes
+            (desktop only — the touch profile skips the extra draw calls) */}
+        {!IS_TOUCH && (
+          <>
+            <mesh geometry={geoms.haunch} material={mats.fuzz} position={[0, 0, -0.14]} scale={[0.975, 0.975, 1.113]} renderOrder={2} />
+            <mesh geometry={geoms.barrel} material={mats.fuzz} position={[0, 0.01, 0]} rotation={[Math.PI / 2, 0, 0]} scale={1.06} renderOrder={2} />
+            <mesh geometry={geoms.chest} material={mats.fuzz} position={[0, 0.01, 0.13]} scale={1.06} renderOrder={2} />
+          </>
+        )}
 
         {/* head — a neat sleek face with big pointed ears and big gold eyes */}
         <group ref={headG} position={[0, 0.085, 0.21]}>
           <mesh geometry={geoms.skull} material={mats.body} position={[0, 0.05, 0.03]} castShadow={CAST} />
+          {!IS_TOUCH && (
+            <mesh geometry={geoms.skull} material={mats.fuzz} position={[0, 0.05, 0.03]} scale={1.06} renderOrder={2} />
+          )}
           <mesh geometry={geoms.muzzle} material={mats.body} position={[0, -0.002, 0.12]} scale={[1, 0.82, 1]} />
           {/* a hint of cheek, kept sleek */}
           <mesh geometry={geoms.cheek} material={mats.body} position={[0.05, 0.005, 0.065]} scale={[0.9, 0.85, 0.85]} castShadow={CAST} />
@@ -916,6 +966,19 @@ export function Cat({
               />
             ))
           )}
+          {/* brow whiskers — two shorter ones per side above the eyes */}
+          {[1, -1].map((sd) =>
+            [0, 1].map((i) => (
+              <mesh
+                key={`b${sd}${i}`}
+                geometry={geoms.whisker}
+                material={mats.whisker}
+                position={[sd * 0.036, 0.098, 0.09]}
+                rotation={[-0.25, sd * -0.35, sd * -(0.45 + i * 0.28)]}
+                scale={0.6}
+              />
+            ))
+          )}
         </group>
 
         {/* her collar — thin strap at the neck base, little tag under the chin */}
@@ -940,8 +1003,11 @@ export function Cat({
               <mesh geometry={geoms.tailSeg} material={mats.body} position={[0, 0, -0.045]} rotation={[Math.PI / 2, 0, 0]} />
               <group ref={(el) => (tail.current[3] = el)} position={[0, 0, -0.09]}>
                 <mesh geometry={geoms.tailSeg} material={mats.body} position={[0, 0, -0.04]} rotation={[Math.PI / 2, 0, 0]} scale={[0.8, 0.8, 0.8]} />
-                {/* fluffy tail tip */}
-                <mesh geometry={geoms.tailTuft} material={mats.body} position={[0, 0, -0.085]} scale={[0.85, 0.85, 1]} castShadow={CAST} />
+                {/* fluffy tail tip — a touch fuller than the old sleek nub */}
+                <mesh geometry={geoms.tailTuft} material={mats.body} position={[0, 0, -0.085]} scale={[1, 1, 1.15]} castShadow={CAST} />
+                {!IS_TOUCH && (
+                  <mesh geometry={geoms.tailTuft} material={mats.fuzz} position={[0, 0, -0.085]} scale={[1.08, 1.08, 1.24]} renderOrder={2} />
+                )}
               </group>
             </group>
           </group>

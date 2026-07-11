@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Group, Quaternion, Raycaster, Vector2, Vector3 } from "three";
 import { create } from "zustand";
+import { REDUCED_MOTION } from "../world/device";
 import { laserSurfaces } from "../station/surfaces";
 
 // The caretaker drone's laser pointer. A plain mutable channel (dofChannel
@@ -100,13 +101,16 @@ export function LaserPointer() {
     } else {
       scratch.normal.copy(UP);
     }
-    // A little handheld jitter — nobody holds a laser still, least of all a drone.
+    // A little handheld jitter — nobody holds a laser still, least of all a
+    // drone. Stilled under prefers-reduced-motion.
     const t = clock.elapsedTime;
     laserChannel.point
       .copy(hit.point)
       .addScaledVector(scratch.normal, 0.02);
-    laserChannel.point.x += Math.sin(t * 9.3) * 0.012;
-    laserChannel.point.y += Math.sin(t * 11.7) * 0.012;
+    if (!REDUCED_MOTION) {
+      laserChannel.point.x += Math.sin(t * 9.3) * 0.012;
+      laserChannel.point.y += Math.sin(t * 11.7) * 0.012;
+    }
     laserChannel.active = true;
     if (d) {
       d.visible = true;
