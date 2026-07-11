@@ -3,7 +3,8 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { MathUtils, PerspectiveCamera, Quaternion, Vector3 } from "three";
 import { create } from "zustand";
 import { ROOM } from "../world/config";
-import { REDUCED_MOTION } from "../world/device";
+import { REDUCED_MOTION, fovForAspect } from "../world/device";
+import { CREW_INDEX_BASE } from "../station/crew";
 import { useGravity } from "../world/GravityDial";
 import {
   directionFlags,
@@ -153,6 +154,26 @@ function buildShots(): Shot[] {
       cue: { at: 0.4, cue: { kind: "scratch", index: 0 } },
     },
     {
+      // Commander Bast is cued to the conn; the camera trails her across the
+      // deck OVER THE SHOULDER (offsets sit behind her in cat-local space —
+      // a face-front offset would end inside the console when she arrives)
+      // and settles looking past her at the teal command board.
+      caption: "The Watch",
+      sub: "Cmdr. Bast has the conn",
+      anchor: "cmdCat",
+      yawFollow: true,
+      from: new Vector3(0.55, 0.95, -1.7),
+      to: new Vector3(0.35, 0.6, -1.05),
+      look: new Vector3(0, 0.15, 0.6),
+      lookDrift: new Vector3(0, 0.05, 0),
+      fovFrom: 50,
+      fovTo: 42,
+      dof: { key: "cmdCat", range: 1.8, bokeh: 3.5 },
+      duration: 14,
+      gravity: 1,
+      cue: { at: 0.4, cue: { kind: "duty", index: CREW_INDEX_BASE } },
+    },
+    {
       // The whole shot is the room letting go: a slow glide to zero while the
       // camera holds the corner wide — and the aim stays on the hero cat, so
       // you watch HER lift away from the post as the deck gives up on her.
@@ -263,10 +284,11 @@ export function ObserverMode() {
     s.anchorYaw = (shot.anchor && getTrackYaw(shot.anchor)) || 0;
   };
 
-  useFrame((_, rawDt) => {
+  useFrame((frameState, rawDt) => {
     // Clamp against frame hitches first, then scale by the tour's playback
     // rate so shots, cues, dial glide and fades fast-forward together.
     const dt = Math.min(rawDt, 0.1) * useObserver.getState().speed;
+    const viewAspect = frameState.size.width / frameState.size.height;
     const s = state.current;
     const sc = scratch.current;
     const active = useObserver.getState().active;
@@ -389,8 +411,14 @@ export function ObserverMode() {
     cam.position.copy(sc.pos);
     cam.lookAt(sc.look);
 
-    // Cinematic zoom.
-    const fov = MathUtils.lerp(current.fovFrom ?? BASE_FOV, current.fovTo ?? BASE_FOV, e);
+    // Cinematic zoom. Shot FOVs are authored on 16:9; fovForAspect widens
+    // the vertical field on portrait screens so the HORIZONTAL framing the
+    // shots were composed for survives (55° vertical on a portrait phone is
+    // a ~28° keyhole otherwise).
+    const fov = fovForAspect(
+      MathUtils.lerp(current.fovFrom ?? BASE_FOV, current.fovTo ?? BASE_FOV, e),
+      viewAspect
+    );
     if (Math.abs(cam.fov - fov) > 1e-3) {
       cam.fov = fov;
       cam.updateProjectionMatrix();

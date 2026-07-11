@@ -16,7 +16,8 @@ export type PerformanceCue =
   | { kind: "pounce"; index: number }
   | { kind: "groom"; index: number }
   | { kind: "scratch"; index: number } // beeline to the nearest post, claws in
-  | { kind: "pet"; index: number; side: number }; // a visitor's tap; side = lean direction
+  | { kind: "pet"; index: number; side: number } // a visitor's tap; side = lean direction
+  | { kind: "duty"; index: number }; // crew only: beeline to her duty post, on shift
 
 /** Set by ObserverMode so ambient (self-directed) antics never collide with a
  *  choreographed tour. Plain mutable flag — read every frame. */
