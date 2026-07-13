@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generatedAt": "2026-07-13T05:22:54.425Z",
+    "generatedAt": "2026-07-13T05:30:02.056Z",
     "source": "https://www.soundtransit.org/GTFS-rail/40_gtfs.zip",
     "timezone": "America/Los_Angeles"
   },
@@ -3060,42 +3060,87 @@
         {
           "startMin": 247,
           "endMin": 300,
-          "headwayMin": 3
+          "headwayMin": 10
         },
         {
           "startMin": 300,
           "endMin": 360,
-          "headwayMin": 1
+          "headwayMin": 5
         },
         {
           "startMin": 360,
+          "endMin": 420,
+          "headwayMin": 7
+        },
+        {
+          "startMin": 420,
+          "endMin": 480,
+          "headwayMin": 9
+        },
+        {
+          "startMin": 480,
+          "endMin": 540,
+          "headwayMin": 8
+        },
+        {
+          "startMin": 540,
           "endMin": 600,
-          "headwayMin": 2
+          "headwayMin": 9
         },
         {
           "startMin": 600,
           "endMin": 720,
-          "headwayMin": 3
+          "headwayMin": 10
         },
         {
           "startMin": 720,
+          "endMin": 840,
+          "headwayMin": 9
+        },
+        {
+          "startMin": 840,
+          "endMin": 900,
+          "headwayMin": 8
+        },
+        {
+          "startMin": 900,
+          "endMin": 960,
+          "headwayMin": 7
+        },
+        {
+          "startMin": 960,
+          "endMin": 1020,
+          "headwayMin": 9
+        },
+        {
+          "startMin": 1020,
+          "endMin": 1080,
+          "headwayMin": 8
+        },
+        {
+          "startMin": 1080,
           "endMin": 1140,
-          "headwayMin": 2
+          "headwayMin": 9
         },
         {
           "startMin": 1140,
+          "endMin": 1320,
+          "headwayMin": 10
+        },
+        {
+          "startMin": 1320,
           "endMin": 1380,
-          "headwayMin": 3
+          "headwayMin": 12
         },
         {
           "startMin": 1380,
           "endMin": 1440,
-          "headwayMin": 4
+          "headwayMin": 20
         },
         {
           "startMin": 1440,
-          "endMin": 1448,
-          "headwayMin": 15
+          "endMin": 1443,
+          "headwayMin": 60
         }
       ]
     },
@@ -3180,28 +3225,68 @@
       "bands": [
         {
           "startMin": 260,
+          "endMin": 300,
+          "headwayMin": 8
+        },
+        {
+          "startMin": 300,
+          "endMin": 360,
+          "headwayMin": 7
+        },
+        {
+          "startMin": 360,
+          "endMin": 420,
+          "headwayMin": 8
+        },
+        {
+          "startMin": 420,
           "endMin": 540,
-          "headwayMin": 2
+          "headwayMin": 9
         },
         {
           "startMin": 540,
           "endMin": 840,
-          "headwayMin": 3
+          "headwayMin": 10
         },
         {
           "startMin": 840,
+          "endMin": 900,
+          "headwayMin": 8
+        },
+        {
+          "startMin": 900,
+          "endMin": 960,
+          "headwayMin": 9
+        },
+        {
+          "startMin": 960,
+          "endMin": 1020,
+          "headwayMin": 8
+        },
+        {
+          "startMin": 1020,
           "endMin": 1080,
-          "headwayMin": 2
+          "headwayMin": 9
         },
         {
           "startMin": 1080,
+          "endMin": 1140,
+          "headwayMin": 10
+        },
+        {
+          "startMin": 1140,
           "endMin": 1320,
-          "headwayMin": 3
+          "headwayMin": 12
         },
         {
           "startMin": 1320,
+          "endMin": 1380,
+          "headwayMin": 20
+        },
+        {
+          "startMin": 1380,
           "endMin": 1429,
-          "headwayMin": 4
+          "headwayMin": 15
         }
       ]
     },
@@ -3287,37 +3372,67 @@
         {
           "startMin": 261,
           "endMin": 300,
-          "headwayMin": 4
+          "headwayMin": 15
         },
         {
           "startMin": 300,
           "endMin": 360,
-          "headwayMin": 1
+          "headwayMin": 4
         },
         {
           "startMin": 360,
+          "endMin": 480,
+          "headwayMin": 8
+        },
+        {
+          "startMin": 480,
+          "endMin": 540,
+          "headwayMin": 9
+        },
+        {
+          "startMin": 540,
           "endMin": 600,
-          "headwayMin": 2
+          "headwayMin": 8
         },
         {
           "startMin": 600,
           "endMin": 780,
-          "headwayMin": 3
+          "headwayMin": 10
         },
         {
           "startMin": 780,
+          "endMin": 840,
+          "headwayMin": 9
+        },
+        {
+          "startMin": 840,
+          "endMin": 1020,
+          "headwayMin": 8
+        },
+        {
+          "startMin": 1020,
+          "endMin": 1080,
+          "headwayMin": 9
+        },
+        {
+          "startMin": 1080,
           "endMin": 1140,
-          "headwayMin": 2
+          "headwayMin": 8
         },
         {
           "startMin": 1140,
-          "endMin": 1440,
-          "headwayMin": 3
+          "endMin": 1260,
+          "headwayMin": 10
         },
         {
-          "startMin": 1440,
-          "endMin": 1455,
-          "headwayMin": 30
+          "startMin": 1260,
+          "endMin": 1380,
+          "headwayMin": 12
+        },
+        {
+          "startMin": 1380,
+          "endMin": 1435,
+          "headwayMin": 15
         }
       ]
     },
@@ -3397,28 +3512,58 @@
       "bands": [
         {
           "startMin": 244,
+          "endMin": 300,
+          "headwayMin": 9
+        },
+        {
+          "startMin": 300,
+          "endMin": 420,
+          "headwayMin": 8
+        },
+        {
+          "startMin": 420,
           "endMin": 540,
-          "headwayMin": 2
+          "headwayMin": 9
         },
         {
           "startMin": 540,
           "endMin": 780,
-          "headwayMin": 3
+          "headwayMin": 10
         },
         {
           "startMin": 780,
+          "endMin": 900,
+          "headwayMin": 9
+        },
+        {
+          "startMin": 900,
+          "endMin": 960,
+          "headwayMin": 8
+        },
+        {
+          "startMin": 960,
           "endMin": 1080,
-          "headwayMin": 2
+          "headwayMin": 9
         },
         {
           "startMin": 1080,
+          "endMin": 1200,
+          "headwayMin": 10
+        },
+        {
+          "startMin": 1200,
           "endMin": 1320,
-          "headwayMin": 3
+          "headwayMin": 12
         },
         {
           "startMin": 1320,
+          "endMin": 1380,
+          "headwayMin": 20
+        },
+        {
+          "startMin": 1380,
           "endMin": 1431,
-          "headwayMin": 4
+          "headwayMin": 15
         }
       ]
     }
