@@ -37,6 +37,10 @@ export interface DeviceProfile {
   trailSegments: number; // ring-buffer samples per train
   baseFov: number; // vertical FOV at 16:9 — fovForAspect widens for portrait
   noiseOctaves: number; // watercolor fbm octaves (shader ALU budget)
+  // Small screens undersample the basemap's thin strokes (a 60 m road is
+  // subpixel at drift distance in a 390 px viewport) — lift the wash so the
+  // painted city survives the resample.
+  washBoost: number;
 }
 
 const PROFILES: Record<Tier, DeviceProfile> = {
@@ -47,6 +51,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     trailSegments: 24,
     baseFov: 52,
     noiseOctaves: 2,
+    washBoost: 1.4,
   },
   tablet: {
     dpr: [1, 2],
@@ -55,6 +60,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     trailSegments: 48,
     baseFov: 48,
     noiseOctaves: 3,
+    washBoost: 1.15,
   },
   desktop: {
     dpr: [1, 2],
@@ -63,6 +69,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     trailSegments: 96,
     baseFov: 46,
     noiseOctaves: 3,
+    washBoost: 1.0,
   },
 };
 
@@ -71,11 +78,14 @@ export const PROFILE = PROFILES[TIER];
 const REF_ASPECT = 16 / 9;
 
 /** three.js FOV is vertical: a value authored at 16:9 crops portrait phones
- *  to a keyhole. Below the reference aspect, hold the HORIZONTAL field and
- *  widen the vertical to match. */
+ *  to a keyhole. Below the reference aspect, widen the vertical PART of the
+ *  way toward holding the horizontal field. Holding it fully hit the old
+ *  95° cap on phones — a fisheye that shoved the whole city into a band at
+ *  the horizon. The portrait camera framing (CameraRig) now does the rest
+ *  of the work by looking more top-down instead. */
 export function fovForAspect(baseV: number, aspect: number): number {
   if (!(aspect < REF_ASPECT)) return baseV;
   const hRef = 2 * Math.atan(Math.tan((baseV * Math.PI) / 360) * REF_ASPECT);
-  const v = 2 * Math.atan(Math.tan(hRef / 2) / aspect);
-  return Math.min(95, (v * 180) / Math.PI);
+  const vFull = ((2 * Math.atan(Math.tan(hRef / 2) / aspect)) * 180) / Math.PI;
+  return Math.min(72, baseV + (vFull - baseV) * 0.5);
 }

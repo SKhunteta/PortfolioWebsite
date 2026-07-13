@@ -10,6 +10,7 @@ import * as THREE from "three";
 import { HAS_BASEMAP, BASEMAP_ROADS } from "./basemap";
 import { buildStrip, mergeStrips } from "./ribbon";
 import { LIVE } from "../world/palettes";
+import { PROFILE } from "../world/device";
 import { CONFIG } from "../world/config";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
@@ -68,7 +69,8 @@ export function Roads() {
   useFrame(() => {
     for (const entry of materials.current) {
       if (!entry) continue;
-      entry.material.uniforms.uIntensity.value = LIVE.roadIntensity * entry.classIntensity;
+      entry.material.uniforms.uIntensity.value =
+        LIVE.roadIntensity * entry.classIntensity * PROFILE.washBoost;
       entry.material.uniforms.uFogDensity.value = LIVE.fogDensity;
     }
   });

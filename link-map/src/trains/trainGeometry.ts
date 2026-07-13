@@ -133,14 +133,15 @@ export function buildLiveryTexture(): THREE.CanvasTexture {
   ctx.fillStyle = GLASS; // door windows
   ctx.fillRect(SIDE.x + 65, SIDE.y + 15, 8, 16);
   ctx.fillRect(SIDE.x + 167, SIDE.y + 15, 8, 16);
-  // navy skirt, then the waves stacked on it
-  ctx.fillStyle = NAVY;
-  ctx.fillRect(SIDE.x, SIDE.y + 52, SIDE.w, 12);
-  paintWave(ctx, SIDE.y + 54, GREEN, 3.5, 2);
-  paintWave(ctx, SIDE.y + 54, "#eef2f5", 3.5, 5); // white gap between waves
-  paintWave(ctx, SIDE.y + 54, TEAL, 4, 8);
-  ctx.fillStyle = NAVY; // skirt edge back on top
-  ctx.fillRect(SIDE.x, SIDE.y + 60, SIDE.w, 4);
+  // The signature double wave rides LOW on the body (photo reference:
+  // teal crest, white gap, green trough, thin navy skirt at the very
+  // bottom). paintWave fills from its line DOWN, so layers paint top-first:
+  // each later call must sit lower or it buries the ones before it — the
+  // old green→white→teal order left only teal visible.
+  paintWave(ctx, SIDE.y + 58, TEAL, 4, 9);
+  paintWave(ctx, SIDE.y + 58, "#eef2f5", 3.5, 5.5); // white gap between waves
+  paintWave(ctx, SIDE.y + 58, GREEN, 3.5, 2);
+  paintWave(ctx, SIDE.y + SIDE.h, NAVY, 3, 3); // thin navy skirt, wavy top edge
   // "SoundTransit" hint on the upper white (unreadable-small, but the eye
   // expects a mark there)
   ctx.fillStyle = "#8a97a5";

@@ -45,7 +45,9 @@ export const CONFIG = {
     waterEdgeY: -0.05,
     parkY: -0.08,
     roadY: { arterial: 0.01, major: 0.014 } as Record<string, number>,
-    roadWidthKm: { major: 0.06, arterial: 0.035 } as Record<string, number>,
+    // Wide enough to survive drift distance on a phone — at 16 km the old
+    // 35–60 m strokes were subpixel and the street skeleton vanished.
+    roadWidthKm: { major: 0.11, arterial: 0.06 } as Record<string, number>,
     waterEdgeWidthKm: 0.12,
     waterEdgeMinHoleKm2: 1.0,
     wobbleAmpKm: 0.03,
@@ -57,13 +59,22 @@ export const CONFIG = {
     intensity: 0.55,
   },
   station: {
-    radiusKm: 0.11,
-    pulseScale: 2.1,
+    radiusKm: 0.08,
+    pulseScale: 1.55, // a swell, not a supernova — 2.1 read as a ping-pong ball
     hoverRadiusPx: 28,
   },
   camera: {
-    driftRadiusKm: 30,
+    // The drift's home is downtown (Westlake sits at the projection origin),
+    // not the all-stations centroid — the 2 Line drags that out over Lake
+    // Washington and the opening shot frames nothing.
+    heartX: 1.4,
+    heartZ: 0.4,
+    driftRadiusKm: 16,
     driftElevation: 0.92, // radians above the horizon
+    // Portrait framing: more top-down and slightly farther, so the
+    // north–south spine runs UP the screen instead of compressing into a
+    // horizon band under a fisheye FOV.
+    portrait: { radiusKm: 20, elevation: 1.22 },
     driftRadSec: 0.02, // slow orbit
     driftBreathKm: 2.2,
     idleResumeS: 30,

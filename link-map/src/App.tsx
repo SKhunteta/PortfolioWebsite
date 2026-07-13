@@ -7,6 +7,7 @@ import { GroundPlane } from "./map/GroundPlane";
 import { Water } from "./map/Water";
 import { Parks } from "./map/Parks";
 import { Roads } from "./map/Roads";
+import { Landmarks } from "./map/Landmarks";
 import { LineRibbons } from "./map/LineRibbons";
 import { Trains } from "./trains/Trains";
 import { TrainModel } from "./trains/TrainModel";
@@ -68,6 +69,7 @@ export default function App() {
         <Water />
         <GroundPlane />
         <Roads />
+        <Landmarks />
         <LineRibbons />
         <Stations />
         <Trains />

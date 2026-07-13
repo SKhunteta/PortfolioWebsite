@@ -1,8 +1,9 @@
 // The quiet chrome: a title that fades once you settle in, the honest
-// live/simulated/resting badge, a chase hint, and the ?debug readout.
-// All DOM, outside the canvas.
+// live/simulated/resting badge, a chase hint, the ?debug readout — and the
+// piece's one spoken sentence: an intro that tells you the trains are real,
+// then gets out of the way. All DOM, outside the canvas.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useUi, TRAINS, Mode } from "../trains/store";
 import { TIER } from "../world/device";
 import { HAS_BASEMAP } from "../map/basemap";
@@ -21,16 +22,57 @@ const MODE_HINT: Record<Mode, string> = {
   connecting: "",
 };
 
+// The intro never lies either — each mode gets its own honest sentence.
+function introText(mode: Mode, trainCount: number): string | null {
+  const n = trainCount;
+  switch (mode) {
+    case "live":
+      return n === 1
+        ? "One train is on the tracks right now — this is it, live."
+        : `${n} trains are on the tracks right now — these are them, live.`;
+    case "simulated":
+      return n === 1
+        ? "The live feed is asleep — this one train runs on the real timetable, simulated and honest about it."
+        : `The live feed is asleep — these ${n} trains run on the real timetable, simulated and honest about it.`;
+    case "resting":
+      return "The network is asleep. An empty map is the truth — trains return with the morning.";
+    default:
+      return null;
+  }
+}
+
 export function Hud() {
   const mode = useUi((s) => s.mode);
   const following = useUi((s) => s.followTrainId);
+  const caption = useUi((s) => s.caption);
   const [settled, setSettled] = useState(false);
+  const [intro, setIntro] = useState<string | null>(null);
+  const introDone = useRef(false);
   const [debug, setDebug] = useState<{ fps: number; trains: number } | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setSettled(true), 14000);
     return () => clearTimeout(t);
   }, []);
+
+  // The one sentence, spoken once per visit: the moment the first poll
+  // resolves, say what's real. The CSS animation carries the fade; unmount
+  // after it ends.
+  useEffect(() => {
+    if (introDone.current || mode === "connecting") return;
+    introDone.current = true;
+    setIntro(introText(mode, TRAINS.size));
+    const t = setTimeout(() => setIntro(null), 13000);
+    return () => clearTimeout(t);
+  }, [mode]);
+
+  // Captions clear themselves after the fade so a remount can't resurrect
+  // a stale arrival.
+  useEffect(() => {
+    if (!caption) return;
+    const t = setTimeout(() => useUi.getState().setCaption(null), 8000);
+    return () => clearTimeout(t);
+  }, [caption]);
 
   useEffect(() => {
     if (!new URLSearchParams(window.location.search).has("debug")) return;
@@ -52,6 +94,18 @@ export function Hud() {
         <span className="hud-dot" />
         {MODE_LABEL[mode]}
       </div>
+
+      {intro && (
+        <div className="hud-intro">
+          <p>{intro}</p>
+        </div>
+      )}
+
+      {caption && (
+        <div key={caption.key} className="hud-caption">
+          {caption.text}
+        </div>
+      )}
 
       {following && <div className="hud-chase">following · esc to let go</div>}
 
