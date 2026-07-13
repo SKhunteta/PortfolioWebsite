@@ -46,6 +46,11 @@ export function CameraRig() {
     }
   });
 
+  // Dev handle for the smoke harness (meow-9's __meowCamera pattern).
+  useEffect(() => {
+    (window as unknown as Record<string, unknown>).__linkMapCamera = camera;
+  }, [camera]);
+
   // Pointer bookkeeping: any grab pauses drift and breaks a chase.
   useEffect(() => {
     const el = gl.domElement;

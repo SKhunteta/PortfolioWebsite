@@ -24,10 +24,15 @@ import {
 import { MAX_TRAINS } from "./Trains";
 
 const BODY_VERT = /* glsl */ `
+  attribute float aLead;
   varying vec3 vLocal;
+  varying vec3 vNormalL;
   varying vec3 vNormalW;
+  varying float vLead;
   void main() {
     vLocal = position;
+    vLead = aLead;
+    vNormalL = normal; // LOCAL normal: region classification must not rotate
     vNormalW = normalize(mat3(instanceMatrix) * normal);
     gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);
   }
@@ -39,7 +44,9 @@ const BODY_VERT = /* glsl */ `
 // the underside go dark.
 const BODY_FRAG = /* glsl */ `
   varying vec3 vLocal;
+  varying vec3 vNormalL;
   varying vec3 vNormalW;
+  varying float vLead;
   uniform sampler2D uLivery;
   uniform sampler2D uEmissive;
   uniform float uAmbient;
@@ -47,17 +54,14 @@ const BODY_FRAG = /* glsl */ `
   uniform float uWindowIntensity;
 
   vec2 regionUv() {
-    vec3 n = normalize(vLocal);
-    vec3 an = abs(vNormalW);
+    vec3 an = abs(vNormalL); // local axes: yaw-proof face classification
     float u = clamp(vLocal.x + 0.5, 0.0, 1.0);
     float v = clamp(vLocal.y + 0.5, 0.0, 1.0);
     if (vLocal.y > 0.52) return vec2(0.55 + 0.2 * u, 0.25); // pantograph -> dark
-    // Dominant local axis of the ORIGINAL box normal survives instancing
-    // yaw; classify with the local-space position instead for robustness.
-    if (an.y > 0.7 && vNormalW.y < 0.0) return vec2(0.55 + 0.2 * u, 0.25); // underside
+    if (an.y > 0.7 && vNormalL.y < 0.0) return vec2(0.55 + 0.2 * u, 0.25); // underside
     // Roof square lives in the atlas' BOTTOM half (canvas flips into v 0..0.5).
     if (an.y > 0.7) return vec2(0.27 + 0.2 * u, 0.06 + 0.38 * clamp(vLocal.z + 0.5, 0.0, 1.0)); // roof
-    if (an.x > 0.6) { // cab face / section end
+    if (an.x > 0.6) { // cab nose / section end
       float fu = clamp(vLocal.z + 0.5, 0.0, 1.0);
       return vec2(fu * 0.25, 0.5 - 0.5 * v);
     }
@@ -70,7 +74,10 @@ const BODY_FRAG = /* glsl */ `
     float lit = texture2D(uEmissive, uv).r;
     // Soft fake sun so the box reads as a volume.
     float shade = 0.72 + 0.28 * max(0.0, dot(vNormalW, normalize(vec3(0.35, 0.85, 0.3))));
-    vec3 c = livery * uAmbient * shade + uWindow * lit * uWindowIntensity;
+    // The trailing cab's nose shows taillights, not headlights.
+    bool nose = abs(vNormalL.x) > 0.6 && vLocal.y <= 0.52;
+    vec3 glowColor = nose ? mix(vec3(0.75, 0.08, 0.05), uWindow, vLead) : uWindow;
+    vec3 c = livery * uAmbient * shade + glowColor * lit * uWindowIntensity;
     gl_FragColor = vec4(c, 1.0);
   }
 `;
@@ -129,9 +136,20 @@ export function TrainModel() {
   const { cabGeo, midGeo, livery, emissive, sizeAttr } = useMemo(() => {
     const sizeAttr = new THREE.InstancedBufferAttribute(new Float32Array(MAX_TRAINS), 1);
     sizeAttr.setUsage(THREE.DynamicDrawUsage);
+    const cabGeo = buildCabGeometry();
+    const midGeo = buildMidGeometry();
+    // Instance order is fixed (i*2 = lead cab, i*2+1 = trailing cab), so the
+    // lead flag is static: headlights forward, taillights aft.
+    const cabLead = new Float32Array(MAX_TRAINS * 2);
+    for (let i = 0; i < MAX_TRAINS; i++) cabLead[i * 2] = 1;
+    cabGeo.setAttribute("aLead", new THREE.InstancedBufferAttribute(cabLead, 1));
+    midGeo.setAttribute(
+      "aLead",
+      new THREE.InstancedBufferAttribute(new Float32Array(MAX_TRAINS).fill(1), 1)
+    );
     return {
-      cabGeo: buildCabGeometry(),
-      midGeo: buildMidGeometry(),
+      cabGeo,
+      midGeo,
       livery: buildLiveryTexture(),
       emissive: buildEmissiveTexture(),
       sizeAttr,

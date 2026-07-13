@@ -19,9 +19,15 @@ on a second monitor and the city breathes at them.
   it whenever it's on screen. The hand-authored `map/waterData.ts` rings
   are the permanent fallback when the file is the placeholder stub.
 - Every train is a **toy S700** — a code-built, three-section articulated
-  Link LRV (raked double-cab nose, ST wave livery on a shared canvas
-  texture, lit windows, HDR headlight on the leading end) that bends along
-  the real curve, each section aligned to its own chord. The model IS the
+  Link LRV that bends along the real curve, each section aligned to its own
+  chord, in real S700 proportions (slim: width 0.10·L, height 0.13·L). The
+  livery is the actual identity kit, painted on a shared canvas texture:
+  navy roofline and nose cap, big glass band, teal-over-green double wave
+  on a navy skirt, ST bumper mark, amber destination sign. Lit windows stay
+  under the bloom line; an HDR headlight leads and the trailing cab shows
+  red taillights (per-instance aLead; face regions classify by LOCAL
+  normal — world normals rotate with heading and once swapped the sides
+  onto the nose). The model IS the
   position marker at every zoom: storybook-large at drift distance, easing
   toward real scale as the camera closes (`modelL`, per train). Its glow
   halo and speed-proportional trail stay underneath.

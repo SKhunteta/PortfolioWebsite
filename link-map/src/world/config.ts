@@ -26,11 +26,13 @@ export const CONFIG = {
     // exaggerated at drift distance, easing toward real scale up close.
     model: {
       farLenKm: 0.55,
-      nearLenKm: 0.16,
+      nearLenKm: 0.2,
       nearCamKm: 6,
       farCamKm: 40,
-      widthFrac: 0.14, // of length
-      heightFrac: 0.12,
+      // Real S700 section proportions (~30 m × 2.65 m × 3.8 m), kept a
+      // touch chunky for the toy read.
+      widthFrac: 0.1, // of length
+      heightFrac: 0.13,
       sectionGapFrac: 0.04, // articulation joint, hides in the dark bevel
       noseRakeFrac: 0.3,
       headlightCore: 2.2, // HDR — blooms on the leading end only
@@ -68,7 +70,7 @@ export const CONFIG = {
     minDistance: 0.8,
     maxDistance: 90,
     // Close enough that the toy S700 fills the frame; speed pulls it back.
-    chaseOffsetKm: { back: 0.62, up: 0.34 },
+    chaseOffsetKm: { back: 0.7, up: 0.26 },
     chaseLerp: 2.2, // per-second exponential approach
     doubleTapPx: 48, // train pick radius in screen space
   },
