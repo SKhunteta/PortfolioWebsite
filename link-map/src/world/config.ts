@@ -55,6 +55,11 @@ export const CONFIG = {
     waterEdgeMinHoleKm2: 1.0,
     wobbleAmpKm: 0.03,
     wobbleFreq: 0.35,
+    // Seigaiha wave-fans in the night water: fan radius holds the ring
+    // spacing (radius/rings ≈ 200 m) above the drift ground-sample so the
+    // arcs survive the resample instead of dissolving into AA.
+    seigaihaRadiusKm: 0.8,
+    seigaihaRings: 4,
   },
   trail: {
     sampleEveryS: 0.12,
