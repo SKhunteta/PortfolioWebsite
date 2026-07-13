@@ -29,6 +29,17 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Behind Railway's edge proxy in production, the client IP arrives in the
+// X-Forwarded-For header. Express defaults `trust proxy` to false, so
+// express-rate-limit refuses to key on that header and throws
+// ERR_ERL_UNEXPECTED_X_FORWARDED_FOR on every request. Trust exactly one
+// proxy hop (Railway's) so req.ip resolves to the real client and the
+// limiters key on it correctly. Not enabled locally, where there is no proxy
+// and a permissive setting would let clients spoof their IP.
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
 // Auto-setup function
 async function checkAndRunSetup() {
   try {
