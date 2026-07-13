@@ -1,0 +1,335 @@
+:root {
+  --hud-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Ink on paper: system serif for prose, mono stays for tabular ETAs.
+     System stacks only — no external font fetches, ever. */
+  --hud-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+}
+
+body {
+  overflow: hidden;
+  font-family: var(--hud-mono);
+  -webkit-font-smoothing: antialiased;
+}
+
+.hud-title {
+  position: fixed;
+  top: max(18px, env(safe-area-inset-top));
+  left: max(22px, env(safe-area-inset-left));
+  color: #4a3721;
+  /* The paper halo: sumi ink stays fixed while the print swings bright to
+     dark, so a tight + wide washi glow keeps it legible on the night look. */
+  text-shadow:
+    0 0 1px rgba(242, 230, 198, 0.95),
+    0 0 4px rgba(242, 230, 198, 0.95),
+    0 0 14px rgba(242, 230, 198, 0.8);
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 3.5s ease;
+}
+.hud-title h1 {
+  margin: 0;
+  font-family: var(--hud-serif);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+.hud-title p {
+  margin: 6px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: #8a7355;
+}
+.hud-settled {
+  opacity: 0.38;
+}
+
+.hud-badge {
+  position: fixed;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #7a6549;
+  user-select: none;
+}
+.hud-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a89675;
+}
+.hud-badge-live .hud-dot {
+  background: #c73e2a;
+  box-shadow: 0 0 8px #c73e2a88;
+  animation: hud-pulse 3s ease-in-out infinite;
+}
+.hud-badge-simulated .hud-dot {
+  background: #c9972e;
+  box-shadow: 0 0 8px #c9972e66;
+  animation: hud-pulse 3s ease-in-out infinite;
+}
+.hud-badge-resting .hud-dot {
+  background: #8a7a5f;
+}
+
+/* The weather word: top-right, answering the title top-left. Quieter than
+   the badge, clear of the caption/badge traffic along the bottom edge on
+   phones. Nudged down so the ?debug readout (same corner, dev only) fits. */
+.hud-weather {
+  position: fixed;
+  top: calc(max(18px, env(safe-area-inset-top)) + 22px);
+  right: max(20px, env(safe-area-inset-right));
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8a7355;
+  user-select: none;
+  pointer-events: none;
+}
+
+@keyframes hud-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.78); opacity: 0.7; }
+}
+
+/* The intro: one sentence, center stage, then gone. */
+.hud-intro {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 28px;
+  pointer-events: none;
+  user-select: none;
+  animation: hud-intro 13s ease forwards;
+}
+.hud-intro p {
+  max-width: 30em;
+  margin: 0;
+  text-align: center;
+  font-family: var(--hud-serif);
+  font-size: 15px;
+  line-height: 1.9;
+  letter-spacing: 0.1em;
+  color: #3d2f1f;
+  /* A paper halo instead of a dark glow: the ink floats over the print. */
+  text-shadow:
+    0 0 4px rgba(242, 230, 198, 0.92),
+    0 1px 22px rgba(242, 230, 198, 0.75);
+}
+@keyframes hud-intro {
+  0% { opacity: 0; }
+  8% { opacity: 1; }
+  82% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Ambient arrival captions: a murmur above the badge line. */
+.hud-caption {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 34px);
+  max-width: 88vw;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #6f5a3e;
+  user-select: none;
+  pointer-events: none;
+  animation: hud-caption 8s ease forwards;
+}
+@keyframes hud-caption {
+  0% { opacity: 0; transform: translate(-50%, 6px); }
+  10% { opacity: 0.9; transform: translate(-50%, 0); }
+  80% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+.hud-chase {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: max(18px, env(safe-area-inset-bottom));
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #7a6549;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Station reading card: lore whisper + live arrivals, fading up on hover/tap.
+   Left column, lifted clear of the attribution line; pointer-transparent so
+   it never intercepts a drag or a station tap underneath. */
+.station-panel {
+  position: fixed;
+  left: max(22px, env(safe-area-inset-left));
+  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 30px);
+  width: min(320px, calc(100vw - 44px));
+  color: #3d2f1f;
+  /* Shared paper halo for every line in the card — ink must survive the
+     dark lantern night as well as the bright day. */
+  text-shadow:
+    0 0 3px rgba(242, 230, 198, 0.9),
+    0 0 14px rgba(242, 230, 198, 0.6);
+  pointer-events: none;
+  user-select: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+  /* The station's real signature color runs down the card's spine — a
+     vermilion-toned seal edge by default. */
+  border-left: 2px solid rgba(199, 62, 42, 0.35);
+  padding-left: 13px;
+}
+.station-panel-open {
+  opacity: 1;
+  transform: translateY(0);
+}
+.station-panel-name {
+  font-family: var(--hud-serif);
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 16px rgba(242, 230, 198, 0.95);
+}
+.station-panel-swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 9px;
+  vertical-align: 1px;
+  box-shadow: 0 0 8px currentColor;
+}
+.station-panel-sub {
+  margin-top: 5px;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  color: #7a6549;
+  text-shadow: 0 1px 14px rgba(242, 230, 198, 0.9);
+}
+/* What the real station looks like — the researched identity line. */
+.station-panel-look {
+  margin: 11px 0 0;
+  font-family: var(--hud-serif);
+  font-size: 12px;
+  line-height: 1.7;
+  letter-spacing: 0.03em;
+  color: #43331f;
+  text-shadow: 0 1px 16px rgba(242, 230, 198, 0.95);
+}
+.station-panel-art {
+  margin-top: 9px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7a6549;
+  text-shadow: 0 1px 14px rgba(242, 230, 198, 0.9);
+}
+.station-panel-whisper {
+  margin: 11px 0 0;
+  font-family: var(--hud-serif);
+  font-size: 12px;
+  line-height: 1.7;
+  letter-spacing: 0.03em;
+  color: #55432b;
+  text-shadow: 0 1px 16px rgba(242, 230, 198, 0.95);
+  /* A whisper, not an essay — clamp the longer blurbs. */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.station-panel-arrivals {
+  list-style: none;
+  margin: 13px 0 0;
+  padding: 11px 0 0;
+  border-top: 1px solid rgba(122, 101, 73, 0.28);
+}
+.station-panel-arrivals li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 7px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+.station-panel-arrivals li:first-child {
+  margin-top: 0;
+}
+.station-panel-line {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 7px currentColor;
+}
+.station-panel-dest {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #55432b;
+}
+.station-panel-eta {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+  color: #33261a;
+}
+
+/* On phones the badge (bottom-right) and this card would collide along the
+   bottom edge — lift the card above the badge line and cap its height so a
+   long whisper can't push arrivals off-screen. */
+@media (max-width: 560px) {
+  .station-panel {
+    bottom: calc(max(18px, env(safe-area-inset-bottom)) + 58px);
+    width: calc(100vw - 40px);
+  }
+  .station-panel-whisper {
+    -webkit-line-clamp: 3;
+  }
+  /* The look line joins the card on phones too — clamp so look + whisper +
+     arrivals still fit above the badge without pushing off-screen. */
+  .station-panel-look {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+.hud-attrib {
+  position: fixed;
+  left: max(22px, env(safe-area-inset-left));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: #93805f;
+  opacity: 0.8;
+  user-select: none;
+  pointer-events: none;
+}
+
+.hud-debug {
+  position: fixed;
+  top: max(18px, env(safe-area-inset-top));
+  right: max(20px, env(safe-area-inset-right));
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #8a7355;
+  user-select: none;
+}

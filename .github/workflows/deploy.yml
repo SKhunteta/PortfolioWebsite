@@ -51,6 +51,12 @@ jobs:
       - run: npm run build
         working-directory: link-map
       - run: mkdir -p dist/link-map && cp -r link-map/dist/. dist/link-map/
+      # The Floating World is the ukiyo-e edition of link-map, served at /floating-world/.
+      - run: npm ci
+        working-directory: floating-world
+      - run: npm run build
+        working-directory: floating-world
+      - run: mkdir -p dist/floating-world && cp -r floating-world/dist/. dist/floating-world/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist

@@ -1,0 +1,372 @@
+{
+ "lynnwoodcitycenter": {
+  "neighborhood": "Lynnwood",
+  "opened": "2024-08-30",
+  "blurb": "A major shared station on the 1 and 2 Lines in Snohomish County. Lynnwood City Center is a growing urban hub with a large transit-oriented development transforming the area around the station.",
+  "notableFact": "The Lynnwood Link Extension added four new stations and brought light rail to Snohomish County for the first time."
+ },
+ "mountlaketerrace": {
+  "neighborhood": "Mountlake Terrace",
+  "opened": "2024-08-30",
+  "blurb": "Serving the suburban community of Mountlake Terrace with a large park-and-ride facility. The station connects commuters to downtown Seattle in about 30 minutes."
+ },
+ "shorelinenorth185th": {
+  "neighborhood": "Shoreline",
+  "opened": "2024-08-30",
+  "blurb": "Located at NE 185th Street alongside I-5 in Shoreline, this station serves the northern part of the city and has spurred significant transit-oriented development plans."
+ },
+ "shorelinesouth148th": {
+  "neighborhood": "Shoreline",
+  "opened": "2024-08-30",
+  "blurb": "Serving southern Shoreline near NE 148th Street alongside I-5. The surrounding area is undergoing redevelopment with new housing and mixed-use projects."
+ },
+ "pinehurst": {
+  "neighborhood": "Pinehurst",
+  "blurb": "An infill station at NE 130th Street serving the Pinehurst neighborhood between Shoreline and Northgate, currently under construction on the existing line.",
+  "notableFact": "Pinehurst is the first infill station to be added to an operating Link line."
+ },
+ "northgate": {
+  "neighborhood": "Northgate",
+  "opened": "2021-10-02",
+  "blurb": "A major transit hub adjacent to Northgate Mall and the NHL Kraken community ice rink. The pedestrian bridge connects to North Seattle College.",
+  "notableFact": "The John Lewis Memorial Bridge at Northgate spans I-5 to connect the station with North Seattle College."
+ },
+ "roosevelt": {
+  "neighborhood": "Roosevelt",
+  "opened": "2021-10-02",
+  "blurb": "A charming residential neighborhood with local restaurants and shops along Roosevelt Way. Named after President Theodore Roosevelt."
+ },
+ "udistrict": {
+  "neighborhood": "University District",
+  "opened": "2021-10-02",
+  "blurb": "The vibrant heart of Seattle's University District, steps from the Ave (University Way) with its eclectic mix of bookstores, restaurants, and student hangouts.",
+  "notableFact": "The U District station is over 90 feet deep, making it one of the deepest stations in the system."
+ },
+ "universityofwashington": {
+  "neighborhood": "University of Washington",
+  "opened": "2016-03-19",
+  "blurb": "Located at the southeast edge of the UW campus near Husky Stadium. Provides direct access to one of the top research universities in the world.",
+  "notableFact": "This station opened as part of the University Link Extension in 2016, cutting the UW-to-downtown ride to under 10 minutes."
+ },
+ "capitolhill": {
+  "neighborhood": "Capitol Hill",
+  "opened": "2016-03-19",
+  "blurb": "Seattle's most vibrant and eclectic neighborhood, known for its nightlife, diverse dining scene, and the iconic Pike/Pine corridor. A cultural hub of the city.",
+  "notableFact": "Capitol Hill station features 'Jet Kiss' by artist Mike Ross, two repurposed Navy jets suspended over the platform."
+ },
+ "westlake": {
+  "neighborhood": "Downtown Seattle",
+  "opened": "2009-07-18",
+  "blurb": "The bustling heart of downtown Seattle. Westlake is the system's busiest station, connecting to the Monorail, bus routes, and the retail core around Westlake Center and Pike Place Market.",
+  "notableFact": "Westlake is the busiest Link station and serves as the downtown hub where the future 1, 2, and 3 Lines all converge."
+ },
+ "symphony": {
+  "neighborhood": "Downtown Seattle",
+  "opened": "2009-07-18",
+  "blurb": "Renamed from University Street to Symphony in 2024, this station serves Benaroya Hall, the Seattle Art Museum, and the downtown financial district.",
+  "notableFact": "Renamed to Symphony to better reflect its proximity to Benaroya Hall, home of the Seattle Symphony."
+ },
+ "pioneersquare": {
+  "neighborhood": "Pioneer Square",
+  "opened": "2009-07-18",
+  "blurb": "Seattle's original neighborhood, featuring historic red-brick buildings, art galleries, and the famous Underground Tour. The birthplace of the city."
+ },
+ "internationaldistrictchinatown": {
+  "neighborhood": "Chinatown-International District",
+  "opened": "2009-07-18",
+  "blurb": "A culturally rich neighborhood home to Seattle's Chinese, Japanese, Vietnamese, and Filipino communities. The Wing Luke Museum and Uwajimaya grocery are neighborhood landmarks. Today's 2 Line trains branch east toward Judkins Park just south of here.",
+  "notableFact": "This station is a major downtown transfer hub where the future 1, 2, and 3 Lines converge and the 2 Line branches east across Lake Washington."
+ },
+ "stadium": {
+  "neighborhood": "SoDo",
+  "opened": "2009-07-18",
+  "blurb": "Serving T-Mobile Park (Mariners) and Lumen Field (Seahawks/Sounders). The go-to station for Seattle's major sporting events and concerts.",
+  "notableFact": "On game days, this station sees ridership spikes of up to 10x normal levels."
+ },
+ "sodo": {
+  "neighborhood": "SoDo",
+  "opened": "2009-07-18",
+  "blurb": "An industrial district south of downtown that's gradually evolving. SODO station provides access to the area's warehouses, breweries, and the Starbucks headquarters campus.",
+  "notableFact": "The future West Seattle (3 Line) trains will branch off near SODO."
+ },
+ "beaconhill": {
+  "neighborhood": "Beacon Hill",
+  "opened": "2009-07-18",
+  "blurb": "A diverse hilltop neighborhood with stunning views of downtown and Mount Rainier. Known for its community gardens, local restaurants, and the Jefferson Park golf course.",
+  "notableFact": "Beacon Hill station is about 160 feet underground, making it the deepest station in the entire Link system."
+ },
+ "mountbaker": {
+  "neighborhood": "Mount Baker",
+  "opened": "2009-07-18",
+  "blurb": "A residential neighborhood with growing commercial activity along Rainier Avenue. The station connects to multiple bus routes serving the Rainier Valley."
+ },
+ "columbiacity": {
+  "neighborhood": "Columbia City",
+  "opened": "2009-07-18",
+  "blurb": "One of Seattle's most diverse and beloved neighborhoods. Columbia City features a thriving main street with independent shops, restaurants from around the world, and a historic cinema.",
+  "notableFact": "Columbia City was named one of the best neighborhoods in America by multiple publications for its diversity and walkability."
+ },
+ "grahamstreet": {
+  "neighborhood": "Hillman City",
+  "blurb": "A planned infill station between Columbia City and Othello, serving the Hillman City neighborhood. Part of a long-planned effort to improve transit access in the Rainier Valley.",
+  "notableFact": "Graham Street has been sought by the community since the original Link light rail opened in 2009."
+ },
+ "othello": {
+  "neighborhood": "Othello",
+  "opened": "2009-07-18",
+  "blurb": "A multicultural neighborhood in the Rainier Valley with a mix of East African, Southeast Asian, and Latin American communities. Home to numerous ethnic grocery stores and restaurants."
+ },
+ "rainierbeach": {
+  "neighborhood": "Rainier Beach",
+  "opened": "2009-07-18",
+  "blurb": "The southernmost Seattle neighborhood on the Link light rail. Rainier Beach is known for its community resilience, urban farm projects, and proximity to Lake Washington."
+ },
+ "boeingaccessroad": {
+  "neighborhood": "Georgetown",
+  "blurb": "A planned infill station between Rainier Beach and Tukwila, near Boeing's facilities along East Marginal Way. Will improve transit access to the Duwamish industrial area."
+ },
+ "tukwilainternationalblvd": {
+  "neighborhood": "Tukwila",
+  "opened": "2009-07-18",
+  "blurb": "Serving the diverse Tukwila community along International Boulevard. The area is one of the most ethnically diverse zip codes in the United States."
+ },
+ "seatacairport": {
+  "neighborhood": "SeaTac",
+  "opened": "2009-12-19",
+  "blurb": "Direct access to Seattle-Tacoma International Airport via a skybridge to the terminal. One of the most-used stations for visitors arriving in the region.",
+  "notableFact": "SeaTac is one of the few US airports with direct light rail service to downtown, with a ride time of about 38 minutes."
+ },
+ "anglelake": {
+  "neighborhood": "SeaTac",
+  "opened": "2016-09-24",
+  "blurb": "Named after the nearby Angle Lake, a popular swimming spot. The station includes a large parking garage and serves as a gateway to the southern suburbs."
+ },
+ "kentdesmoines": {
+  "neighborhood": "Kent/Des Moines",
+  "opened": "2025-12-06",
+  "blurb": "Serving the communities of Kent and Des Moines along the Highway 99 corridor near Highline College. Part of the Federal Way Link Extension that brought rail further south."
+ },
+ "starlake": {
+  "neighborhood": "Star Lake",
+  "opened": "2025-12-06",
+  "blurb": "A suburban station serving the Star Lake area between Kent and Federal Way. Features a park-and-ride facility for South King County commuters."
+ },
+ "federalwaydowntown": {
+  "neighborhood": "Federal Way",
+  "opened": "2025-12-06",
+  "blurb": "The current southern terminus of the 1 Line. Federal Way Downtown station anchors the city's growing downtown core and connects to bus service throughout South King County.",
+  "notableFact": "The Federal Way Link Extension added 7.8 miles of light rail and three new stations in December 2025."
+ },
+ "southfederalway": {
+  "neighborhood": "Federal Way",
+  "blurb": "Planned station south of Federal Way Downtown, part of the Tacoma Dome Link Extension carrying the future 1 Line toward Tacoma."
+ },
+ "fife": {
+  "neighborhood": "Fife",
+  "blurb": "Planned station in the city of Fife along the Pacific Highway corridor, serving the growing communities between Federal Way and Tacoma."
+ },
+ "easttacoma": {
+  "neighborhood": "East Tacoma",
+  "blurb": "Planned station near the Puyallup River and Portland Avenue, serving East Tacoma and the Puyallup Tribe's lands on the approach to the Tacoma Dome."
+ },
+ "judkinspark": {
+  "neighborhood": "Judkins Park",
+  "opened": "2026-03-28",
+  "blurb": "The first station east of the downtown tunnel, in the median of I-90 between Rainier Avenue S and 23rd Avenue S. Located in the diverse Judkins Park neighborhood of the Central District.",
+  "notableFact": "Judkins Park opened in March 2026 with the Crosslake Connection, finally linking the Eastside 2 Line segment to Seattle."
+ },
+ "mercerisland": {
+  "neighborhood": "Mercer Island",
+  "opened": "2026-03-28",
+  "blurb": "Located in the median of I-90 between 77th and 80th avenues on the north end of Mercer Island, giving the island community a direct light rail connection to both Seattle and Bellevue.",
+  "notableFact": "The 2 Line crosses Lake Washington on the I-90 floating bridge — the first light rail line on a floating bridge anywhere in the world."
+ },
+ "southbellevue": {
+  "neighborhood": "South Bellevue",
+  "opened": "2024-04-27",
+  "blurb": "An elevated station on Bellevue Way SE near Mercer Slough Nature Park, with a 1,500-stall park-and-ride garage serving Eastside commuters."
+ },
+ "eastmain": {
+  "neighborhood": "Bellevue",
+  "opened": "2024-04-27",
+  "blurb": "Serving the residential areas of south-central Bellevue along 112th Avenue SE, near Surrey Downs Park and Old Bellevue with its boutique shopping district."
+ },
+ "bellevuedowntown": {
+  "neighborhood": "Downtown Bellevue",
+  "opened": "2024-04-27",
+  "blurb": "The heart of the Eastside's largest city, at the east portal of the downtown Bellevue tunnel. Downtown Bellevue has transformed into a major urban center with gleaming high-rises, Bellevue Square, and a thriving restaurant scene.",
+  "notableFact": "Bellevue is the 5th largest city in Washington state and a major tech hub hosting Amazon, Meta, and other companies."
+ },
+ "wilburton": {
+  "neighborhood": "Wilburton",
+  "opened": "2024-04-27",
+  "blurb": "An evolving neighborhood east of downtown Bellevue, home to the Bellevue Botanical Garden and the new Wilburton Village mixed-use development."
+ },
+ "springdistrict": {
+  "neighborhood": "Spring District",
+  "opened": "2024-04-27",
+  "blurb": "A brand-new neighborhood built around the station. The Spring District is home to a major Meta campus and the Global Innovation Exchange.",
+  "notableFact": "The Spring District is one of the first neighborhoods in the region designed from the ground up around a light rail station."
+ },
+ "belred": {
+  "neighborhood": "Bel-Red",
+  "opened": "2024-04-27",
+  "blurb": "Formerly an industrial and auto-row corridor, Bel-Red is rapidly transforming into a mixed-use neighborhood with new apartments, shops, and creative spaces."
+ },
+ "overlakevillage": {
+  "neighborhood": "Overlake",
+  "opened": "2024-04-27",
+  "blurb": "Adjacent to the Microsoft campus area in Redmond. Overlake Village is a new urban center growing up around the station with housing, retail, and office space."
+ },
+ "redmondtechnology": {
+  "neighborhood": "Redmond",
+  "opened": "2024-04-27",
+  "blurb": "Serving the Redmond technology corridor including Microsoft and Nintendo of America. A major employment hub on the Eastside.",
+  "notableFact": "Microsoft's main campus, adjacent to this station, employs tens of thousands of people."
+ },
+ "marymoorvillage": {
+  "neighborhood": "Redmond",
+  "opened": "2025-05-10",
+  "blurb": "Located along SR 520 near Marymoor Park, King County's largest park. The station includes a 1,400-stall park-and-ride garage and connects to regional trails.",
+  "notableFact": "New King County trails connect Marymoor Village station directly to Marymoor Park and the regional trail network."
+ },
+ "downtownredmond": {
+  "neighborhood": "Downtown Redmond",
+  "opened": "2025-05-10",
+  "blurb": "The eastern terminus of the 2 Line, elevated along Cleveland Street in Redmond's walkable downtown. Saturday farmers markets and the Sammamish River Trail are steps away.",
+  "notableFact": "Redmond is known as the 'Bicycle Capital of the Northwest' with extensive trail connections from this station."
+ },
+ "westalderwood": {
+  "neighborhood": "Lynnwood",
+  "blurb": "Planned station near Alderwood Mall on the Everett Link Extension, the first stop north of Lynnwood City Center."
+ },
+ "ashway": {
+  "neighborhood": "Ash Way",
+  "blurb": "Planned station near the existing Ash Way Park & Ride, serving south Snohomish County commuters on the shared 2/3 Line corridor."
+ },
+ "mariner": {
+  "neighborhood": "Mariner",
+  "blurb": "Planned station near the existing Mariner Park & Ride. Under Sound Transit's future service plan, Mariner is the planned northern terminus of the 2 Line."
+ },
+ "sr99airportroad": {
+  "neighborhood": "Everett",
+  "blurb": "A provisional (unfunded) station on the Everett Link Extension at SR 99 and Airport Road, serving the surrounding commercial corridor."
+ },
+ "sweverettindustrialcenter": {
+  "neighborhood": "Everett",
+  "blurb": "Planned station near Paine Field and Boeing's Everett factory, the largest building in the world by volume. Will serve major aerospace manufacturing employment.",
+  "notableFact": "The nearby Boeing Everett Factory is where the 747, 767, 777, and 787 Dreamliner were assembled."
+ },
+ "sr526evergreen": {
+  "neighborhood": "Everett",
+  "blurb": "Planned station near SR 526 and Evergreen Way on the Everett Link Extension, serving south Everett neighborhoods."
+ },
+ "everettstation": {
+  "neighborhood": "Everett",
+  "blurb": "The planned northern terminus of the future 3 Line at the existing Everett Station transit hub, connecting with Sounder commuter rail and Amtrak.",
+  "notableFact": "When complete, the Everett Link Extension will add 16 miles of light rail north of Lynnwood."
+ },
+ "delridge": {
+  "neighborhood": "Delridge",
+  "blurb": "Planned station near Delridge Way and Andover Street in West Seattle. A diverse community with views of the Duwamish River valley."
+ },
+ "avalon": {
+  "neighborhood": "West Seattle",
+  "blurb": "Planned station near 35th Avenue SW and Avalon Way, providing a connection point between the Alaska Junction and Delridge communities."
+ },
+ "alaskajunction": {
+  "neighborhood": "West Seattle",
+  "blurb": "Planned terminus at the heart of West Seattle's Alaska Junction, the neighborhood's walkable village center with local shops and restaurants.",
+  "notableFact": "West Seattle was an independent city until it was annexed by Seattle in 1907, and many residents maintain a strong sense of separate identity."
+ },
+ "southkirkland": {
+  "neighborhood": "South Kirkland",
+  "blurb": "Planned northern terminus of the future 4 Line at the existing South Kirkland Park & Ride, near the Cross Kirkland Corridor trail."
+ },
+ "richardsroad": {
+  "neighborhood": "Factoria",
+  "blurb": "Planned elevated station on the north side of I-90 near Richards Road, serving the Factoria area of Bellevue."
+ },
+ "eastgate": {
+  "neighborhood": "Eastgate",
+  "blurb": "Planned station near the Eastgate Park & Ride and Bellevue College, a major transit connection point for the I-90 corridor."
+ },
+ "lakemont": {
+  "neighborhood": "Lakemont",
+  "blurb": "A provisional (unfunded) station near the Lakemont Boulevard interchange on I-90, between Eastgate and Issaquah in the Cascade foothills."
+ },
+ "centralissaquah": {
+  "neighborhood": "Issaquah",
+  "blurb": "Planned eastern terminus of the future 4 Line in Issaquah's regional growth center at the base of the Cascade foothills, gateway to Tiger Mountain trails and the historic downtown.",
+  "notableFact": "Issaquah hosts the annual Salmon Days festival celebrating the return of salmon to Issaquah Creek."
+ },
+ "tacomadome": {
+  "neighborhood": "Tacoma",
+  "opened": "2003-08-22",
+  "blurb": "The eastern terminus of the T Line at the Tacoma Dome regional transit hub, connecting to Sounder commuter rail, Amtrak, and local buses. The future 1 Line from Seattle is planned to terminate here.",
+  "notableFact": "The Tacoma Dome Link Extension is planned to bring 1 Line trains from Seattle to this station in 2035."
+ },
+ "south25thstreet": {
+  "neighborhood": "Tacoma",
+  "opened": "2003-08-22",
+  "blurb": "Serving the residential neighborhoods south of downtown Tacoma near South 25th Street. One of the original T Line stations connecting Tacoma Dome to downtown."
+ },
+ "unionstation": {
+  "neighborhood": "Downtown Tacoma",
+  "opened": "2003-08-22",
+  "blurb": "Located at Tacoma's beautifully restored Union Station, a Beaux-Arts landmark now housing a federal courthouse with Chihuly glass art installations in its grand hall.",
+  "notableFact": "Union Station features a permanent installation of Dale Chihuly glass art, free and open to the public."
+ },
+ "conventioncenter": {
+  "neighborhood": "Downtown Tacoma",
+  "opened": "2003-08-22",
+  "blurb": "Serving the Greater Tacoma Convention Center and UW Tacoma campus. Located along Commerce Street above Tollefson Plaza."
+ },
+ "theaterdistrict": {
+  "neighborhood": "Downtown Tacoma",
+  "opened": "2011-09-01",
+  "blurb": "A central T Line station in downtown Tacoma's Theater District. Near the Tacoma Art Museum, Museum of Glass, and the historic Pantages Theater."
+ },
+ "oldcityhall": {
+  "neighborhood": "Downtown Tacoma",
+  "opened": "2023-09-16",
+  "blurb": "Station near Tacoma's historic Old City Hall, a Romanesque Revival landmark built in 1893. Part of the 2023 Hilltop Tacoma Link Extension."
+ },
+ "s4th": {
+  "neighborhood": "Downtown Tacoma",
+  "opened": "2023-09-16",
+  "blurb": "Station along South 4th Street in downtown Tacoma, part of the Hilltop Extension providing access to the Stadium District area."
+ },
+ "stadiumdistrict": {
+  "neighborhood": "Stadium District",
+  "opened": "2023-09-16",
+  "blurb": "Station in the Stadium District neighborhood, known for its historic Stadium High School featured in the film '10 Things I Hate About You.' The northernmost point on the T Line.",
+  "notableFact": "Stadium High School, near this station, was originally built as a luxury hotel in 1891 before being converted to a school."
+ },
+ "tacomageneral": {
+  "neighborhood": "Hilltop",
+  "opened": "2023-09-16",
+  "blurb": "Station near MultiCare Tacoma General Hospital, part of the Hilltop Extension serving Tacoma's medical district."
+ },
+ "6thavenue": {
+  "neighborhood": "Hilltop",
+  "opened": "2023-09-16",
+  "blurb": "Station along 6th Avenue near the Hilltop neighborhood, a vibrant commercial corridor with independent shops, restaurants, and galleries."
+ },
+ "hilltopdistrict": {
+  "neighborhood": "Hilltop",
+  "opened": "2023-09-16",
+  "blurb": "A key T Line station in Tacoma's Hilltop neighborhood. The Hilltop Extension brought rail transit back to this historically underserved community.",
+  "notableFact": "The Hilltop Extension was a key equity project, reconnecting a neighborhood that lost its streetcar service in 1938."
+ },
+ "stjoseph": {
+  "neighborhood": "Hilltop",
+  "opened": "2023-09-16",
+  "blurb": "The current western terminus of the T Line near St. Joseph Medical Center, on MLK Jr Way between South 17th and 19th streets.",
+  "notableFact": "The T Line (originally Tacoma Link) was the first modern light rail line in the Puget Sound region, opening in 2003."
+ },
+ "tacomacommunitycollege": {
+  "neighborhood": "West Tacoma",
+  "blurb": "The planned western terminus of a future T Line extension along the S 19th Street corridor to Tacoma Community College. Intermediate station locations have not been finalized."
+ }
+}
