@@ -33,7 +33,7 @@ router.use((req, res, next) => {
  * Create and configure a new McpServer instance with all tools registered.
  * Each session gets its own server instance.
  */
-function createMcpServer() {
+export function createMcpServer() {
   const server = new McpServer(
     {
       name: "shreyans-portfolio-mcp",

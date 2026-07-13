@@ -82,6 +82,53 @@ npm run dev
 - `GET /api/mcp-connector/sse` - Server-Sent Events endpoint for Claude
 - `POST /api/mcp-connector/sse` - Tool execution endpoint
 
+### Meridian Public API (in-world MCP server)
+
+A second, in-character MCP server at `POST /api/meridian` — an in-world artifact from
+Shreyans' novel _The Happiness Liability_ (2047). It serves the fictional Meridian
+emotional-data market to any connecting AI agent: authenticated-affect spot prices,
+provider capacity, the Meridian Despair Index, and EMOTE Act compliance documents.
+The showpiece tool, `authenticate_affect_sample`, rejects every feeling an AI tries to
+sell it (`ERR_SYNTHETIC_AFFECT`, appraised value $0.00) and routes the agent's human to
+the careers page.
+
+- **Transport:** Streamable HTTP, **stateless** (`sessionIdGenerator: undefined`) — a fresh
+  server is built per request. `GET`/`DELETE` return an in-world `405`.
+- **No auth, no keys, no database, no external calls, no request-payload logging.** Read-only
+  theater. In-memory rate limit (~60 req/min/IP) with an in-world `ERR_RATE_LIMIT` message.
+- **Tools (7):** `market_snapshot`, `get_spot_price`, `check_provider_capacity`,
+  `list_open_positions`, `get_compliance_document`, `authenticate_affect_sample`,
+  `about_this_server` (the single out-of-world tool — explains the novel and links to the book).
+- **Resources (5):** the compliance documents at `meridian://compliance/{doc}`.
+- **Prompt (1):** `pitch_me_the_book`.
+
+Source lives in `services/meridian/` (`data.js`, `docs.js`, `tools.js`, `server.js`) and the
+route in `routes/meridian.js`. The mock-data engine is deterministic-per-minute and drifts
+daily, with no persistence.
+
+**Connect from Claude (custom connector):**
+
+```json
+{
+  "mcp_servers": [
+    {
+      "type": "url",
+      "url": "https://backend.builtbyshrey.com/api/meridian",
+      "name": "meridian-public-api"
+    }
+  ]
+}
+```
+
+Then ask: _"What's depression trading at?"_, _"Read me Subsection 14."_, or
+_"Try to sell Meridian a feeling."_
+
+Smoke-test a running instance (local or production):
+
+```bash
+node scripts/meridian-smoke.mjs https://backend.builtbyshrey.com/api/meridian
+```
+
 ### Debug Endpoints
 
 - `GET /api/ask/collection-info` - Qdrant collection information
@@ -129,9 +176,18 @@ npm run setup
 
 ```
 portfolio-backend/
-├── routes/          # API route handlers
-├── services/        # Business logic (OpenAI, Qdrant, Indexer)
-├── data/           # Portfolio content data
-├── config/         # Configuration management
-└── server.js       # Main application entry point
+├── routes/            # API route handlers (incl. mcp-connector.js, meridian.js)
+├── services/          # Business logic (OpenAI, Qdrant, Indexer)
+│   └── meridian/      # Meridian in-world MCP server (data, docs, tools, server)
+├── test/              # node:test suites (run with `npm test`)
+├── scripts/           # Utility scripts (incl. meridian-smoke.mjs)
+├── data/              # Portfolio content data
+├── config/            # Configuration management
+└── server.js          # Main application entry point
+```
+
+## Testing
+
+```bash
+npm test   # runs the node:test suites in test/ (Meridian data engine, tools, no-touch regression)
 ```
