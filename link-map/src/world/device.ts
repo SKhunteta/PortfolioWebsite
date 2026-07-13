@@ -51,7 +51,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     trailSegments: 24,
     baseFov: 52,
     noiseOctaves: 2,
-    washBoost: 1.4,
+    washBoost: 1.6,
   },
   tablet: {
     dpr: [1, 2],

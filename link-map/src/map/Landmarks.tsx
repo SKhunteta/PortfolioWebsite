@@ -58,27 +58,33 @@ function tower(lat: number, lng: number, w: number, h: number, d: number, yaw = 
 function buildGeometry(): THREE.BufferGeometry {
   const parts: THREE.BufferGeometry[] = [];
 
-  // --- downtown massing (heights ~4× real, the toy register) ---
-  parts.push(tower(47.6045, -122.3305, 0.26, 1.2, 0.26)); // Columbia Center
-  parts.push(tower(47.6106, -122.3348, 0.2, 1.05, 0.2)); // Rainier Square
-  parts.push(tower(47.6082, -122.3369, 0.22, 0.95, 0.22)); // 1201 Third
-  parts.push(tower(47.6103, -122.332, 0.18, 0.88, 0.18)); // Two Union Sq
-  parts.push(tower(47.6067, -122.3327, 0.18, 0.82, 0.18)); // F5 Tower
-  parts.push(tower(47.6046, -122.3294, 0.16, 0.78, 0.16)); // Municipal Tower
-  parts.push(tower(47.6019, -122.3318, 0.1, 0.58, 0.1)); // Smith Tower
-  parts.push(tower(47.6128, -122.3382, 0.2, 0.62, 0.2)); // Westin-ish
-  parts.push(tower(47.6089, -122.3298, 0.16, 0.55, 0.16)); // mid-rise fill
-  parts.push(tower(47.6141, -122.3345, 0.16, 0.48, 0.16)); // Denny Triangle fill
+  // --- downtown massing (heights ~5-6x real, footprints widened past
+  //     real proportions — a building's footprint faces the camera
+  //     edge-on from most drift angles, so it needs to be a fatter
+  //     target than a real floor plate to survive ~20-47 m/px sampling) ---
+  parts.push(tower(47.6045, -122.3305, 0.36, 1.5, 0.36)); // Columbia Center
+  parts.push(tower(47.6106, -122.3348, 0.28, 1.3, 0.28)); // Rainier Square
+  parts.push(tower(47.6082, -122.3369, 0.3, 1.18, 0.3)); // 1201 Third
+  parts.push(tower(47.6103, -122.332, 0.26, 1.1, 0.26)); // Two Union Sq
+  parts.push(tower(47.6067, -122.3327, 0.26, 1.02, 0.26)); // F5 Tower
+  parts.push(tower(47.6046, -122.3294, 0.24, 0.96, 0.24)); // Municipal Tower
+  parts.push(tower(47.6019, -122.3318, 0.16, 0.72, 0.16)); // Smith Tower
+  parts.push(tower(47.6128, -122.3382, 0.28, 0.78, 0.28)); // Westin-ish
+  parts.push(tower(47.6089, -122.3298, 0.24, 0.68, 0.24)); // mid-rise fill
+  parts.push(tower(47.6141, -122.3345, 0.24, 0.6, 0.24)); // Denny Triangle fill
 
-  // --- Space Needle: tapered shaft, saucer, spire ---
+  // --- Space Needle: tapered shaft, saucer, spire — radii nearly doubled
+  //     from a first pass that was true-toy-scale but read as a hairline
+  //     at drift distance; this is the piece's single named landmark, it
+  //     has to survive being small on screen ---
   {
     const { x, z } = projectLatLng(47.6205, -122.3493);
-    const shaft = new THREE.CylinderGeometry(0.028, 0.055, 0.72, 8);
-    shaft.translate(x, 0.36, z);
-    const saucer = new THREE.CylinderGeometry(0.1, 0.16, 0.09, 10);
-    saucer.translate(x, 0.76, z);
-    const spire = new THREE.ConeGeometry(0.014, 0.18, 6);
-    spire.translate(x, 0.89, z);
+    const shaft = new THREE.CylinderGeometry(0.05, 0.09, 0.75, 8);
+    shaft.translate(x, 0.375, z);
+    const saucer = new THREE.CylinderGeometry(0.17, 0.26, 0.12, 10);
+    saucer.translate(x, 0.79, z);
+    const spire = new THREE.ConeGeometry(0.024, 0.22, 6);
+    spire.translate(x, 0.96, z);
     parts.push(shaft, saucer, spire);
   }
 
