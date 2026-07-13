@@ -48,6 +48,15 @@ on a second monitor and the city breathes at them.
   monospace, canvas-drawn (`stations/Labels.tsx`) — no external font
   fetches, ever. The hover card (`stations/StationPanel.tsx`) reads the
   identity too: the look line, structure, and artwork credit.
+- The background city is hand-inked (`map/Landmarks.tsx`, ONE merged
+  geometry): downtown's massed towers and the Needle, Bellevue's second
+  skyline for the 2 Line, the stadiums, the port's raked gantry cranes, the
+  Great Wheel, Gas Works, the Spheres, Husky Stadium — and, ghosted at REAL
+  scale on the horizons, Rainier southeast and the Olympics west. On the
+  Sound, two toy WSF ferries trade the Bainbridge crossing and the water
+  taxi darts to Seacrest (`map/Ferries.tsx`, one InstancedMesh) — ambient
+  paint like Rainier, NOT data: real routes at real crossing speeds,
+  deterministic from the scene clock, never presented as live.
 - The map stays a flattened diagram — no tiles, no labels beyond stations.
   **Tunnels render below the translucent paper and are seen through it** —
   that submerged dimness is painter's order, not depth trickery (the order
@@ -104,9 +113,10 @@ on a second monitor and the city breathes at them.
   `TRAIN_MODEL.write/commit` registry, not its own frame loop.
 - Instanced everything: glow sprites, station orbs (two buckets: surface at
   renderOrder 7, submerged at 3), station seals, underground light shafts,
-  train cabs (×2/train), mid sections, headlights — and ONE preallocated
-  buffer for all trails (drawRange trims), ONE merged geometry per road
-  class, per water layer. Whole scene ≈ 24 draw calls on every tier. `frustumCulled = false` on
+  ferries, train cabs (×2/train), mid sections, headlights — and ONE
+  preallocated buffer for all trails (drawRange trims), ONE merged geometry
+  per road class, per water layer, ONE for landmarks. Whole scene ≈ 25 draw
+  calls on every tier. `frustumCulled = false` on
   instanced meshes — spread instances mis-cull.
 - Toy scale is per-object and camera-relative (trains `modelL`, station
   orbs' `toyScale`): a chased train eases toward real scale while the

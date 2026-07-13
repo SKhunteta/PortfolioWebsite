@@ -36,6 +36,8 @@ export interface Palette {
   roadIntensity: number;
   landmark: THREE.Color; // hand-inked silhouettes (Needle, skyline, Rainier)
   landmarkOpacity: number;
+  ferry: THREE.Color; // WSF hulls — pale against the dark Sound
+  ferryOpacity: number;
   // Toy train
   trainAmbient: number; // livery brightness
   trainWindow: THREE.Color;
@@ -69,8 +71,10 @@ const NIGHT: Palette = {
   parkOpacity: 0.22,
   road: new THREE.Color("#b98f4e"),
   roadIntensity: 0.55,
-  landmark: new THREE.Color("#3c5a86"),
-  landmarkOpacity: 0.72,
+  landmark: new THREE.Color("#6f9ac8"),
+  landmarkOpacity: 1.0,
+  ferry: new THREE.Color("#8ea3b8"),
+  ferryOpacity: 0.85,
   trainAmbient: 0.95,
   trainWindow: new THREE.Color("#ffd9a8"),
   windowIntensity: 0.85,
@@ -98,8 +102,10 @@ const DAY: Palette = {
   parkOpacity: 0.22,
   road: new THREE.Color("#93a4b5"),
   roadIntensity: 0.22,
-  landmark: new THREE.Color("#46586e"),
-  landmarkOpacity: 0.5,
+  landmark: new THREE.Color("#7d95ad"),
+  landmarkOpacity: 0.95,
+  ferry: new THREE.Color("#b3bec9"),
+  ferryOpacity: 0.62,
   trainAmbient: 1.0,
   trainWindow: new THREE.Color("#aebbc9"),
   windowIntensity: 0.12,
@@ -134,6 +140,7 @@ const COLOR_KEYS = [
   "park",
   "road",
   "landmark",
+  "ferry",
   "trainWindow",
 ] as const;
 const SCALAR_KEYS = [
@@ -149,6 +156,7 @@ const SCALAR_KEYS = [
   "parkOpacity",
   "roadIntensity",
   "landmarkOpacity",
+  "ferryOpacity",
   "trainAmbient",
   "windowIntensity",
 ] as const;
