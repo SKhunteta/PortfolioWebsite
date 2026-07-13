@@ -56,10 +56,14 @@ const FRAG = /* glsl */ `
 
   void main() {
     vec2 w = vWorld - uCenter;
+    // Four bands stacked at varied depths so the mist reads as receding ridge
+    // layers (the poster's stacked fog), not one stripe. Still one draw call.
     vec2 b1 = band(w, -7.0, 3.4, 1.0);
     vec2 b2 = band(w, 9.5, 4.2, 2.0);
-    float body = min(1.0, b1.x + b2.x);
-    float edge = min(1.0, b1.y + b2.y);
+    vec2 b3 = band(w, 1.5, 2.4, 3.0);   // a thinner seam threading the middle distance
+    vec2 b4 = band(w, 20.0, 3.2, 4.0);  // a far band riding the horizon recession
+    float body = min(1.0, b1.x + b2.x + b3.x + b4.x);
+    float edge = min(1.0, b1.y + b2.y + b3.y + b4.y);
     // Body IS the fog color; the gold edge alone mixes back toward fog with
     // distance so the horizon contract holds.
     vec3 c = mix(uFog, uGold, edge * 0.55 * (1.0 - fogFactor()));

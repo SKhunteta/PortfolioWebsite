@@ -3,6 +3,14 @@
   /* Ink on paper: system serif for prose, mono stays for tabular ETAs.
      System stacks only — no external font fetches, ever. */
   --hud-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  /* The seal-cartouche glyphs: a system CJK mincho stack — still no fetch. */
+  --hud-cjk: "Hiragino Mincho ProN", "Yu Mincho", "Songti SC", "Noto Serif CJK SC",
+    "Noto Serif JP", "MS Mincho", serif;
+  --fw-ink: #4a3721; /* sumi brown, the print's ink */
+  --fw-vermilion: #c73e2a; /* hanko red */
+  /* The paper halo that keeps ink legible from bright day to lantern night. */
+  --fw-halo: 0 0 1px rgba(242, 230, 198, 0.95), 0 0 4px rgba(242, 230, 198, 0.95),
+    0 0 14px rgba(242, 230, 198, 0.8);
 }
 
 body {
@@ -29,19 +37,152 @@ body {
 .hud-title h1 {
   margin: 0;
   font-family: var(--hud-serif);
-  font-size: 16px;
+  /* The masthead grows into a proper print title — fluid so it never
+     overruns the sheet on a phone. */
+  font-size: clamp(21px, 3.6vw, 34px);
   font-weight: 500;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
 }
 .hud-title p {
-  margin: 6px 0 0;
-  font-size: 11px;
-  letter-spacing: 0.18em;
+  margin: 7px 0 0;
+  font-size: clamp(10px, 1.15vw, 12.5px);
+  letter-spacing: 0.2em;
   color: #8a7355;
 }
 .hud-settled {
   opacity: 0.38;
+}
+
+/* ---- the printed sheet's seal-cartouches ---------------------------------
+   Two vermilion seals bracketing the print, like every ukiyo-e sheet. They
+   share the title's settle fade (.hud-settled) and its paper halo. */
+.fw-cartouche {
+  position: fixed;
+  color: var(--fw-ink);
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 3.5s ease;
+}
+
+/* Upper-left: the title cartouche, sitting just under the masthead. */
+.fw-cartouche-left {
+  top: calc(max(18px, env(safe-area-inset-top)) + 84px);
+  left: max(22px, env(safe-area-inset-left));
+}
+.fw-cartouche-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 9px 9px;
+  border: 1px solid rgba(74, 55, 33, 0.5);
+  background: rgba(233, 220, 190, 0.16);
+  box-shadow: var(--fw-halo);
+}
+.fw-cartouche-cols {
+  display: flex;
+  gap: 7px;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-family: var(--hud-cjk);
+  font-size: clamp(13px, 1.5vw, 17px);
+  letter-spacing: 0.14em;
+  line-height: 1.05;
+  color: var(--fw-ink);
+  text-shadow: var(--fw-halo);
+}
+.fw-hanko {
+  writing-mode: horizontal-tb;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  background: var(--fw-vermilion);
+  color: #f2e6c6;
+  font-family: var(--hud-cjk);
+  font-size: 13px;
+  border-radius: 2px;
+}
+
+/* Lower-right: the Evergreen Capital seal, lifted clear of the mode badge. */
+.fw-cartouche-right {
+  right: max(20px, env(safe-area-inset-right));
+  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 46px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.fw-evergreen-col {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-family: var(--hud-cjk);
+  font-size: clamp(15px, 1.8vw, 20px);
+  letter-spacing: 0.1em;
+  color: var(--fw-vermilion);
+  text-shadow: var(--fw-halo);
+}
+.fw-evergreen-caption {
+  margin-top: 8px;
+  font-family: var(--hud-serif);
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #8a7355;
+  text-shadow: var(--fw-halo);
+}
+
+/* ---- foreground botanical framing (the repoussoir) -----------------------
+   Sumi-ink pine and fern pushed across the lower corners so the map reads as
+   a distant view seen past the front of the scene. Always on (it is part of
+   the print, not chrome), but quiet — it must never swallow the viewport. */
+.fw-foreground {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+  color: #2c2013; /* near-black sumi */
+}
+.fw-foliage {
+  position: absolute;
+  bottom: 0;
+  width: min(37vw, 370px);
+  height: min(46vh, 350px);
+  opacity: 0.58;
+}
+.fw-foliage-left {
+  left: 0;
+}
+.fw-foliage-right {
+  right: 0;
+  opacity: 0.52;
+}
+
+@media (max-width: 560px) {
+  /* Phones: shrink the title tracking so the masthead can't overrun, tuck
+     the cartouche up under it, and thin the foliage so it frames without
+     eating the small sheet. */
+  .hud-title h1 {
+    letter-spacing: 0.16em;
+  }
+  .fw-cartouche-left {
+    top: calc(max(18px, env(safe-area-inset-top)) + 64px);
+  }
+  .fw-cartouche-cols {
+    font-size: 12px;
+  }
+  .fw-evergreen-col {
+    font-size: 14px;
+  }
+  .fw-foliage {
+    width: 42vw;
+    height: 30vh;
+    opacity: 0.4;
+  }
+  .fw-foliage-right {
+    opacity: 0.34;
+  }
 }
 
 .hud-badge {
