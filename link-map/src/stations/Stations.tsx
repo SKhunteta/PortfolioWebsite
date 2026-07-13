@@ -6,7 +6,7 @@
 import { useMemo, useRef } from "react";
 import { useFrame, ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
-import { STATIONS, LINES } from "../map/network";
+import { STATIONS, LINES, LINE_BY_ID } from "../map/network";
 import { TRAINS, useUi } from "../trains/store";
 import { CONFIG } from "../world/config";
 import { CLOCK } from "../world/clock";
@@ -15,15 +15,52 @@ import { INPUT_TOUCH } from "../world/device";
 
 interface StationSlot {
   id: string;
+  name: string;
   x: number;
   z: number;
   // (lineId, directionId) -> station sKm, for train-proximity checks.
   marks: { lineId: string; directionId: number; sKm: number }[];
   pulse: number;
+  wasDwelling: boolean;
 }
+
+// Ambient caption pacing: one arrival surfaces at a time, with a long quiet
+// gap — a murmur, not a departure board. The first poll marks half the
+// network as "arriving" at once, so captions hold off while the intro plays.
+const CAPTION_COOLDOWN_S = 14;
+const CAPTION_QUIET_START_S = 22;
+let lastCaptionT = 0;
 
 const matrix = new THREE.Matrix4();
 const color = new THREE.Color();
+
+// A bare additive sphere reads as a hard-edged ping-pong ball. Fade toward
+// the silhouette (view-space normal) so the orb is a soft breath of light.
+// instanceMatrix/instanceColor are three's auto-injected instancing
+// attributes (same contract TrainModel relies on).
+const ORB_VERT = /* glsl */ `
+  varying float vFacing;
+  varying vec3 vColor;
+  void main() {
+    #ifdef USE_INSTANCING_COLOR
+      vColor = instanceColor;
+    #else
+      vColor = vec3(1.0);
+    #endif
+    vec4 mv = modelViewMatrix * instanceMatrix * vec4(position, 1.0);
+    vec3 nV = normalize(mat3(modelViewMatrix) * mat3(instanceMatrix) * normal);
+    vFacing = max(0.0, nV.z);
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+const ORB_FRAG = /* glsl */ `
+  varying float vFacing;
+  varying vec3 vColor;
+  void main() {
+    float soft = pow(vFacing, 1.6);
+    gl_FragColor = vec4(vColor * (0.35 + 0.85 * soft), soft);
+  }
+`;
 
 export function Stations() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
@@ -31,7 +68,10 @@ export function Stations() {
 
   const slots = useMemo<StationSlot[]>(() => {
     const byId = new Map<string, StationSlot>(
-      STATIONS.map((s) => [s.id, { id: s.id, x: s.x, z: s.z, marks: [], pulse: 0 }])
+      STATIONS.map((s) => [
+        s.id,
+        { id: s.id, name: s.name, x: s.x, z: s.z, marks: [], pulse: 0, wasDwelling: false },
+      ])
     );
     for (const line of LINES) {
       for (const dir of line.directions) {
@@ -61,6 +101,7 @@ export function Stations() {
       const dist = Math.sqrt(dx * dx + camera.position.y * camera.position.y + dz * dz);
       const toyScale = Math.min(1, Math.max(0.12, dist / 30));
       let dwelling = false;
+      let dwellMark: StationSlot["marks"][number] | null = null;
       for (const train of TRAINS.values()) {
         for (const mark of slot.marks) {
           if (
@@ -69,11 +110,27 @@ export function Stations() {
             Math.abs(train.sRendered - mark.sKm) < CONFIG.train.dwellStationKm
           ) {
             dwelling = true;
+            dwellMark = mark;
             break;
           }
         }
         if (dwelling) break;
       }
+
+      // Arrival = the dwell rising edge. React write on events only —
+      // the hot path never touches the store per-frame.
+      if (dwelling && !slot.wasDwelling && dwellMark) {
+        if (CLOCK.t > CAPTION_QUIET_START_S && CLOCK.t - lastCaptionT > CAPTION_COOLDOWN_S) {
+          lastCaptionT = CLOCK.t;
+          const line = LINE_BY_ID.get(dwellMark.lineId);
+          const headsign = line?.directions.find(
+            (d) => d.directionId === dwellMark.directionId
+          )?.headsign;
+          const dest = headsign ? ` to ${headsign}` : "";
+          useUi.getState().setCaption(`${slot.name} · ${line?.name ?? "Link"}${dest}`);
+        }
+      }
+      slot.wasDwelling = dwelling;
 
       slot.pulse += ((dwelling ? 1 : 0) - slot.pulse) * Math.min(1, CLOCK.dt * 2.5);
       const swell = 1 + slot.pulse * (CONFIG.station.pulseScale - 1) * (0.6 + 0.4 * CLOCK.breath);
@@ -84,7 +141,7 @@ export function Stations() {
 
       // Quiet by default; a dwell pushes the orb just over the bloom line —
       // capped, or up close the node goes supernova.
-      const glow = Math.min(1.15, 0.55 + slot.pulse * (0.9 + 0.5 * CLOCK.breath));
+      const glow = Math.min(1.0, 0.5 + slot.pulse * (0.75 + 0.4 * CLOCK.breath));
       color.copy(LIVE.station).multiplyScalar(glow);
       mesh.setColorAt(i, color);
     }
@@ -117,7 +174,13 @@ export function Stations() {
     >
       {/* Orbs, not discs — they read from every camera angle. */}
       <sphereGeometry args={[1, 20, 14]} />
-      <meshBasicMaterial transparent depthWrite={false} blending={THREE.AdditiveBlending} />
+      <shaderMaterial
+        vertexShader={ORB_VERT}
+        fragmentShader={ORB_FRAG}
+        transparent
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+      />
     </instancedMesh>
   );
 }

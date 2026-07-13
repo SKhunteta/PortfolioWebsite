@@ -29,33 +29,42 @@ export interface Palette {
   parkOpacity: number;
   road: THREE.Color; // gold filaments at night, pale ink by day
   roadIntensity: number;
+  landmark: THREE.Color; // hand-inked silhouettes (Needle, skyline, Rainier)
+  landmarkOpacity: number;
   // Toy train
   trainAmbient: number; // livery brightness
   trainWindow: THREE.Color;
   windowIntensity: number; // stays <= ~0.85: windows never bloom
 }
 
+// Night's floor is deliberately HIGH: on a phone at everyday brightness the
+// old values (#090d18 ground, 0.3 roads) rendered as pure black and the
+// whole watercolor city vanished. Moody ≠ invisible — every layer here must
+// survive an OLED at 50% brightness. All values stay well under the 1.05
+// bloom threshold.
 const NIGHT: Palette = {
-  background: new THREE.Color("#04060c"),
-  fog: new THREE.Color("#060a14"),
-  fogDensity: 0.012,
-  ground: new THREE.Color("#090d18"),
-  groundOpacity: 0.62,
-  water: new THREE.Color("#071523"),
+  background: new THREE.Color("#060911"),
+  fog: new THREE.Color("#0b1322"),
+  fogDensity: 0.01,
+  ground: new THREE.Color("#15213a"),
+  groundOpacity: 0.8,
+  water: new THREE.Color("#0e2a42"),
   station: new THREE.Color("#8fb8d8"),
   label: new THREE.Color("#b8cbe0"),
   lineIntensity: 1.0,
   trainIntensity: 1.0,
   bloomIntensity: 1.05,
-  paperTint: new THREE.Color("#0e1524"),
-  paperGrain: 0.06,
-  waterEdge: new THREE.Color("#1d4a5f"),
-  waterEdgeIntensity: 0.38,
-  park: new THREE.Color("#0d2318"),
-  parkOpacity: 0.14,
-  road: new THREE.Color("#8a6f42"),
-  roadIntensity: 0.3,
-  trainAmbient: 0.7,
+  paperTint: new THREE.Color("#1b2a47"),
+  paperGrain: 0.1,
+  waterEdge: new THREE.Color("#2c6a84"),
+  waterEdgeIntensity: 0.55,
+  park: new THREE.Color("#14331f"),
+  parkOpacity: 0.22,
+  road: new THREE.Color("#b98f4e"),
+  roadIntensity: 0.55,
+  landmark: new THREE.Color("#2c4266"),
+  landmarkOpacity: 0.55,
+  trainAmbient: 0.95,
   trainWindow: new THREE.Color("#ffd9a8"),
   windowIntensity: 0.85,
 };
@@ -79,7 +88,9 @@ const DAY: Palette = {
   park: new THREE.Color("#2c4636"),
   parkOpacity: 0.22,
   road: new THREE.Color("#93a4b5"),
-  roadIntensity: 0.18,
+  roadIntensity: 0.22,
+  landmark: new THREE.Color("#46586e"),
+  landmarkOpacity: 0.5,
   trainAmbient: 1.0,
   trainWindow: new THREE.Color("#aebbc9"),
   windowIntensity: 0.12,
@@ -113,6 +124,7 @@ const COLOR_KEYS = [
   "waterEdge",
   "park",
   "road",
+  "landmark",
   "trainWindow",
 ] as const;
 const SCALAR_KEYS = [
@@ -125,6 +137,7 @@ const SCALAR_KEYS = [
   "waterEdgeIntensity",
   "parkOpacity",
   "roadIntensity",
+  "landmarkOpacity",
   "trainAmbient",
   "windowIntensity",
 ] as const;

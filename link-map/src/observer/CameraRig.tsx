@@ -12,7 +12,7 @@ import { OrbitControls } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import { createNoise2D } from "simplex-noise";
-import { CENTROID, pointAt, tangentAt } from "../map/network";
+import { pointAt, tangentAt } from "../map/network";
 import { TRAINS, useUi } from "../trains/store";
 import { CONFIG } from "../world/config";
 import { CLOCK } from "../world/clock";
@@ -23,6 +23,29 @@ const scratch = { x: 0, z: 0 };
 const trainPos = new THREE.Vector3();
 const desiredCam = new THREE.Vector3();
 const ndc = new THREE.Vector3();
+
+// The drift's home: downtown, where the tunnel, both waters, and the busiest
+// stretch of track all sit (see CONFIG.camera.heart* for why not CENTROID).
+const HEART = { x: CONFIG.camera.heartX, z: CONFIG.camera.heartZ };
+
+/** Portrait blend 0..1 — squares (and wider) drift like landscape; a phone
+ *  held upright eases toward the top-down framing so the line spine runs up
+ *  the screen instead of piling into a horizon band. */
+function portraitBlend(aspect: number): number {
+  return THREE.MathUtils.clamp((1 - aspect) / 0.35, 0, 1);
+}
+
+function driftFraming(aspect: number): { radius: number; elevation: number } {
+  const pb = portraitBlend(aspect);
+  return {
+    radius: THREE.MathUtils.lerp(CONFIG.camera.driftRadiusKm, CONFIG.camera.portrait.radiusKm, pb),
+    elevation: THREE.MathUtils.lerp(
+      CONFIG.camera.driftElevation,
+      CONFIG.camera.portrait.elevation,
+      pb
+    ),
+  };
+}
 
 export function CameraRig() {
   const controlsRef = useRef<OrbitControlsImpl>(null);
@@ -138,12 +161,12 @@ export function CameraRig() {
 
     if (!initialized.current) {
       initialized.current = true;
-      controls.target.set(CENTROID.x, 0, CENTROID.z);
-      const r = CONFIG.camera.driftRadiusKm;
+      controls.target.set(HEART.x, 0, HEART.z);
+      const f = driftFraming(size.width / size.height);
       camera.position.set(
-        CENTROID.x + r * Math.cos(driftTheta.current),
-        r * Math.sin(CONFIG.camera.driftElevation),
-        CENTROID.z + r * Math.sin(driftTheta.current) * 0.6
+        HEART.x + f.radius * Math.cos(driftTheta.current),
+        f.radius * Math.sin(f.elevation),
+        HEART.z + f.radius * Math.sin(driftTheta.current) * 0.6
       );
     }
 
@@ -171,17 +194,17 @@ export function CameraRig() {
         // handoff from user orbit is seamless.
         driftTheta.current += CONFIG.camera.driftRadSec * CLOCK.dt;
         const sway = noise2D(CLOCK.t * 0.02, 7.3) * 1.6;
-        const radius =
-          CONFIG.camera.driftRadiusKm + CONFIG.camera.driftBreathKm * (CLOCK.breath - 0.5);
+        const f = driftFraming(size.width / size.height);
+        const radius = f.radius + CONFIG.camera.driftBreathKm * (CLOCK.breath - 0.5);
         desiredCam.set(
-          CENTROID.x + radius * Math.cos(driftTheta.current + sway * 0.05),
-          radius * Math.sin(CONFIG.camera.driftElevation),
-          CENTROID.z + radius * Math.sin(driftTheta.current + sway * 0.05) * 0.62
+          HEART.x + radius * Math.cos(driftTheta.current + sway * 0.05),
+          radius * Math.sin(f.elevation),
+          HEART.z + radius * Math.sin(driftTheta.current + sway * 0.05) * 0.62
         );
         const k = 1 - Math.exp(-0.35 * CLOCK.dt);
         camera.position.lerp(desiredCam, k);
-        controls.target.x += (CENTROID.x + sway * 0.4 - controls.target.x) * k;
-        controls.target.z += (CENTROID.z - controls.target.z) * k;
+        controls.target.x += (HEART.x + sway * 0.4 - controls.target.x) * k;
+        controls.target.z += (HEART.z - controls.target.z) * k;
         controls.target.y += (0 - controls.target.y) * k;
       }
     }

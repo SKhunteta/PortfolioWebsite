@@ -72,6 +72,60 @@ body {
   50% { transform: scale(0.78); opacity: 0.7; }
 }
 
+/* The intro: one sentence, center stage, then gone. */
+.hud-intro {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 28px;
+  pointer-events: none;
+  user-select: none;
+  animation: hud-intro 13s ease forwards;
+}
+.hud-intro p {
+  max-width: 30em;
+  margin: 0;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.9;
+  letter-spacing: 0.14em;
+  color: #d8e2ef;
+  text-shadow: 0 1px 22px rgba(4, 8, 16, 0.9);
+}
+@keyframes hud-intro {
+  0% { opacity: 0; }
+  8% { opacity: 1; }
+  82% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Ambient arrival captions: a murmur above the badge line. */
+.hud-caption {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 34px);
+  max-width: 88vw;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #9fb2cc;
+  user-select: none;
+  pointer-events: none;
+  animation: hud-caption 8s ease forwards;
+}
+@keyframes hud-caption {
+  0% { opacity: 0; transform: translate(-50%, 6px); }
+  10% { opacity: 0.9; transform: translate(-50%, 0); }
+  80% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
 .hud-chase {
   position: fixed;
   left: 50%;

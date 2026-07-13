@@ -16,6 +16,7 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { LIVE } from "../world/palettes";
+import { PROFILE } from "../world/device";
 import { CENTROID } from "./network";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
@@ -53,7 +54,7 @@ export function GroundPlane() {
   useFrame(() => {
     const m = materialRef.current;
     if (!m) return;
-    m.uniforms.uOpacity.value = LIVE.groundOpacity;
+    m.uniforms.uOpacity.value = Math.min(1, LIVE.groundOpacity * PROFILE.washBoost);
     m.uniforms.uFogDensity.value = LIVE.fogDensity;
     m.uniforms.uGrain.value = LIVE.paperGrain;
   });

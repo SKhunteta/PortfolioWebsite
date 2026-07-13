@@ -66,9 +66,14 @@ interface UiState {
   fetchedAt: string | null;
   hoverStationId: string | null;
   followTrainId: string | null;
+  // Ambient arrival captions ("Capitol Hill · 1 Line to Lynnwood") — set on
+  // dwell EVENTS only (Stations.tsx rate-limits), never per-frame. The key
+  // restarts the CSS fade when the same text repeats.
+  caption: { text: string; key: number } | null;
   setMode: (mode: Mode, fetchedAt: string | null) => void;
   setHoverStation: (id: string | null) => void;
   setFollowTrain: (id: string | null) => void;
+  setCaption: (text: string | null) => void;
 }
 
 export const useUi = create<UiState>((set) => ({
@@ -76,7 +81,10 @@ export const useUi = create<UiState>((set) => ({
   fetchedAt: null,
   hoverStationId: null,
   followTrainId: null,
+  caption: null,
   setMode: (mode, fetchedAt) => set({ mode, fetchedAt }),
   setHoverStation: (hoverStationId) => set({ hoverStationId }),
   setFollowTrain: (followTrainId) => set({ followTrainId }),
+  setCaption: (text) =>
+    set((s) => (text ? { caption: { text, key: (s.caption?.key ?? 0) + 1 } } : { caption: null })),
 }));

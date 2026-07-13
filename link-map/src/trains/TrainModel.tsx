@@ -61,11 +61,15 @@ const BODY_FRAG = /* glsl */ `
     if (an.y > 0.7 && vNormalL.y < 0.0) return vec2(0.55 + 0.2 * u, 0.25); // underside
     // Roof square lives in the atlas' BOTTOM half (canvas flips into v 0..0.5).
     if (an.y > 0.7) return vec2(0.27 + 0.2 * u, 0.06 + 0.38 * clamp(vLocal.z + 0.5, 0.0, 1.0)); // roof
+    // v mapping: canvas top rows land at texture v=1 (CanvasTexture flips),
+    // so train-top (v=1) must sample HIGH v — roofline up, wave at the
+    // skirt. The old inverted mapping wore the livery upside down: green
+    // wave riding the roofline, navy cap on the bumper.
     if (an.x > 0.6) { // cab nose / section end
       float fu = clamp(vLocal.z + 0.5, 0.0, 1.0);
-      return vec2(fu * 0.25, 0.5 - 0.5 * v);
+      return vec2(fu * 0.25, 0.5 * v);
     }
-    return vec2(u, 1.0 - 0.5 * v); // side band
+    return vec2(u, 0.5 + 0.5 * v); // side band
   }
 
   void main() {
