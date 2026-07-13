@@ -8,6 +8,7 @@ import { useUi, TRAINS, Mode } from "../trains/store";
 import { useWeather } from "../world/weather";
 import { TIER } from "../world/device";
 import { HAS_BASEMAP } from "../map/basemap";
+import { PrintFrame } from "./PrintFrame";
 
 const MODE_LABEL: Record<Mode, string> = {
   live: "live",
@@ -88,6 +89,9 @@ export function Hud() {
 
   return (
     <>
+      {/* The printed sheet's frame: seal-cartouches + foreground botany. */}
+      <PrintFrame settled={settled} />
+
       <div className={`hud-title ${settled ? "hud-settled" : ""}`}>
         <h1>The Floating World</h1>
         <p>Seattle light rail · a woodblock print in motion</p>

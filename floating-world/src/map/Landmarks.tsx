@@ -54,9 +54,11 @@ const FRAG = /* glsl */ `
     vec3 c = uColor * key * (0.85 + 0.3 * wash);
     // Watercolor still pools faintly at the base.
     c *= mix(1.08, 0.94, smoothstep(0.0, 0.9, vY));
-    // Snowline — only Rainier and the Olympics climb past ~1.6 km.
+    // Snowline — only Rainier and the Olympics climb past ~1.4 km. A lower
+    // start and a stronger cap make Rainier read as a clear snow-capped hero
+    // (Fuji's register) instead of dissolving into the pale sky.
     // Warm white, the way Hokusai capped Fuji — never a cool blue-grey.
-    c = mix(c, vec3(0.97, 0.93, 0.87), smoothstep(1.6, 3.6, vY) * 0.85);
+    c = mix(c, vec3(0.97, 0.94, 0.88), smoothstep(1.4, 3.4, vY) * 0.93);
     float a = uOpacity * (0.94 + 0.12 * wash);
     gl_FragColor = vec4(mix(c, uFog, fogFactor()), a);
   }
@@ -210,12 +212,13 @@ function buildGeometry(): THREE.BufferGeometry {
   parts.push(tower(47.44, -122.3054, 0.06, 0.012, 3.0)); // 16C/34C
   parts.push(tower(47.4416, -122.3116, 0.05, 0.3, 0.05)); // tower
 
-  // --- Mount Rainier, ~85 km southeast: real scale IS the storybook scale.
-  //     Mostly fog at drift distance — a pale presence, not a prop.
+  // --- Mount Rainier, ~85 km southeast: the print's Fuji. Nudged a touch
+  //     taller so its snow cap climbs clear of the mist bands and reads as a
+  //     hero on the horizon — still a pale presence, not a prop.
   {
     const { x, z } = projectLatLng(46.8523, -121.7603);
-    const cone = new THREE.ConeGeometry(9, 4.4, 9);
-    cone.translate(x, 2.2, z);
+    const cone = new THREE.ConeGeometry(9.4, 5.0, 9);
+    cone.translate(x, 2.5, z);
     parts.push(cone);
   }
 

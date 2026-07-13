@@ -59,13 +59,13 @@ export interface Palette {
 // bloom skirt (threshold 1.0) — "never white, or the additive light dies"
 // binds the DAY look here. Night keeps the "moody ≠ invisible" floor.
 const DAY: Palette = {
-  background: new THREE.Color("#ead9b0"), // washi cream — warm, NOT white
+  background: new THREE.Color("#e8d7ac"), // washi cream — warm, NOT white (nudged a hair greyer toward the poster)
   bokashiTop: new THREE.Color("#2b4a77"), // ai-blue wiped band
-  fog: new THREE.Color("#f2e6c6"), // kasumi — mist paler than the paper
-  fogDensity: 0.006,
-  ground: new THREE.Color("#c3cb90"), // sage washi — evergreen land, NOT sand
+  fog: new THREE.Color("#efe5c8"), // kasumi — mist paler than the paper, a touch cooler for depth
+  fogDensity: 0.0075, // deeper aerial perspective — the poster's land recedes into mist
+  ground: new THREE.Color("#b6bd8b"), // sage washi — evergreen land, greyer/muteder than the old yellow-sage
   groundOpacity: 0.7, // opaque enough that land reads green over the cream sky base; tunnels still read
-  water: new THREE.Color("#1e4f86"), // Prussian blue (ai)
+  water: new THREE.Color("#23507c"), // Prussian blue (ai) — nudged toward the poster's muted slate-prussian
   waterOpacity: 0.85,
   seigaiha: new THREE.Color("#e9f0ee"), // foam-white wave linework
   seigaihaIntensity: 0.55, // day-visible: the signature move
@@ -76,11 +76,11 @@ const DAY: Palette = {
   lineIntensity: 0.7,
   trainIntensity: 1.0,
   bloomIntensity: 0.5,
-  paperTint: new THREE.Color("#b9c087"), // moss-gold wash — forested-terrain mottle, not dune-gold
+  paperTint: new THREE.Color("#b1ba87"), // moss-gold wash — forested-terrain mottle, greyer toward the poster
   paperGrain: 0.24,
   waterEdge: new THREE.Color("#16355e"), // blue pigment pooling
   waterEdgeIntensity: 0.8,
-  park: new THREE.Color("#8faa5b"), // warm moss wash — the Emerald City reads green
+  park: new THREE.Color("#86a05f"), // moss wash — the Emerald City reads green, a touch greyer/cooler
   parkOpacity: 0.5,
   road: new THREE.Color("#4c3a28"), // sumi ink strokes
   roadIntensity: 0.55,
