@@ -57,6 +57,35 @@ on a second monitor and the city breathes at them.
   taxi darts to Seacrest (`map/Ferries.tsx`, one InstancedMesh) — ambient
   paint like Rainier, NOT data: real routes at real crossing speeds,
   deterministic from the scene clock, never presented as live.
+- More city life on the same ferry contract (deterministic, honest,
+  instanced): two toy Kenmore Air floatplanes fly the Lake Union circuit —
+  takeoff run up the lake, out over the Sound off Carkeek, back down the
+  Green Lake line — while two more stay moored at the terminal
+  (`map/Seaplanes.tsx`, one InstancedMesh). Floatplanes are VFR-by-daylight:
+  the flying pair crossfades out through dusk on the sun phase (the
+  half-hour twilight ramp IS the schedule) and the moored pair holds the
+  dock all night. `map/CityLights.tsx` (one instanced sprite mesh) carries
+  the Needle's red aircraft beacon — a slow blink at the spire tip, the one
+  deliberate HDR ember beyond the trains — and the stadium bowls, which
+  glow warm on REAL game nights: Mariners/Sounders/Seahawks home dates
+  baked by `scripts/build-stadium-nights.mjs` (repo root) into
+  `src/data/stadium-nights.json` (placeholder stub = stadiums stay honestly
+  dark), envelope keyed to the wall clock like the backend sim. Both fade
+  to nearly nothing by day — floodlights don't read against the sun.
+  `?gamenight` pins the stadiums lit for demos/tests.
+- Real Seattle weather paints the page (`world/weather.ts`, Open-Meteo, no
+  key, fetched every 10 min): rain darkens the washes, blooms pigment along
+  the shorelines, crawls a wet mottle across the paper (GroundPlane's
+  `uRain`) and hatches the glass with hand-drawn diagonal strokes
+  (`fx/WeatherOverlay.tsx`, one screen-space quad, tablet/desktop only via
+  `PROFILE.weatherOverlay`); fog thickens `LIVE.fogDensity` until Rainier
+  and the Olympics dissolve; snow dusts the whole map pale. Weather levels
+  ease over ~8 s (a shower arrives like a wash) and `applyWeather()`
+  modulates the LIVE palette right AFTER `updatePalette()` each frame — in
+  the single driver, so nothing accumulates. Honesty rule: the HUD's
+  weather word (top-right) speaks only after a real fetch succeeds; if the
+  fetch fails the paper simply stays dry — never invent weather.
+  `?weather=clear|cloudy|fog|drizzle|rain|storm|snow` pins it.
 - The map stays a flattened diagram — no tiles, no labels beyond stations.
   **Tunnels render below the translucent paper and are seen through it** —
   that submerged dimness is painter's order, not depth trickery (the order
@@ -157,7 +186,9 @@ sub-app deliberately does NOT import the SPA's api config).
 ## Dev handles
 
 `__linkMapStats` ({fps, mode, trains, tier}, refreshed 1 Hz),
-`__linkMap` (`setPhase(0..1|null)`, `follow(index)`, `release()`).
+`__linkMap` (`setPhase(0..1|null)`, `setWeather(kind|null)`,
+`follow(index)`, `release()`).
 `?debug` shows the HUD readout; `?tier=` forces a device tier;
-`?phase=` pins the sun. `scripts/device-smoke.mjs` is the per-tier
+`?phase=` pins the sun; `?weather=` pins the sky; `?gamenight` lights the
+stadiums. `scripts/device-smoke.mjs` is the per-tier
 regression harness (playwright-core, chromium at /opt/pw-browsers/chromium).

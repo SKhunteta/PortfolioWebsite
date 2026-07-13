@@ -34,11 +34,17 @@ jobs:
       - name: Bake OSM basemap
         continue-on-error: true
         run: node scripts/build-link-basemap.mjs
+      # Schedule APIs have bad days too; on failure the committed file (or
+      # placeholder) keeps the stadiums honestly dark instead of blocking
+      # the refresh.
+      - name: Bake stadium game nights
+        continue-on-error: true
+        run: node scripts/build-stadium-nights.mjs
       - name: Commit regenerated data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add link-map/src/data/network.json portfolio-backend/data/linkmap-schedule.json link-map/src/data/basemap.json
+          git add link-map/src/data/network.json portfolio-backend/data/linkmap-schedule.json link-map/src/data/basemap.json link-map/src/data/stadium-nights.json
           if git diff --cached --quiet; then
             echo "Data unchanged; nothing to commit."
           else
