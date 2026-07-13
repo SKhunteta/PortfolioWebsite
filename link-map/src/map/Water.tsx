@@ -16,6 +16,7 @@ import { HAS_BASEMAP, BASEMAP_WATER, BasemapPolygon } from "./basemap";
 import { buildStrip, mergeStrips } from "./ribbon";
 import { CLOCK } from "../world/clock";
 import { LIVE } from "../world/palettes";
+import { WEATHER } from "../world/weather";
 import { CONFIG } from "../world/config";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
@@ -54,9 +55,17 @@ const FILL_FRAG = /* glsl */ `
   uniform vec3 uWater;
   uniform float uOpacity;
   uniform float uBreath;
+  uniform float uRain;
+  uniform float uTime; // WOBBLE_GLSL declares it for the vertex stage only
   void main() {
     float blotch = 0.80 + 0.35 * wcFbm(vWorld * 0.6);
-    vec3 c = mix(uWater, uFog, fogFactor());
+    // Real rain stipples the surface: drifting bright flecks, scaled by the
+    // eased intensity from world/weather.ts and swallowed by fog like
+    // everything else on this normal-blended layer.
+    float dimple = smoothstep(0.78, 0.98, wcNoise(vWorld * 7.0 + vec2(uTime * 0.9, -uTime * 0.7)));
+    float fogF = fogFactor();
+    vec3 c = uWater * (1.0 + 0.9 * uRain * dimple * (1.0 - fogF));
+    c = mix(c, uFog, fogF);
     gl_FragColor = vec4(c, uOpacity * blotch * (0.9 + 0.1 * uBreath));
   }
 `;
@@ -185,10 +194,13 @@ export function Water() {
       fillRef.current.uniforms.uBreath.value = CLOCK.breath;
       fillRef.current.uniforms.uFogDensity.value = LIVE.fogDensity;
       fillRef.current.uniforms.uOpacity.value = 0.62;
+      fillRef.current.uniforms.uRain.value = WEATHER.rain;
     }
     if (edgeRef.current) {
       edgeRef.current.uniforms.uTime.value = CLOCK.t;
-      edgeRef.current.uniforms.uIntensity.value = LIVE.waterEdgeIntensity;
+      // Rain pools extra pigment along the shorelines — the stroke deepens.
+      edgeRef.current.uniforms.uIntensity.value =
+        LIVE.waterEdgeIntensity * (1.0 + 0.45 * WEATHER.rain);
       edgeRef.current.uniforms.uFogDensity.value = LIVE.fogDensity;
     }
   });
@@ -212,6 +224,7 @@ export function Water() {
             uFogDensity: { value: LIVE.fogDensity },
             uOpacity: { value: 0.62 },
             uBreath: { value: 0 },
+            uRain: { value: 0 },
             ...wobbleUniforms(),
           }}
           transparent

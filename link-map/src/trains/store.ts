@@ -64,6 +64,9 @@ export function makeTrain(
 interface UiState {
   mode: Mode;
   fetchedAt: string | null;
+  // Real Seattle precipitation (mm/h) from the backend's weather
+  // observation; null = unknown, and the HUD stays quiet about weather.
+  rainMmH: number | null;
   hoverStationId: string | null;
   followTrainId: string | null;
   // Ambient arrival captions ("Capitol Hill · 1 Line to Lynnwood") — set on
@@ -71,6 +74,7 @@ interface UiState {
   // restarts the CSS fade when the same text repeats.
   caption: { text: string; key: number } | null;
   setMode: (mode: Mode, fetchedAt: string | null) => void;
+  setRain: (mmH: number | null) => void;
   setHoverStation: (id: string | null) => void;
   setFollowTrain: (id: string | null) => void;
   setCaption: (text: string | null) => void;
@@ -79,10 +83,12 @@ interface UiState {
 export const useUi = create<UiState>((set) => ({
   mode: "connecting",
   fetchedAt: null,
+  rainMmH: null,
   hoverStationId: null,
   followTrainId: null,
   caption: null,
   setMode: (mode, fetchedAt) => set({ mode, fetchedAt }),
+  setRain: (rainMmH) => set({ rainMmH }),
   setHoverStation: (hoverStationId) => set({ hoverStationId }),
   setFollowTrain: (followTrainId) => set({ followTrainId }),
   setCaption: (text) =>

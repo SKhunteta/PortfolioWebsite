@@ -13,6 +13,8 @@ import { LineRibbons } from "./map/LineRibbons";
 import { Trains } from "./trains/Trains";
 import { TrainModel } from "./trains/TrainModel";
 import { Trails } from "./trains/Trails";
+import { Reflections } from "./trains/Reflections";
+import { Rain } from "./fx/Rain";
 import { Stations } from "./stations/Stations";
 import { Labels } from "./stations/Labels";
 import { CameraRig } from "./observer/CameraRig";
@@ -76,9 +78,12 @@ export default function App() {
         <LineRibbons />
         <Stations />
         <Trains />
+        {/* Mounted after Trains so its useFrame reads this frame's tween. */}
+        <Reflections />
         <TrainModel />
         <Trails />
         <Labels />
+        <Rain />
         <CameraRig />
         <Composer />
       </Canvas>

@@ -10,6 +10,7 @@ import * as THREE from "three";
 import { HAS_BASEMAP, BASEMAP_ROADS } from "./basemap";
 import { buildStrip, mergeStrips } from "./ribbon";
 import { LIVE } from "../world/palettes";
+import { WEATHER } from "../world/weather";
 import { PROFILE } from "../world/device";
 import { CONFIG } from "../world/config";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
@@ -32,10 +33,14 @@ const FRAG = /* glsl */ `
   varying vec2 vUv;
   uniform vec3 uRoad;
   uniform float uIntensity;
+  uniform float uRain;
   void main() {
     float across = abs(vUv.y * 2.0 - 1.0);
     float core = pow(smoothstep(1.0, 0.0, across), 1.4);
     float dapple = 0.70 + 0.30 * wcNoise(vWorld * 3.0); // broken ink stroke
+    // Wet glass: rain smooths the broken stroke into a continuous sheen
+    // (the intensity lift rides in uIntensity from the JS side).
+    dapple = mix(dapple, 0.98, 0.5 * uRain);
     float fogF = 1.0 - fogFactor(); // additive: multiply
     vec3 c = uRoad * uIntensity * core * dapple * fogF;
     gl_FragColor = vec4(c, core);
@@ -70,8 +75,9 @@ export function Roads() {
     for (const entry of materials.current) {
       if (!entry) continue;
       entry.material.uniforms.uIntensity.value =
-        LIVE.roadIntensity * entry.classIntensity * PROFILE.washBoost;
+        LIVE.roadIntensity * entry.classIntensity * PROFILE.washBoost * (1.0 + 0.5 * WEATHER.rain);
       entry.material.uniforms.uFogDensity.value = LIVE.fogDensity;
+      entry.material.uniforms.uRain.value = WEATHER.rain;
     }
   });
 
@@ -92,6 +98,7 @@ export function Roads() {
               uIntensity: { value: LIVE.roadIntensity },
               uFog: { value: LIVE.fog },
               uFogDensity: { value: LIVE.fogDensity },
+              uRain: { value: 0 },
             }}
             transparent
             depthWrite={false}

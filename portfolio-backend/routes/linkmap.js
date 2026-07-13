@@ -21,6 +21,7 @@ import rateLimit from "express-rate-limit";
 import { config } from "../config/index.js";
 import { simulateVehicles, serviceActive } from "../services/linkSim.js";
 import { fetchLinkVehicles } from "../services/linkFeed.js";
+import { getSeattleWeather } from "../services/weather.js";
 
 const router = express.Router();
 
@@ -56,9 +57,13 @@ const linkmapLimiter = rateLimit({
 async function buildPayload() {
   const now = Date.now();
   const fetchedAt = new Date(now).toISOString();
+  // Real Seattle rain drives the map's weather layer. getSeattleWeather has
+  // its own long cache and never rejects — null simply means "unknown", and
+  // the map stays dry rather than guessing.
+  const weatherPromise = getSeattleWeather(now);
 
   if (!serviceActive(schedule, now)) {
-    return { mode: "resting", vehicles: [], fetchedAt };
+    return { mode: "resting", vehicles: [], weather: await weatherPromise, fetchedAt };
   }
 
   if (config.oneBusAway.apiKey) {
@@ -69,14 +74,19 @@ async function buildPayload() {
         now
       );
       if (!stale && vehicles.length > 0) {
-        return { mode: "live", vehicles, fetchedAt };
+        return { mode: "live", vehicles, weather: await weatherPromise, fetchedAt };
       }
     } catch (err) {
       console.error("linkmap: GTFS-RT fetch failed:", err.message);
     }
   }
 
-  return { mode: "simulated", vehicles: simulateVehicles(schedule, now), fetchedAt };
+  return {
+    mode: "simulated",
+    vehicles: simulateVehicles(schedule, now),
+    weather: await weatherPromise,
+    fetchedAt,
+  };
 }
 
 function getVehicles() {

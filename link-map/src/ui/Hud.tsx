@@ -45,6 +45,7 @@ export function Hud() {
   const mode = useUi((s) => s.mode);
   const following = useUi((s) => s.followTrainId);
   const caption = useUi((s) => s.caption);
+  const rainMmH = useUi((s) => s.rainMmH);
   const [settled, setSettled] = useState(false);
   const [intro, setIntro] = useState<string | null>(null);
   const introDone = useRef(false);
@@ -94,6 +95,14 @@ export function Hud() {
         <span className="hud-dot" />
         {MODE_LABEL[mode]}
       </div>
+
+      {/* The weather is honest like the badge: this line appears only when
+          the real observation says Seattle is being rained on right now. */}
+      {rainMmH != null && rainMmH > 0.05 && mode !== "connecting" && (
+        <div className="hud-weather" title="the paper is wet">
+          raining in seattle
+        </div>
+      )}
 
       {intro && (
         <div className="hud-intro">

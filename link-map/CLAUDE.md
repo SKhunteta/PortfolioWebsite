@@ -65,6 +65,21 @@ on a second monitor and the city breathes at them.
   (`scripts/data/link-grade-annotations.json` at the repo root); GTFS
   carries none. Parks render UNDER the paper so the same trick dims them
   into washes.
+- **The weather is real**: when it rains over Seattle (backend
+  `services/weather.js`, Open-Meteo, long-cached, honest — unknown = dry),
+  the watercolor gets wet: the paper darkens and its washes bleed, shoreline
+  pigment pools deeper, roads turn to wet glass, the water stipples, and
+  tablet/desktop tiers draw faint falling streaks over the print
+  (`fx/Rain.tsx`, behind `PROFILE.rainStreaks`). The eased intensity lives
+  in `world/weather.ts` (`?rain=0..1` pins it); the HUD says "raining in
+  seattle" only when the observation does.
+- **The lake crossing is the set piece**: a train out over open water — the
+  2 Line's I-90 floating-bridge crossing of Lake Washington, the only one
+  on Earth — lays a broken column of its line's glow on the water, stretched
+  toward the viewer and chopped by noise (rain chops it harder). Over-water
+  spans are COMPUTED against the real water polygons per direction
+  (`map/overWater.ts`, tunnels excluded, lazy + cached); nothing is
+  hand-annotated (`trains/Reflections.tsx`, one InstancedMesh).
 - **Honesty is part of the art**: the corner badge says live / simulated /
   resting, and it never lies. Live = fresh GTFS-RT. Simulated = service is
   scheduled but the feed is unavailable, so the backend synthesizes

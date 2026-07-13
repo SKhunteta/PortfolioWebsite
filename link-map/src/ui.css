@@ -72,6 +72,20 @@ body {
   50% { transform: scale(0.78); opacity: 0.7; }
 }
 
+/* The honest weather line: a murmur above the badge, only while it is
+   actually raining over Seattle. */
+.hud-weather {
+  position: fixed;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 24px);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #6d7d96;
+  user-select: none;
+  pointer-events: none;
+}
+
 /* The intro: one sentence, center stage, then gone. */
 .hud-intro {
   position: fixed;

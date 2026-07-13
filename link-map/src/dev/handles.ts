@@ -3,6 +3,7 @@
 
 import { TRAINS, useUi } from "../trains/store";
 import { setPhaseOverride } from "../world/sun";
+import { setRainOverride } from "../world/weather";
 import { TIER } from "../world/device";
 
 const stats = {
@@ -36,6 +37,7 @@ export function installHandles() {
   w.__linkMapStats = stats;
   w.__linkMap = {
     setPhase: (p: number | null) => setPhaseOverride(p),
+    setRain: (r: number | null) => setRainOverride(r),
     follow: (index: number) => {
       const ids = [...TRAINS.keys()];
       useUi.getState().setFollowTrain(ids[index] ?? null);

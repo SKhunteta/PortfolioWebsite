@@ -8,6 +8,7 @@ import { LINE_BY_ID, nearestS, projectLatLng, DirectionGeometry } from "../map/n
 import { CONFIG } from "../world/config";
 import { PROFILE } from "../world/device";
 import { CLOCK } from "../world/clock";
+import { setRainTarget } from "../world/weather";
 import { TRAINS, makeTrain, useUi, Mode } from "./store";
 
 interface ApiVehicle {
@@ -20,9 +21,18 @@ interface ApiVehicle {
   timestamp: number;
 }
 
+interface ApiWeather {
+  precipMmH: number;
+  weatherCode: number | null;
+  fetchedAt: string;
+}
+
 interface ApiResponse {
   mode: Mode;
   vehicles: ApiVehicle[];
+  // Optional so an older backend without the weather contract still folds
+  // cleanly — absent weather means unknown, and the map stays dry.
+  weather?: ApiWeather | null;
   fetchedAt: string;
 }
 
@@ -98,6 +108,10 @@ function fold(payload: ApiResponse) {
   }
 
   useUi.getState().setMode(payload.mode, payload.fetchedAt);
+
+  const mmH = payload.weather?.precipMmH ?? null;
+  setRainTarget(mmH); // scene shaders (eased by the frame driver)
+  useUi.getState().setRain(mmH); // the HUD's honest weather note
 }
 
 export function startPoller(): () => void {

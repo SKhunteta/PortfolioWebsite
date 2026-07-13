@@ -16,6 +16,7 @@ import { CLOCK, tickClock } from "../world/clock";
 import { LIVE, lineGlow } from "../world/palettes";
 import { sunPhase } from "../world/sun";
 import { updatePalette } from "../world/palettes";
+import { tickWeather } from "../world/weather";
 import { TRAIN_MODEL } from "./TrainModel";
 
 export const MAX_TRAINS = 48;
@@ -86,6 +87,7 @@ export function Trains() {
     // is the one always-mounted frame driver.
     tickClock(rawDt);
     updatePalette(sunPhase());
+    tickWeather(CLOCK.dt);
 
     const mesh = meshRef.current;
     if (!mesh) return;

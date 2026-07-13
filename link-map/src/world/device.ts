@@ -41,6 +41,9 @@ export interface DeviceProfile {
   // subpixel at drift distance in a 390 px viewport) — lift the wash so the
   // painted city survives the resample.
   washBoost: number;
+  // The falling-rain streak pass (fx/Rain.tsx) is one extra fullscreen
+  // fragment pass — phones keep the free wet-paper effects and skip this.
+  rainStreaks: boolean;
 }
 
 const PROFILES: Record<Tier, DeviceProfile> = {
@@ -52,6 +55,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     baseFov: 52,
     noiseOctaves: 2,
     washBoost: 1.6,
+    rainStreaks: false,
   },
   tablet: {
     dpr: [1, 2],
@@ -61,6 +65,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     baseFov: 48,
     noiseOctaves: 3,
     washBoost: 1.15,
+    rainStreaks: true,
   },
   desktop: {
     dpr: [1, 2],
@@ -70,6 +75,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     baseFov: 46,
     noiseOctaves: 3,
     washBoost: 1.0,
+    rainStreaks: true,
   },
 };
 
