@@ -46,6 +46,10 @@ export interface Palette {
   roadIntensity: number;
   landmark: THREE.Color; // hand-inked silhouettes (Needle, skyline, Rainier)
   landmarkOpacity: number;
+  tree: THREE.Color; // the evergreen carpet — conifer silhouettes on the land
+  treeOpacity: number;
+  building: THREE.Color; // the woodblock town fabric lining the streets
+  buildingOpacity: number;
   ferry: THREE.Color; // WSF hulls — pale washi against the Prussian Sound
   ferryOpacity: number;
   // Toy train
@@ -86,6 +90,10 @@ const DAY: Palette = {
   roadIntensity: 0.55,
   landmark: new THREE.Color("#8a5a40"), // warm sepia ink massing
   landmarkOpacity: 1.0,
+  tree: new THREE.Color("#4f6347"), // muted evergreen — the forested land
+  treeOpacity: 0.92,
+  building: new THREE.Color("#c2a87e"), // warm pale taupe town — reads light, not a black dot
+  buildingOpacity: 0.95,
   ferry: new THREE.Color("#f0e8d2"),
   ferryOpacity: 0.95,
   trainAmbient: 1.05,
@@ -121,6 +129,10 @@ const NIGHT: Palette = {
   roadIntensity: 0.5,
   landmark: new THREE.Color("#6e4436"),
   landmarkOpacity: 1.0,
+  tree: new THREE.Color("#33382c"), // forests go to dark ink after dark
+  treeOpacity: 0.88,
+  building: new THREE.Color("#7c5942"), // lantern-warm town massing — dark but never pure black
+  buildingOpacity: 0.9,
   ferry: new THREE.Color("#c4a988"),
   ferryOpacity: 0.8,
   trainAmbient: 0.95,
@@ -161,6 +173,8 @@ const COLOR_KEYS = [
   "park",
   "road",
   "landmark",
+  "tree",
+  "building",
   "ferry",
   "trainWindow",
 ] as const;
@@ -179,6 +193,8 @@ const SCALAR_KEYS = [
   "parkOpacity",
   "roadIntensity",
   "landmarkOpacity",
+  "treeOpacity",
+  "buildingOpacity",
   "ferryOpacity",
   "trainAmbient",
   "windowIntensity",

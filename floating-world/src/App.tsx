@@ -7,6 +7,8 @@ import { GroundPlane } from "./map/GroundPlane";
 import { Water } from "./map/Water";
 import { Parks } from "./map/Parks";
 import { Roads } from "./map/Roads";
+import { Forest } from "./map/Forest";
+import { Buildings } from "./map/Buildings";
 import { Landmarks } from "./map/Landmarks";
 import { Kasumi } from "./map/Kasumi";
 import { Ferries } from "./map/Ferries";
@@ -80,6 +82,8 @@ export default function App() {
         <Water />
         <GroundPlane />
         <Roads />
+        <Forest />
+        <Buildings />
         <Landmarks />
         <Kasumi />
         <Ferries />
