@@ -60,6 +60,16 @@ describe("PlaygroundPage", () => {
     expect(links.length).toBeGreaterThan(0);
   });
 
+  it("renders The Link, Alive static experiment card in the standalone section", () => {
+    renderPage();
+    // The title also appears as a footer link, so use the *AllBy* variant.
+    expect(screen.getAllByText("The Link, Alive").length).toBeGreaterThan(0);
+    const links = screen
+      .getAllByRole("link")
+      .filter((el) => el.getAttribute("href") === "/link-map/");
+    expect(links.length).toBeGreaterThan(0);
+  });
+
   it("renders a view-source link for every demo", () => {
     renderPage();
     const sourceLinks = screen.getAllByLabelText(/View source for/);

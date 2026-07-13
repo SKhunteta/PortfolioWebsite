@@ -16,6 +16,7 @@ import invoiceRoute from "./routes/invoice.js";
 import janetRoute from "./routes/janet.js";
 import quizRoute from "./routes/quiz.js";
 import linkrailRoute from "./routes/linkrail.js";
+import linkmapRoute from "./routes/linkmap.js";
 
 // Service imports
 import QdrantService from "./services/qdrant.js";
@@ -206,6 +207,7 @@ app.use("/api/invoice", invoiceRoute);
 app.use("/api/janet", janetRoute);
 app.use("/api/quiz", quizRoute);
 app.use("/api/linkrail", linkrailRoute);
+app.use("/api/linkmap", linkmapRoute);
 
 // 404 handler
 app.use((req, res) => {

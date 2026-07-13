@@ -146,6 +146,27 @@ npm run dev
 - `GET /api/schema` - Portfolio schema data
 - `GET /api/mcp-connector/info` - MCP connector server information
 - `GET /api/mcp-connector/sse` - MCP connector SSE endpoint for Claude
+- `GET /api/linkmap/vehicles` - Link light-rail train positions (live GTFS-RT
+  via the OneBusAway key, deterministic simulation when keyless/offline)
+
+### Link GTFS data (The Link, Alive)
+
+The `/link-map/` sub-app and the `/api/linkmap` simulator run on data baked
+from Sound Transit's GTFS feed:
+
+- `link-map/src/data/network.json` — projected line geometry + stations
+- `portfolio-backend/data/linkmap-schedule.json` — headways + run times
+
+Re-generate both whenever the Link network changes (new stations or lines):
+
+```bash
+node scripts/build-link-network.mjs           # fetches the current feed
+```
+
+or dispatch the **Refresh Link GTFS data** workflow (Actions tab), which runs
+the same script and commits the result. Tunnel/elevated shading is a manual
+annotation in `scripts/data/link-grade-annotations.json` — extend it when new
+segments open (unannotated segments fall back to at-grade and log a warning).
 
 ## 🔒 Security Considerations
 
