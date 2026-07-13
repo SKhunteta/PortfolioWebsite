@@ -7,10 +7,11 @@
 // the train model at 9 which is the one depthWrite:true exception so its
 // sections self-occlude):
 //   0 parks (under-wash, y −0.08) · 1 water fill (−0.06) · 2 water edge
-//   stroke (−0.05) · 3 tunnel ribbons (−0.22) · 4 ground/paper (0) ·
-//   5 roads (0.010/0.014) · 6 surface + elevated ribbons · 7 stations ·
-//   8 trails · 9 train model (depthWrite:true) · 10 glow sprites +
-//   headlights · 11 labels (depthTest off)
+//   stroke (−0.05) · 3 tunnel ribbons (−0.22) + underground station orbs
+//   and their light shafts · 4 ground/paper (0) · 5 roads (0.010/0.014) ·
+//   6 surface + elevated ribbons · 7 stations (surface/elevated orbs +
+//   watercolor seals) · 8 trails · 9 train model (depthWrite:true) ·
+//   10 glow sprites + headlights · 11 labels (depthTest off)
 
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";

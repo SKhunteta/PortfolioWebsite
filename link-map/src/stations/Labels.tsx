@@ -7,6 +7,7 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { STATION_BY_ID } from "../map/network";
+import { identityForName } from "./identity";
 import { useUi } from "../trains/store";
 import { CLOCK } from "../world/clock";
 
@@ -17,11 +18,16 @@ const cache = new Map<string, { texture: THREE.CanvasTexture; aspect: number }>(
 function labelTexture(name: string) {
   let entry = cache.get(name);
   if (entry) return entry;
+  const accent = identityForName(name)?.accent ?? "#8fb8d8";
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d")!;
   ctx.font = FONT;
   const text = name.toUpperCase();
-  const w = Math.ceil(ctx.measureText(text).width) + PAD * 2;
+  // Leave room for the identity tick — a small swatch of the station's real
+  // signature color ahead of the name.
+  const tick = 16;
+  const gap = 18;
+  const w = Math.ceil(ctx.measureText(text).width) + PAD * 2 + tick + gap;
   const h = 88;
   canvas.width = w;
   canvas.height = h;
@@ -35,8 +41,12 @@ function labelTexture(name: string) {
   grad.addColorStop(1, "rgba(5,8,14,0)");
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = accent;
+  ctx.beginPath();
+  ctx.arc(PAD + tick / 2, h / 2 + 2, tick / 2, 0, Math.PI * 2);
+  ctx.fill();
   ctx.fillStyle = "rgba(196,214,232,0.92)";
-  ctx.fillText(text, PAD, h / 2 + 2);
+  ctx.fillText(text, PAD + tick + gap, h / 2 + 2);
   const texture = new THREE.CanvasTexture(canvas);
   texture.anisotropy = 4;
   entry = { texture, aspect: w / h };

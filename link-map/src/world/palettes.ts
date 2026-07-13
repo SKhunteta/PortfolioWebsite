@@ -16,6 +16,11 @@ export interface Palette {
   groundOpacity: number;
   water: THREE.Color;
   station: THREE.Color;
+  // Per-station identity accents (stations/identity.ts) blend into the orbs
+  // and paint the watercolor seals; both ease off by day so real-material
+  // hues glow at night but stay ink-quiet in the pale look.
+  stationAccentMix: number;
+  stationSealOpacity: number;
   label: THREE.Color;
   lineIntensity: number; // multiplier on ribbon emissive
   trainIntensity: number;
@@ -50,6 +55,8 @@ const NIGHT: Palette = {
   groundOpacity: 0.8,
   water: new THREE.Color("#0e2a42"),
   station: new THREE.Color("#8fb8d8"),
+  stationAccentMix: 0.68,
+  stationSealOpacity: 0.4,
   label: new THREE.Color("#b8cbe0"),
   lineIntensity: 1.0,
   trainIntensity: 1.0,
@@ -77,6 +84,8 @@ const DAY: Palette = {
   groundOpacity: 0.5,
   water: new THREE.Color("#1a2a38"),
   station: new THREE.Color("#a9c2d6"),
+  stationAccentMix: 0.42,
+  stationSealOpacity: 0.24,
   label: new THREE.Color("#d4dfea"),
   lineIntensity: 0.45,
   trainIntensity: 0.6,
@@ -130,6 +139,8 @@ const COLOR_KEYS = [
 const SCALAR_KEYS = [
   "fogDensity",
   "groundOpacity",
+  "stationAccentMix",
+  "stationSealOpacity",
   "lineIntensity",
   "trainIntensity",
   "bloomIntensity",

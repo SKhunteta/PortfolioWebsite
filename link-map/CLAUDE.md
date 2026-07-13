@@ -36,9 +36,18 @@ on a second monitor and the city breathes at them.
   the trail is a fixed time-window position history, so length ∝ speed by
   construction.
 - Stations are quiet orbs that **pulse on dwell** (train within ~120 m of
-  their arc mark), swelling on the global breath. Names appear only on
-  hover/tap, uppercase monospace, canvas-drawn (`stations/Labels.tsx`) —
-  no external font fetches, ever.
+  their arc mark), swelling on the global breath — and each carries its
+  REAL identity (`stations/identity.ts` over
+  `src/data/station-identity.json`, hand-researched from the built
+  architecture and STart artworks): the orb tints toward the station's
+  signature color, sits at its line's true height via `railHeightAt`
+  (underground halls sink below the paper like the tunnels; a faint accent
+  light shaft drops from street to platform), and a watercolor seal — a
+  pigment blot in the accent — marks the surface entrance so stations read
+  as places even at drift. Names appear only on hover/tap, uppercase
+  monospace, canvas-drawn (`stations/Labels.tsx`) — no external font
+  fetches, ever. The hover card (`stations/StationPanel.tsx`) reads the
+  identity too: the look line, structure, and artwork credit.
 - The map stays a flattened diagram — no tiles, no labels beyond stations.
   **Tunnels render below the translucent paper and are seen through it** —
   that submerged dimness is painter's order, not depth trickery (the order
@@ -93,10 +102,11 @@ on a second monitor and the city breathes at them.
   priority > 0 exists. Trains.tsx's zero-priority useFrame is the single
   driver; TrainModel receives its transforms through the imperative
   `TRAIN_MODEL.write/commit` registry, not its own frame loop.
-- Instanced everything: glow sprites, station orbs, train cabs (×2/train),
-  mid sections, headlights — and ONE preallocated buffer for all trails
-  (drawRange trims), ONE merged geometry per road class, per water layer.
-  Whole scene ≈ 21 draw calls on every tier. `frustumCulled = false` on
+- Instanced everything: glow sprites, station orbs (two buckets: surface at
+  renderOrder 7, submerged at 3), station seals, underground light shafts,
+  train cabs (×2/train), mid sections, headlights — and ONE preallocated
+  buffer for all trails (drawRange trims), ONE merged geometry per road
+  class, per water layer. Whole scene ≈ 24 draw calls on every tier. `frustumCulled = false` on
   instanced meshes — spread instances mis-cull.
 - Toy scale is per-object and camera-relative (trains `modelL`, station
   orbs' `toyScale`): a chased train eases toward real scale while the
