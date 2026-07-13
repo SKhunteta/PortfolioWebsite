@@ -47,7 +47,10 @@ const FRAG = /* glsl */ `
     // A fixed key light from the northwest sky: sunlit and shadowed faces
     // diverge, and flat silhouettes become solid massing.
     vec3 n = normalize(vNormal);
-    float key = 0.5 + 0.5 * max(0.0, dot(n, normalize(vec3(-0.5, 0.8, -0.45))));
+    // Shadowed faces still drink plenty of skylight: the floor sits HIGH so no
+    // face sinks into the dark ground, while the lit ceiling holds at 1.0 (the
+    // massing keeps its dimension without crossing the bloom line).
+    float key = 0.66 + 0.34 * max(0.0, dot(n, normalize(vec3(-0.5, 0.8, -0.45))));
     vec3 c = uColor * key * (0.85 + 0.3 * wash);
     // Watercolor still pools faintly at the base.
     c *= mix(1.08, 0.94, smoothstep(0.0, 0.9, vY));
