@@ -11,8 +11,9 @@
 //   ribbons (−0.22) + underground station orbs and their light shafts ·
 //   4 ground/paper (0) · 4.5 water over-print (the blue block stamped above
 //   the sheet — see Water.tsx) · 4.6 water edge stroke (−0.05) · 5 roads
-//   (0.010/0.014) · 6 surface + elevated ribbons, landmarks, ferries,
-//   seaplanes · 6.5 kasumi mist bands (y 0.5) · 7 stations (surface/elevated
+//   (0.010/0.014) · 5.6 forest (billboarded conifers) · 6 surface + elevated
+//   ribbons, landmarks, ferries, seaplanes · 6.2 building fabric (the
+//   woodblock town) · 6.5 kasumi mist bands (y 0.5) · 7 stations (surface/elevated
 //   orbs + hanko seals) · 8 trails · 9 train model (depthWrite:true) ·
 //   10 glow sprites + headlights + city lights (Needle beacon, stadium
 //   domes) · 10.5 weather hatch (screen-space rain/snow) · 11 labels

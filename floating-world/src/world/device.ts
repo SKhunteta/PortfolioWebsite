@@ -44,6 +44,11 @@ export interface DeviceProfile {
   // The screen-space rain/snow hatch (fx/WeatherOverlay.tsx): one full-screen
   // noise pass. Phones keep weather in the palette + wet paper only.
   weatherOverlay: boolean;
+  // The landscape layers (map/Forest.tsx, map/Buildings.tsx): each is ONE
+  // instanced draw call, but the instance count is fill/geometry budget —
+  // phones carry a lighter forest and a smaller town.
+  treeCount: number;
+  buildingCount: number;
 }
 
 const PROFILES: Record<Tier, DeviceProfile> = {
@@ -56,6 +61,8 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     noiseOctaves: 2,
     washBoost: 1.6,
     weatherOverlay: false,
+    treeCount: 5000,
+    buildingCount: 2200,
   },
   tablet: {
     dpr: [1, 2],
@@ -66,6 +73,8 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     noiseOctaves: 3,
     washBoost: 1.15,
     weatherOverlay: true,
+    treeCount: 11000,
+    buildingCount: 4000,
   },
   desktop: {
     dpr: [1, 2],
@@ -76,6 +85,8 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     noiseOctaves: 3,
     washBoost: 1.0,
     weatherOverlay: true,
+    treeCount: 18000,
+    buildingCount: 6500,
   },
 };
 
