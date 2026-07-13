@@ -12,6 +12,13 @@ on:
         description: Branch to run on and commit to
         required: true
         default: main
+  # workflow_dispatch only resolves once this file reaches the default
+  # branch; this scoped push trigger lets the feature branch generate its
+  # data before the first merge. Edits to this file re-run it; data-only
+  # pushes don't.
+  push:
+    branches: [claude/link-alive-visualization-easlmk]
+    paths: [.github/workflows/refresh-link-data.yml]
 
 permissions:
   contents: write
@@ -22,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ inputs.branch || github.ref_name }}
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -38,5 +45,5 @@ jobs:
             echo "Data unchanged; nothing to commit."
           else
             git commit -m "Refresh Link GTFS data from Sound Transit feed"
-            git push origin HEAD:${{ inputs.branch }}
+            git push origin HEAD:${{ inputs.branch || github.ref_name }}
           fi
