@@ -45,9 +45,12 @@ export const CONFIG = {
     waterEdgeY: -0.05,
     parkY: -0.08,
     roadY: { arterial: 0.01, major: 0.014 } as Record<string, number>,
-    // Wide enough to survive drift distance on a phone — at 16 km the old
-    // 35–60 m strokes were subpixel and the street skeleton vanished.
-    roadWidthKm: { major: 0.11, arterial: 0.06 } as Record<string, number>,
+    // Diagrammatic, not literal — same toy-scale license the trains and
+    // landmarks already take. Ground-sample distance at drift is ~20–47
+    // m/px depending on aspect (portrait is worse — see camera.portrait);
+    // these widths hold >=1.5px even at the steeper portrait framing, where
+    // the old 60–110 m strokes fell under 1.3px and vanished into AA.
+    roadWidthKm: { major: 0.16, arterial: 0.09 } as Record<string, number>,
     waterEdgeWidthKm: 0.12,
     waterEdgeMinHoleKm2: 1.0,
     wobbleAmpKm: 0.03,
@@ -71,10 +74,15 @@ export const CONFIG = {
     heartZ: 0.4,
     driftRadiusKm: 16,
     driftElevation: 0.92, // radians above the horizon
-    // Portrait framing: more top-down and slightly farther, so the
-    // north–south spine runs UP the screen instead of compressing into a
-    // horizon band under a fisheye FOV.
-    portrait: { radiusKm: 20, elevation: 1.22 },
+    // Portrait framing: more top-down than landscape, so the north–south
+    // spine runs UP the screen instead of compressing into a horizon band
+    // under a fisheye FOV. But NOT so much farther/higher that it halves
+    // the ground-sample density — a first pass at radius 20 / elev 1.22
+    // (cam height 18.8 km, ~47 m/px) undersampled every stroke this
+    // config just widened to fix, on real devices. This framing keeps
+    // slant distance close to desktop's (~20 km) so roads and landmarks
+    // that are legible in landscape stay legible turned sideways.
+    portrait: { radiusKm: 13, elevation: 1.02 },
     driftRadSec: 0.02, // slow orbit
     driftBreathKm: 2.2,
     idleResumeS: 30,
