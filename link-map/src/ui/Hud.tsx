@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useUi, TRAINS, Mode } from "../trains/store";
+import { useWeather } from "../world/weather";
 import { TIER } from "../world/device";
 import { HAS_BASEMAP } from "../map/basemap";
 
@@ -45,6 +46,8 @@ export function Hud() {
   const mode = useUi((s) => s.mode);
   const following = useUi((s) => s.followTrainId);
   const caption = useUi((s) => s.caption);
+  // Speaks only after a real fetch (or a ?weather= pin) — see world/weather.
+  const weatherWord = useWeather((s) => s.label);
   const [settled, setSettled] = useState(false);
   const [intro, setIntro] = useState<string | null>(null);
   const introDone = useRef(false);
@@ -94,6 +97,9 @@ export function Hud() {
         <span className="hud-dot" />
         {MODE_LABEL[mode]}
       </div>
+
+      {/* The weather word — real conditions, spoken as quietly as the badge. */}
+      {weatherWord && <div className="hud-weather">{weatherWord}</div>}
 
       {intro && (
         <div className="hud-intro">

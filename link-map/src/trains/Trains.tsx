@@ -16,6 +16,7 @@ import { CLOCK, tickClock } from "../world/clock";
 import { LIVE, lineGlow } from "../world/palettes";
 import { sunPhase } from "../world/sun";
 import { updatePalette } from "../world/palettes";
+import { easeWeather, applyWeather } from "../world/weather";
 import { TRAIN_MODEL } from "./TrainModel";
 
 export const MAX_TRAINS = 48;
@@ -83,9 +84,13 @@ export function Trains() {
 
   useFrame(({ camera }, rawDt) => {
     // The single clock tick and palette update for the whole app — Trains
-    // is the one always-mounted frame driver.
+    // is the one always-mounted frame driver. Weather modulates the fresh
+    // palette AFTER the lerp, so its moves never accumulate.
     tickClock(rawDt);
-    updatePalette(sunPhase());
+    const phase = sunPhase();
+    updatePalette(phase);
+    easeWeather(CLOCK.dt);
+    applyWeather(phase);
 
     const mesh = meshRef.current;
     if (!mesh) return;

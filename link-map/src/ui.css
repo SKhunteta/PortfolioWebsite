@@ -67,6 +67,21 @@ body {
   background: #46536b;
 }
 
+/* The weather word: top-right, answering the title top-left. Quieter than
+   the badge, clear of the caption/badge traffic along the bottom edge on
+   phones. Nudged down so the ?debug readout (same corner, dev only) fits. */
+.hud-weather {
+  position: fixed;
+  top: calc(max(18px, env(safe-area-inset-top)) + 22px);
+  right: max(20px, env(safe-area-inset-right));
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #6d7f9a;
+  user-select: none;
+  pointer-events: none;
+}
+
 @keyframes hud-pulse {
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(0.78); opacity: 0.7; }

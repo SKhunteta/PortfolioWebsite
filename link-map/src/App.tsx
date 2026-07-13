@@ -9,6 +9,8 @@ import { Parks } from "./map/Parks";
 import { Roads } from "./map/Roads";
 import { Landmarks } from "./map/Landmarks";
 import { Ferries } from "./map/Ferries";
+import { Seaplanes } from "./map/Seaplanes";
+import { CityLights } from "./map/CityLights";
 import { LineRibbons } from "./map/LineRibbons";
 import { Trains } from "./trains/Trains";
 import { TrainModel } from "./trains/TrainModel";
@@ -17,9 +19,11 @@ import { Stations } from "./stations/Stations";
 import { Labels } from "./stations/Labels";
 import { CameraRig } from "./observer/CameraRig";
 import { Composer } from "./fx/Composer";
+import { WeatherOverlay } from "./fx/WeatherOverlay";
 import { Hud } from "./ui/Hud";
 import { StationPanel } from "./stations/StationPanel";
 import { startPoller } from "./trains/poller";
+import { startWeather } from "./world/weather";
 import { installHandles, markFrame } from "./dev/handles";
 
 /** Applies the live palette to scene background + fog, counts frames. */
@@ -47,10 +51,12 @@ export default function App() {
   useEffect(() => {
     installHandles();
     const stop = startPoller();
+    const stopWeather = startWeather();
     const onVisibility = () => setHidden(document.hidden);
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
       stop();
+      stopWeather();
       document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
@@ -73,6 +79,8 @@ export default function App() {
         <Roads />
         <Landmarks />
         <Ferries />
+        <Seaplanes />
+        <CityLights />
         <LineRibbons />
         <Stations />
         <Trains />
@@ -81,6 +89,7 @@ export default function App() {
         <Labels />
         <CameraRig />
         <Composer />
+        <WeatherOverlay />
       </Canvas>
       <Hud />
       <StationPanel />
