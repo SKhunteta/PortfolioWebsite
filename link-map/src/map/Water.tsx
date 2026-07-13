@@ -2,6 +2,11 @@
 // stroke ribboned along every shoreline, both wobbled by the SAME
 // world-position noise so they breathe together (~20 s, 30 m — subliminal).
 //
+// At night the traditional seigaiha wave-fan pattern surfaces faintly in the
+// fill — woven into the dark silk of the Sound, fading in on the global
+// breath, gone by day (palette seigaihaIntensity lerps to 0). It's a pure
+// shader pattern in world space, so it stays calm under the drifting camera.
+//
 // Geometry comes from the baked OSM basemap (real Puget Sound, Lake
 // Washington with Mercer Island, Union, Sammamish…). When basemap.json is
 // still the placeholder, the hand-authored waterData.ts rings render exactly
@@ -48,15 +53,54 @@ const FILL_VERT = /* glsl */ `
   }
 `;
 
+// Seigaiha: staggered rows of unit circles (x pitch 2, y pitch 0.5, odd rows
+// shifted half a pitch); the frontmost (lowest-row) circle containing the
+// point owns it, which carves every circle into the traditional overlapping
+// fan. Returns the concentric-arc line mask. AA width comes from fwidth of
+// the smooth pattern coords, NOT of d — d crosses fan boundaries where
+// derivatives of branched values are undefined.
+const SEIGAIHA_GLSL = /* glsl */ `
+  #define SEIGAIHA_RINGS ${CONFIG.basemap.seigaihaRings.toFixed(1)}
+  float seigaiha(vec2 p) {
+    float aa = (fwidth(p.x) + fwidth(p.y)) * SEIGAIHA_RINGS * 0.5;
+    float jFront = ceil((p.y - 1.0) * 2.0); // first row whose circles reach p
+    float d = 2.0;
+    for (int k = 0; k < 5; k++) {
+      float j = jFront + float(k);
+      float off = mod(j, 2.0);
+      float cx = floor((p.x - off) * 0.5 + 0.5) * 2.0 + off;
+      float dd = length(p - vec2(cx, j * 0.5));
+      if (dd < 1.0) { d = dd; break; }
+    }
+    if (d > 1.0) return 0.0;
+    float rd = d * SEIGAIHA_RINGS;
+    float toLine = abs(fract(rd + 0.5) - 0.5);
+    return 1.0 - smoothstep(0.12, 0.12 + aa, toLine);
+  }
+`;
+
 const FILL_FRAG = /* glsl */ `
   ${NOISE_GLSL}
   ${FOG_VARYINGS_FRAG}
+  ${SEIGAIHA_GLSL}
   uniform vec3 uWater;
+  uniform vec3 uSeigaiha;
+  uniform float uSeigaihaIntensity;
   uniform float uOpacity;
   uniform float uBreath;
+  uniform float uTime;
   void main() {
     float blotch = 0.80 + 0.35 * wcFbm(vWorld * 0.6);
-    vec3 c = mix(uWater, uFog, fogFactor());
+    vec3 water = uWater;
+    if (uSeigaihaIntensity > 0.001) {
+      // Pattern y points north (-z) so the fans open toward the mountains.
+      float fan = seigaiha(vec2(vWorld.x, -vWorld.y) / ${CONFIG.basemap.seigaihaRadiusKm.toFixed(3)});
+      // Uneven like a weave: broad slow-drifting patches gate the pattern,
+      // and the global breath surfaces then submerges it (~9 s).
+      float silk = smoothstep(0.42, 0.72, wcNoise(vWorld * 0.08 + vec2(uTime * 0.008, -uTime * 0.006)));
+      water = mix(water, uSeigaiha, fan * silk * uBreath * uSeigaihaIntensity);
+    }
+    vec3 c = mix(water, uFog, fogFactor());
     gl_FragColor = vec4(c, uOpacity * blotch * (0.9 + 0.1 * uBreath));
   }
 `;
@@ -185,6 +229,7 @@ export function Water() {
       fillRef.current.uniforms.uBreath.value = CLOCK.breath;
       fillRef.current.uniforms.uFogDensity.value = LIVE.fogDensity;
       fillRef.current.uniforms.uOpacity.value = 0.62;
+      fillRef.current.uniforms.uSeigaihaIntensity.value = LIVE.seigaihaIntensity;
     }
     if (edgeRef.current) {
       edgeRef.current.uniforms.uTime.value = CLOCK.t;
@@ -208,6 +253,8 @@ export function Water() {
           fragmentShader={FILL_FRAG}
           uniforms={{
             uWater: { value: LIVE.water },
+            uSeigaiha: { value: LIVE.seigaiha },
+            uSeigaihaIntensity: { value: LIVE.seigaihaIntensity },
             uFog: { value: LIVE.fog },
             uFogDensity: { value: LIVE.fogDensity },
             uOpacity: { value: 0.62 },

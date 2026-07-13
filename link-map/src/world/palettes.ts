@@ -15,6 +15,10 @@ export interface Palette {
   ground: THREE.Color;
   groundOpacity: number;
   water: THREE.Color;
+  // Seigaiha: the traditional overlapping wave-fan pattern surfacing in the
+  // night water like a weave in dark silk; intensity 0 by day.
+  seigaiha: THREE.Color;
+  seigaihaIntensity: number;
   station: THREE.Color;
   // Per-station identity accents (stations/identity.ts) blend into the orbs
   // and paint the watercolor seals; both ease off by day so real-material
@@ -56,6 +60,8 @@ const NIGHT: Palette = {
   ground: new THREE.Color("#15213a"),
   groundOpacity: 0.8,
   water: new THREE.Color("#0e2a42"),
+  seigaiha: new THREE.Color("#3f7292"),
+  seigaihaIntensity: 0.3,
   station: new THREE.Color("#8fb8d8"),
   stationAccentMix: 0.68,
   stationSealOpacity: 0.4,
@@ -87,6 +93,8 @@ const DAY: Palette = {
   ground: new THREE.Color("#222c3a"),
   groundOpacity: 0.5,
   water: new THREE.Color("#1a2a38"),
+  seigaiha: new THREE.Color("#4a6478"),
+  seigaihaIntensity: 0, // vanishes by day
   station: new THREE.Color("#a9c2d6"),
   stationAccentMix: 0.42,
   stationSealOpacity: 0.24,
@@ -133,6 +141,7 @@ const COLOR_KEYS = [
   "fog",
   "ground",
   "water",
+  "seigaiha",
   "station",
   "label",
   "paperTint",
@@ -145,6 +154,7 @@ const COLOR_KEYS = [
 ] as const;
 const SCALAR_KEYS = [
   "fogDensity",
+  "seigaihaIntensity",
   "groundOpacity",
   "stationAccentMix",
   "stationSealOpacity",
