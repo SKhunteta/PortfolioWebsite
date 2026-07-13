@@ -5,7 +5,13 @@ import { TRAINS, useUi } from "../trains/store";
 import { setPhaseOverride } from "../world/sun";
 import { TIER } from "../world/device";
 
-const stats = { fps: 0, mode: "connecting", trains: 0, tier: TIER };
+const stats = {
+  fps: 0,
+  mode: "connecting",
+  trains: 0,
+  tier: TIER,
+  hover: null as string | null,
+};
 
 let frames = 0;
 let windowStart = performance.now();
@@ -21,6 +27,7 @@ export function markFrame() {
     windowStart = now;
     stats.mode = useUi.getState().mode;
     stats.trains = TRAINS.size;
+    stats.hover = useUi.getState().hoverStationId;
   }
 }
 
