@@ -7,6 +7,7 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { LINES, DirectionGeometry } from "./network";
+import { buildStrip } from "./ribbon";
 import { CONFIG } from "../world/config";
 import { LIVE, lineGlow } from "../world/palettes";
 import { CLOCK } from "../world/clock";
@@ -74,51 +75,6 @@ function slicePolyline(dir: DirectionGeometry, fromKm: number, toKm: number): nu
   return pts;
 }
 
-function buildRibbon(pts: number[][], widthKm: number, y: number): THREE.BufferGeometry {
-  const n = pts.length;
-  const positions = new Float32Array(n * 2 * 3);
-  const uvs = new Float32Array(n * 2 * 2);
-  const indices: number[] = [];
-  const half = widthKm / 2;
-  const totalS = pts[n - 1][2] - pts[0][2] || 1;
-
-  for (let i = 0; i < n; i++) {
-    // Averaged tangent at the vertex — a cheap miter that's fine for the
-    // gently-curved, pre-simplified geometry.
-    const prev = pts[Math.max(0, i - 1)];
-    const next = pts[Math.min(n - 1, i + 1)];
-    let tx = next[0] - prev[0];
-    let tz = next[1] - prev[1];
-    const len = Math.hypot(tx, tz) || 1;
-    tx /= len;
-    tz /= len;
-    const px = -tz;
-    const pz = tx;
-    const u = (pts[i][2] - pts[0][2]) / totalS;
-    const base = i * 6;
-    positions[base] = pts[i][0] + px * half;
-    positions[base + 1] = y;
-    positions[base + 2] = pts[i][1] + pz * half;
-    positions[base + 3] = pts[i][0] - px * half;
-    positions[base + 4] = y;
-    positions[base + 5] = pts[i][1] - pz * half;
-    uvs[i * 4] = u;
-    uvs[i * 4 + 1] = 0;
-    uvs[i * 4 + 2] = u;
-    uvs[i * 4 + 3] = 1;
-    if (i < n - 1) {
-      const a = i * 2;
-      indices.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
-    }
-  }
-
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-  geometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
-  geometry.setIndex(indices);
-  return geometry;
-}
-
 export function LineRibbons() {
   const materials = useRef<{ material: THREE.ShaderMaterial; gradeIntensity: number }[]>([]);
 
@@ -132,10 +88,14 @@ export function LineRibbons() {
         if (pts.length < 2) continue;
         specs.push({
           key: `${line.id}-${gi}-${grade.grade}`,
-          geometry: buildRibbon(pts, CONFIG.ribbon.widthKm, CONFIG.ribbon.y[grade.grade]),
+          geometry: buildStrip(
+            pts.map(([x, z]) => [x, z] as [number, number]),
+            { widthKm: CONFIG.ribbon.widthKm, y: CONFIG.ribbon.y[grade.grade], normalizeU: true }
+          ),
           color: lineGlow(line.id, line.color),
           gradeIntensity: CONFIG.ribbon.intensity[grade.grade],
-          renderOrder: grade.grade === "tunnel" ? 1 : 3,
+          // Order table lives in GroundPlane.tsx: tunnels under the paper.
+          renderOrder: grade.grade === "tunnel" ? 3 : 6,
         });
       }
     }

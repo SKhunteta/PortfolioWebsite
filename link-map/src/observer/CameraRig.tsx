@@ -150,7 +150,7 @@ export function CameraRig() {
       pointAt(train.dir, train.sRendered, scratch);
       trainPos.set(scratch.x, train.y, scratch.z);
       tangentAt(train.dir, train.sRendered, scratch);
-      const back = CONFIG.camera.chaseOffsetKm.back + train.vEst * 30;
+      const back = CONFIG.camera.chaseOffsetKm.back + train.vEst * 8;
       desiredCam.set(
         trainPos.x - scratch.x * back,
         CONFIG.camera.chaseOffsetKm.up,

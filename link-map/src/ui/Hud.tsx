@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import { useUi, TRAINS, Mode } from "../trains/store";
 import { TIER } from "../world/device";
+import { HAS_BASEMAP } from "../map/basemap";
 
 const MODE_LABEL: Record<Mode, string> = {
   live: "live",
@@ -53,6 +54,9 @@ export function Hud() {
       </div>
 
       {following && <div className="hud-chase">following · esc to let go</div>}
+
+      {/* ODbL attribution — shown only when OSM geography is on screen. */}
+      {HAS_BASEMAP && <div className="hud-attrib">map data © OpenStreetMap</div>}
 
       {debug && (
         <div className="hud-debug">

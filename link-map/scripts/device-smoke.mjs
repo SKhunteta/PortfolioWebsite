@@ -80,7 +80,9 @@ for (const { tier, viewport } of TIERS) {
 
   const fps = stats?.fps ?? 0;
   if (softwareGl) {
-    if (fps < 2) problems.push(`fps ${fps.toFixed(1)} < 2 even for software GL`);
+    // Software GL renders the watercolor shaders on the CPU — fps here is
+    // informational only; anything that still produces frames passes.
+    if (fps < 0.5) problems.push(`fps ${fps.toFixed(2)} — not rendering at all?`);
   } else if (fps < 55) {
     problems.push(`fps ${fps.toFixed(1)} < 55 on real GPU`);
   }

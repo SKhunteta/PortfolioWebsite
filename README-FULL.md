@@ -149,24 +149,30 @@ npm run dev
 - `GET /api/linkmap/vehicles` - Link light-rail train positions (live GTFS-RT
   via the OneBusAway key, deterministic simulation when keyless/offline)
 
-### Link GTFS data (The Link, Alive)
+### Link data (The Link, Alive: GTFS + OSM basemap)
 
-The `/link-map/` sub-app and the `/api/linkmap` simulator run on data baked
-from Sound Transit's GTFS feed:
+The `/link-map/` sub-app and the `/api/linkmap` simulator run on baked data:
 
 - `link-map/src/data/network.json` — projected line geometry + stations
+  (Sound Transit GTFS)
 - `portfolio-backend/data/linkmap-schedule.json` — headways + run times
+  (Sound Transit GTFS)
+- `link-map/src/data/basemap.json` — watercolor city geography: coastline,
+  lakes, parks, major roads (OpenStreetMap via Overpass; © OpenStreetMap
+  contributors, ODbL — the app shows attribution whenever it's on screen)
 
-Re-generate both whenever the Link network changes (new stations or lines):
+Re-generate whenever the Link network or the city changes:
 
 ```bash
-node scripts/build-link-network.mjs           # fetches the current feed
+node scripts/build-link-network.mjs           # GTFS: lines + schedule
+node scripts/build-link-basemap.mjs           # OSM: watercolor basemap
 ```
 
-or dispatch the **Refresh Link GTFS data** workflow (Actions tab), which runs
-the same script and commits the result. Tunnel/elevated shading is a manual
-annotation in `scripts/data/link-grade-annotations.json` — extend it when new
-segments open (unannotated segments fall back to at-grade and log a warning).
+or dispatch the **Refresh Link data (GTFS + basemap)** workflow (Actions
+tab), which runs both and commits the results. Tunnel/elevated shading is a
+manual annotation in `scripts/data/link-grade-annotations.json` — extend it
+when new segments open (unannotated segments fall back to at-grade and log a
+warning).
 
 ## 🔒 Security Considerations
 

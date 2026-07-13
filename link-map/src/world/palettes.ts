@@ -20,6 +20,19 @@ export interface Palette {
   lineIntensity: number; // multiplier on ribbon emissive
   trainIntensity: number;
   bloomIntensity: number;
+  // Watercolor basemap
+  paperTint: THREE.Color; // broad wash tint layered over ground
+  paperGrain: number; // grain/fiber strength
+  waterEdge: THREE.Color; // pigment-pooling shoreline stroke
+  waterEdgeIntensity: number;
+  park: THREE.Color;
+  parkOpacity: number;
+  road: THREE.Color; // gold filaments at night, pale ink by day
+  roadIntensity: number;
+  // Toy train
+  trainAmbient: number; // livery brightness
+  trainWindow: THREE.Color;
+  windowIntensity: number; // stays <= ~0.85: windows never bloom
 }
 
 const NIGHT: Palette = {
@@ -34,6 +47,17 @@ const NIGHT: Palette = {
   lineIntensity: 1.0,
   trainIntensity: 1.0,
   bloomIntensity: 1.05,
+  paperTint: new THREE.Color("#0e1524"),
+  paperGrain: 0.06,
+  waterEdge: new THREE.Color("#1d4a5f"),
+  waterEdgeIntensity: 0.38,
+  park: new THREE.Color("#0d2318"),
+  parkOpacity: 0.14,
+  road: new THREE.Color("#8a6f42"),
+  roadIntensity: 0.3,
+  trainAmbient: 0.7,
+  trainWindow: new THREE.Color("#ffd9a8"),
+  windowIntensity: 0.85,
 };
 
 const DAY: Palette = {
@@ -48,6 +72,17 @@ const DAY: Palette = {
   lineIntensity: 0.45,
   trainIntensity: 0.6,
   bloomIntensity: 0.45,
+  paperTint: new THREE.Color("#2e3947"),
+  paperGrain: 0.1,
+  waterEdge: new THREE.Color("#48657a"),
+  waterEdgeIntensity: 0.35,
+  park: new THREE.Color("#2c4636"),
+  parkOpacity: 0.22,
+  road: new THREE.Color("#93a4b5"),
+  roadIntensity: 0.18,
+  trainAmbient: 1.0,
+  trainWindow: new THREE.Color("#aebbc9"),
+  windowIntensity: 0.12,
 };
 
 // Sound Transit hues, remapped toward the dreamy end: same identities a
@@ -67,34 +102,41 @@ export function lineGlow(lineId: string, feedColor: string): THREE.Color {
   return c ?? LINE_GLOW_DEFAULT;
 }
 
-export const LIVE: Palette = {
-  background: NIGHT.background.clone(),
-  fog: NIGHT.fog.clone(),
-  fogDensity: NIGHT.fogDensity,
-  ground: NIGHT.ground.clone(),
-  groundOpacity: NIGHT.groundOpacity,
-  water: NIGHT.water.clone(),
-  station: NIGHT.station.clone(),
-  label: NIGHT.label.clone(),
-  lineIntensity: NIGHT.lineIntensity,
-  trainIntensity: NIGHT.trainIntensity,
-  bloomIntensity: NIGHT.bloomIntensity,
-};
+const COLOR_KEYS = [
+  "background",
+  "fog",
+  "ground",
+  "water",
+  "station",
+  "label",
+  "paperTint",
+  "waterEdge",
+  "park",
+  "road",
+  "trainWindow",
+] as const;
+const SCALAR_KEYS = [
+  "fogDensity",
+  "groundOpacity",
+  "lineIntensity",
+  "trainIntensity",
+  "bloomIntensity",
+  "paperGrain",
+  "waterEdgeIntensity",
+  "parkOpacity",
+  "roadIntensity",
+  "trainAmbient",
+  "windowIntensity",
+] as const;
+
+export const LIVE: Palette = (() => {
+  const live = {} as Palette;
+  for (const k of COLOR_KEYS) (live[k] as THREE.Color) = NIGHT[k].clone();
+  for (const k of SCALAR_KEYS) (live[k] as number) = NIGHT[k];
+  return live;
+})();
 
 export function updatePalette(phase: number) {
-  LIVE.background.lerpColors(NIGHT.background, DAY.background, phase);
-  LIVE.fog.lerpColors(NIGHT.fog, DAY.fog, phase);
-  LIVE.ground.lerpColors(NIGHT.ground, DAY.ground, phase);
-  LIVE.water.lerpColors(NIGHT.water, DAY.water, phase);
-  LIVE.station.lerpColors(NIGHT.station, DAY.station, phase);
-  LIVE.label.lerpColors(NIGHT.label, DAY.label, phase);
-  LIVE.fogDensity = NIGHT.fogDensity + (DAY.fogDensity - NIGHT.fogDensity) * phase;
-  LIVE.groundOpacity =
-    NIGHT.groundOpacity + (DAY.groundOpacity - NIGHT.groundOpacity) * phase;
-  LIVE.lineIntensity =
-    NIGHT.lineIntensity + (DAY.lineIntensity - NIGHT.lineIntensity) * phase;
-  LIVE.trainIntensity =
-    NIGHT.trainIntensity + (DAY.trainIntensity - NIGHT.trainIntensity) * phase;
-  LIVE.bloomIntensity =
-    NIGHT.bloomIntensity + (DAY.bloomIntensity - NIGHT.bloomIntensity) * phase;
+  for (const k of COLOR_KEYS) LIVE[k].lerpColors(NIGHT[k], DAY[k], phase);
+  for (const k of SCALAR_KEYS) (LIVE[k] as number) = NIGHT[k] + (DAY[k] - NIGHT[k]) * phase;
 }
