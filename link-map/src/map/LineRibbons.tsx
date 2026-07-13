@@ -7,6 +7,7 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { LINES, DirectionGeometry } from "./network";
+import { railHeightAt } from "./grade";
 import { buildStrip } from "./ribbon";
 import { CONFIG } from "../world/config";
 import { LIVE, lineGlow } from "../world/palettes";
@@ -45,7 +46,9 @@ interface RibbonSpec {
   renderOrder: number;
 }
 
-/** Slice a direction's polyline to [fromKm, toKm] with interpolated ends. */
+/** Slice a direction's polyline to [fromKm, toKm] with interpolated ends.
+ *  Each point carries [x, z, s] — arc length rides along so the height
+ *  profile can be evaluated per vertex. */
 function slicePolyline(dir: DirectionGeometry, fromKm: number, toKm: number): number[][] {
   const pts: number[][] = [];
   const { points, cumKm } = dir;
@@ -75,6 +78,24 @@ function slicePolyline(dir: DirectionGeometry, fromKm: number, toKm: number): nu
   return pts;
 }
 
+/** Insert points so no segment exceeds maxStepKm — a coarse polyline would
+ *  render the ramp as one or two hard kinks; densifying makes it a curve. */
+function densify(pts: number[][], maxStepKm: number): number[][] {
+  const out: number[][] = [pts[0]];
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1];
+    const b = pts[i];
+    const ds = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    const n = Math.floor(ds / maxStepKm);
+    for (let k = 1; k <= n; k++) {
+      const t = k / (n + 1);
+      out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]);
+    }
+    out.push(b);
+  }
+  return out;
+}
+
 export function LineRibbons() {
   const materials = useRef<{ material: THREE.ShaderMaterial; gradeIntensity: number }[]>([]);
 
@@ -84,13 +105,20 @@ export function LineRibbons() {
       const dir = line.directions[0];
       if (!dir) continue;
       for (const [gi, grade] of dir.grades.entries()) {
-        const pts = slicePolyline(dir, grade.fromKm, grade.toKm);
+        // 0.05 km spacing guarantees interior vertices inside even a short,
+        // steep ramp band — coarser and the ramp aliases back to a near-step.
+        const pts = densify(slicePolyline(dir, grade.fromKm, grade.toKm), 0.05);
         if (pts.length < 2) continue;
         specs.push({
           key: `${line.id}-${gi}-${grade.grade}`,
           geometry: buildStrip(
             pts.map(([x, z]) => [x, z] as [number, number]),
-            { widthKm: CONFIG.ribbon.widthKm, y: CONFIG.ribbon.y[grade.grade], normalizeU: true }
+            {
+              widthKm: CONFIG.ribbon.widthKm,
+              y: CONFIG.ribbon.y[grade.grade],
+              ys: pts.map(([, , s]) => railHeightAt(dir, s)),
+              normalizeU: true,
+            }
           ),
           color: lineGlow(line.id, line.color),
           gradeIntensity: CONFIG.ribbon.intensity[grade.grade],
