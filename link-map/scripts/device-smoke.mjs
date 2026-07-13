@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Per-tier smoke harness for The Link, Alive (playwright-core, chromium at
+// Per-tier smoke harness for The Living Link (playwright-core, chromium at
 // /opt/pw-browsers/chromium — the meow-9 pattern).
 //
 // For each device tier it boots the dev server's page, waits for the canvas

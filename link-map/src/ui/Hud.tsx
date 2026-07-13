@@ -86,7 +86,7 @@ export function Hud() {
   return (
     <>
       <div className={`hud-title ${settled ? "hud-settled" : ""}`}>
-        <h1>The Link, Alive</h1>
+        <h1>The Living Link</h1>
         <p>Seattle light rail · a listening map</p>
       </div>
 

@@ -1,4 +1,4 @@
-// Bakes station lore for The Link, Alive.
+// Bakes station lore for The Living Link.
 //
 // The artistic map (link-map/) knows GTFS geometry but nothing about the
 // PLACES — the tracker component (src/components/LinkTracker) carries the

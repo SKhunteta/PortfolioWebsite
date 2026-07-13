@@ -1,4 +1,4 @@
-// Deterministic Link light-rail simulator for The Link, Alive.
+// Deterministic Link light-rail simulator for The Living Link.
 //
 // When the GTFS-RT feed is unavailable (no key, upstream outage, stale or
 // empty feed) the /api/linkmap route synthesizes plausible trains from the

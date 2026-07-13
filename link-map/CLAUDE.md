@@ -1,6 +1,6 @@
 # Link-Map — project context
 
-We are building **The Link, Alive** — a real-time generative-art map of
+We are building **The Living Link** — a real-time generative-art map of
 Seattle's Link light rail in React Three Fiber + Three.js, TypeScript, Vite.
 Sibling project to `../meow-9` and `../ketu-9` (same stack, same architecture
 rules). Not a transit app: an aquarium piece that happens to be true. Neon

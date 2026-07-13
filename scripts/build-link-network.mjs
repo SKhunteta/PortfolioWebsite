@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Build "The Link, Alive" datasets from Sound Transit's GTFS static feed.
+// Build "The Living Link" datasets from Sound Transit's GTFS static feed.
 //
 // Downloads the rail GTFS zip, extracts Link light rail geometry + schedule,
 // and bakes two JSONs:

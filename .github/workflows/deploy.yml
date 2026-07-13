@@ -45,7 +45,7 @@ jobs:
       - run: npm run build
         working-directory: meow-9
       - run: mkdir -p dist/meow-9 && cp -r meow-9/dist/. dist/meow-9/
-      # The Link, Alive is a standalone Vite project served at /link-map/.
+      # The Living Link is a standalone Vite project served at /link-map/.
       - run: npm ci
         working-directory: link-map
       - run: npm run build

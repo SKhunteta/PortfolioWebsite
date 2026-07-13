@@ -124,7 +124,7 @@ const Footer = () => {
                   href="/link-map/"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  The Link, Alive
+                  The Living Link
                 </a>
               </li>
               <li>

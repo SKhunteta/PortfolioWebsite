@@ -1,4 +1,4 @@
-// GTFS-realtime vehicle-positions client for The Link, Alive.
+// GTFS-realtime vehicle-positions client for The Living Link.
 //
 // Sound Transit publishes GTFS-RT through the OneBusAway Puget Sound API
 // (same OBA_API_KEY the linkrail departure board uses). The protobuf fetch
