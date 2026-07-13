@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Bake the "Dreambeans" watercolor basemap for The Link, Alive from
+// Bake the "Dreambeans" watercolor basemap for The Living Link from
 // OpenStreetMap: Puget Sound coastline + lakes, parks, and major roads,
 // projected into the same local plane as network.json and written to
 //   link-map/src/data/basemap.json

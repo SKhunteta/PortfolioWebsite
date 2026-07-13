@@ -1,4 +1,4 @@
-// The Link, Alive — live/simulated Link train positions.
+// The Living Link — live/simulated Link train positions.
 //
 // GET /api/linkmap/vehicles
 //   -> { mode: "live" | "simulated" | "resting", vehicles: [...], fetchedAt }

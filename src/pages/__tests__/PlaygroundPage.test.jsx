@@ -60,10 +60,10 @@ describe("PlaygroundPage", () => {
     expect(links.length).toBeGreaterThan(0);
   });
 
-  it("renders The Link, Alive static experiment card in the standalone section", () => {
+  it("renders The Living Link static experiment card in the standalone section", () => {
     renderPage();
     // The title also appears as a footer link, so use the *AllBy* variant.
-    expect(screen.getAllByText("The Link, Alive").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("The Living Link").length).toBeGreaterThan(0);
     const links = screen
       .getAllByRole("link")
       .filter((el) => el.getAttribute("href") === "/link-map/");

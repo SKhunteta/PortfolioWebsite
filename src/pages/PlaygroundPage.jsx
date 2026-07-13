@@ -140,7 +140,7 @@ const STATIC_STANDALONE = [
   },
   {
     id: "link-map",
-    title: "The Link, Alive",
+    title: "The Living Link",
     kindLabel: "WebGL visualization",
     tagline: "Seattle's light rail as a living circuit.",
     description:

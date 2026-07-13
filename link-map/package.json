@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "The Link, Alive — Seattle's light rail as a living circuit",
+  "description": "The Living Link — Seattle's light rail as a living circuit",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

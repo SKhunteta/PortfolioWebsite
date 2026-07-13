@@ -149,7 +149,7 @@ npm run dev
 - `GET /api/linkmap/vehicles` - Link light-rail train positions (live GTFS-RT
   via the OneBusAway key, deterministic simulation when keyless/offline)
 
-### Link data (The Link, Alive: GTFS + OSM basemap)
+### Link data (The Living Link: GTFS + OSM basemap)
 
 The `/link-map/` sub-app and the `/api/linkmap` simulator run on baked data:
 
