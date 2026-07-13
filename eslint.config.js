@@ -35,4 +35,11 @@ export default [
       ],
     },
   },
+  // Node-side code (backend + repo scripts) runs under Node globals, not
+  // browser ones — without this, `process` etc. trip no-undef. Placed after
+  // the main block so its globals win for these files.
+  {
+    files: ['portfolio-backend/**/*.{js,mjs}', 'scripts/**/*.{js,mjs}'],
+    languageOptions: { globals: globals.node },
+  },
 ]
