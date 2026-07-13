@@ -63,8 +63,8 @@ const DAY: Palette = {
   bokashiTop: new THREE.Color("#2b4a77"), // ai-blue wiped band
   fog: new THREE.Color("#f2e6c6"), // kasumi — mist paler than the paper
   fogDensity: 0.006,
-  ground: new THREE.Color("#e3d2a8"),
-  groundOpacity: 0.58, // tunnels must still read through the paper
+  ground: new THREE.Color("#c3cb90"), // sage washi — evergreen land, NOT sand
+  groundOpacity: 0.7, // opaque enough that land reads green over the cream sky base; tunnels still read
   water: new THREE.Color("#1e4f86"), // Prussian blue (ai)
   waterOpacity: 0.85,
   seigaiha: new THREE.Color("#e9f0ee"), // foam-white wave linework
@@ -76,12 +76,12 @@ const DAY: Palette = {
   lineIntensity: 0.7,
   trainIntensity: 1.0,
   bloomIntensity: 0.5,
-  paperTint: new THREE.Color("#d9c08c"),
+  paperTint: new THREE.Color("#b9c087"), // moss-gold wash — forested-terrain mottle, not dune-gold
   paperGrain: 0.24,
   waterEdge: new THREE.Color("#16355e"), // blue pigment pooling
   waterEdgeIntensity: 0.8,
-  park: new THREE.Color("#a9b26f"), // warm moss wash
-  parkOpacity: 0.4,
+  park: new THREE.Color("#8faa5b"), // warm moss wash — the Emerald City reads green
+  parkOpacity: 0.5,
   road: new THREE.Color("#4c3a28"), // sumi ink strokes
   roadIntensity: 0.55,
   landmark: new THREE.Color("#8a5a40"), // warm sepia ink massing
