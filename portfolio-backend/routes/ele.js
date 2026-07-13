@@ -2,6 +2,7 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import Anthropic from "@anthropic-ai/sdk";
 import { config } from "../config/index.js";
+import { buildWorldContext } from "../services/canon.js";
 
 const router = express.Router();
 
@@ -24,7 +25,10 @@ const eleLimiter = rateLimit({
   },
 });
 
-const SYSTEM_PROMPT = `You are the pricing engine for the Emotional Labor Exchange (ELE), a fictional futures market where human emotions are traded as commodities. This is inspired by "The Happiness Liability," a novella about emotional labor and algorithmic capitalism.
+const SYSTEM_PROMPT = `You are the pricing engine for the Emotional Labor Exchange (ELE), a fictional futures market where human emotions are traded as commodities. This is from the world of "The Happiness Liability," a novel about emotional labor and algorithmic capitalism.
+
+Canonical facts about the world your market operates in:
+${buildWorldContext({ sections: ["economics", "timeline"], compact: true })}
 
 In this world, emotional laborers wear neural interfaces that stream their authentic feelings to AI systems. Emotions trade on futures markets. You analyze real breaking news to determine current market prices.
 

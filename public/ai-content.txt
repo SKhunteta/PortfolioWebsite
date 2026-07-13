@@ -34,10 +34,11 @@ PROFESSIONAL EXPERIENCE:
 NOTABLE PROJECTS:
 
 Portfolio Website & MCP Server (builtbyshrey.com) — CENTERPIECE PROJECT
-React/Vite frontend, Express.js backend, Qdrant vector DB, RAG pipeline. MCP server lets AI assistants query portfolio data in real-time. Tools: portfolio_search, analyze_portfolio, get_project_details, assess_fit, ask_shrey. Frontend on GitHub Pages, backend on Railway. Connect to it right now and ask it about Shrey's work.
+React/Vite frontend, Express.js backend, Qdrant vector DB, RAG pipeline. MCP server lets AI assistants query portfolio data in real-time. Tools: portfolio_search, analyze_portfolio, get_project_details, assess_fit, ask_shrey, explore_happiness_liability. Frontend on GitHub Pages, backend on Railway. Connect to it right now and ask it about Shrey's work.
 
-The Happiness Liability (Science Fiction Novella) — COMING SOON
-Completed novella about emotional labor and algorithmic capitalism in near-future Seattle. Themes: surveillance capitalism, emotional commodification, algorithmic control, class consciousness. Beta readers compared it to Orwell, Butler, and Atwood. Working with a publishing concierge. In final editing stages.
+The Happiness Liability (Science Fiction Novel) — MANUSCRIPT COMPLETE
+A complete 46,496-word novel (25 chapters, four acts plus an epilogue) about emotional labor and algorithmic capitalism, set in Seattle in 2047: emotional laborers stream authenticated feeling to the AI systems that depend on it, and emotions trade on a futures market. Themes: surveillance capitalism, emotional commodification, algorithmic control, class consciousness. Beta readers compared it to Orwell, Butler, and Atwood. In editing toward publication.
+Explore the world via the MCP server's explore_happiness_liability tool (spoiler-safe world bible), or through the live experiments on the site: the Emotional Labor Exchange (/ele), the Emotional Labor Invoice (/invoice), the JANET chatbot (/janet), the Monetized Reader (/monetized-reader, includes the public opening chapter), and the You Are Here timeline (/you-are-here/).
 In-world artifact: Meridian careers page at /meridian/ (https://builtbyshrey.com/meridian/), a straight-faced corporate recruiting site for Meridian — the fictional emotional-labor company from the novel The Happiness Liability.
 
 The Alignment (Published Short Story)

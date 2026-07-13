@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { v4 as uuidv4 } from "uuid";
 import OpenAIService from "./openai.js";
 import QdrantService from "./qdrant.js";
+import { buildCanonDocuments } from "./canon.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -127,6 +128,18 @@ class IndexerService {
           portfolioData.linkedin_profile
         );
         documents.push(linkedinDoc);
+      }
+
+      // Index The Happiness Liability world canon
+      try {
+        console.log("Indexing Happiness Liability world canon...");
+        const canonDocs = await this.processCanonContent();
+        documents.push(...canonDocs);
+      } catch (error) {
+        console.warn(
+          "⚠️ Skipping Happiness Liability canon (indexing continues):",
+          error.message
+        );
       }
 
       // Add all documents to Qdrant
@@ -537,6 +550,9 @@ Professional profile and contact information for software engineer`;
             );
           }
           break;
+        case "happiness_liability":
+          documents.push(...(await this.processCanonContent()));
+          break;
         default:
           console.warn(`Unknown content type for re-indexing: ${contentType}`);
           return {
@@ -558,6 +574,35 @@ Professional profile and contact information for software engineer`;
       console.error(`Error re-indexing ${contentType}:`, error);
       throw error;
     }
+  }
+
+  /**
+   * Process The Happiness Liability world canon into indexable documents.
+   * Doc shaping lives in services/canon.js next to the data; this only
+   * embeds and wraps each document as a Qdrant point.
+   */
+  async processCanonContent() {
+    const documents = [];
+    for (const doc of buildCanonDocuments()) {
+      const embedding = await OpenAIService.generateEmbedding(
+        doc.searchable_content
+      );
+      documents.push({
+        id: uuidv4(),
+        vector: embedding,
+        payload: {
+          original_id: doc.original_id,
+          content_type: "happiness_liability",
+          aspect: doc.aspect,
+          title: doc.title,
+          description: doc.description,
+          technologies: [],
+          url: doc.url,
+          searchable_content: doc.searchable_content,
+        },
+      });
+    }
+    return documents;
   }
 
   /**

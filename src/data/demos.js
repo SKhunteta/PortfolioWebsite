@@ -14,7 +14,7 @@ export const HAPPINESS_LIABILITY_SERIES = {
   id: "happiness-liability",
   title: "The Happiness Liability",
   description:
-    "Four experiments from the world of the novella The Happiness Liability — a near future where human feeling is measured, traded, and billed.",
+    "Four experiments from the world of the novel The Happiness Liability — a near future where human feeling is measured, traded, and billed.",
 };
 
 export const DEMOS = [

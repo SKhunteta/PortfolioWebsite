@@ -3,6 +3,7 @@ import rateLimit from "express-rate-limit";
 import Anthropic from "@anthropic-ai/sdk";
 import { config } from "../config/index.js";
 import { getMarketData } from "./ele.js";
+import { getCanon } from "../services/canon.js";
 
 const router = express.Router();
 
@@ -63,6 +64,8 @@ const MODIFIER_MULTIPLIERS = {
 };
 
 const SYSTEM_PROMPT = `You are a billing specialist for the Emotional Labor Exchange. You receive descriptions of real emotional labor and produce itemized invoices.
+
+The exchange you bill for is the one from "The Happiness Liability," a novel by Shreyans Khunteta: ${getCanon().institutions.find((i) => i.id === "ele").summary}
 
 Write as if a management consultant were drafting a statement of work for emotional services. Use the vocabulary of SOWs, engagement letters, and deliverables — but applied to labor that has never appeared on any balance sheet. Do not editorialize. Do not comfort. The invoice format itself is the statement.
 
