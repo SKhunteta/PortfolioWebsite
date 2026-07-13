@@ -17,6 +17,7 @@ import { Labels } from "./stations/Labels";
 import { CameraRig } from "./observer/CameraRig";
 import { Composer } from "./fx/Composer";
 import { Hud } from "./ui/Hud";
+import { StationPanel } from "./stations/StationPanel";
 import { startPoller } from "./trains/poller";
 import { installHandles, markFrame } from "./dev/handles";
 
@@ -80,6 +81,7 @@ export default function App() {
         <Composer />
       </Canvas>
       <Hud />
+      <StationPanel />
     </>
   );
 }
