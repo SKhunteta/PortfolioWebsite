@@ -11,6 +11,7 @@ import * as THREE from "three";
 export interface StripOptions {
   widthKm: number;
   y: number;
+  ys?: number[]; // per-vertex height (grade ramps); falls back to `y` when absent
   closed?: boolean; // wraparound tangents + closing segment (rings)
   normalizeU?: boolean; // uv.x 0..1 over the strip instead of km
 }
@@ -45,12 +46,13 @@ export function buildStrip(points: [number, number][], opts: StripOptions): THRE
     const px = -tz;
     const pz = tx;
     const u = opts.normalizeU ? cum[i] / total : cum[i];
+    const y = opts.ys ? opts.ys[i] : opts.y;
     const base = i * 6;
     positions[base] = pts[i][0] + px * half;
-    positions[base + 1] = opts.y;
+    positions[base + 1] = y;
     positions[base + 2] = pts[i][1] + pz * half;
     positions[base + 3] = pts[i][0] - px * half;
-    positions[base + 4] = opts.y;
+    positions[base + 4] = y;
     positions[base + 5] = pts[i][1] - pz * half;
     uvs[i * 4] = u;
     uvs[i * 4 + 1] = 0;

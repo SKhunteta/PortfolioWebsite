@@ -5,7 +5,7 @@
 
 import type { TrainState } from "./store";
 import { CONFIG } from "../world/config";
-import { gradeAt } from "../map/network";
+import { railHeightAt } from "../map/grade";
 
 const Y_LERP_PER_S = 2.0;
 
@@ -32,9 +32,12 @@ export function advanceTrain(t: TrainState, dt: number, nowT: number) {
   const blend = Math.min(1, dt * 1.2);
   t.vEst += (rate - t.vEst) * blend;
 
-  // Vertical: ease toward the grade's height so tunnel entries read as a
-  // slow submerge, not a step.
-  const targetY = CONFIG.ribbon.y[gradeAt(t.dir, t.sRendered)] + 0.06;
+  // Vertical: ride the SAME eased rail-height profile the ribbon is built
+  // from (railHeightAt), lifted a touch so the toy sits on top of the line.
+  // The temporal lerp just smooths poll-to-poll jitter now — the ramp itself
+  // is spatial, so the train follows the track up a portal instead of
+  // popping to the next discrete grade height.
+  const targetY = railHeightAt(t.dir, t.sRendered) + 0.06;
   t.y += (targetY - t.y) * Math.min(1, dt * Y_LERP_PER_S);
 }
 
