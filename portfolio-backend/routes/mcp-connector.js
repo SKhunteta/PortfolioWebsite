@@ -6,6 +6,11 @@ import { z } from "zod";
 import AnthropicService from "../services/anthropic.js";
 import OpenAIService from "../services/openai.js";
 import QdrantService from "../services/qdrant.js";
+import {
+  getCanon,
+  buildWorldContext,
+  SPOILER_GUARDRAIL,
+} from "../services/canon.js";
 
 const router = express.Router();
 
@@ -37,7 +42,7 @@ function createMcpServer() {
   const server = new McpServer(
     {
       name: "shreyans-portfolio-mcp",
-      version: "2.0.0",
+      version: "2.1.0",
     },
     {
       capabilities: {
@@ -50,11 +55,20 @@ function createMcpServer() {
   // ---- Tool 1: portfolio_search ----
   server.tool(
     "portfolio_search",
-    "Search Shreyans' portfolio for specific information about projects, skills, or experience",
+    "Search Shreyans' portfolio for specific information about projects, skills, experience, or the world of his science-fiction novel The Happiness Liability",
     {
       query: z.string().describe("Search query about Shreyans' portfolio"),
       contentTypes: z
-        .array(z.enum(["project", "skill", "experience", "personal"]))
+        .array(
+          z.enum([
+            "project",
+            "skill",
+            "experience",
+            "personal",
+            "creative_work",
+            "happiness_liability",
+          ])
+        )
         .optional()
         .describe("Types of content to search in"),
     },
@@ -302,7 +316,7 @@ Be specific and reference actual projects, roles, and skills from the context. D
         // Broad vector search across ALL content types
         const queryEmbedding =
           await OpenAIService.generateEmbedding(question);
-        const searchResults = await QdrantService.search(queryEmbedding, 8);
+        const searchResults = await QdrantService.search(queryEmbedding, 10);
 
         const systemPrompt = `You are responding on behalf of Shreyans Khunteta, drawing from his actual portfolio, projects, writing, and documented perspectives.
 
@@ -312,7 +326,8 @@ Guidelines:
 - Do not fabricate opinions or experiences that aren't supported by the context
 - If the context doesn't contain enough information to answer fully, say so honestly and suggest where more information might be found (his blog, GitHub, LinkedIn)
 - Respond in first person as Shreyans would -- professionally but with personality
-- Draw from his philosophical perspectives, creative work, and interests when relevant to give well-rounded answers`;
+- Draw from his philosophical perspectives, creative work, and interests when relevant to give well-rounded answers
+- If the question touches his novel The Happiness Liability, answer from the world-bible context provided. ${SPOILER_GUARDRAIL}`;
 
         const contextText = AnthropicService.buildContextText(searchResults);
         const userPrompt = `Based on the following information about Shreyans Khunteta's portfolio and work:\n\n${contextText}\n\nPlease answer this question as Shreyans would: ${question}`;
@@ -332,6 +347,89 @@ Guidelines:
             {
               type: "text",
               text: "I encountered an error while processing your question. Please try again.",
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // ---- Tool 6: explore_happiness_liability ----
+  server.tool(
+    "explore_happiness_liability",
+    "Explore the world of The Happiness Liability, Shreyans Khunteta's science-fiction novel: the alternate-history timeline from 2026 to 2047, the Great Copyright Purge, the EMOTE Act, Meridian Emotional Partners, the Emotional Labor Exchange futures market, neural interfaces and the empathy grid, the main characters, and the interactive experiments on builtbyshrey.com built from this world. Spoiler-safe: covers worldbuilding and the novel's opening setup only.",
+    {
+      query: z
+        .string()
+        .describe("Question about the world, its history, or its logic"),
+      aspect: z
+        .enum([
+          "overview",
+          "timeline",
+          "institutions",
+          "market",
+          "technology",
+          "characters",
+          "experiments",
+        ])
+        .optional()
+        .describe("Narrow the search to one aspect of the world"),
+    },
+    async ({ query, aspect }) => {
+      try {
+        const queryEmbedding = await OpenAIService.generateEmbedding(query);
+
+        const buildFilter = (withAspect) => ({
+          must: [
+            { key: "content_type", match: { value: "happiness_liability" } },
+            ...(withAspect && aspect
+              ? [{ key: "aspect", match: { value: aspect } }]
+              : []),
+          ],
+        });
+
+        let searchResults = await QdrantService.search(
+          queryEmbedding,
+          6,
+          buildFilter(true)
+        );
+        if (aspect && searchResults.length === 0) {
+          // Aspect filter found nothing -- retry across the whole world bible
+          searchResults = await QdrantService.search(
+            queryEmbedding,
+            6,
+            buildFilter(false)
+          );
+        }
+
+        const canon = getCanon();
+        const systemPrompt = `You are the keeper of the world bible for "${canon.meta.title}", a ${canon.meta.form} by ${canon.meta.author}. ${canon.voice_notes.lorekeeper}
+
+Guidelines:
+- Ground every answer in the provided world-bible context. If something isn't covered there, say the world bible doesn't cover it -- do not invent canon.
+- ${SPOILER_GUARDRAIL}
+- When relevant, point to the live experiments from this world at builtbyshrey.com (the Emotional Labor Exchange, the Emotional Labor Invoice, JANET, the Monetized Reader, the You Are Here timeline, and the Meridian microsite).`;
+
+        const worldContext = buildWorldContext({ compact: true });
+        const retrievedContext = AnthropicService.buildContextText(searchResults);
+        const userQuery = `World-bible summary:\n${worldContext}\n\nRetrieved detail:\n${retrievedContext}\n\nQuestion: ${query}`;
+
+        const answer = await AnthropicService.generateMCPResponse({
+          systemPrompt,
+          userQuery,
+        });
+
+        return {
+          content: [{ type: "text", text: answer }],
+        };
+      } catch (error) {
+        console.error("Error in explore_happiness_liability:", error);
+        return {
+          content: [
+            {
+              type: "text",
+              text: "I encountered an error while consulting the world bible. Please try again with a different query.",
             },
           ],
           isError: true,
@@ -411,7 +509,7 @@ router.get("/", async (req, res) => {
   // No session — return discovery / capabilities info
   res.json({
     name: "shreyans-portfolio-mcp",
-    version: "2.0.0",
+    version: "2.1.0",
     description:
       "Shreyans Khunteta's AI-powered portfolio intelligence server",
     protocolVersion: "2025-03-26",
@@ -435,6 +533,11 @@ router.get("/", async (req, res) => {
         name: "ask_shrey",
         description:
           "Ask Shreyans a question grounded in his portfolio data",
+      },
+      {
+        name: "explore_happiness_liability",
+        description:
+          "Explore the world of The Happiness Liability, Shreyans' science-fiction novel (spoiler-safe worldbuilding)",
       },
     ],
     usage: {
@@ -474,7 +577,7 @@ router.delete("/", async (req, res) => {
 router.get("/info", (req, res) => {
   res.json({
     name: "shreyans-portfolio-mcp",
-    version: "2.0.0",
+    version: "2.1.0",
     description:
       "Shreyans Khunteta's AI-powered portfolio intelligence server",
     protocolVersion: "2025-03-26",
@@ -498,6 +601,11 @@ router.get("/info", (req, res) => {
         description:
           "Ask Shreyans a question grounded in his portfolio data",
       },
+      {
+        name: "explore_happiness_liability",
+        description:
+          "Explore the world of The Happiness Liability, Shreyans' science-fiction novel (spoiler-safe worldbuilding)",
+      },
     ],
     connectionInfo: {
       endpoint: "/api/mcp-connector",
@@ -517,6 +625,7 @@ router.get("/info", (req, res) => {
                   "get_project_details",
                   "assess_fit",
                   "ask_shrey",
+                  "explore_happiness_liability",
                 ],
               },
             },

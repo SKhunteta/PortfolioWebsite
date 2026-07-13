@@ -37,7 +37,7 @@ const Projects = () => {
       id: 1,
       title: "The Happiness Liability",
       description:
-        "A completed science fiction novella about emotional labor and algorithmic capitalism in near-future Seattle. Explores surveillance capitalism, emotional commodification, algorithmic control, and class consciousness. Beta readers compared it to Orwell, Butler, and Atwood. In final editing stages, working with a publishing concierge.",
+        "A complete science fiction novel about emotional labor and algorithmic capitalism in 2047 Seattle, where authenticated human emotion trades on a futures market. Explores surveillance capitalism, emotional commodification, algorithmic control, and class consciousness. Beta readers compared it to Orwell, Butler, and Atwood. Manuscript in editing toward publication.",
       technologies: ["Science Fiction", "Speculative Fiction", "Creative Writing"],
       github: null,
       featured: true,

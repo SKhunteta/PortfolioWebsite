@@ -239,8 +239,8 @@
     },
     {
       "id": "the-happiness-liability",
-      "title": "The Happiness Liability (Science Fiction Novella)",
-      "description": "A completed science fiction novella about emotional labor and algorithmic capitalism in near-future Seattle. Explores themes of surveillance capitalism, emotional commodification, algorithmic control, and class consciousness. Beta readers have compared it to the work of Orwell, Butler, and Atwood. Currently in final editing stages, working with a publishing concierge for potential publication. Shrey's creative writing directly engages with the ethical dimensions of the technology he builds — it is a core part of his identity, not a side project.",
+      "title": "The Happiness Liability (Science Fiction Novel)",
+      "description": "A complete 46,496-word science fiction novel — twenty-five chapters in four acts plus an epilogue — about emotional labor and algorithmic capitalism, set in Seattle in 2047 after a twenty-one-year alternate history. Emotional laborers wear neural interfaces that stream authenticated human feeling to the AI systems that depend on it, and emotions trade on a futures market. Beta readers have compared it to the work of Orwell, Butler, and Atwood. The manuscript is complete and in editing toward publication. The novel anchors a transmedia project on builtbyshrey.com: the Emotional Labor Exchange (/ele), the Emotional Labor Invoice (/invoice), the JANET chatbot (/janet), the Monetized Reader (/monetized-reader), the You Are Here timeline (/you-are-here/), and the in-world Meridian Emotional Partners microsite (/meridian/). Shrey's creative writing directly engages with the ethical dimensions of the technology he builds — it is a core part of his identity, not a side project.",
       "technologies": ["Science Fiction", "Speculative Fiction", "Creative Writing", "Surveillance Capitalism", "AI Ethics"],
       "themes": [
         "Surveillance capitalism",
@@ -249,10 +249,35 @@
         "Class consciousness",
         "Near-future Seattle setting"
       ],
+      "plot_summary": {
+        "setting": "Seattle metro area, 2047. After deepfakes destroyed trust in video, a pandemic, and the Great Copyright Purge of 2031 collapsed the AI systems trained on stolen emotional data, the EMOTE Act legalized consensual emotional labor and America became the world's largest exporter of authenticated human feeling",
+        "protagonist": "Eli Marquez, thirty-five, sixteen years into an exclusive contract to maintain professional clinical depression as the baseload plant of a global empathy grid",
+        "central_conflict": "On the morning of his thirty-fifth birthday, the most consistently sad man in U.S.-West-2 decides he wants to know what the sun feels like — and any deviation from his contracted baseline cascades through every AI system that depends on his data",
+        "themes": "Surveillance capitalism, emotional commodification, the ethics of building helpful systems on human suffering, class consciousness, authenticity as commodity"
+      },
+      "key_characters": {
+        "Eli Marquez": {
+          "role": "Protagonist; contracted emotional laborer (PROVIDER 2032-NW-0017)",
+          "background": "Orphaned at sixteen in the 2028 pandemic, recruited at nineteen out of a grief support group; sixteen years of contracted depression at $140 million a year, lived behind blackout curtains on Mercer Island"
+        },
+        "Harold Nakamura": {
+          "role": "Eli's agent and handler",
+          "background": "Manages eleven emotional laborers across the Pacific Northwest; Eli is his flagship client; sends the only birthday text Eli receives each year"
+        },
+        "Dr. Miranda Reeves": {
+          "role": "Founder of Meridian Emotional Partners",
+          "background": "Former Portland grief counselor who helped draft the EMOTE Act and built the ethical version of the industry — a third option that became a forty-trillion-dollar economy she controls"
+        },
+        "JANET": {
+          "role": "Eli's household companion AI (Just Another Non-Entity Technology)",
+          "background": "Has logged 4,112 good mornings; vocabulary trained on sadness; schedules units of premium grief against institutional contracts"
+        }
+      },
       "github": null,
+      "live_demo": "https://builtbyshrey.com/you-are-here/",
       "featured": true,
       "type": "Creative Writing",
-      "status": "Coming Soon"
+      "status": "Manuscript Complete"
     },
     {
       "id": "seattle-ai-book-club",
@@ -374,9 +399,9 @@
     "note": "Shrey's writing directly engages with the ethical dimensions of the technology he builds. It is a core part of his identity, not a side hobby.",
     "major_works": {
       "the_happiness_liability": {
-        "type": "Science Fiction Novella",
-        "status": "Final editing stages, working with publishing concierge",
-        "description": "Completed novella about emotional labor and algorithmic capitalism in near-future Seattle",
+        "type": "Science Fiction Novel",
+        "status": "Manuscript complete (46,496 words, 25 chapters); in editing toward publication",
+        "description": "Complete novel about emotional labor and algorithmic capitalism in 2047 Seattle, where authenticated human emotion trades on a futures market",
         "themes": ["Surveillance capitalism", "Emotional commodification", "Algorithmic control", "Class consciousness"],
         "reception": "Beta readers compared it to Orwell, Butler, and Atwood"
       },
@@ -469,7 +494,7 @@
     "recent_achievements": [
       "Built MCP server enabling AI assistants to query portfolio data in real-time",
       "Implemented RAG pipeline with Qdrant vector database and OpenAI embeddings",
-      "Completed The Happiness Liability — a science fiction novella with strong early reception",
+      "Completed The Happiness Liability — a 46,496-word science fiction novel with strong early reception",
       "Founded and runs Seattle AI Book Club at Stoup Brewing, Capitol Hill",
       "Mastered AI-assisted development workflows using Cursor IDE and Claude Code",
       "Built production-ready AI application with vector database integration",
@@ -619,7 +644,7 @@
       },
       {
         "title": "The Happiness Liability",
-        "description": "Completed science fiction novella about emotional labor and algorithmic capitalism in near-future Seattle. Coming soon."
+        "description": "Complete science fiction novel about emotional labor and algorithmic capitalism in 2047 Seattle. Manuscript in editing toward publication; explore the world at builtbyshrey.com."
       },
       {
         "title": "Seattle AI Book Club",

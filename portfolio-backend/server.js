@@ -167,7 +167,7 @@ app.get("/.well-known/mcp.json", (req, res) => {
 
   res.json({
     name: "shreyans-portfolio-mcp",
-    version: "2.0.0",
+    version: "2.1.0",
     description:
       "Shreyans Khunteta's AI-powered portfolio intelligence server",
     protocolVersion: "2025-03-26",
@@ -184,6 +184,7 @@ app.get("/.well-known/mcp.json", (req, res) => {
         "get_project_details",
         "assess_fit",
         "ask_shrey",
+        "explore_happiness_liability",
       ],
     },
   });

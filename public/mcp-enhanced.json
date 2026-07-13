@@ -1,7 +1,7 @@
 {
   "name": "shreyans-portfolio",
-  "version": "2.0.0",
-  "description": "AI-powered portfolio assistant for Shreyans Khunteta — Senior Software Engineer & Writer. Features MCP server with RAG pipeline for real-time portfolio queries.",
+  "version": "2.1.0",
+  "description": "AI-powered portfolio assistant for Shreyans Khunteta — Senior Software Engineer & Writer. Features MCP server with RAG pipeline for real-time portfolio queries, plus a spoiler-safe world bible for his science fiction novel The Happiness Liability.",
   "capabilities": {
     "tools": [
       {
@@ -18,7 +18,7 @@
               "type": "array",
               "items": {
                 "type": "string",
-                "enum": ["project", "skill", "experience", "personal", "creative_work"]
+                "enum": ["project", "skill", "experience", "personal", "creative_work", "happiness_liability"]
               },
               "description": "Content types to search"
             }
@@ -102,6 +102,31 @@
           "Why are you pivoting toward AI/ML?",
           "What's the Seattle AI Book Club about?"
         ]
+      },
+      {
+        "name": "explore_happiness_liability",
+        "description": "Explore the world of The Happiness Liability, Shreyans' science fiction novel: the 2026–2047 alternate-history timeline, the Great Copyright Purge, the EMOTE Act, Meridian Emotional Partners, the Emotional Labor Exchange futures market, the empathy grid, the main characters, and the interactive experiments built from the world. Spoiler-safe: worldbuilding and opening setup only.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Question about the world, its history, or its logic"
+            },
+            "aspect": {
+              "type": "string",
+              "enum": ["overview", "timeline", "institutions", "market", "technology", "characters", "experiments"],
+              "description": "Narrow the search to one aspect of the world"
+            }
+          },
+          "required": ["query"]
+        },
+        "examples": [
+          {"query": "What is the EMOTE Act?", "aspect": "institutions"},
+          {"query": "Why did the AI systems collapse in 2031?", "aspect": "timeline"},
+          {"query": "How are emotions priced?", "aspect": "market"},
+          {"query": "What can I try from this world on the site?", "aspect": "experiments"}
+        ]
       }
     ],
     "resources": [
@@ -109,10 +134,10 @@
         "uri": "portfolio://projects",
         "name": "Projects",
         "description": "Information about Shreyans' software, AI, and creative projects",
-        "summary": "Includes MCP server & RAG pipeline portfolio, The Happiness Liability (novella), The Alignment (published story), Lingua AI Chatbot, Healthcare Data Pipeline, Seattle AI Book Club, and enterprise C#/.NET applications",
+        "summary": "Includes MCP server & RAG pipeline portfolio, The Happiness Liability (novel), The Alignment (published story), Lingua AI Chatbot, Healthcare Data Pipeline, Seattle AI Book Club, and enterprise C#/.NET applications",
         "sample_projects": [
           "Portfolio Website & MCP Server (centerpiece — connect and query it)",
-          "The Happiness Liability (science fiction novella, coming soon)",
+          "The Happiness Liability (science fiction novel, manuscript complete — explore its world via the explore_happiness_liability tool)",
           "The Alignment (published short story on AI consciousness)",
           "Lingua AI Chatbot",
           "Healthcare Data Pipeline",
@@ -170,7 +195,7 @@
     "portfolio_features": {
       "mcp_server": {
         "endpoint": "https://backend.builtbyshrey.com/api/mcp-connector",
-        "tools": ["portfolio_search", "analyze_portfolio", "get_project_details", "assess_fit", "ask_shrey"],
+        "tools": ["portfolio_search", "analyze_portfolio", "get_project_details", "assess_fit", "ask_shrey", "explore_happiness_liability"],
         "description": "Connect to it right now and ask it about Shrey's work"
       },
       "interactive_ai_assistant": {
@@ -182,7 +207,7 @@
     },
     "notable_achievements": [
       "Built MCP server enabling AI assistants to query portfolio in real-time",
-      "Completed The Happiness Liability — science fiction novella with strong reception",
+      "Completed The Happiness Liability — a 46,496-word science fiction novel with strong reception",
       "Founded and runs Seattle AI Book Club at Stoup Brewing, Capitol Hill",
       "Published The Alignment — short story on AI consciousness",
       "1,100+ day Spanish learning streak"

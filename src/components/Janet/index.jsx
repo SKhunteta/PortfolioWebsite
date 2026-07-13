@@ -176,7 +176,7 @@ const Janet = () => {
             <em className="text-[#b0b0b0]">The Happiness Liability</em>.
           </p>
           <p className="font-sans-ele text-[#5a5a5a] text-sm mb-8">
-            A novella by Shreyans Khunteta
+            A novel by Shreyans Khunteta
           </p>
           <button
             onClick={() => window.location.reload()}

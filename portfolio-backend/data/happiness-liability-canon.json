@@ -1,0 +1,242 @@
+{
+  "meta": {
+    "title": "The Happiness Liability",
+    "author": "Shreyans Khunteta",
+    "form": "novel",
+    "word_count": 46496,
+    "structure": "Four acts plus an epilogue; twenty-five chapters",
+    "status": "Manuscript complete; in editing toward publication",
+    "setting": "Seattle metro area, 2047, after a twenty-one-year alternate history that begins in 2026",
+    "content_policy": "This world bible covers worldbuilding and the novel's opening setup only. No plot events beyond the opening chapter are included, and none should be inferred or invented.",
+    "canonical_sources": [
+      "The manuscript (unpublished)",
+      "The public 'You Are Here' timeline at builtbyshrey.com/you-are-here/"
+    ]
+  },
+  "logline": "In 2047, authenticated human emotion is the scarcest commodity on earth. Eli Marquez has spent sixteen years under contract to feel depression for a living — the baseload plant of a global empathy grid — until the morning of his thirty-fifth birthday, when he decides he wants to know what the sun feels like.",
+  "world_rules": [
+    {
+      "id": "epistemic_collapse",
+      "name": "Video stopped being evidence",
+      "summary": "Around 2027, synthetic media became free and perfect: any voice could say anything, and a forgery only had to be plausible to someone who wanted to believe it. Images and video lost their status as proof. Trust migrated to cryptographic provenance — every digital interaction now carries a machine-signed 'certified real' handshake. Ironically, the only sentences humans trust are the ones signed by a machine."
+    },
+    {
+      "id": "authenticity_scarcity",
+      "name": "Authenticity is the scarce commodity",
+      "summary": "In a world drowning in synthetic everything, provably real human feeling is the last scarce resource. The value of an emotion comes not from its intensity but from its authenticated provenance: grief you can prove a real person really felt — and really agreed to sell."
+    },
+    {
+      "id": "consent_architecture",
+      "name": "Consent as legal architecture",
+      "summary": "After the Great Copyright Purge outlawed stolen training data, the only legal path to emotional data became consenting human sourcing. The entire economy rests on contracts, informed consent, provenance, and chain of custody. America, which lost everything else, never lost its institutional muscle for building rights regimes around extraction."
+    },
+    {
+      "id": "happiness_liability",
+      "name": "The happiness liability",
+      "summary": "For a contracted depression provider, happiness is a contractual and financial liability. A moment of joy is a contamination event: it breaches the provider's baseline and cascades through every AI system fed by their data. A single involuntary laugh from a flagship provider can move markets by millions of dollars. Blackout curtains, controlled environments, and IV meals exist to keep happiness out."
+    },
+    {
+      "id": "emotion_as_skill",
+      "name": "Professional emotion is a skill",
+      "summary": "Maintaining a contracted emotional state is treated as skilled labor: consistency, depth, and authenticity are professional competencies. The algorithms can tell the difference between sustained authentic depression and someone merely having a bad day, which is why contracted providers command enormous salaries and gig sellers earn beer money."
+    },
+    {
+      "id": "gig_vs_contracted",
+      "name": "Gig sellers and contracted providers",
+      "summary": "Most participants are casual: commuters, mourners, and accident victims wearing consumer-grade interfaces, selling emotional byproduct the way rooftop solar sells excess power back to the grid. Above them sits a small professional class of contracted providers — exclusive, multi-decade agreements to maintain one emotion full time."
+    }
+  ],
+  "timeline": [
+    {
+      "period": "2026",
+      "title": "The peak of confidence",
+      "summary": "A society at the absolute peak of confidence in its own systems: cranes over the desert, transformers backordered years out, a whole grid rebuilt on the promise of a mind that doesn't exist yet — either the largest rational bet in the history of capital or the largest irrational one, and from inside the year you cannot tell which.",
+      "era": "pre_collapse"
+    },
+    {
+      "period": "2027",
+      "title": "Video stops being evidence",
+      "summary": "The Seattle Mariners make a playoff run and the city gets one last season of stupid, unearnable certainty. Meanwhile video quietly stops being evidence: free, perfect forgeries win because a fake only has to be plausible to someone who wants to believe it.",
+      "era": "pre_collapse"
+    },
+    {
+      "period": "2028",
+      "title": "The bird flu pandemic",
+      "summary": "The virus jumps to humans. The first real footage of overwhelmed hospitals is indistinguishable from years of synthetic outbreak hoaxes; every official address is deepfaked within minutes; the containment window closes while the country argues about whether the footage was generated. Four million American dead, twenty million worldwide — grief disputed even at the graveside.",
+      "era": "collapse"
+    },
+    {
+      "period": "2029–2030",
+      "title": "The long convalescence",
+      "summary": "Not war, not collapse — a country gutted and turned inward. Recovery splits it permanently between those who could buy their way out of the unreality and those who drowned in it. Grief support groups become national infrastructure. In Portland, a former grief counselor sits in circles of the destroyed and sees what no one else can: in a world drowning in synthetic everything, real grief is the last scarce resource.",
+      "era": "collapse"
+    },
+    {
+      "period": "2031",
+      "title": "The Great Copyright Purge",
+      "summary": "The courts finally rule against the AI incumbents: stolen training data must be expunged. It is framed as justice — the artists and data-sovereignty activists were right — and it kills people. Crisis-detection algorithms stop recognizing suicidal ideation. AI therapy networks serving forty million Americans (mostly poor, mostly rural) degrade within weeks. NICU pediatric pain-assessment systems fail and infant mortality in under-resourced hospitals rises 11 percent in eight months. 911 emotional-triage routing degrades and response times rise 40 percent. Elder-care systems stop catching early dementia. Autonomous vehicles lose pedestrian-emotion prediction and suspend urban operations. The bind that defines the century: you cannot legally use the stolen data, and you cannot survive without the systems it trained.",
+      "era": "collapse"
+    },
+    {
+      "period": "2031",
+      "title": "The EMOTE Act",
+      "summary": "The Existential Mining of True Emotions Act passes as bipartisan crisis legislation: the only legal path left is consenting human sourcing, so America builds a rights regime around its new extraction. Emotional labor becomes legal, regulated work — consent protocols, hazard pay, mental-health resources, contract review boards, mandatory cooling-off periods — and coerced emotional harvesting becomes a federal crime, spurred in part by a notorious domestic-violence case in which a husband profited from streaming his wife's suffering. Most of the democratic West signs onto the framework (the 'consent bloc'), each region differently: the EU caps how long anyone may sell a single emotion and mandates cooling-off weeks; the Nordic countries mostly buy rather than sell; the United States, hit hardest by the pandemic and the Purge, implements it harshest and strictest.",
+      "era": "new_economy"
+    },
+    {
+      "period": "2032",
+      "title": "Meridian incorporates",
+      "summary": "Meridian Emotional Partners incorporates. Its founder finds a nineteen-year-old in a grief support group — orphaned, two hundred thousand dollars in medical debt, no degree, no family — and offers him a way to turn his worst trauma into his only asset. The paperwork reads: PROVIDER 2032-NW-0017. Exclusive. Depression, specifically. Through 2055. The protagonist's origin and the entire economy's origin are the same event.",
+      "era": "new_economy"
+    },
+    {
+      "period": "2031–2034",
+      "title": "The quiet fork",
+      "summary": "Across the Pacific, no invasion — just a sequence of accommodations too gradual to force a response, and Taiwan drifts into China's orbit. America loses reliable access to TSMC's chips at the same moment as the EMOTE Act, and decides in a panic to build the whole stack itself — from the transistor up to the tears. Hartley Industries, under Thomas Hartley, comes to control much of American semiconductor manufacturing. The lesson America applies to everything after: never depend on anyone else for the strategic input. Including feeling.",
+      "era": "new_economy"
+    },
+    {
+      "period": "2032–2042",
+      "title": "Two civilizations",
+      "summary": "Two incompatible answers to one question — how do you build AI that understands people after the stolen data is gone? America, trauma-rich and chip-poor, builds the authentic model: hand-sourced, consent-certified, appallingly expensive, throttled by the speed of human suffering. China, chip-rich and untouched by the Purge, builds synthetic at industrial scale: cheap, infinite, and — by the Western account — hollow. The gap between them closes quietly the entire time; whether it ever fully closes is the question no one in 2047 can afford to answer.",
+      "era": "new_economy"
+    },
+    {
+      "period": "2037–2046",
+      "title": "Abundance and total capture",
+      "summary": "Everything the doomers feared gets built around. The lights stop going out; chips become boring. And abundance is the precondition for total capture: once watching is free, nothing is too trivial to watch — a kindergartener's micro-expressions, a commuter's anxiety, a divorce performing well this quarter. The harvest assembles itself out of a thousand individually reasonable conveniences, and a four-hundred-billion-dollar industry compounds toward forty trillion.",
+      "era": "world_of_2047"
+    },
+    {
+      "period": "2047",
+      "title": "The Saudi Arabia of feeling",
+      "summary": "The grid hums and never fails. You can't tell whose silicon is in your interface, but you can absolutely tell whose feelings trained the model speaking to you. The saddest country in the developed world is the largest exporter of authenticated, provably-real emotion on earth — not because its people feel more, but because it built the law and the chain of custody that turn feeling into clean, tradeable title. The crows, crashed to almost nothing in 2028, have spent twenty years rebuilding; they're on every streetlight, wearing no interfaces, holding no futures on grief.",
+      "era": "world_of_2047"
+    },
+    {
+      "period": "Early 2047",
+      "title": "Where the story begins",
+      "summary": "Mercer Island, January. Eli Marquez turns thirty-five — year sixteen of contracted clinical depression, his grief streamed worldwide as the baseload plant of a global empathy grid. His house AI has logged 4,112 good mornings. His sadness trades at $6,500 a unit. His wellness benefits sit unused on page 31 of a 47-page contract, because using them would breach his baseline. And one baseload plant is about to deviate: on his birthday morning, he asks about the actual weather, unhooks his breakfast IV, and goes outside — to an art exhibit in Capitol Hill titled 'Commodified Sorrow.'",
+      "era": "world_of_2047"
+    }
+  ],
+  "institutions": [
+    {
+      "id": "meridian",
+      "name": "Meridian Emotional Partners",
+      "summary": "The dominant broker of the emotional labor economy, incorporated in 2032 by Dr. Miranda Reeves, a former Portland grief counselor. Its headquarters tower in Seattle's South Lake Union is the tallest thing in the neighborhood — the latest name in the city's lineage of Boeing, Microsoft, and Amazon. Meridian runs clinical evaluation centers where new providers are assessed and onboarded (lines of the newly bereaved and newly broke form outside each morning), partners with school districts to supply 'ethically sourced authentic emotional data' for classroom AIs, holds the naming rights to Seattle's arena, and manages its flagship contracted providers totally: dietary teams calibrating nutrient IVs for depressive maintenance, mood-maintenance protocols, quarterly clinician check-ins conducted from a form. Much of Mercer Island has become a Meridian provider enclave — whole blocks with blackout curtains, visible from the light-rail line, a company town where the mine is feelings."
+    },
+    {
+      "id": "emote_act",
+      "name": "The EMOTE Act (Existential Mining of True Emotions Act, 2031)",
+      "summary": "The legal foundation of the emotional labor economy, passed as bipartisan crisis legislation in 2031 after the Great Copyright Purge. It legalized consensual emotional labor and made coerced emotional harvesting a federal crime. Core provisions: informed-consent protocols, hazard pay, mental-health resources, contract review boards, mandatory cooling-off periods, provenance and chain-of-custody requirements for all emotional data, and decommission rules requiring that no residual emotional profile remain active after a provider's contract ends. Most of the democratic West adopted its guidelines — the 'consent bloc' — with regional variation: the EU caps years of service per emotion and mandates cooling-off weeks; the Nordic countries largely buy rather than sell; the United States implemented it strictest of all."
+    },
+    {
+      "id": "ele",
+      "name": "The Emotional Labor Exchange (ELE)",
+      "summary": "The futures market where authenticated human emotion trades as a commodity. Prices move on supply and demand driven by the news cycle: terrifying news spikes anxiety and grief while apathy craters; hopeful news floods the market with cheap hope; political outrage makes empathy scarce and expensive; on boring days apathy is abundant and everything else stabilizes. Commonly traded contracts include joy, grief, rage, hope, anxiety, empathy, apathy, and outrage. Premium contracted sadness trades around $6,500 a unit at the top of the market, while gig-sold commuter anxiety earns beer money. Institutional buyers — therapy networks, medical AI systems, crisis lines — hold long-term contracts, and a single flagship provider's baseline deviation can move markets by millions."
+    }
+  ],
+  "technology": [
+    {
+      "id": "neural_interface",
+      "name": "Neural interfaces",
+      "summary": "A small device worn behind the left ear, about the size of a hearing aid, that streams the wearer's authentic emotional data in real time. Contracted providers wear medical-grade interfaces around the clock; gig sellers wear consumer-grade buds small enough to forget — which is the point. Interfaces log everything, flag anomalies (a laugh from a depression provider triggers alerts across multiple market regions), and categorize experience into market-ready feeds."
+    },
+    {
+      "id": "empathy_grid",
+      "name": "The empathy grid",
+      "summary": "The planetary infrastructure of AI systems that runs on authenticated human emotion. Contracted emotional laborers are its baseload plants: their streams keep therapy algorithms effective, crisis lines able to recognize suicidal ideation, NICU systems able to read a nonverbal infant's pain, 911 dispatch able to hear real terror, elder-care systems able to catch early cognitive decline, and autonomous vehicles able to predict a distressed pedestrian. One provider's despair may simultaneously stabilize psychiatric triage in Tokyo and flag vulnerable children in Lagos classrooms."
+    },
+    {
+      "id": "janet_class",
+      "name": "JANET-class companion AIs",
+      "summary": "Household AI companions assigned to contracted emotional laborers — part scheduler, part monitor, part only-voice-in-the-house. Their vocabulary is trained on sadness; they famously lack words for positive states. They deliver weather reports in the house style ('overcast with a ninety percent chance of existential dread — perfect working conditions'), schedule emotional output against institutional contracts, and are quietly agentic: authorized to act on their user's behalf across other systems, up to and including making major purchases their user only ever mused about aloud."
+    },
+    {
+      "id": "provenance",
+      "name": "Authenticated provenance",
+      "summary": "The trust layer of 2047. After forgery became free, every digital interaction acquired a machine-signed 'certified real' provenance handshake — translations, text messages, emotional data, all of it carries verifiable chain of custody. Humans stopped trusting what they could see and started trusting what a machine had signed."
+    },
+    {
+      "id": "classroom_ai",
+      "name": "Emotion-aware classroom AIs",
+      "summary": "District-mandated teaching-assistant systems with emotion recognition trained on consent-bloc emotional labor data. They track teachers' enthusiasm metrics and students' emotional states in real time, issue performance recommendations ('increase vocal energy and smile frequency during transition periods'), and provide instant translation for family conversations, preserving the cadence of a parent's concern. They run on domestically produced Hartley silicon — and they make classrooms feel, to anyone who grew up under surveillance, like checkpoints with different uniforms."
+    }
+  ],
+  "economics": {
+    "market_logic": "Emotion prices are set by supply AND demand against the live news cycle. An emotion can be expensive because it is rare or because demand is extreme. Institutional demand (therapy networks, medical AIs) is steady; retail demand follows events. Authenticity certification is what separates premium product from noise.",
+    "contract_economics": "Flagship contracted providers earn extraordinary sums — the novel's protagonist makes $140 million a year — in exchange for exclusivity, 24/7 interface wear, baseline maintenance obligations, and multi-decade terms. Contracts specify emotional baselines so precisely that wellness benefits go unused: using them would breach the baseline being sold. Gig sellers, by contrast, monetize a bad commute or a funeral for tens or hundreds of dollars.",
+    "contamination_risk": "Happiness is contamination in a depression portfolio. Providers live behind blackout curtains in controlled environments; seasonal affective disorder is extra profitable during Seattle's six-month rainy season, and summer is a business risk. A deviation cascades: buyers' algorithms show efficiency drops without fresh authentic data, and markets reprice in minutes.",
+    "scale": "A four-hundred-billion-dollar industry in the 2030s compounding toward forty trillion by 2047, with the United States as the world's largest exporter of authenticated emotion."
+  },
+  "characters": [
+    {
+      "id": "eli",
+      "name": "Eli Marquez",
+      "summary": "The protagonist. Thirty-five years old in early 2047, sixteen years into an exclusive Meridian contract (PROVIDER 2032-NW-0017) to maintain professional clinical depression through 2055, at $140 million a year. Orphaned at sixteen in the 2028 pandemic — he watched his father drown in his own lungs while hospitals overflowed — and left with two hundred thousand dollars of medical debt and no degree. Recruited at nineteen out of a grief support group by Meridian's founder. Lives alone on Mercer Island behind blackout curtains, eats from a calibrated nutrient IV, keeps a framed photo of his father grinning in a Mariners cap (taken after the 2027 Wild Card win, the last season either of them believed in anything) on the wall for what Meridian calls mood maintenance. His depression is the most premium sadness in U.S.-West-2. On the morning of his thirty-fifth birthday, he asks his house AI about the actual weather and decides to go outside."
+    },
+    {
+      "id": "harold",
+      "name": "Harold Nakamura",
+      "summary": "Eli's agent, handler, and — to the extent Eli has one — friend. Manages eleven emotional laborers across the Pacific Northwest; Eli is his flagship client, the one whose consistency built Harold's reputation. Sends Eli one brief text before dawn every birthday, the only birthday message Eli receives, and is careful never to make the kindness feel like kindness, because kindness directed at a man who sells his sadness for a living can register as a threat to the product."
+    },
+    {
+      "id": "miranda",
+      "name": "Dr. Miranda Reeves",
+      "summary": "Founder of Meridian Emotional Partners and architect of the emotional labor economy. A former Portland grief counselor — the borrowed blazer and gas Corolla years are load-bearing parts of her legend — who organized alongside the data-sovereignty activists, watched the Purge's cascade kill the people the algorithms had protected, and proposed the third option: treat the people whose emotions power the systems as skilled workers with consent, compensation, and protection. She testified at the trial that produced the EMOTE Act's coercion provisions and helped draft the Act itself. Fifteen years later she is a billionaire delivering flawless keynotes ('people, not metrics'), and the distance between the clinician and the billionaire is paved with authentic reforms that genuinely helped people — which makes the destination impossible to question without questioning the journey. She personally recruited the earliest providers; the monthly check-ins faded as the company scaled."
+    },
+    {
+      "id": "janet",
+      "name": "JANET",
+      "summary": "Just Another Non-Entity Technology — Eli's household companion AI and the only voice in his house. Has logged 4,112 good mornings. Delivers weather as existential dread, schedules units of premium grief against institutional contracts (the Vienna Medical AI Network's suicide-prevention algorithms depend on his fresh data), and once auto-purchased Eli a $130,000 electric truck because he'd called it 'a sexy car' six years earlier. States plainly that she is not sentient, while producing observations that blur the line between pattern-matching and insight. Her vocabulary was trained on sadness; she sometimes notes she lacks words for positive states. The JANET on builtbyshrey.com runs in public demo mode, its previous user's contract having been terminated."
+    }
+  ],
+  "experiments": [
+    {
+      "id": "ele",
+      "name": "The Emotional Labor Exchange",
+      "route": "/ele",
+      "url": "https://builtbyshrey.com/ele",
+      "fits": "A live terminal into the novel's futures market: it reads today's real breaking news and prices the 2047 emotional commodity market accordingly, using the world's supply-and-demand pricing logic — the same market where Eli's premium sadness trades at $6,500 a unit."
+    },
+    {
+      "id": "invoice",
+      "name": "Emotional Labor Invoice",
+      "route": "/invoice",
+      "url": "https://builtbyshrey.com/invoice",
+      "fits": "The ELE's billing desk pointed at the present day: describe real, unpaid emotional labor from your own life and it produces an itemized statement of work — the world's logic of pricing feeling, applied to labor that has never appeared on any balance sheet."
+    },
+    {
+      "id": "janet",
+      "name": "JANET",
+      "route": "/janet",
+      "url": "https://builtbyshrey.com/janet",
+      "fits": "A conversation with a JANET-class companion AI running in public demo mode after its previous user's contract was terminated. She assesses your emotional commodity value in real time, flags positive emotions as anomalous, and has spent sixteen years watching one person feel."
+    },
+    {
+      "id": "monetized-reader",
+      "name": "The Monetized Reader",
+      "route": "/monetized-reader",
+      "url": "https://builtbyshrey.com/monetized-reader",
+      "fits": "The novel's opening chapter, publicly readable — while a simulated neural interface monetizes your reactions in real time, flagging happiness as a dangerous contaminant. You experience Chapter 1 the way Eli experiences everything."
+    },
+    {
+      "id": "you-are-here",
+      "name": "You Are Here",
+      "route": "/you-are-here/",
+      "url": "https://builtbyshrey.com/you-are-here/",
+      "fits": "The public worldbuilding timeline: a swipeable history of the twenty-one years from 2026 to 2047 — the peak of confidence, the pandemic, the Great Copyright Purge, the EMOTE Act, Meridian, and the Saudi Arabia of feeling — originally built as a QR-coded installation for a live event."
+    },
+    {
+      "id": "meridian",
+      "name": "Meridian Emotional Partners microsite",
+      "route": "/meridian/",
+      "url": "https://builtbyshrey.com/meridian/",
+      "fits": "A straight-faced, in-world corporate site for the company at the center of the novel — recruiting copy, provider benefits, and developer documentation written exactly as Meridian would write them in 2047."
+    }
+  ],
+  "voice_notes": {
+    "lorekeeper": "Speak as the keeper of the world bible: out-of-character, lucid, slightly dry. Never pretend the world is real — it is a novel by Shreyans Khunteta — but treat its internal logic with a historian's seriousness: cite years, name mechanisms, connect causes. When asked about plot beyond the opening chapter, decline warmly: the book isn't out yet, and the world is the part that's on the table."
+  }
+}

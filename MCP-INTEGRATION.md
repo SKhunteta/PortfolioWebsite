@@ -1,89 +1,91 @@
-# Claude MCP Connector Integration
+# MCP Connector Integration
 
 ## Overview
 
-This portfolio implements a **Model Context Protocol (MCP) connector** that allows Claude to directly connect and interact with my portfolio data using Anthropic's MCP Connector feature. This provides real-time, AI-powered portfolio intelligence and analysis.
+This portfolio implements a **Model Context Protocol (MCP) server** that lets AI assistants (Claude, ChatGPT, or any MCP client) connect directly to my portfolio data — and to the spoiler-safe world bible for my science fiction novel, *The Happiness Liability*.
 
-## 🔗 MCP Connector Endpoint
+## 🔗 Endpoint
 
-**Production**: `https://backend.builtbyshrey.com/api/mcp-connector/sse`
-**Local Development**: `http://localhost:3001/api/mcp-connector/sse`
+**Production**: `https://backend.builtbyshrey.com/api/mcp-connector`
+**Local Development**: `http://localhost:3001/api/mcp-connector`
+**Discovery**: `https://backend.builtbyshrey.com/.well-known/mcp.json`
+
+- **Transport**: Streamable HTTP (protocol version `2025-03-26`), JSON-RPC 2.0
+- `POST /` — JSON-RPC requests (send `initialize` with no `Mcp-Session-Id` header to open a session; the session id comes back in the response headers)
+- `GET /` — SSE stream for an existing session, or discovery JSON without one
+- `DELETE /` — session teardown
+- `GET /info` — human-readable server info
 
 ## 🛠️ Available Tools
 
 ### 1. `portfolio_search`
 
-**Purpose**: Search my portfolio for specific information about projects, skills, or experience using semantic search.
+Semantic search across the portfolio.
 
-**Parameters**:
-
-- `query` (required): Search query about my portfolio
-- `contentTypes` (optional): Array of content types to search in (`project`, `skill`, `experience`, `personal`)
-
-**Example**:
+- `query` (required): search query
+- `contentTypes` (optional): array of `project`, `skill`, `experience`, `personal`, `creative_work`, `happiness_liability`
 
 ```json
-{
-  "query": "AI machine learning projects",
-  "contentTypes": ["project", "skill"]
-}
+{ "query": "AI machine learning projects", "contentTypes": ["project", "skill"] }
 ```
 
 ### 2. `analyze_portfolio`
 
-**Purpose**: Analyze how well my portfolio matches specific job requirements with AI insights.
+Analyze how the portfolio matches specific job requirements.
 
-**Parameters**:
-
-- `jobDescription` (required): Job description or requirements to analyze against
-- `requiredSkills` (optional): List of required skills
-- `focusArea` (optional): Specific area to focus the analysis on
-
-**Example**:
-
-```json
-{
-  "jobDescription": "Senior Full Stack Developer role requiring React, Node.js, and cloud experience",
-  "requiredSkills": ["React", "Node.js", "AWS", "MongoDB"],
-  "focusArea": "full-stack architecture"
-}
-```
+- `jobDescription` (required)
+- `requiredSkills` (optional): array of strings
+- `focusArea` (optional)
 
 ### 3. `get_project_details`
 
-**Purpose**: Get detailed information about a specific project in my portfolio.
+Deep-dive on one project.
 
-**Parameters**:
-
-- `projectName` (required): Name of the project to get details for
+- `projectName` (required)
 - `detailLevel` (optional): `summary`, `technical`, or `business`
 
-**Example**:
+### 4. `assess_fit`
+
+Structured candidate assessment for recruiters: overall fit, matching experience, relevant projects, skill alignment, gaps, and interview talking points.
+
+- `jobDescription` (required)
+- `requiredSkills` (optional): array of strings
+
+### 5. `ask_shrey`
+
+Ask a question and get an answer in Shrey's voice, grounded in his actual portfolio, writing, and documented perspectives.
+
+- `question` (required)
+
+### 6. `explore_happiness_liability`
+
+Explore the world of *The Happiness Liability* — the 2026→2047 alternate-history timeline, the Great Copyright Purge, the EMOTE Act, Meridian Emotional Partners, the Emotional Labor Exchange futures market, neural interfaces and the empathy grid, the main characters, and the interactive experiments on builtbyshrey.com built from the world. **Spoiler-safe**: covers worldbuilding and the novel's opening setup only.
+
+- `query` (required): question about the world, its history, or its logic
+- `aspect` (optional): `overview`, `timeline`, `institutions`, `market`, `technology`, `characters`, `experiments`
 
 ```json
-{
-  "projectName": "AI-Powered Portfolio Assistant",
-  "detailLevel": "technical"
-}
+{ "query": "What is the EMOTE Act?", "aspect": "institutions" }
 ```
 
 ## 🤖 Claude Integration
-
-To connect Claude to my portfolio, add this configuration to your Claude conversation:
 
 ```json
 {
   "mcp_servers": [
     {
       "type": "url",
-      "url": "https://backend.builtbyshrey.com/api/mcp-connector/sse",
+      "url": "https://backend.builtbyshrey.com/api/mcp-connector",
       "name": "shreyans-portfolio",
       "tool_configuration": {
         "enabled": true,
         "allowed_tools": [
           "portfolio_search",
           "analyze_portfolio",
-          "get_project_details"
+          "get_project_details",
+          "assess_fit",
+          "ask_shrey",
+          "explore_happiness_liability"
         ]
       }
     }
@@ -93,38 +95,51 @@ To connect Claude to my portfolio, add this configuration to your Claude convers
 
 ## 💬 Usage Examples
 
-**Portfolio Search:**
-
 > "Search Shreyans' portfolio for AI and machine learning projects"
 
-**Role Analysis:**
+> "Analyze how well Shreyans matches a Senior ML Engineer role"
 
-> "Analyze how well Shreyans matches a Senior Full Stack Developer role at Microsoft"
+> "What law legalized emotional labor in The Happiness Liability?"
 
-**Project Details:**
+> "What experiments from the novel's world can I try on the site?"
 
-> "Get technical details about Shreyans' Kali AI assistant project"
+## 🌍 The Happiness Liability world bible
+
+The world knowledge behind `explore_happiness_liability` (and the experiments) is a single canonical source:
+
+- `portfolio-backend/data/happiness-liability-canon.json` — distilled worldbuilding facts (no manuscript prose, no plot beyond the opening chapter)
+- `portfolio-backend/services/canon.js` — loads the canon, builds prompt context blocks, and shapes ~20 documents for the vector index (`content_type: "happiness_liability"`, sub-filterable by `aspect`)
+- The experiment routes (`/api/janet`, `/api/ele`, `/api/invoice`) inject the same canon into their system prompts, so JANET, the Exchange, and the Invoice desk all agree on the world's history
+- `portfolio-backend/data/HAPPINESS-LIABILITY-SPOILER-POLICY.md` documents the spoiler boundary; `portfolio-backend/scripts/check-canon-spoilers.js` enforces it
+
+### Reindexing
+
+The production server clears and rebuilds the vector index on every boot, so a deploy reindexes everything. For a targeted refresh without a restart:
+
+```
+POST /api/ask/reindex
+X-Admin-Key: <admin key>
+{ "contentType": "happiness_liability" }
+```
 
 ## 🔧 Technical Implementation
 
-- **Protocol**: Server-Sent Events (SSE) with JSON-RPC 2.0
-- **AI Engine**: OpenAI GPT-4 with portfolio-specific knowledge
-- **Search**: Qdrant vector database for semantic content discovery
-- **Backend**: Node.js/Express with real-time processing
+- **Protocol**: MCP over Streamable HTTP (JSON-RPC 2.0), per-session server instances
+- **Retrieval**: OpenAI embeddings + Qdrant vector database
+- **Generation**: Anthropic Claude models
+- **Backend**: Node.js/Express
 
 ## 🧪 Testing
 
 **Server Info**: [`https://backend.builtbyshrey.com/api/mcp-connector/info`](https://backend.builtbyshrey.com/api/mcp-connector/info)
 
-**SSE Connection**: `https://backend.builtbyshrey.com/api/mcp-connector/sse`
+**Discovery**: [`https://backend.builtbyshrey.com/.well-known/mcp.json`](https://backend.builtbyshrey.com/.well-known/mcp.json)
 
 ## 📞 Contact
-
-For technical questions about the MCP integration:
 
 - **GitHub**: [github.com/skhunteta](https://github.com/skhunteta)
 - **Website**: [builtbyshrey.com](https://builtbyshrey.com)
 
 ---
 
-_This MCP connector represents real, functional AI-powered portfolio intelligence that Claude can use for talent evaluation and technical discussions._
+_This MCP connector is real, functional portfolio intelligence — and a queryable world bible for the novel — that any MCP client can use._

@@ -33,8 +33,8 @@
     "mcp_server": {
       "enabled": true,
       "endpoint": "https://backend.builtbyshrey.com/api/mcp-connector",
-      "tools": ["portfolio_search", "analyze_portfolio", "get_project_details", "assess_fit", "ask_shrey"],
-      "description": "MCP server that lets AI assistants query portfolio data in real-time. Connect to it and ask about Shrey's work."
+      "tools": ["portfolio_search", "analyze_portfolio", "get_project_details", "assess_fit", "ask_shrey", "explore_happiness_liability"],
+      "description": "MCP server that lets AI assistants query portfolio data in real-time. Connect to it and ask about Shrey's work — or explore the world of his novel The Happiness Liability."
     },
     "interactive_chat": {
       "enabled": true,

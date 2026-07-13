@@ -60,7 +60,7 @@ const About = () => {
             <p>
               I also run the Seattle AI Book Club at Stoup Brewing in Capitol
               Hill, founded the COVID Response Collective during the pandemic,
-              and am completing a science fiction novella about algorithmic
+              and have completed a science fiction novel about algorithmic
               capitalism in near-future Seattle.
             </p>
           </div>
