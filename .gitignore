@@ -40,3 +40,4 @@ temp/
 
 # Claude Code agent worktrees
 .claude/worktrees/
+scripts/gtfs-cache.zip

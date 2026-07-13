@@ -1,0 +1,42 @@
+name: Refresh Link GTFS data
+
+# Regenerates link-map/src/data/network.json and
+# portfolio-backend/data/linkmap-schedule.json from Sound Transit's live GTFS
+# feed and commits them to the given branch. Run this whenever the Link
+# network changes (new stations, new lines) — the feed is the source of truth.
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Branch to run on and commit to
+        required: true
+        default: main
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: node scripts/build-link-network.mjs
+      - name: Commit regenerated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add link-map/src/data/network.json portfolio-backend/data/linkmap-schedule.json
+          if git diff --cached --quiet; then
+            echo "Data unchanged; nothing to commit."
+          else
+            git commit -m "Refresh Link GTFS data from Sound Transit feed"
+            git push origin HEAD:${{ inputs.branch }}
+          fi
