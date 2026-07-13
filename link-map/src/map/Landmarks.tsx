@@ -8,7 +8,9 @@
 // the storybook register), merged into ONE geometry / ONE draw call, and
 // painted with the same watercolor wash + fog contract as every other
 // normal-blended layer. depthWrite stays false (the train model remains the
-// scene's only depth writer); soft self-overlap reads as pooled pigment.
+// scene's only depth writer). A fixed key light from the northwest sky
+// shades each face so the massing reads SOLID — blocks with dimension, not
+// stains — while the wash keeps the hand-painted surface.
 
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
@@ -21,10 +23,12 @@ import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGl
 const VERT = /* glsl */ `
   ${FOG_VARYINGS_VERT}
   varying float vY;
+  varying vec3 vNormal;
   void main() {
     vec4 world = modelMatrix * vec4(position, 1.0);
     vWorld = world.xz;
     vY = world.y;
+    vNormal = normal; // geometry is baked in world space; the mesh never moves
     vec4 mv = viewMatrix * world;
     vFogDepth = -mv.z;
     gl_Position = projectionMatrix * mv;
@@ -35,16 +39,21 @@ const FRAG = /* glsl */ `
   ${NOISE_GLSL}
   ${FOG_VARYINGS_FRAG}
   varying float vY;
+  varying vec3 vNormal;
   uniform vec3 uColor;
   uniform float uOpacity;
   void main() {
     float wash = wcFbm(vWorld * 0.8 + vY * 2.1); // pigment mottle per face
-    vec3 c = uColor * (0.75 + 0.5 * wash);
-    // Watercolor pools at the base; the page shows through near the top.
-    c *= mix(1.12, 0.85, smoothstep(0.0, 0.9, vY));
+    // A fixed key light from the northwest sky: sunlit and shadowed faces
+    // diverge, and flat silhouettes become solid massing.
+    vec3 n = normalize(vNormal);
+    float key = 0.5 + 0.5 * max(0.0, dot(n, normalize(vec3(-0.5, 0.8, -0.45))));
+    vec3 c = uColor * key * (0.85 + 0.3 * wash);
+    // Watercolor still pools faintly at the base.
+    c *= mix(1.08, 0.94, smoothstep(0.0, 0.9, vY));
     // Snowline — only Rainier and the Olympics climb past ~1.6 km.
     c = mix(c, vec3(0.62, 0.7, 0.8), smoothstep(1.6, 3.6, vY) * 0.85);
-    float a = uOpacity * (0.85 + 0.3 * wash);
+    float a = uOpacity * (0.94 + 0.12 * wash);
     gl_FragColor = vec4(mix(c, uFog, fogFactor()), a);
   }
 `;
