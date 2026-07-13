@@ -153,6 +153,9 @@ body {
   opacity: 0;
   transform: translateY(8px);
   transition: opacity 0.55s ease, transform 0.55s ease;
+  /* The station's real signature color runs down the card's spine. */
+  border-left: 2px solid rgba(143, 161, 186, 0.25);
+  padding-left: 13px;
 }
 .station-panel-open {
   opacity: 1;
@@ -165,10 +168,36 @@ body {
   text-transform: uppercase;
   text-shadow: 0 1px 16px rgba(4, 8, 16, 0.9);
 }
+.station-panel-swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 9px;
+  vertical-align: 1px;
+  box-shadow: 0 0 8px currentColor;
+}
 .station-panel-sub {
   margin-top: 5px;
   font-size: 10.5px;
   letter-spacing: 0.14em;
+  color: #7f93b0;
+  text-shadow: 0 1px 14px rgba(4, 8, 16, 0.85);
+}
+/* What the real station looks like — the researched identity line. */
+.station-panel-look {
+  margin: 11px 0 0;
+  font-size: 11.5px;
+  line-height: 1.7;
+  letter-spacing: 0.04em;
+  color: #c3d2e6;
+  text-shadow: 0 1px 16px rgba(4, 8, 16, 0.95);
+}
+.station-panel-art {
+  margin-top: 9px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: #7f93b0;
   text-shadow: 0 1px 14px rgba(4, 8, 16, 0.85);
 }
@@ -234,6 +263,14 @@ body {
   }
   .station-panel-whisper {
     -webkit-line-clamp: 3;
+  }
+  /* The look line joins the card on phones too — clamp so look + whisper +
+     arrivals still fit above the badge without pushing off-screen. */
+  .station-panel-look {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }
 

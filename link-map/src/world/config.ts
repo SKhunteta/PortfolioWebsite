@@ -65,6 +65,13 @@ export const CONFIG = {
     radiusKm: 0.08,
     pulseScale: 1.55, // a swell, not a supernova — 2.1 read as a ping-pong ball
     hoverRadiusPx: 28,
+    // The identity layer: each station's watercolor seal (a pigment blot at
+    // the surface in the station's researched accent) and, for underground
+    // halls, the faint light shaft sinking from the seal to the platform.
+    sealRadiusKm: 0.19,
+    orbLiftKm: 0.03, // orb center rides just above its rail height
+    shaftRadiusKm: 0.035,
+    submergedRailY: -0.05, // rail below this = underground platform bucket
   },
   camera: {
     // The drift's home is downtown (Westlake sits at the projection origin),

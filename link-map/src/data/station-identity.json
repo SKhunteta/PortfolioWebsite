@@ -1,0 +1,228 @@
+{
+  "anglelake": {
+    "structure": "elevated",
+    "accent": "#5b8fbe",
+    "look": "A wave of 7,500 blue-anodized aluminum panels rolls over the terminus; a cloud of acrylic discs shimmers.",
+    "art": "wave canopy · Brooks + Scarpa"
+  },
+  "beaconhill": {
+    "structure": "underground",
+    "accent": "#0047ab",
+    "look": "Reached only by elevator, 160 feet down: glowing sea-creature forms drift beneath a cobalt ceiling.",
+    "art": "“Space Forms” · Dan Corson"
+  },
+  "bellevuedowntown": {
+    "structure": "at-grade",
+    "accent": "#c26d4b",
+    "look": "Terracotta-and-glass hub at the tunnel mouth by City Hall, a glowing 20-ft cyclorama drum overhead.",
+    "art": "cyclorama lightbox · rotating artists"
+  },
+  "belred": {
+    "structure": "at-grade",
+    "accent": "#7c93a8",
+    "look": "Street-median platforms on Spring Blvd, a 460-ft hand-crafted stainless railing casting waterlike shadows.",
+    "art": "artist railing · Patrick Marold"
+  },
+  "capitolhill": {
+    "structure": "underground",
+    "accent": "#d0342c",
+    "look": "Two pink-and-yellow Navy jets kiss over the deep platform; entrances glow with red murals and a green wall.",
+    "art": "“Jet Kiss” · Mike Ross"
+  },
+  "columbiacity": {
+    "structure": "at-grade",
+    "accent": "#8a6b3f",
+    "look": "Twin garden-themed platforms in the MLK median, marked by a 35-foot bronze shovel cast with world plants.",
+    "art": "“Global Garden Shovel” · Victoria Fuller"
+  },
+  "downtownredmond": {
+    "structure": "elevated",
+    "accent": "#1f8a99",
+    "look": "Elevated island platform above Cleveland Street, ringed by two dozen jewel-toned flat-glass mosaic murals.",
+    "art": "glass mosaic murals · six artists, Tieton Mosaic"
+  },
+  "eastmain": {
+    "structure": "at-grade",
+    "accent": "#ddd6c6",
+    "look": "Low butterfly-roofed canopies beside Surrey Downs, a trackside lacework fence of mid-century motifs.",
+    "art": "art fence · Celeste Cooning"
+  },
+  "federalwaydowntown": {
+    "structure": "elevated",
+    "accent": "#63c5d8",
+    "look": "The line's glassy southern terminus, dichroic fins arching over tall entrances in shifting rainbow light.",
+    "art": "“Prismatic” · Catherine Widgery"
+  },
+  "internationaldistrictchinatown": {
+    "structure": "at-grade",
+    "accent": "#c0281c",
+    "look": "Open-air platforms below a red-trimmed plaza, its walls lined with folded stainless-steel origami panels.",
+    "art": "origami panels · Sonya Ishii"
+  },
+  "judkinspark": {
+    "structure": "at-grade",
+    "accent": "#a3752c",
+    "look": "Open-air platforms sunk in the I-90 trench, watched over by a 50-ft bronze-halftone teenage Hendrix.",
+    "art": "“Crosstown Traffic” · Hank Willis Thomas"
+  },
+  "kentdesmoines": {
+    "structure": "elevated",
+    "accent": "#c98e4a",
+    "look": "Aerial hall spanning S 236th, steel canopy and glass clerestory glowing over tree-ring etched art glass.",
+    "art": "“Cambium” · RE:site Studio"
+  },
+  "lynnwoodcitycenter": {
+    "structure": "elevated",
+    "accent": "#f0a070",
+    "look": "Peach-canopied elevated terminus with blue towers and a 30-foot neon hummingbird glowing over the plaza.",
+    "art": "“City Hummingbird” · Claudia Fitch"
+  },
+  "marymoorvillage": {
+    "structure": "at-grade",
+    "accent": "#6a994e",
+    "look": "Island platform and plaza at the park's edge; seed-like silver airships float in the garage atrium.",
+    "art": "“Air Grove” · Nova Jiang"
+  },
+  "mercerisland": {
+    "structure": "at-grade",
+    "accent": "#56789b",
+    "look": "Glassy stacked pavilion wedged between I-90 lanes, suspended oars and boats recalling lake crossings.",
+    "art": "“Stroke” & “Crossing” · Beliz Brother"
+  },
+  "mountbaker": {
+    "structure": "elevated",
+    "accent": "#9fc131",
+    "look": "Twin elevated platforms above Rainier Avenue, lit by Kemper's blown-glass sunrise of green and yellow.",
+    "art": "“Seattle Sunrise” · Guy Kemper"
+  },
+  "mountlaketerrace": {
+    "structure": "elevated",
+    "accent": "#4a7c59",
+    "look": "Treetop-height platform astride 236th St, wrapped in shifting lenticular forest panels in earth greens.",
+    "art": "“Re-Forestation” · Kipp Kobayashi"
+  },
+  "northgate": {
+    "structure": "elevated",
+    "accent": "#4aa495",
+    "look": "A thin cantilevered roof floats over the open-air platform; dragonfly wings shimmer across 100 feet of glass.",
+    "art": "“Darner's Prism” · Mary Ann Peters"
+  },
+  "othello": {
+    "structure": "at-grade",
+    "accent": "#ef8a38",
+    "look": "Median platforms in NewHolly where cut-steel dancers whirl and a stacked totem balances a Creamsicle.",
+    "art": "“Rainier Valley Haiku” · Roger Shimomura"
+  },
+  "overlakevillage": {
+    "structure": "at-grade",
+    "accent": "#3fae5a",
+    "look": "Side platforms tight against SR 520, reached by a louvered bridge of green-phosphor pixel forest.",
+    "art": "“Verdant” · Leo Saul Berk"
+  },
+  "pioneersquare": {
+    "structure": "underground",
+    "accent": "#c08573",
+    "look": "A tall granite vault beneath the old city — gray at one end, pink at the other — hung with artifact clocks.",
+    "art": "artifact clocks · Ericson & Ziegler"
+  },
+  "rainierbeach": {
+    "structure": "at-grade",
+    "accent": "#b3bcc2",
+    "look": "A lone island platform on MLK where a brushed-aluminum dragonfly hovers and cabled pear halves recall orchards.",
+    "art": "“Dragonfly” · Darlene Nguyen-Ely"
+  },
+  "redmondtechnology": {
+    "structure": "at-grade",
+    "accent": "#d7dde3",
+    "look": "Center platform amid Microsoft's campus, under the white fabric peaks of an 1,100-ft canopied bridge."
+  },
+  "roosevelt": {
+    "structure": "underground",
+    "accent": "#cfa83a",
+    "look": "Brick-and-glass headhouses, a restored neon radio sign, and a gold stepped pyramid over a daylit descent.",
+    "art": "“Building Blocks” · R & R Studios"
+  },
+  "seatacairport": {
+    "structure": "elevated",
+    "accent": "#7c8fa0",
+    "look": "A 60-foot aerial island platform under steel trusses; stainless sails spin above the bridge to the terminal.",
+    "art": "“Flying Sails” · Werner Klotz"
+  },
+  "shorelinenorth185th": {
+    "structure": "at-grade",
+    "accent": "#a6d422",
+    "look": "Open-air side platforms sunk in a trench beside I-5, where neon-green ferns of Octavia's Garden take root.",
+    "art": "“Octavia's Garden” · Mary Lucking"
+  },
+  "shorelinesouth148th": {
+    "structure": "elevated",
+    "accent": "#2f6bce",
+    "look": "Elevated platform bookended by blue elevator towers and yellow kiosks, with bright-blue Flow cisterns below.",
+    "art": "“Flow” · Buster Simpson"
+  },
+  "sodo": {
+    "structure": "at-grade",
+    "accent": "#96502a",
+    "look": "At-grade platforms on the old busway, gated by oversize rusted tools as warehouse murals slide past.",
+    "art": "“Made in USA” · Michael Davis"
+  },
+  "southbellevue": {
+    "structure": "elevated",
+    "accent": "#7a8b2e",
+    "look": "High island platform over Bellevue Way, 900 ft of gold-and-green hexagon panels echoing Mercer Slough.",
+    "art": "“Photo Synthesis” · Vicki Scuri"
+  },
+  "springdistrict": {
+    "structure": "at-grade",
+    "accent": "#9e4a3a",
+    "look": "Open trench platforms below brick-lined streets; a cut-metal dragon and phoenix span the walls.",
+    "art": "dragon & phoenix murals · Louie Gong"
+  },
+  "stadium": {
+    "structure": "at-grade",
+    "accent": "#69be28",
+    "look": "A wide open-air island platform built for game-day crowds, in the shadow of Lumen Field and T-Mobile Park."
+  },
+  "starlake": {
+    "structure": "elevated",
+    "accent": "#d94f70",
+    "look": "Low embankment platforms at the forest edge by I-5, wrapped in bright flower-printed glass panels.",
+    "art": "“Gather” · Tory & Eroyn Franklin"
+  },
+  "symphony": {
+    "structure": "underground",
+    "accent": "#d92b12",
+    "look": "Stainless steel and glass in high-tech lines, where the red LED glyphs of Electric Lascaux blink overhead.",
+    "art": "“Electric Lascaux” · Robert Teeple"
+  },
+  "tukwilainternationalblvd": {
+    "structure": "elevated",
+    "accent": "#93b8b1",
+    "look": "A white winged roof atop a 51-foot hilltop platform, glass walls open to Mt. Baker and the airport tower.",
+    "art": "winged roof · Hewitt Architects"
+  },
+  "udistrict": {
+    "structure": "underground",
+    "accent": "#f18a21",
+    "look": "Black granite entries; orange and blue light tubes trace 85 feet down to a white corrugated vault.",
+    "art": "“Fragment Brooklyn” · Lead Pencil Studio"
+  },
+  "universityofwashington": {
+    "structure": "underground",
+    "accent": "#38a3b5",
+    "look": "A glass wedge by Husky Stadium sinks 100 feet through a chamber of backlit geologic glyphs glowing aqua.",
+    "art": "“Subterraneum” · Leo Saul Berk"
+  },
+  "westlake": {
+    "structure": "underground",
+    "accent": "#b4593a",
+    "look": "Carved terra-cotta vines and leaves spill down pale Art Deco stone, rooting Westlake Park into the tunnel.",
+    "art": "carved terra-cotta tiles · Jack Mackie"
+  },
+  "wilburton": {
+    "structure": "elevated",
+    "accent": "#d0342c",
+    "look": "Tall guideway over I-405 with bold red canopies and a 40-ft mirrored X column that borrows the sky.",
+    "art": "“Four Corners Extruded” · Phillip K. Smith III"
+  }
+}
