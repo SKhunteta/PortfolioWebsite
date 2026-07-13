@@ -1,0 +1,96 @@
+:root {
+  --hud-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+body {
+  overflow: hidden;
+  font-family: var(--hud-mono);
+  -webkit-font-smoothing: antialiased;
+}
+
+.hud-title {
+  position: fixed;
+  top: max(18px, env(safe-area-inset-top));
+  left: max(22px, env(safe-area-inset-left));
+  color: #c7d4e4;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 3.5s ease;
+}
+.hud-title h1 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+}
+.hud-title p {
+  margin: 6px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: #6d7d96;
+}
+.hud-settled {
+  opacity: 0.32;
+}
+
+.hud-badge {
+  position: fixed;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #8fa1ba;
+  user-select: none;
+}
+.hud-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #5a6a85;
+}
+.hud-badge-live .hud-dot {
+  background: #58e2a0;
+  box-shadow: 0 0 8px #58e2a088;
+  animation: hud-pulse 3s ease-in-out infinite;
+}
+.hud-badge-simulated .hud-dot {
+  background: #e8bd6d;
+  box-shadow: 0 0 8px #e8bd6d66;
+  animation: hud-pulse 3s ease-in-out infinite;
+}
+.hud-badge-resting .hud-dot {
+  background: #46536b;
+}
+
+@keyframes hud-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.78); opacity: 0.7; }
+}
+
+.hud-chase {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: max(18px, env(safe-area-inset-bottom));
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #7f93b0;
+  user-select: none;
+  pointer-events: none;
+}
+
+.hud-debug {
+  position: fixed;
+  top: max(18px, env(safe-area-inset-top));
+  right: max(20px, env(safe-area-inset-right));
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #6d7d96;
+  user-select: none;
+}

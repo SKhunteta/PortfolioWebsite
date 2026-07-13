@@ -1,0 +1,48 @@
+// Baked tuning. Leva-tune in dev, then move the numbers here.
+
+export const CONFIG = {
+  poll: {
+    intervalMs: 10_000, // matches the backend cache TTL
+    backoffMs: [10_000, 30_000, 60_000],
+  },
+  tween: {
+    vNominalKmS: 0.02, // ~70 km/h cruising
+    vMaxKmS: 0.045, // catch-up ceiling (~2x nominal)
+    jitterIgnoreKm: 0.05, // GPS noise: ignore small backward deltas
+    snapWindowKm: 2.5, // nearest-s search half-window around the hint
+    rejectSnapKm: 0.5, // a vehicle this far off-shape is not on this line
+    teleportKm: 3, // beyond this (tab resume), fast-forward instead
+  },
+  ribbon: {
+    widthKm: 0.16,
+    y: { "at-grade": 0.02, elevated: 0.32, tunnel: -0.22 } as Record<string, number>,
+    intensity: { "at-grade": 1.0, elevated: 1.12, tunnel: 0.4 } as Record<string, number>,
+  },
+  train: {
+    spriteKm: 0.9, // glow sprite footprint
+    coreIntensity: 2.6, // HDR core, over the 1.05 bloom threshold
+    dwellStationKm: 0.12, // station pulses when a train is this close
+  },
+  trail: {
+    sampleEveryS: 0.12,
+    widthKm: 0.09,
+    intensity: 0.55,
+  },
+  station: {
+    radiusKm: 0.11,
+    pulseScale: 2.1,
+    hoverRadiusPx: 28,
+  },
+  camera: {
+    driftRadiusKm: 30,
+    driftElevation: 0.92, // radians above the horizon
+    driftRadSec: 0.02, // slow orbit
+    driftBreathKm: 2.2,
+    idleResumeS: 30,
+    minDistance: 3,
+    maxDistance: 90,
+    chaseOffsetKm: { back: 2.6, up: 1.6 },
+    chaseLerp: 2.2, // per-second exponential approach
+    doubleTapPx: 48, // train pick radius in screen space
+  },
+} as const;
