@@ -128,6 +128,14 @@ const Footer = () => {
                 </a>
               </li>
               <li>
+                <a
+                  href="/floating-world/"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  The Floating World
+                </a>
+              </li>
+              <li>
                 <Link
                   to="/playground"
                   className="text-accent hover:text-white transition-colors"

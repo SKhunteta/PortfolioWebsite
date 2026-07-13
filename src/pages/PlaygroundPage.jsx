@@ -157,6 +157,25 @@ const STATIC_STANDALONE = [
       ctaText: "#05070d",
     },
   },
+  {
+    id: "floating-world",
+    title: "The Floating World",
+    kindLabel: "WebGL visualization",
+    tagline: "Seattle's light rail as a moving ukiyo-e print.",
+    description:
+      "The Living Link, repainted as a Japanese woodblock print: the same real trains on the same true geometry, gliding across warm washi paper — Prussian-blue water woven with seigaiha wave-fans, vermilion hanko seals for stations, kasumi mist drifting over the ink-drawn city, and Rainier standing in for Fuji on the horizon. Live when the feed breathes, honest simulation when it sleeps.",
+    tags: ["three.js", "realtime", "ukiyo-e"],
+    cta: "Enter the floating world",
+    href: "/floating-world/",
+    urlLabel: "builtbyshrey.com/floating-world",
+    theme: {
+      bg: "#f0e4c8",
+      text: "#33261a",
+      muted: "#8a7355",
+      accent: "#c73e2a",
+      ctaText: "#f7efdc",
+    },
+  },
 ];
 
 // Static in-world artifacts live under public/ (not React routes), so they
