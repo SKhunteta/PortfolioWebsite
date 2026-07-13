@@ -120,6 +120,14 @@ const Footer = () => {
                 </a>
               </li>
               <li>
+                <a
+                  href="/link-map/"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  The Link, Alive
+                </a>
+              </li>
+              <li>
                 <Link
                   to="/playground"
                   className="text-accent hover:text-white transition-colors"

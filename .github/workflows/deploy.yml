@@ -26,6 +26,13 @@ jobs:
       - run: npm ci
       - run: npx vitest run
       - run: npm run build
+      # Backend linkmap suites (node --test). Scoped to the linkmap tests:
+      # two older backend suites have pre-existing failures unrelated to
+      # deploys, so they don't gate Pages.
+      - run: npm ci
+        working-directory: portfolio-backend
+      - run: node --test test/linkmap-sim.test.js test/linkmap-feed.test.js
+        working-directory: portfolio-backend
       # Ketu-9 is a standalone Vite project served at /ketu-9/ alongside the site.
       - run: npm ci
         working-directory: ketu-9
@@ -38,6 +45,12 @@ jobs:
       - run: npm run build
         working-directory: meow-9
       - run: mkdir -p dist/meow-9 && cp -r meow-9/dist/. dist/meow-9/
+      # The Link, Alive is a standalone Vite project served at /link-map/.
+      - run: npm ci
+        working-directory: link-map
+      - run: npm run build
+        working-directory: link-map
+      - run: mkdir -p dist/link-map && cp -r link-map/dist/. dist/link-map/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist

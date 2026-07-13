@@ -96,4 +96,12 @@
     <priority>0.6</priority>
   </url>
 
+  <!-- The Link, Alive (real-time generative map of Seattle's light rail) -->
+  <url>
+    <loc>https://builtbyshrey.com/link-map/</loc>
+    <lastmod>2026-07-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
 </urlset> 
