@@ -86,5 +86,5 @@ export function Labels() {
     sprite.visible = fade.current > 0.01;
   });
 
-  return <sprite ref={spriteRef} renderOrder={6} material={material} visible={false} />;
+  return <sprite ref={spriteRef} renderOrder={11} material={material} visible={false} />;
 }

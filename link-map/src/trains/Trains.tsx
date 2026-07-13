@@ -16,22 +16,25 @@ import { CLOCK, tickClock } from "../world/clock";
 import { LIVE, lineGlow } from "../world/palettes";
 import { sunPhase } from "../world/sun";
 import { updatePalette } from "../world/palettes";
+import { TRAIN_MODEL } from "./TrainModel";
 
 export const MAX_TRAINS = 48;
 
 const VERT = /* glsl */ `
   attribute vec3 aColor;
   attribute float aPulse;
+  attribute float aScale;
   varying vec3 vColor;
   varying vec2 vUv;
   varying float vPulse;
-  uniform float uScale;
+  varying float vScale;
   void main() {
     vColor = aColor;
     vPulse = aPulse;
+    vScale = aScale;
     vUv = uv;
     vec4 mv = modelViewMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
-    mv.xy += (uv - 0.5) * uScale;
+    mv.xy += (uv - 0.5) * aScale;
     gl_Position = projectionMatrix * mv;
   }
 `;
@@ -39,14 +42,22 @@ const VERT = /* glsl */ `
 const FRAG = /* glsl */ `
   uniform float uIntensity;
   uniform float uCore;
+  uniform float uHaloDim;
   varying vec3 vColor;
   varying vec2 vUv;
   varying float vPulse;
+  varying float vScale;
   void main() {
     vec2 p = vUv * 2.0 - 1.0;
     float r2 = dot(p, p);
-    float core = exp(-r2 * 16.0);
-    float halo = exp(-r2 * 3.2) * 0.32;
+    // Kill the quad silhouette — a billboard seen at a glancing angle would
+    // otherwise read as a hard diamond under bloom.
+    float edge = 1.0 - smoothstep(0.45, 0.85, sqrt(r2));
+    // Up close the model carries the identity; the hot core steps aside and
+    // the halo tightens so no quad geometry ever reads.
+    float nearDim = mix(0.25, 1.0, smoothstep(0.18, 0.4, vScale));
+    float core = exp(-r2 * 16.0) * nearDim;
+    float halo = exp(-r2 * 4.5) * 0.32 * uHaloDim * edge * mix(0.55, 1.0, nearDim);
     float a = clamp(core + halo, 0.0, 1.0);
     vec3 c = vColor * (core * uCore * vPulse + halo * 1.6) * uIntensity;
     gl_FragColor = vec4(c, a);
@@ -60,15 +71,17 @@ export function Trains() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
 
-  const { colorAttr, pulseAttr } = useMemo(() => {
+  const { colorAttr, pulseAttr, scaleAttr } = useMemo(() => {
     const colorAttr = new THREE.InstancedBufferAttribute(new Float32Array(MAX_TRAINS * 3), 3);
     colorAttr.setUsage(THREE.DynamicDrawUsage);
     const pulseAttr = new THREE.InstancedBufferAttribute(new Float32Array(MAX_TRAINS), 1);
     pulseAttr.setUsage(THREE.DynamicDrawUsage);
-    return { colorAttr, pulseAttr };
+    const scaleAttr = new THREE.InstancedBufferAttribute(new Float32Array(MAX_TRAINS), 1);
+    scaleAttr.setUsage(THREE.DynamicDrawUsage);
+    return { colorAttr, pulseAttr, scaleAttr };
   }, []);
 
-  useFrame((_, rawDt) => {
+  useFrame(({ camera }, rawDt) => {
     // The single clock tick and palette update for the whole app — Trains
     // is the one always-mounted frame driver.
     tickClock(rawDt);
@@ -77,6 +90,7 @@ export function Trains() {
     const mesh = meshRef.current;
     if (!mesh) return;
 
+    const m = CONFIG.train.model;
     let i = 0;
     for (const train of TRAINS.values()) {
       if (i >= MAX_TRAINS) break;
@@ -90,6 +104,20 @@ export function Trains() {
       // Dwelling trains settle into a slower, deeper breath.
       const breathe = train.dwelling || train.vEst < 0.002 ? 0.75 + 0.25 * CLOCK.breath : 1.0;
       pulseAttr.setX(i, breathe);
+
+      // Toy scale: exaggerated at drift distance, easing toward real scale
+      // as THIS camera closes on THIS train (a chased train shrinks while
+      // the background fleet stays storybook-sized).
+      const dx = camera.position.x - scratch.x;
+      const dy = camera.position.y - train.y;
+      const dz = camera.position.z - scratch.z;
+      const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      const t = Math.min(1, Math.max(0, (dist - m.nearCamKm) / (m.farCamKm - m.nearCamKm)));
+      const eased = t * t * (3 - 2 * t);
+      const targetL = m.nearLenKm + (m.farLenKm - m.nearLenKm) * eased;
+      train.modelL += (targetL - train.modelL) * Math.min(1, CLOCK.dt * m.scaleLerpPerS);
+      scaleAttr.setX(i, train.modelL * 0.8); // halo footprint tracks the toy
+      TRAIN_MODEL.write(i, train.dir, train.sRendered, train.y, train.modelL);
 
       sampleTrail(
         train,
@@ -106,6 +134,8 @@ export function Trains() {
     mesh.instanceMatrix.needsUpdate = true;
     colorAttr.needsUpdate = true;
     pulseAttr.needsUpdate = true;
+    scaleAttr.needsUpdate = true;
+    TRAIN_MODEL.commit(i);
 
     if (materialRef.current) {
       materialRef.current.uniforms.uIntensity.value = LIVE.trainIntensity;
@@ -116,21 +146,22 @@ export function Trains() {
     <instancedMesh
       ref={meshRef}
       args={[undefined, undefined, MAX_TRAINS]}
-      renderOrder={5}
+      renderOrder={10}
       frustumCulled={false}
     >
       <planeGeometry args={[1, 1]}>
         <primitive object={colorAttr} attach="attributes-aColor" />
         <primitive object={pulseAttr} attach="attributes-aPulse" />
+        <primitive object={scaleAttr} attach="attributes-aScale" />
       </planeGeometry>
       <shaderMaterial
         ref={materialRef}
         vertexShader={VERT}
         fragmentShader={FRAG}
         uniforms={{
-          uScale: { value: CONFIG.train.spriteKm },
           uIntensity: { value: 1 },
           uCore: { value: CONFIG.train.coreIntensity },
+          uHaloDim: { value: CONFIG.train.model.spriteDim },
         }}
         transparent
         depthWrite={false}

@@ -5,8 +5,11 @@ import { PROFILE } from "./world/device";
 import { LIVE } from "./world/palettes";
 import { GroundPlane } from "./map/GroundPlane";
 import { Water } from "./map/Water";
+import { Parks } from "./map/Parks";
+import { Roads } from "./map/Roads";
 import { LineRibbons } from "./map/LineRibbons";
 import { Trains } from "./trains/Trains";
+import { TrainModel } from "./trains/TrainModel";
 import { Trails } from "./trains/Trails";
 import { Stations } from "./stations/Stations";
 import { Labels } from "./stations/Labels";
@@ -61,11 +64,14 @@ export default function App() {
         camera={{ fov: PROFILE.baseFov, near: 0.1, far: 500, position: [0, 26, 18] }}
       >
         <AtmosphereDriver />
+        <Parks />
         <Water />
         <GroundPlane />
+        <Roads />
         <LineRibbons />
         <Stations />
         <Trains />
+        <TrainModel />
         <Trails />
         <Labels />
         <CameraRig />

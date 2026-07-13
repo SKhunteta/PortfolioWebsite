@@ -9,27 +9,44 @@ on a second monitor and the city breathes at them.
 
 ## The piece (canon — respect this)
 
-- Trains are **glowing particles** riding the real GTFS shape geometry;
-  each drags an additive trail whose length is proportional to speed by
-  construction (fixed time-window position history — fast trains cover more
-  ground per window). Trains glide, NEVER teleport: position is arc-length
-  `s` on the shape, rate-chased toward each poll target (`trains/tween.ts`
-  is the contract).
+- The city itself is a **storybook watercolor** (the Dreambeans register):
+  real OSM geography — Puget Sound with its islands, Lake Washington with
+  Mercer Island, parks as soft under-washes, major streets as hand-inked
+  strokes (faint gold filaments at night, pale ink by day) — painted
+  in-shader over paper grain, shorelines breathing ~30 m on world-space
+  noise. Baked by `scripts/build-link-basemap.mjs` (repo root) into
+  `src/data/basemap.json`; data © OpenStreetMap (ODbL) and the HUD credits
+  it whenever it's on screen. The hand-authored `map/waterData.ts` rings
+  are the permanent fallback when the file is the placeholder stub.
+- Every train is a **toy S700** — a code-built, three-section articulated
+  Link LRV that bends along the real curve, each section aligned to its own
+  chord, in real S700 proportions (slim: width 0.10·L, height 0.13·L). The
+  livery is the actual identity kit, painted on a shared canvas texture:
+  navy roofline and nose cap, big glass band, teal-over-green double wave
+  on a navy skirt, ST bumper mark, amber destination sign. Lit windows stay
+  under the bloom line; an HDR headlight leads and the trailing cab shows
+  red taillights (per-instance aLead; face regions classify by LOCAL
+  normal — world normals rotate with heading and once swapped the sides
+  onto the nose). The model IS the
+  position marker at every zoom: storybook-large at drift distance, easing
+  toward real scale as the camera closes (`modelL`, per train). Its glow
+  halo and speed-proportional trail stay underneath.
+- Trains glide, NEVER teleport: position is arc-length `s` on the shape,
+  rate-chased toward each poll target (`trains/tween.ts` is the contract);
+  the trail is a fixed time-window position history, so length ∝ speed by
+  construction.
 - Stations are quiet orbs that **pulse on dwell** (train within ~120 m of
   their arc mark), swelling on the global breath. Names appear only on
   hover/tap, uppercase monospace, canvas-drawn (`stations/Labels.tsx`) —
   no external font fetches, ever.
-- The map is a flattened diagram: soft-edged ribbon strips, no basemap, no
-  labels beyond stations. **Tunnels render below the translucent ground and
-  are seen through it** — that submerged dimness is painter's order, not
-  depth trickery (order table lives in `map/GroundPlane.tsx`). Elevated
-  segments ride high and slightly brighter. Grade data is an artistic
-  annotation (`scripts/data/link-grade-annotations.json` at the repo root);
-  GTFS carries none.
-- Water — Lake Washington with Mercer Island, Lake Union, Elliott Bay, the
-  Duwamish, Lake Sammamish — is hand-authored simplified dark mass
-  (`map/waterData.ts`), barely visible, purely for a local's instant
-  orientation. Artistic license, not cartography.
+- The map stays a flattened diagram — no tiles, no labels beyond stations.
+  **Tunnels render below the translucent paper and are seen through it** —
+  that submerged dimness is painter's order, not depth trickery (the order
+  table lives in `map/GroundPlane.tsx`). Elevated segments ride high and
+  slightly brighter. Grade data is an artistic annotation
+  (`scripts/data/link-grade-annotations.json` at the repo root); GTFS
+  carries none. Parks render UNDER the paper so the same trick dims them
+  into washes.
 - **Honesty is part of the art**: the corner badge says live / simulated /
   resting, and it never lies. Live = fresh GTFS-RT. Simulated = service is
   scheduled but the feed is unavailable, so the backend synthesizes
@@ -64,11 +81,27 @@ on a second monitor and the city breathes at them.
   polls see the same train ids gliding forward. The tween depends on this;
   don't add randomness server-side.
 - Everything scene-side is transparent + `depthWrite: false` and ordered by
-  `renderOrder` (0 water → 6 labels). Breaking this shatters the
+  `renderOrder` (0 parks → 11 labels; full table in `map/GroundPlane.tsx`),
+  with ONE exception: the train-model materials write depth (renderOrder 9)
+  so the three sections self-occlude. Breaking the ordering shatters the
   tunnel-through-ground illusion.
-- Instanced everything: one InstancedMesh for trains, one for stations, ONE
-  preallocated buffer for all trails (drawRange trims). `frustumCulled =
-  false` on instanced meshes — spread instances mis-cull.
+- Raw ShaderMaterials do NOT get scene fog: any normal-blended layer must
+  mix toward `LIVE.fog` itself and additive layers must MULTIPLY by the fog
+  factor (`map/watercolorGlsl.ts` has the helpers), or the horizon breaks
+  at drift distance.
+- NEVER use useFrame priorities — R3F v8 disables auto-render when any
+  priority > 0 exists. Trains.tsx's zero-priority useFrame is the single
+  driver; TrainModel receives its transforms through the imperative
+  `TRAIN_MODEL.write/commit` registry, not its own frame loop.
+- Instanced everything: glow sprites, station orbs, train cabs (×2/train),
+  mid sections, headlights — and ONE preallocated buffer for all trails
+  (drawRange trims), ONE merged geometry per road class, per water layer.
+  Whole scene ≈ 21 draw calls on every tier. `frustumCulled = false` on
+  instanced meshes — spread instances mis-cull.
+- Toy scale is per-object and camera-relative (trains `modelL`, station
+  orbs' `toyScale`): a chased train eases toward real scale while the
+  background fleet stays storybook-sized. Don't introduce global scale
+  factors.
 - Keep expensive things behind `PROFILE` (`world/device.ts`): phone /
   tablet / desktop on two independent axes (TIER = budget, INPUT_TOUCH =
   ergonomics), `?tier=` override, iPadOS maxTouchPoints check. Composer

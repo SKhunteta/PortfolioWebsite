@@ -8,6 +8,7 @@
 
 import { create } from "zustand";
 import type { DirectionGeometry } from "../map/network";
+import { CONFIG } from "../world/config";
 
 export type Mode = "live" | "simulated" | "resting" | "connecting";
 
@@ -19,6 +20,7 @@ export interface TrainState {
   sRendered: number;
   vEst: number; // km/s, smoothed — drives trail length and chase framing
   y: number; // smoothed height (dips through tunnels)
+  modelL: number; // toy-scale model length (km), eased per camera distance
   lastPollT: number; // CLOCK.t when sTarget last moved
   pollGapS: number;
   missedPolls: number;
@@ -47,6 +49,7 @@ export function makeTrain(
     sRendered: sKm,
     vEst: 0,
     y: 0.02,
+    modelL: CONFIG.train.model.farLenKm,
     lastPollT: 0,
     pollGapS: 10,
     missedPolls: 0,

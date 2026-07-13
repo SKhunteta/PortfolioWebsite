@@ -1,4 +1,4 @@
-name: Refresh Link GTFS data
+name: Refresh Link data (GTFS + basemap)
 
 # Regenerates link-map/src/data/network.json and
 # portfolio-backend/data/linkmap-schedule.json from Sound Transit's live GTFS
@@ -29,11 +29,16 @@ jobs:
           cache: npm
       - run: npm ci
       - run: node scripts/build-link-network.mjs
+      # Overpass has bad days; a basemap failure must never block the GTFS
+      # refresh. The committed placeholder keeps the app booting regardless.
+      - name: Bake OSM basemap
+        continue-on-error: true
+        run: node scripts/build-link-basemap.mjs
       - name: Commit regenerated data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add link-map/src/data/network.json portfolio-backend/data/linkmap-schedule.json
+          git add link-map/src/data/network.json portfolio-backend/data/linkmap-schedule.json link-map/src/data/basemap.json
           if git diff --cached --quiet; then
             echo "Data unchanged; nothing to commit."
           else

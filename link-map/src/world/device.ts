@@ -36,6 +36,7 @@ export interface DeviceProfile {
   trailSeconds: number; // position-history window per train (length ∝ speed)
   trailSegments: number; // ring-buffer samples per train
   baseFov: number; // vertical FOV at 16:9 — fovForAspect widens for portrait
+  noiseOctaves: number; // watercolor fbm octaves (shader ALU budget)
 }
 
 const PROFILES: Record<Tier, DeviceProfile> = {
@@ -45,6 +46,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     trailSeconds: 30,
     trailSegments: 24,
     baseFov: 52,
+    noiseOctaves: 2,
   },
   tablet: {
     dpr: [1, 2],
@@ -52,6 +54,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     trailSeconds: 40,
     trailSegments: 48,
     baseFov: 48,
+    noiseOctaves: 3,
   },
   desktop: {
     dpr: [1, 2],
@@ -59,6 +62,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     trailSeconds: 45,
     trailSegments: 96,
     baseFov: 46,
+    noiseOctaves: 3,
   },
 };
 

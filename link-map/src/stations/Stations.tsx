@@ -47,13 +47,20 @@ export function Stations() {
     return [...byId.values()];
   }, []);
 
-  useFrame(() => {
+  useFrame(({ camera }) => {
     const mesh = meshRef.current;
     if (!mesh) return;
 
     for (let i = 0; i < slots.length; i++) {
       const slot = slots[i];
-      let near = false;
+      // Like the trains, stations are toy-scaled: quiet dots at drift
+      // distance would be boulders up close — ease them down as the camera
+      // approaches this particular orb.
+      const dx = camera.position.x - slot.x;
+      const dz = camera.position.z - slot.z;
+      const dist = Math.sqrt(dx * dx + camera.position.y * camera.position.y + dz * dz);
+      const toyScale = Math.min(1, Math.max(0.12, dist / 30));
+      let dwelling = false;
       for (const train of TRAINS.values()) {
         for (const mark of slot.marks) {
           if (
@@ -61,22 +68,23 @@ export function Stations() {
             mark.directionId === train.dir.directionId &&
             Math.abs(train.sRendered - mark.sKm) < CONFIG.train.dwellStationKm
           ) {
-            near = true;
+            dwelling = true;
             break;
           }
         }
-        if (near) break;
+        if (dwelling) break;
       }
 
-      slot.pulse += ((near ? 1 : 0) - slot.pulse) * Math.min(1, CLOCK.dt * 2.5);
+      slot.pulse += ((dwelling ? 1 : 0) - slot.pulse) * Math.min(1, CLOCK.dt * 2.5);
       const swell = 1 + slot.pulse * (CONFIG.station.pulseScale - 1) * (0.6 + 0.4 * CLOCK.breath);
-      const r = CONFIG.station.radiusKm * swell;
+      const r = CONFIG.station.radiusKm * swell * toyScale;
       matrix.makeScale(r, r, r);
       matrix.setPosition(slot.x, 0.05, slot.z);
       mesh.setMatrixAt(i, matrix);
 
-      // Quiet by default; a dwell pushes the disc just over the bloom line.
-      const glow = 0.55 + slot.pulse * (0.9 + 0.5 * CLOCK.breath);
+      // Quiet by default; a dwell pushes the orb just over the bloom line —
+      // capped, or up close the node goes supernova.
+      const glow = Math.min(1.15, 0.55 + slot.pulse * (0.9 + 0.5 * CLOCK.breath));
       color.copy(LIVE.station).multiplyScalar(glow);
       mesh.setColorAt(i, color);
     }
@@ -101,14 +109,14 @@ export function Stations() {
     <instancedMesh
       ref={meshRef}
       args={[undefined, undefined, slots.length]}
-      renderOrder={4}
+      renderOrder={7}
       frustumCulled={false}
       onPointerMove={onMove}
       onPointerOut={() => !INPUT_TOUCH && setHoverStation(null)}
       onClick={onClick}
     >
-      {/* Low-poly orbs, not discs — they read from every camera angle. */}
-      <sphereGeometry args={[1, 12, 8]} />
+      {/* Orbs, not discs — they read from every camera angle. */}
+      <sphereGeometry args={[1, 20, 14]} />
       <meshBasicMaterial transparent depthWrite={false} blending={THREE.AdditiveBlending} />
     </instancedMesh>
   );

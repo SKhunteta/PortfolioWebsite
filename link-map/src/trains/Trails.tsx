@@ -121,7 +121,7 @@ export function Trails() {
   });
 
   return (
-    <mesh geometry={geometry} renderOrder={5} frustumCulled={false}>
+    <mesh geometry={geometry} renderOrder={8} frustumCulled={false}>
       <shaderMaterial
         ref={materialRef}
         vertexShader={VERT}

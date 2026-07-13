@@ -40,6 +40,15 @@ export function installHandles() {
       const ids = [...TRAINS.keys()];
       useUi.getState().setFollowTrain(ids[index] ?? null);
     },
+    followId: (id: string) => useUi.getState().setFollowTrain(id),
     release: () => useUi.getState().setFollowTrain(null),
+    // For the smoke harness: pick a train on a known curve deterministically.
+    trainList: () =>
+      [...TRAINS.values()].map((t) => ({
+        id: t.id,
+        lineId: t.lineId,
+        directionId: t.dir.directionId,
+        s: t.sRendered,
+      })),
   };
 }
