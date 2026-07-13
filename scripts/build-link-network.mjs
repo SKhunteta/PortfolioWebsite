@@ -480,7 +480,17 @@ export function processGtfs(files, options = {}) {
       });
 
       // Headway bands per service-day bucket from first-stop departures.
-      const byBucket = new Map();
+      // Feeds carry several overlapping service_ids per bucket (week-specific
+      // calendars); merging their departures would double-count trips and
+      // halve the apparent headway. One service_id — the busiest — is the
+      // canonical day.
+      const byBucket = new Map(); // bucket -> service_id -> departures[]
+      const addDeparture = (bucket, serviceId, minutes) => {
+        if (!byBucket.has(bucket)) byBucket.set(bucket, new Map());
+        const perService = byBucket.get(bucket);
+        if (!perService.has(serviceId)) perService.set(serviceId, []);
+        perService.get(serviceId).push(minutes);
+      };
       for (const t of dirTrips) {
         const sts = stopTimesByTrip.get(t.trip_id);
         if (!sts?.length) continue;
@@ -493,30 +503,25 @@ export function processGtfs(files, options = {}) {
             : bucket
               ? [bucket]
               : [];
-        if (!buckets.length) continue;
-        for (const bk of buckets) {
-          if (!byBucket.has(bk)) byBucket.set(bk, []);
-          byBucket.get(bk).push(dep / 60);
-        }
+        for (const bk of buckets) addDeparture(bk, t.service_id, dep / 60);
       }
       if (!byBucket.size) {
         warnings.push(
           `route ${lineId} dir ${directionId}: no classifiable service days; assuming weekday`
         );
-        const all = dirTrips
-          .map((t) => stopTimesByTrip.get(t.trip_id)?.[0])
-          .filter(Boolean)
-          .map((st) => parseGtfsTime(st.departure_time))
-          .filter((v) => v != null)
-          .map((v) => v / 60);
-        byBucket.set("weekday", all);
+        for (const t of dirTrips) {
+          const st = stopTimesByTrip.get(t.trip_id)?.[0];
+          const dep = st ? parseGtfsTime(st.departure_time) : null;
+          if (dep != null) addDeparture("weekday", t.service_id, dep / 60);
+        }
       }
-      for (const [bucket, deps] of byBucket) {
+      for (const [bucket, perService] of byBucket) {
+        const canonical = [...perService.values()].sort((a, b) => b.length - a.length)[0];
         service.push({
           lineId,
           directionId: Number(directionId),
           dayBucket: bucket,
-          bands: deriveHeadwayBands(deps),
+          bands: deriveHeadwayBands(canonical),
         });
       }
     }

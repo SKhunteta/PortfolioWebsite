@@ -269,6 +269,39 @@ describe("processGtfs", () => {
     expect(alpha.z).toBeLessThan(0); // north of origin renders at -z
   });
 
+  it("does not double-count departures across overlapping service_ids", () => {
+    // Duplicate the weekday service under a second service_id: same trips,
+    // same times. The derived headway must not halve.
+    const fixture = {
+      ...FIXTURE,
+      "calendar.txt":
+        FIXTURE["calendar.txt"] + "\nWK2,1,1,1,1,1,0,0,20260101,20261231",
+      "trips.txt":
+        FIXTURE["trips.txt"] +
+        "\n1LINE,WK2,T1B,0,SH0,Gamma\n1LINE,WK2,T2B,0,SH0,Gamma\n1LINE,WK2,T3B,0,SH0,Gamma",
+      "stop_times.txt":
+        FIXTURE["stop_times.txt"] +
+        [
+          "",
+          "T1B,08:00:00,08:00:30,S1P,1",
+          "T1B,08:04:00,08:04:30,S2P,2",
+          "T1B,08:08:00,08:08:00,S3P,3",
+          "T2B,08:20:00,08:20:30,S1P,1",
+          "T2B,08:24:00,08:24:30,S2P,2",
+          "T2B,08:28:00,08:28:00,S3P,3",
+          "T3B,08:40:00,08:40:30,S1P,1",
+          "T3B,08:44:00,08:44:30,S2P,2",
+          "T3B,08:48:00,08:48:00,S3P,3",
+        ].join("\n"),
+    };
+    const { schedule } = processGtfs(fixture, { gradeAnnotations: GRADES });
+    const wk = schedule.service.find(
+      (s) => s.dayBucket === "weekday" && s.directionId === 0
+    );
+    const morning = wk.bands.find((b) => b.startMin <= 480 && b.endMin > 480);
+    expect(morning.headwayMin).toBe(20); // 3 trips in the hour, not 6
+  });
+
   it("emits the shared projection in meta", () => {
     const { network } = build();
     expect(network.meta.projection).toEqual(PROJECTION);
