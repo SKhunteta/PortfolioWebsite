@@ -72,6 +72,10 @@ interface UiState {
   fetchedAt: string | null;
   hoverStationId: string | null;
   followTrainId: string | null;
+  // Chase target for the ambient SeaTac fleet: an index into Airliners' FLIGHTS
+  // (the airborne jets), or null. Mutually exclusive with followTrainId — the
+  // camera rides one thing at a time.
+  followPlaneIndex: number | null;
   // Ambient arrival captions ("Capitol Hill · 1 Line to Lynnwood") — set on
   // dwell EVENTS only (Stations.tsx rate-limits), never per-frame. The key
   // restarts the CSS fade when the same text repeats.
@@ -82,6 +86,7 @@ interface UiState {
   setMode: (mode: Mode, fetchedAt: string | null) => void;
   setHoverStation: (id: string | null) => void;
   setFollowTrain: (id: string | null) => void;
+  setFollowPlane: (index: number | null) => void;
   setCaption: (text: string | null) => void;
   setObserving: (observing: boolean) => void;
 }
@@ -91,11 +96,14 @@ export const useUi = create<UiState>((set) => ({
   fetchedAt: null,
   hoverStationId: null,
   followTrainId: null,
+  followPlaneIndex: null,
   caption: null,
   observing: false,
   setMode: (mode, fetchedAt) => set({ mode, fetchedAt }),
   setHoverStation: (hoverStationId) => set({ hoverStationId }),
-  setFollowTrain: (followTrainId) => set({ followTrainId }),
+  // Picking a train releases any plane chase, and vice versa — one rider.
+  setFollowTrain: (followTrainId) => set({ followTrainId, followPlaneIndex: null }),
+  setFollowPlane: (followPlaneIndex) => set({ followPlaneIndex, followTrainId: null }),
   setCaption: (text) =>
     set((s) => (text ? { caption: { text, key: (s.caption?.key ?? 0) + 1 } } : { caption: null })),
   setObserving: (observing) => set({ observing }),

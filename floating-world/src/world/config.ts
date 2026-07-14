@@ -141,6 +141,11 @@ export const CONFIG = {
     maxDistance: 90,
     // Close enough that the toy S700 fills the frame; speed pulls it back.
     chaseOffsetKm: { back: 0.7, up: 0.26 },
+    // The jetliner ride: farther back and a touch higher than the train chase
+    // (the toy 737 is longer and moves faster), offset behind the nose along
+    // the flight path so the camera sits in the plane's wake as it climbs,
+    // banks and touches down.
+    planeChaseOffsetKm: { back: 1.35, up: 0.34 },
     chaseLerp: 2.2, // per-second exponential approach
     doubleTapPx: 48, // train pick radius in screen space
   },

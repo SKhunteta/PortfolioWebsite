@@ -47,6 +47,7 @@ function introText(mode: Mode, trainCount: number): string | null {
 export function Hud() {
   const mode = useUi((s) => s.mode);
   const following = useUi((s) => s.followTrainId);
+  const followingPlane = useUi((s) => s.followPlaneIndex);
   const caption = useUi((s) => s.caption);
   const observing = useUi((s) => s.observing);
   // Speaks only after a real fetch (or a ?weather= pin) — see world/weather.
@@ -119,7 +120,11 @@ export function Hud() {
         </div>
       )}
 
-      {following && <div className="hud-chase">following · esc to let go</div>}
+      {(following || followingPlane !== null) && (
+        <div className="hud-chase">
+          {followingPlane !== null ? "riding the jet" : "following"} · esc to let go
+        </div>
+      )}
 
       {/* The optional day-runner: sweeps the print through a whole Seattle day
           and back, on demand. Off by default — the piece stays keyed to the
