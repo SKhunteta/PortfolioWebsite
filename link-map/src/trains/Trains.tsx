@@ -17,6 +17,8 @@ import { LIVE, lineGlow } from "../world/palettes";
 import { sunPhase } from "../world/sun";
 import { updatePalette } from "../world/palettes";
 import { easeWeather, applyWeather } from "../world/weather";
+import { pushShadow } from "../world/shadows";
+import { stampStain, decayStain } from "../world/stainField";
 import { TRAIN_MODEL } from "./TrainModel";
 
 export const MAX_TRAINS = 48;
@@ -91,6 +93,9 @@ export function Trains() {
     updatePalette(phase);
     easeWeather(CLOCK.dt);
     applyWeather(phase);
+    // The paper dries a little each frame (#21) — the single driver owns the
+    // one decay pass; the per-train stamps below refill it.
+    decayStain(CLOCK.dt);
 
     const mesh = meshRef.current;
     if (!mesh) return;
@@ -103,6 +108,14 @@ export function Trains() {
       pointAt(train.dir, train.sRendered, scratch);
       matrix.makeTranslation(scratch.x, train.y, scratch.z);
       mesh.setMatrixAt(i, matrix);
+
+      // A soft wash-shadow under the paper: an elevated train floats a big
+      // faint one offset southeast, a tunnel train almost none (world/shadows).
+      pushShadow(scratch.x, scratch.z, train.y, train.modelL * 0.32);
+
+      // Warm the paper along the rail as the train passes — it dries slowly,
+      // so the busy trunk stays lived-in and the sleepy tails crisp (#21).
+      stampStain(scratch.x, scratch.z, CLOCK.dt);
 
       const glow = lineGlow(train.lineId, LINE_BY_ID.get(train.lineId)?.color ?? "#5fe3b0");
       colorAttr.setXYZ(i, glow.r, glow.g, glow.b);

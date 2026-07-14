@@ -53,6 +53,13 @@ export const WEATHER: Levels = { rain: 0, snow: 0, fog: 0, overcast: 0 };
 
 const target: Levels = { rain: 0, snow: 0, fog: 0, overcast: 0 };
 
+// Marine warmth (#14): a 0..1 read of the REAL air temperature — the season and
+// warm-water proxy that gates the Sound's bioluminescent shimmer. Honest like
+// the rest: 0 until a real fetch succeeds, so a blocked feed never invents a
+// warm night. Eased alongside the weather levels.
+export const MARINE = { warmth: 0 };
+let warmthTarget = 0;
+
 // What the HUD whispers. Only rain/fog/snow speak; clear and cloudy stay
 // silent — the palette already says everything a gray day needs to.
 const LABELS: Partial<Record<WeatherKind, string>> = {
@@ -112,7 +119,7 @@ export function setWeatherOverride(kind: WeatherKind | null) {
 
 const URL_CURRENT =
   "https://api.open-meteo.com/v1/forecast?latitude=47.6062&longitude=-122.3321" +
-  "&current=weather_code,cloud_cover";
+  "&current=weather_code,cloud_cover,temperature_2m";
 const FETCH_EVERY_MS = 10 * 60_000;
 
 let lastFetched: WeatherKind | null = null;
@@ -123,12 +130,16 @@ async function fetchWeather() {
     const res = await fetch(URL_CURRENT);
     if (!res.ok) return; // silence is honest — the paper stays as it was
     const json = (await res.json()) as {
-      current?: { weather_code?: number; cloud_cover?: number };
+      current?: { weather_code?: number; cloud_cover?: number; temperature_2m?: number };
     };
     const code = json.current?.weather_code;
     if (typeof code !== "number") return;
     lastFetched = classify(code, json.current?.cloud_cover ?? 0);
     lastFetchAt = Date.now();
+    // Warm Puget Sound nights (~15 °C air and up) are when the dinoflagellates
+    // bloom; map the real temperature into the biolum gate.
+    const temp = json.current?.temperature_2m;
+    if (typeof temp === "number") warmthTarget = Math.max(0, Math.min(1, (temp - 12) / 10));
     if (!override) setKind(lastFetched);
   } catch {
     // Offline / blocked: keep whatever we last knew. Never invent weather.
@@ -164,6 +175,7 @@ export function easeWeather(dt: number) {
   WEATHER.snow += (target.snow - WEATHER.snow) * k;
   WEATHER.fog += (target.fog - WEATHER.fog) * k;
   WEATHER.overcast += (target.overcast - WEATHER.overcast) * k;
+  MARINE.warmth += (warmthTarget - MARINE.warmth) * k;
 }
 
 // Scratch colors for the snow/fog lerps — never handed to materials.

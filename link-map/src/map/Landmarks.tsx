@@ -18,6 +18,8 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { projectLatLng } from "./network";
 import { LIVE } from "../world/palettes";
+import { alpenglow } from "../world/sun";
+import { pushShadow } from "../world/shadows";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
 const VERT = /* glsl */ `
@@ -42,6 +44,7 @@ const FRAG = /* glsl */ `
   varying vec3 vNormal;
   uniform vec3 uColor;
   uniform float uOpacity;
+  uniform float uAlpenglow; // 0..1 twilight flush (world/sun.ts)
   void main() {
     float wash = wcFbm(vWorld * 0.8 + vY * 2.1); // pigment mottle per face
     // A fixed key light from the northwest sky: sunlit and shadowed faces
@@ -55,11 +58,39 @@ const FRAG = /* glsl */ `
     // Watercolor still pools faintly at the base.
     c *= mix(1.08, 0.94, smoothstep(0.0, 0.9, vY));
     // Snowline — only Rainier and the Olympics climb past ~1.6 km.
-    c = mix(c, vec3(0.62, 0.7, 0.8), smoothstep(1.6, 3.6, vY) * 0.85);
+    float snow = smoothstep(1.6, 3.6, vY);
+    c = mix(c, vec3(0.62, 0.7, 0.8), snow * 0.85);
+    // Alpenglow: at real sunrise/sunset the high snow flushes pink-gold while
+    // the city below still sits in shadow. Scales with the snow mask and the
+    // twilight signal, and leans a touch harder on the sun-facing slopes so
+    // the flush has a direction. Stays under the bloom line (normal blend).
+    float sunFace = 0.5 + 0.5 * dot(n, normalize(vec3(-0.7, 0.18, 0.55)));
+    c = mix(c, vec3(1.0, 0.63, 0.55), snow * uAlpenglow * (0.3 + 0.45 * sunFace));
     float a = uOpacity * (0.94 + 0.12 * wash);
     gl_FragColor = vec4(mix(c, uFog, fogFactor()), a);
   }
 `;
+
+// The notable shadow-casters (#41): the tall downtown and Bellevue towers,
+// the Needle, the Great Wheel out over the water, the stadiums, the Spheres
+// and Gas Works. [lat, lng, footprint radius km, height km] — pushed into the
+// wash-shadow queue each frame so the skyline grounds itself on the paper.
+export const LANDMARK_SHADOWS: [number, number, number, number][] = [
+  [47.6045, -122.3305, 0.18, 1.5], // Columbia Center
+  [47.6106, -122.3348, 0.14, 1.3], // Rainier Square
+  [47.6082, -122.3369, 0.15, 1.18], // 1201 Third
+  [47.6103, -122.332, 0.13, 1.1], // Two Union Square
+  [47.6067, -122.3327, 0.13, 1.02], // F5 Tower
+  [47.6019, -122.3318, 0.08, 0.72], // Smith Tower
+  [47.6205, -122.3493, 0.14, 0.96], // Space Needle
+  [47.6061, -122.3426, 0.11, 0.26], // the Great Wheel, over the water
+  [47.5952, -122.3316, 0.22, 0.2], // Lumen Field
+  [47.5914, -122.3325, 0.24, 0.16], // T-Mobile Park
+  [47.6156, -122.3389, 0.12, 0.13], // the Amazon Spheres
+  [47.645, -122.3352, 0.1, 0.24], // Gas Works drums
+  [47.6155, -122.1953, 0.13, 0.9], // Bellevue 600
+  [47.617, -122.2015, 0.13, 0.85], // Lincoln Square North
+];
 
 /** A footprint-anchored box: base sits on the paper at (lat, lng). */
 function tower(lat: number, lng: number, w: number, h: number, d: number, yaw = 0) {
@@ -235,12 +266,24 @@ function buildGeometry(): THREE.BufferGeometry {
 export function Landmarks() {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const geometry = useMemo(buildGeometry, []);
+  const shadowCasters = useMemo(
+    () =>
+      LANDMARK_SHADOWS.map(([lat, lng, foot, h]) => {
+        const { x, z } = projectLatLng(lat, lng);
+        return { x, z, foot, h };
+      }),
+    []
+  );
 
   useFrame(() => {
     const m = materialRef.current;
     if (!m) return;
     m.uniforms.uOpacity.value = LIVE.landmarkOpacity;
     m.uniforms.uFogDensity.value = LIVE.fogDensity;
+    m.uniforms.uAlpenglow.value = alpenglow();
+    // The skyline grounds itself: each notable tower and landmark drops a soft
+    // wash-shadow, longer and fainter the taller it stands (world/shadows).
+    for (const c of shadowCasters) pushShadow(c.x, c.z, c.h, c.foot, 0.9);
   });
 
   return (
@@ -254,6 +297,7 @@ export function Landmarks() {
           uOpacity: { value: LIVE.landmarkOpacity },
           uFog: { value: LIVE.fog },
           uFogDensity: { value: LIVE.fogDensity },
+          uAlpenglow: { value: 0 },
         }}
         transparent
         depthWrite={false}
