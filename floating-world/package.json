@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "The Floating World — Seattle's light rail as a moving ukiyo-e print",
+  "description": "Sound & Rail — Seattle's light rail as a moving ukiyo-e print",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
