@@ -22,6 +22,13 @@ export const CONFIG = {
     spriteKm: 0.9, // glow sprite footprint (far-scale fallback)
     coreIntensity: 2.6, // HDR core, over the 1.05 bloom threshold
     dwellStationKm: 0.12, // station pulses when a train is this close
+    // Zoom-out visibility ease (drives the trail swell and the sumi halo).
+    // Deliberately its OWN camera-distance range, NOT the toy-scale one: the
+    // model eases toward real size across 6..40 km, but the drift camera only
+    // sits ~16 km out, so these cues must saturate MUCH sooner to actually be
+    // "full" when zoomed out. ~0 in chase (< ~4 km), ~1 by drift framing.
+    farVisNearKm: 4,
+    farVisFarKm: 15,
     // The toy S700: the model IS the position marker at every zoom —
     // exaggerated at drift distance, easing toward real scale up close.
     model: {
@@ -38,6 +45,13 @@ export const CONFIG = {
       headlightCore: 2.2, // HDR — blooms on the leading end only
       spriteDim: 0.65, // halo dimmed so the model reads through it
       scaleLerpPerS: 3,
+      // Sumi ink halo: a soft normal-blended pigment ring the train drops
+      // onto the bright washi at drift distance. Additive glow is the weakest
+      // mark on day paper, so an INK outline is what makes a passing train
+      // pop when zoomed out. Gated by dayness (night leans on bloom) and by
+      // the far ease (gone up close, where the model's own ink seams carry it).
+      inkHaloScale: 2.4, // footprint, × modelL
+      inkHaloOpacity: 0.5, // peak ink alpha at full day + drift
     },
   },
   basemap: {
@@ -82,6 +96,12 @@ export const CONFIG = {
     sampleEveryS: 0.12,
     widthKm: 0.09,
     intensity: 0.55,
+    // Zoomed out, the eye catches a train by its MOTION, not a still dot: the
+    // wake widens, deepens, and holds its tail toward drift distance (driven
+    // by the same per-train camera-distance ease the toy scale uses), so a
+    // passing train smears a visible brushstroke across the print.
+    farWidthBoost: 1.7,
+    farIntensityBoost: 1.7,
   },
   station: {
     radiusKm: 0.08,

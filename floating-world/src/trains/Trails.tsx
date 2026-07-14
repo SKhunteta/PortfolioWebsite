@@ -97,6 +97,16 @@ export function Trails() {
       const glow = lineGlow(train.lineId, LINE_BY_ID.get(train.lineId)?.color ?? "#5fe3b0");
       const cap = train.trail.length / 3;
 
+      // Zoomed out, boost the wake so motion reads at drift distance; up close
+      // (chase) it relaxes back to the baseline stroke. Width and ink deepen,
+      // and the tail both stays wider (taper) and fades slower (tailPow), so
+      // the stroke reads longer without needing a longer sample window.
+      const far = train.farFactor;
+      const widthMul = 1 + (CONFIG.trail.farWidthBoost - 1) * far;
+      const intensityMul = 1 + (CONFIG.trail.farIntensityBoost - 1) * far;
+      const taper = 0.85 - 0.25 * far;
+      const tailPow = 1 - 0.3 * far;
+
       // Walk oldest -> newest through the ring.
       for (let k = 0; k < n - 1; k++) {
         const iA = (train.trailHead - (n - 1) + k + cap * 2) % cap;
@@ -119,10 +129,10 @@ export function Trails() {
         // Age fades and tapers toward the tail.
         const ageA = 1 - k / (n - 1);
         const ageB = 1 - (k + 1) / (n - 1);
-        const wA = (CONFIG.trail.widthKm / 2) * (1 - ageA * 0.85);
-        const wB = (CONFIG.trail.widthKm / 2) * (1 - ageB * 0.85);
-        const alphaA = (1 - ageA) * CONFIG.trail.intensity;
-        const alphaB = (1 - ageB) * CONFIG.trail.intensity;
+        const wA = (CONFIG.trail.widthKm / 2) * widthMul * (1 - ageA * taper);
+        const wB = (CONFIG.trail.widthKm / 2) * widthMul * (1 - ageB * taper);
+        const alphaA = Math.pow(1 - ageA, tailPow) * CONFIG.trail.intensity * intensityMul;
+        const alphaB = Math.pow(1 - ageB, tailPow) * CONFIG.trail.intensity * intensityMul;
 
         if ((vert + VERTS_PER_SEG) * 3 > pos.length) break;
 

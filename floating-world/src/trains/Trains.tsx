@@ -19,6 +19,7 @@ import { tickObserve } from "../world/observe";
 import { updatePalette } from "../world/palettes";
 import { easeWeather, applyWeather } from "../world/weather";
 import { TRAIN_MODEL } from "./TrainModel";
+import { FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "../map/watercolorGlsl";
 
 export const MAX_TRAINS = 48;
 
@@ -66,21 +67,70 @@ const FRAG = /* glsl */ `
   }
 `;
 
+// The sumi ink halo (idea #2): a soft normal-blended pigment ring dropped
+// under each train, keyed to DAY (bright washi is where additive glow reads
+// weakest) and to the far ease (only meaningful zoomed out). An inked outline
+// is what keeps a passing train legible on paper — the same reason the toy's
+// body carries ink seams up close. Mixes toward fog per the raw-ShaderMaterial
+// contract so distant halos dissolve into the kasumi.
+const INK_VERT = /* glsl */ `
+  ${FOG_VARYINGS_VERT}
+  attribute float aScale;
+  attribute float aStrength;
+  varying vec2 vUv;
+  varying float vStrength;
+  void main() {
+    vUv = uv;
+    vStrength = aStrength;
+    vec4 wp = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+    vWorld = wp.xz;
+    vec4 mv = modelViewMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+    vFogDepth = -mv.z;
+    mv.xy += (uv - 0.5) * aScale;
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+
+const INK_FRAG = /* glsl */ `
+  ${FOG_VARYINGS_FRAG}
+  uniform vec3 uInk;
+  uniform float uOpacity;
+  uniform float uDayness;
+  varying vec2 vUv;
+  varying float vStrength;
+  void main() {
+    vec2 p = vUv * 2.0 - 1.0;
+    float r = length(p);
+    // A feathered ring that frames the train's mark and fades past it, so it
+    // reads as a hand-inked outline rather than a shadow blob.
+    float ring = exp(-pow((r - 0.42) * 3.4, 2.0));
+    float a = ring * vStrength * uOpacity * uDayness;
+    vec3 c = mix(uInk, uFog, fogFactor());
+    gl_FragColor = vec4(c, a);
+  }
+`;
+
 const scratch = { x: 0, z: 0 };
 const matrix = new THREE.Matrix4();
 
 export function Trains() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
+  const inkRef = useRef<THREE.InstancedMesh>(null);
+  const inkMatRef = useRef<THREE.ShaderMaterial>(null);
 
-  const { colorAttr, pulseAttr, scaleAttr } = useMemo(() => {
+  const { colorAttr, pulseAttr, scaleAttr, inkScaleAttr, inkStrengthAttr } = useMemo(() => {
     const colorAttr = new THREE.InstancedBufferAttribute(new Float32Array(MAX_TRAINS * 3), 3);
     colorAttr.setUsage(THREE.DynamicDrawUsage);
     const pulseAttr = new THREE.InstancedBufferAttribute(new Float32Array(MAX_TRAINS), 1);
     pulseAttr.setUsage(THREE.DynamicDrawUsage);
     const scaleAttr = new THREE.InstancedBufferAttribute(new Float32Array(MAX_TRAINS), 1);
     scaleAttr.setUsage(THREE.DynamicDrawUsage);
-    return { colorAttr, pulseAttr, scaleAttr };
+    const inkScaleAttr = new THREE.InstancedBufferAttribute(new Float32Array(MAX_TRAINS), 1);
+    inkScaleAttr.setUsage(THREE.DynamicDrawUsage);
+    const inkStrengthAttr = new THREE.InstancedBufferAttribute(new Float32Array(MAX_TRAINS), 1);
+    inkStrengthAttr.setUsage(THREE.DynamicDrawUsage);
+    return { colorAttr, pulseAttr, scaleAttr, inkScaleAttr, inkStrengthAttr };
   }, []);
 
   useFrame(({ camera }, rawDt) => {
@@ -96,7 +146,9 @@ export function Trains() {
 
     const mesh = meshRef.current;
     if (!mesh) return;
+    const inkMesh = inkRef.current;
 
+    const tv = CONFIG.train;
     const m = CONFIG.train.model;
     let i = 0;
     for (const train of TRAINS.values()) {
@@ -126,6 +178,22 @@ export function Trains() {
       scaleAttr.setX(i, train.modelL * 0.8); // halo footprint tracks the toy
       TRAIN_MODEL.write(i, train.dir, train.sRendered, train.y, train.modelL);
 
+      // Zoom-out visibility ease — its OWN, tighter range so it's ~full at
+      // drift (the toy-scale ease above barely climbs at ~16 km). Drives both
+      // the trail swell (Trails reads farFactor) and the sumi halo strength.
+      const fv = Math.min(
+        1,
+        Math.max(0, (dist - tv.farVisNearKm) / (tv.farVisFarKm - tv.farVisNearKm))
+      );
+      const farVis = fv * fv * (3 - 2 * fv);
+      train.farFactor = farVis;
+
+      // Sumi ink halo shares the train's translation; footprint tracks the toy
+      // and strength rides the zoom-out ease (gone up close).
+      inkMesh?.setMatrixAt(i, matrix);
+      inkScaleAttr.setX(i, train.modelL * m.inkHaloScale);
+      inkStrengthAttr.setX(i, farVis);
+
       sampleTrail(
         train,
         scratch.x,
@@ -144,36 +212,79 @@ export function Trains() {
     scaleAttr.needsUpdate = true;
     TRAIN_MODEL.commit(i);
 
+    if (inkMesh) {
+      inkMesh.count = i;
+      inkMesh.instanceMatrix.needsUpdate = true;
+      inkScaleAttr.needsUpdate = true;
+      inkStrengthAttr.needsUpdate = true;
+    }
+
     if (materialRef.current) {
       materialRef.current.uniforms.uIntensity.value = LIVE.trainIntensity;
+    }
+    if (inkMatRef.current) {
+      // Dayness gates the ink (night leans on bloom); fog density follows the
+      // live palette. uInk/uFog are palette-by-reference, so they self-update.
+      inkMatRef.current.uniforms.uDayness.value = phase;
+      inkMatRef.current.uniforms.uFogDensity.value = LIVE.fogDensity;
     }
   });
 
   return (
-    <instancedMesh
-      ref={meshRef}
-      args={[undefined, undefined, MAX_TRAINS]}
-      renderOrder={10}
-      frustumCulled={false}
-    >
-      <planeGeometry args={[1, 1]}>
-        <primitive object={colorAttr} attach="attributes-aColor" />
-        <primitive object={pulseAttr} attach="attributes-aPulse" />
-        <primitive object={scaleAttr} attach="attributes-aScale" />
-      </planeGeometry>
-      <shaderMaterial
-        ref={materialRef}
-        vertexShader={VERT}
-        fragmentShader={FRAG}
-        uniforms={{
-          uIntensity: { value: 1 },
-          uCore: { value: CONFIG.train.coreIntensity },
-          uHaloDim: { value: CONFIG.train.model.spriteDim },
-        }}
-        transparent
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-      />
-    </instancedMesh>
+    <>
+      {/* Sumi ink halo — under the glow (10) and model (9), above the trail
+          (8), so it darkens paper without hiding the toy that sits on it. */}
+      <instancedMesh
+        ref={inkRef}
+        args={[undefined, undefined, MAX_TRAINS]}
+        renderOrder={8.5}
+        frustumCulled={false}
+      >
+        <planeGeometry args={[1, 1]}>
+          <primitive object={inkScaleAttr} attach="attributes-aScale" />
+          <primitive object={inkStrengthAttr} attach="attributes-aStrength" />
+        </planeGeometry>
+        <shaderMaterial
+          ref={inkMatRef}
+          vertexShader={INK_VERT}
+          fragmentShader={INK_FRAG}
+          uniforms={{
+            uInk: { value: LIVE.label },
+            uOpacity: { value: CONFIG.train.model.inkHaloOpacity },
+            uDayness: { value: 1 },
+            uFog: { value: LIVE.fog },
+            uFogDensity: { value: LIVE.fogDensity },
+          }}
+          transparent
+          depthWrite={false}
+          blending={THREE.NormalBlending}
+        />
+      </instancedMesh>
+      <instancedMesh
+        ref={meshRef}
+        args={[undefined, undefined, MAX_TRAINS]}
+        renderOrder={10}
+        frustumCulled={false}
+      >
+        <planeGeometry args={[1, 1]}>
+          <primitive object={colorAttr} attach="attributes-aColor" />
+          <primitive object={pulseAttr} attach="attributes-aPulse" />
+          <primitive object={scaleAttr} attach="attributes-aScale" />
+        </planeGeometry>
+        <shaderMaterial
+          ref={materialRef}
+          vertexShader={VERT}
+          fragmentShader={FRAG}
+          uniforms={{
+            uIntensity: { value: 1 },
+            uCore: { value: CONFIG.train.coreIntensity },
+            uHaloDim: { value: CONFIG.train.model.spriteDim },
+          }}
+          transparent
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
+      </instancedMesh>
+    </>
   );
 }
