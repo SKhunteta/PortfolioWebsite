@@ -13,7 +13,8 @@ import { OrbitControls } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import { createNoise2D } from "simplex-noise";
-import { pointAt, tangentAt } from "../map/network";
+import { pointAt, tangentAt, STATION_BY_ID, LINE_BY_ID } from "../map/network";
+import { railHeightAt } from "../map/grade";
 import { FLIGHTS, airlinerPoseAt, type FlightPose, type Flight } from "../map/Airliners";
 import {
   tourFraming,
@@ -25,6 +26,7 @@ import {
   type ReelShot,
 } from "./tour";
 import { orcaPodCenterNow } from "../map/Orcas";
+import { observeDisplayFrac } from "../world/observe";
 import { TRAINS, useUi, type TrainState } from "../trains/store";
 import { CONFIG } from "../world/config";
 import { CLOCK } from "../world/clock";
@@ -43,11 +45,15 @@ const planeFwd = new THREE.Vector3();
 // The tour's live framing, reused each frame so the idle circuit never allocates.
 const tourScratch: TourFraming = { x: 0, z: 0, radiusKm: 0, elevation: 0 };
 // The Observe reel's live shot, reused each frame likewise.
-const reelScratch: ReelShot = { x: 0, z: 0, radiusKm: 0, elevation: 0, kind: "orbit", seg: -1, label: "", detail: false, random: false, dive: false };
+const reelScratch: ReelShot = { x: 0, z: 0, radiusKm: 0, elevation: 0, kind: "orbit", seg: -1, label: "", anchor: "", detail: false, random: false, dive: false, vista: false, lookSign: 1 };
 // Scratch for picking the nearest train to a reel stop (never allocates).
 const pick = { x: 0, z: 0 };
 // Scratch for the orca reel stop's live, time-of-day-driven centre.
 const orcaCenter = { x: 0, z: 0 };
+// Scratch for a low trackside vista: the rail world point, unit travel tangent,
+// and rail height — filled from a ridden train or a still station anchor.
+const railSample = { x: 0, z: 0, tx: 0, tz: 0, y: 0 };
+const desiredTarget = new THREE.Vector3();
 
 // Settle the camera behind and above a train, along its travel tangent — the
 // chase frame, shared by the manual double-tap follow and the Observe reel's
@@ -69,6 +75,68 @@ function frameTrain(
   );
   controls.target.lerp(trainPos, k);
   camera.position.lerp(desiredCam, k);
+}
+
+// Fill `railSample` from a station anchor's rail — the fixed low vantage a vista
+// looks along, so the shot stays glued to a coherent AT-GRADE stretch (a train
+// that happens to be on it rides through frame on its own; the camera doesn't
+// chase one up onto elevated track or down a portal). Resolves the station's
+// first line and its arc length on that line's outbound direction, and reads the
+// eased rail height there. Returns false if the anchor isn't on a rail (e.g. the
+// __orcas__ pseudo-anchor), so the caller can fall back to an orbit.
+function railFromAnchor(anchorId: string): boolean {
+  const st = STATION_BY_ID.get(anchorId);
+  if (!st) return false;
+  for (const lineId of st.lines) {
+    const dir = LINE_BY_ID.get(lineId)?.directions[0];
+    if (!dir) continue;
+    const entry = dir.stations.find((s) => s.id === anchorId);
+    if (!entry) continue;
+    pointAt(dir, entry.sKm, scratch);
+    railSample.x = scratch.x;
+    railSample.z = scratch.z;
+    tangentAt(dir, entry.sKm, scratch);
+    railSample.tx = scratch.x;
+    railSample.tz = scratch.z;
+    railSample.y = railHeightAt(dir, entry.sKm);
+    return true;
+  }
+  return false;
+}
+
+// The Observe reel's at-grade VISTA (the reference-photo shot): seat the camera
+// at an eye-line beside the rail and look ALONG the glowing ribbon toward the
+// horizon, so it recedes to a vanishing point — under Rainier on the southern
+// run, over the seigaiha water on the lake crossing. Reads `railSample` (from a
+// ridden train or a still anchor). `lookSign` flips which way down the rail we
+// look so the shot faces the scenic horizon rather than wherever arc-length
+// happens to increase; `sideKm` swings the camera off the rail so the ribbon
+// reads as a diagonal leading line (the three-quarter of the photo). Needs the
+// relaxed polar / min-distance clamps CameraRig applies while a vista holds —
+// this is the one shot that deliberately looks at (and a hair above) the horizon.
+function frameTrackside(
+  controls: OrbitControlsImpl,
+  camera: THREE.PerspectiveCamera,
+  lookSign: number,
+  k: number
+) {
+  const o = CONFIG.camera.trackside;
+  const tx = railSample.tx * lookSign;
+  const tz = railSample.tz * lookSign;
+  const px = -tz; // left-hand perpendicular in the xz plane
+  const pz = tx;
+  desiredCam.set(
+    railSample.x - tx * o.backKm + px * o.sideKm,
+    railSample.y + o.camHeightKm,
+    railSample.z - tz * o.backKm + pz * o.sideKm
+  );
+  desiredTarget.set(
+    railSample.x + tx * o.lookAheadKm,
+    railSample.y + o.lookHeightKm,
+    railSample.z + tz * o.lookAheadKm
+  );
+  camera.position.lerp(desiredCam, k);
+  controls.target.lerp(desiredTarget, k);
 }
 
 // The Observe reel's "diving into the underground" stop. Same tail chase as
@@ -274,10 +342,9 @@ export function CameraRig() {
   const followPlane = useUi((s) => s.followPlaneIndex);
   const observing = useUi((s) => s.observing);
   const lastInteraction = useRef(-Infinity);
-  // The Observe reel's own timeline + latched ride target, so the cinematic
-  // flight keeps its place across a user's brief grab of the wheel and never
-  // switches trains/jets mid-stop.
-  const observeClock = useRef(0);
+  // The Observe reel's latched ride target, so the cinematic flight never
+  // switches trains/jets mid-stop even across a user's brief grab of the wheel.
+  // Its timeline is the day itself (observeDisplayFrac), not a private clock.
   const wasObserving = useRef(false);
   const reelSeg = useRef(-1);
   const reelTrainId = useRef<string | null>(null);
@@ -290,6 +357,11 @@ export function CameraRig() {
   // harder still for the intimate zoom, and the reel drops OrbitControls'
   // min-distance floor so the tight framing isn't clamped back out.
   const observeDetail = useRef(false);
+  // True on frames the reel is holding an at-grade VISTA — the FOV loop WIDENS
+  // the lens (exaggerating the receding leading line) and CameraRig relaxes the
+  // polar clamp past vertical + drops the distance floor so the eye-level look
+  // down the rail survives OrbitControls' update.
+  const observeVista = useRef(false);
   // Start south of the network looking north — the city reads map-like
   // before the drift carries you elsewhere.
   const driftTheta = useRef(1.35);
@@ -302,9 +374,15 @@ export function CameraRig() {
   useFrame(() => {
     const baseFov = fovForAspect(PROFILE.baseFov, size.width / size.height);
     const chasing = followId !== null || followPlane !== null || observeRiding.current;
-    // Detail close-ups narrow the lens harder than an ordinary chase — the
-    // intimate zoom that lets the woodblock detail fill the frame.
-    const targetFov = observeDetail.current ? baseFov - 12 : chasing ? baseFov - 6 : baseFov;
+    // A vista WIDENS the lens (the receding leading line reads bigger); detail
+    // close-ups narrow harder than a chase (the intimate woodblock zoom).
+    const targetFov = observeVista.current
+      ? baseFov + CONFIG.camera.trackside.fovBoost
+      : observeDetail.current
+        ? baseFov - 12
+        : chasing
+          ? baseFov - 6
+          : baseFov;
     if (Math.abs(camera.fov - targetFov) > 0.05) {
       camera.fov += (targetFov - camera.fov) * Math.min(1, CLOCK.dt * 2);
       camera.updateProjectionMatrix();
@@ -466,11 +544,11 @@ export function CameraRig() {
     const plane = followPlane !== null ? FLIGHTS[followPlane] : undefined;
     if (followPlane !== null && !plane) useUi.getState().setFollowTrain(null);
 
-    // Observe bookkeeping: reset the reel's timeline the frame Observe turns on
-    // (and open it immediately by treating the page as long-idle); clear its
-    // HUD label the frame it turns off.
+    // Observe bookkeeping: reset the latch + open the reel immediately (treat the
+    // page as long-idle) the frame Observe turns on; clear its HUD label the
+    // frame it turns off. The reel's timeline is the day-sweep itself, so there's
+    // no private clock to advance here.
     if (observing && !wasObserving.current) {
-      observeClock.current = 0;
       reelSeg.current = -1;
       lastInteraction.current = -Infinity;
     }
@@ -484,11 +562,11 @@ export function CameraRig() {
       }
     }
     wasObserving.current = observing;
-    if (observing) observeClock.current += CLOCK.dt;
 
     const chaseK = 1 - Math.exp(-CONFIG.camera.chaseLerp * CLOCK.dt);
     let ridingThisFrame = false;
     let detailThisFrame = false;
+    let vistaThisFrame = false;
 
     // A slow framed orbit around a centre — the shared motion under the idle
     // drift/tour AND the Observe reel's orbit stops. Advances driftTheta so the
@@ -519,11 +597,13 @@ export function CameraRig() {
       const idleFor = CLOCK.t - lastInteraction.current;
       const observeActive = observing && idleFor > CONFIG.camera.observeGraceS;
       if (observeActive) {
-        // The Observe reel: a slow flight around the most gorgeous parts of the
-        // city — low over the underground tunnel, riding the rail and the jets,
-        // skimming the cyclists and the lake crossing. Yields to a recent touch
+        // The Observe reel: a highlight reel of the most scenic parts of the
+        // line, phase-locked to the day — low at-grade vistas down the glowing
+        // rail to Rainier and over the lake, riding the rail and the jets, the
+        // tunnel dive, the orcas. Sampled by the DISPLAYED day fraction so each
+        // stop plays under the sky it was authored for. Yields to a recent touch
         // (idleFor <= grace) so the visitor can still grab the wheel.
-        const shot = observeShot(observeClock.current, reelScratch);
+        const shot = observeShot(observeDisplayFrac() ?? 0, reelScratch);
         // Latch the ride target once per stop, so we never switch trains or
         // jets mid-shot, and push the stop's label to the HUD.
         if (shot.seg !== reelSeg.current) {
@@ -544,7 +624,19 @@ export function CameraRig() {
 
         const rideTrain =
           shot.kind === "train" ? TRAINS.get(reelTrainId.current ?? "") : undefined;
-        if (rideTrain) {
+        if (shot.vista) {
+          // The at-grade vista: drop to an eye-line beside the rail and look
+          // along the glowing ribbon to the horizon (the ribbon is the subject;
+          // any train on the stretch rides through frame on its own). Held at a
+          // fixed at-grade anchor so it never chases a train up a grade; only a
+          // truly unresolvable anchor falls back to a low orbit.
+          if (railFromAnchor(shot.anchor)) {
+            frameTrackside(controls, camera, shot.lookSign, chaseK);
+            vistaThisFrame = true;
+          } else {
+            applyOrbit(shot.x, shot.z, shot.radiusKm, shot.elevation);
+          }
+        } else if (rideTrain) {
           // Wake chase; the tight three-quarter broadside on a detail stop; or
           // the grade-aware lift that rides it down into the tunnel on a dive.
           if (shot.detail) frameTrainDetail(controls, camera, rideTrain, chaseK);
@@ -598,12 +690,21 @@ export function CameraRig() {
 
     observeRiding.current = ridingThisFrame;
     observeDetail.current = detailThisFrame;
-    // Drop OrbitControls' min-distance floor while a detail close-up holds so
-    // its tight framing isn't clamped back out to the ordinary 0.8 km; restore
-    // it otherwise. controls.update() below reads the live value.
+    observeVista.current = vistaThisFrame;
+    // Relax OrbitControls' clamps per-frame so the tight/low framings survive
+    // controls.update(): a detail close-up drops the min-distance floor below
+    // 0.8 km; an at-grade vista drops it further AND relaxes the polar clamp
+    // past vertical so the eye-level look down the rail isn't lifted back up.
+    // Everything else (drift, orbits, a user at the wheel) keeps the ordinary
+    // floors, so manual control never flips under the map.
     controls.minDistance = detailThisFrame
       ? CONFIG.camera.detailMinDistance
-      : CONFIG.camera.minDistance;
+      : vistaThisFrame
+        ? CONFIG.camera.tracksideMinDistance
+        : CONFIG.camera.minDistance;
+    controls.maxPolarAngle = vistaThisFrame
+      ? CONFIG.camera.atGradeMaxPolar
+      : CONFIG.camera.maxPolarAngle;
 
     // One zustand write per transition, from any branch above.
     if (touringThisFrame !== touringRef.current) {
@@ -621,7 +722,7 @@ export function CameraRig() {
       dampingFactor={0.08}
       minDistance={CONFIG.camera.minDistance}
       maxDistance={CONFIG.camera.maxDistance}
-      maxPolarAngle={1.38}
+      maxPolarAngle={CONFIG.camera.maxPolarAngle}
       screenSpacePanning={false}
     />
   );

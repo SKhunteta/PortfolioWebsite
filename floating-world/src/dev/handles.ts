@@ -5,7 +5,7 @@ import { TRAINS, useUi } from "../trains/store";
 import { FLIGHTS, airlinerPoseAt } from "../map/Airliners";
 import { CLOCK } from "../world/clock";
 import { setPhaseOverride } from "../world/sun";
-import { startObserve, stopObserve, toggleObserve } from "../world/observe";
+import { startObserve, stopObserve, toggleObserve, setObserveReelPin } from "../world/observe";
 import { setTideOverride } from "../world/tide";
 import { setBloomOverride } from "../world/bloom";
 import { setWeatherOverride, WeatherKind } from "../world/weather";
@@ -47,6 +47,10 @@ export function installHandles() {
     // over the tunnel, riding the rail and the jets, past the cyclists and the
     // lake). Pass a boolean to force on/off.
     observe: (on?: boolean) => (on === undefined ? toggleObserve() : on ? startObserve() : stopObserve()),
+    // Freeze the running sweep at a display day fraction (0..1; ~0.8 = the dusk
+    // rail-to-Rainier vista) so a stop can be screenshotted without waiting for
+    // the day to arrive. Pass null to unfreeze. Same effect as ?reel=.
+    reelAt: (frac: number | null) => setObserveReelPin(frac),
     setTide: (level: number | null) => setTideOverride(level),
     setBloom: (level: number | null) => setBloomOverride(level),
     setWeather: (k: WeatherKind | null) => setWeatherOverride(k),

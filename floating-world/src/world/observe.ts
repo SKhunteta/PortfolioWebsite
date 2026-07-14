@@ -28,13 +28,35 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // One full day-and-night sweeps by in this many real seconds. Longer than the
 // old constant-pace 60 s: the sweep now LINGERS through sunset, so it needs
 // more real time to let the golden hour breathe without the bright midday
-// plateau (now the fastest stretch) dragging the whole loop out.
-const CYCLE_S = 90;
+// plateau (now the fastest stretch) dragging the whole loop out. The camera
+// reel is phase-locked to this sweep (indexed by the displayed day fraction,
+// via observeDisplayFrac), so its scenic vistas always land under the right
+// sky; a touch more room here lets those held dusk shots breathe.
+const CYCLE_S = 120;
 
 let active = false;
 let elapsed = 0; // real seconds into the current sweep
 let baseMidnight = 0; // ms timestamp of the day we sweep across
 let savedOverride: number | null = null; // restored when observing stops
+// When set (0..1 display day fraction), FREEZE the sweep at that fraction: both
+// the sky and the camera reel hold there instead of running the day. For demos,
+// tests and screenshots — jump straight to a stop (the dusk rail-to-Rainier
+// vista is ~0.8) without waiting for the sweep to arrive. Set by ?reel= or the
+// __linkMap.reelAt() handle; same override spirit as ?tour=on / ?phase=.
+let reelPin: number | null = null;
+
+function readReelParam(): number | null {
+  if (typeof window === "undefined") return null;
+  const raw = new URLSearchParams(window.location.search).get("reel");
+  if (raw === null) return null;
+  const v = parseFloat(raw);
+  return Number.isFinite(v) ? ((v % 1) + 1) % 1 : null;
+}
+
+/** Pin (or clear, with null) the reel/sweep to a fixed display day fraction. */
+export function setObserveReelPin(frac: number | null) {
+  reelPin = frac === null ? null : ((frac % 1) + 1) % 1;
+}
 
 // --- Day warp: dwell on sunset, hurry through the flat midday --------------
 // A lookup that re-paces the sweep. warpClock[i] is the normalized clock
@@ -107,6 +129,18 @@ export function observeDayFrac(): number | null {
   return active ? (elapsed / CYCLE_S) % 1 : null;
 }
 
+// The day fraction actually ON SCREEN right now (0/1 = local midnight, ~0.5 =
+// solar noon) — the LINEAR sweep position run through the same warp the sun
+// uses, so it tracks the visible sky rather than raw real-time. The camera reel
+// keys off this (observer/tour.ts `observeShot`), so a stop authored in the
+// dusk band always plays under a dusk sky, and the warp's twilight-lingering
+// automatically hands the dusk vistas their long, glowing hold. Null when
+// observe isn't running.
+export function observeDisplayFrac(): number | null {
+  if (!active) return null;
+  return reelPin ?? warpedDayFrac((elapsed / CYCLE_S) % 1);
+}
+
 export function startObserve() {
   if (active) return;
   savedOverride = getPhaseOverride();
@@ -115,6 +149,7 @@ export function startObserve() {
   baseMidnight = midnight.getTime();
   buildWarp(baseMidnight);
   elapsed = 0;
+  reelPin = readReelParam();
   active = true;
   useUi.getState().setObserving(true);
 }
@@ -137,6 +172,8 @@ export function tickObserve(dt: number) {
   if (!active) return;
   elapsed += dt;
   const clockFrac = (elapsed / CYCLE_S) % 1; // 0..1 of real time across a sweep
-  const dayFrac = warpedDayFrac(clockFrac); // warped so sunset dwells, noon flies
+  // Warped so sunset dwells and noon flies — unless pinned to a fixed fraction
+  // (?reel=), where sky and camera freeze together for a screenshot.
+  const dayFrac = reelPin ?? warpedDayFrac(clockFrac);
   setPhaseOverride(sunPhaseAt(new Date(baseMidnight + dayFrac * DAY_MS)));
 }
