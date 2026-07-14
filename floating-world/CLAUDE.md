@@ -190,5 +190,8 @@ restores whatever override was live before.
 `?debug` shows the HUD readout; `?tier=` forces a device tier;
 `?phase=` pins the sun; `?weather=` pins the sky; `?tide=` pins the tide;
 `?bloom=peak|none|0..1` pins the cherry-blossom season; `?gamenight` lights the
-stadiums. `scripts/device-smoke.mjs` is the per-tier
+stadiums; `?tod=` pins the orca pod's time of day (a 0..1 day fraction, a 0..24
+hour, or dawn|morning|noon|afternoon|dusk|night) — the pod's foraging ground
+migrates around the Sound by the Seattle hour (`map/Orcas.tsx`), and observe
+mode sweeps it with the sun. `scripts/device-smoke.mjs` is the per-tier
 regression harness (playwright-core, chromium at /opt/pw-browsers/chromium).
