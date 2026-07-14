@@ -10,7 +10,9 @@
 //   (under-wash, y −0.08) · 1 water fill under-layer (−0.06) · 3 tunnel
 //   ribbons (−0.22) + underground station orbs and their light shafts ·
 //   4 ground/paper (0) · 4.5 water over-print (the blue block stamped above
-//   the sheet — see Water.tsx) · 4.6 water edge stroke (−0.05) · 5 roads
+//   the sheet — see Water.tsx) · 4.6 water edge stroke (−0.05) · 4.65 water
+//   reflections (trains/ferries/city lights — Reflections.tsx) · 4.7 foam wake
+//   (Wakes.tsx) · 5 roads
 //   (0.010/0.014) · 5.6 forest (billboarded conifers) · 6 surface + elevated
 //   ribbons, landmarks, ferries, seaplanes · 6.2 building fabric (the
 //   woodblock town) · 6.5 kasumi mist bands (y 0.5) · 7 stations (surface/elevated

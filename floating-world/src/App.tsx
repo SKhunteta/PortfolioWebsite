@@ -19,6 +19,7 @@ import { Seaplanes } from "./map/Seaplanes";
 import { Wakes } from "./map/Wakes";
 import { Birds } from "./map/Birds";
 import { CityLights } from "./map/CityLights";
+import { Reflections } from "./map/Reflections";
 import { LineRibbons } from "./map/LineRibbons";
 import { Trains } from "./trains/Trains";
 import { TrainModel } from "./trains/TrainModel";
@@ -103,6 +104,7 @@ export default function App() {
         <Seaplanes />
         <Birds />
         <CityLights />
+        <Reflections />
         <LineRibbons />
         <Stations />
         <PlatformLife />
