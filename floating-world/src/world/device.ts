@@ -104,6 +104,34 @@ const PROFILES: Record<Tier, DeviceProfile> = {
 
 export const PROFILE = PROFILES[TIER];
 
+// Desktop fill-rate guard — the reason the piece can feel effortless on a
+// phone yet lag on a powerful desktop. The full-composer desktop path
+// (bloom mipmap chain + 4× MSAA + grain) is fill-rate bound: cost scales
+// with the backing store = viewport × devicePixelRatio². On a Retina laptop
+// or a HiDPI / display-scaled monitor devicePixelRatio is 2, so a large
+// window renders ~10–30× the pixels of a phone through a far heavier
+// pipeline. The blanket [1, 2] tier value never bounded that. Cap the
+// desktop backing store to a device-pixel budget computed from the real
+// viewport, so big HiDPI viewports drop to an effective dpr below 2 while
+// modest windows keep the full 2×. Floor at 1 — never soften below native
+// CSS resolution, the crisp sumi ink outlines depend on it. Decided once at
+// boot like the rest of PROFILE.
+const DESKTOP_PIXEL_BUDGET = 3_500_000;
+
+function desktopDprCap(): number {
+  if (!hasWindow) return 2;
+  const vw = window.innerWidth || 1440;
+  const vh = window.innerHeight || 900;
+  const budgetDpr = Math.sqrt(DESKTOP_PIXEL_BUDGET / (vw * vh));
+  return Math.max(1, Math.min(2, budgetDpr));
+}
+
+if (TIER === "desktop") {
+  // R3F reads the tuple as a range and clamps devicePixelRatio into it, so a
+  // non-Retina desktop (dpr 1) is untouched; only 2× displays get pulled down.
+  PROFILE.dpr = [1, desktopDprCap()];
+}
+
 const REF_ASPECT = 16 / 9;
 
 /** three.js FOV is vertical: a value authored at 16:9 crops portrait phones
