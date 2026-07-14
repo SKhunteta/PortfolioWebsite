@@ -34,6 +34,7 @@ interface StationSlot {
   marks: { lineId: string; directionId: number; sKm: number }[];
   pulse: number;
   wasDwelling: boolean;
+  bloom: number; // arrival ripple, 1 on the dwell rising edge -> 0
   accent: THREE.Color;
   railY: number; // the line's eased height at this station's arc mark
   orbY: number;
@@ -83,15 +84,20 @@ const ORB_FRAG = /* glsl */ `
 `;
 
 // The seal: a watercolor blot dabbed on the paper in the station's accent.
-// Normal-blended (it's pigment, not light), so it mixes toward the fog
-// itself; the rim pools darker like drying paint, and a per-instance seed
-// through world-space noise makes every blot dry differently.
+// Normal-blended (it's pigment, not light), so it mixes toward the fog itself.
+// Like a real drop of pigment left to dry, it coffee-rings — the solute
+// migrates outward as the water evaporates, so the centre stays pale and a
+// dark band concentrates just inside the ragged rim. A per-instance seed
+// through world-space noise makes every blot dry a little differently, and a
+// per-instance bloom (aBloom, 1 -> 0) rings the seal outward on each arrival.
 const SEAL_VERT = /* glsl */ `
   ${FOG_VARYINGS_VERT}
   attribute float aSeed;
+  attribute float aBloom;
   varying vec3 vColor;
   varying vec2 vLocal;
   varying float vSeed;
+  varying float vBloom;
   void main() {
     #ifdef USE_INSTANCING_COLOR
       vColor = instanceColor;
@@ -100,6 +106,7 @@ const SEAL_VERT = /* glsl */ `
     #endif
     vLocal = position.xy;
     vSeed = aSeed;
+    vBloom = aBloom;
     vec4 world = modelMatrix * instanceMatrix * vec4(position, 1.0);
     vWorld = world.xz;
     vec4 mv = viewMatrix * world;
@@ -114,13 +121,28 @@ const SEAL_FRAG = /* glsl */ `
   varying vec3 vColor;
   varying vec2 vLocal;
   varying float vSeed;
+  varying float vBloom;
   void main() {
     float r = length(vLocal);
     float n = wcNoise(vWorld * 7.0 + vSeed);
+    // The blot's ragged outer edge — a seed-driven wobble, no two alike.
     float edge = 0.82 + 0.3 * (n - 0.5);
-    float body = 1.0 - smoothstep(edge * 0.3, edge, r);
-    float rim = smoothstep(edge - 0.45, edge - 0.1, r) * (1.0 - smoothstep(edge - 0.1, edge, r));
-    float pigment = body * (0.4 + 0.85 * rim);
+    // Overall extent, soft to nothing at the edge.
+    float body = 1.0 - smoothstep(edge * 0.72, edge, r);
+    // Coffee-ring: pigment pulled to the perimeter as the drop dries — a pale
+    // centre, a dark concentrated band a hair inside the rim.
+    float ringR = edge * (0.85 + 0.06 * (n - 0.5));
+    float ring = exp(-pow((r - ringR) / (edge * 0.11), 2.0));
+    float center = (1.0 - smoothstep(0.0, edge * 0.95, r)) * 0.34;
+    float pigment = body * (center + 0.95 * ring);
+    // Arrival: a train just pulled in, the drop hits the paper again and one
+    // slow ring blooms outward before it re-settles. The ripple radius grows
+    // as the bloom fades, so it reads as re-wetting, not a flash.
+    if (vBloom > 0.001) {
+      float rr = (1.0 - vBloom) * edge * 1.25;
+      float ripple = exp(-pow((r - rr) / (edge * 0.16), 2.0)) * vBloom;
+      pigment = clamp(pigment + ripple * 0.6, 0.0, 1.0);
+    }
     vec3 c = mix(vColor, uFog, fogFactor());
     gl_FragColor = vec4(c, pigment * uOpacity);
   }
@@ -189,6 +211,7 @@ export function Stations() {
           marks: [],
           pulse: 0,
           wasDwelling: false,
+          bloom: 0,
           accent: accentForName(s.name),
           railY: 0,
           orbY: 0,
@@ -228,6 +251,11 @@ export function Stations() {
     for (let i = 0; i < slots.length; i++) seeds[i] = (i * 7.13) % 19.7;
     return seeds;
   }, [slots]);
+
+  // Per-seal arrival ripple, eased 1 -> 0 each frame; the array IS the
+  // instanced attribute's backing store, so writing it + needsUpdate is all
+  // the bloom costs.
+  const sealBlooms = useMemo(() => new Float32Array(slots.length), [slots]);
 
   // Static geometry: seals sit on the paper at the surface entrance, shafts
   // hang from the seal down to the underground platform. Set once, before
@@ -292,10 +320,12 @@ export function Stations() {
         if (dwelling) break;
       }
 
-      // Arrival = the dwell rising edge. React write on events only —
-      // the hot path never touches the store per-frame.
-      if (dwelling && !slot.wasDwelling && dwellMark) {
-        if (CLOCK.t > CAPTION_QUIET_START_S && CLOCK.t - lastCaptionT > CAPTION_COOLDOWN_S) {
+      // Arrival = the dwell rising edge. The seal ripples on EVERY arrival
+      // (pigment, in the hot path); the caption is separately paced and the
+      // only thing that touches the store, on events only.
+      if (dwelling && !slot.wasDwelling) {
+        slot.bloom = 1; // the drop hits the paper again — seal blooms outward
+        if (dwellMark && CLOCK.t > CAPTION_QUIET_START_S && CLOCK.t - lastCaptionT > CAPTION_COOLDOWN_S) {
           lastCaptionT = CLOCK.t;
           const line = LINE_BY_ID.get(dwellMark.lineId);
           const headsign = line?.directions.find(
@@ -306,6 +336,9 @@ export function Stations() {
         }
       }
       slot.wasDwelling = dwelling;
+      // Ease the arrival ripple back to rest; the seal shader reads it per-instance.
+      slot.bloom = Math.max(0, slot.bloom - CLOCK.dt / CONFIG.station.sealBloomS);
+      sealBlooms[i] = slot.bloom;
 
       slot.pulse += ((dwelling ? 1 : 0) - slot.pulse) * Math.min(1, CLOCK.dt * 2.5);
       const swell = 1 + slot.pulse * (CONFIG.station.pulseScale - 1) * (0.6 + 0.4 * CLOCK.breath);
@@ -341,6 +374,8 @@ export function Stations() {
       if (submerged.instanceColor) submerged.instanceColor.needsUpdate = true;
     }
     if (seals.instanceColor) seals.instanceColor.needsUpdate = true;
+    const bloomAttr = seals.geometry.getAttribute("aBloom") as THREE.BufferAttribute | undefined;
+    if (bloomAttr) bloomAttr.needsUpdate = true;
 
     if (shafts) {
       for (let i = 0; i < submergedSlots.length; i++) {
@@ -432,6 +467,7 @@ export function Stations() {
       >
         <circleGeometry args={[1, 24]}>
           <instancedBufferAttribute attach="attributes-aSeed" args={[sealSeeds, 1]} />
+          <instancedBufferAttribute attach="attributes-aBloom" args={[sealBlooms, 1]} />
         </circleGeometry>
         <shaderMaterial
           vertexShader={SEAL_VERT}

@@ -74,6 +74,7 @@ export const CONFIG = {
     // the surface in the station's researched accent) and, for underground
     // halls, the faint light shaft sinking from the seal to the platform.
     sealRadiusKm: 0.19,
+    sealBloomS: 1.6, // arrival ripple: the seal blooms outward over this long
     orbLiftKm: 0.03, // orb center rides just above its rail height
     shaftRadiusKm: 0.035,
     submergedRailY: -0.05, // rail below this = underground platform bucket
