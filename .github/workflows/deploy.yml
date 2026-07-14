@@ -51,12 +51,25 @@ jobs:
       - run: npm run build
         working-directory: link-map
       - run: mkdir -p dist/link-map && cp -r link-map/dist/. dist/link-map/
-      # The Floating World is the ukiyo-e edition of link-map, served at /floating-world/.
+      # Sound & Rail (the ukiyo-e edition of link-map) is served at /sound-and-rail/.
+      # Source dir stays floating-world/; only the served path changed.
       - run: npm ci
         working-directory: floating-world
       - run: npm run build
         working-directory: floating-world
-      - run: mkdir -p dist/floating-world && cp -r floating-world/dist/. dist/floating-world/
+      - run: mkdir -p dist/sound-and-rail && cp -r floating-world/dist/. dist/sound-and-rail/
+      # Redirect the old /floating-world/ URL to the new path so existing links don't 404.
+      - run: |
+          mkdir -p dist/floating-world
+          cat > dist/floating-world/index.html <<'HTML'
+          <!doctype html>
+          <meta charset="utf-8">
+          <title>Sound & Rail</title>
+          <link rel="canonical" href="https://builtbyshrey.com/sound-and-rail/">
+          <meta http-equiv="refresh" content="0; url=/sound-and-rail/">
+          <script>location.replace("/sound-and-rail/" + location.hash);</script>
+          <p>Moved to <a href="/sound-and-rail/">/sound-and-rail/</a>.</p>
+          HTML
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist

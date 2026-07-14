@@ -138,9 +138,10 @@ hides them (cost ketu-9 a debugging hour).
 
 ## Hosting + backend
 
-Deployed at builtbyshrey.com/floating-world/ — the portfolio's Pages
-workflow builds this project (`base: /floating-world/`) and copies its dist
-into the site artifact; the Playground page + footer link to it. Data comes
+Deployed at builtbyshrey.com/sound-and-rail/ — the portfolio's Pages
+workflow builds this project (`base: /sound-and-rail/`) and copies its dist
+into the site artifact; the Playground page + footer link to it. The old
+/floating-world/ path still resolves via a redirect stub the workflow writes. Data comes
 from `/api/linkmap/vehicles` on portfolio-backend (Railway,
 backend.builtbyshrey.com; localhost:3001 in dev) — the SAME endpoint and
 cache link-map polls (10 s poll matching the backend's cache TTL,

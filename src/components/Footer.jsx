@@ -129,7 +129,7 @@ const Footer = () => {
               </li>
               <li>
                 <a
-                  href="/floating-world/"
+                  href="/sound-and-rail/"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   Sound & Rail
