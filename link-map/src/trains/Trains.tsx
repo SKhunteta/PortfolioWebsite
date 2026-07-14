@@ -17,6 +17,7 @@ import { LIVE, lineGlow } from "../world/palettes";
 import { sunPhase } from "../world/sun";
 import { updatePalette } from "../world/palettes";
 import { easeWeather, applyWeather } from "../world/weather";
+import { pushShadow } from "../world/shadows";
 import { TRAIN_MODEL } from "./TrainModel";
 
 export const MAX_TRAINS = 48;
@@ -103,6 +104,10 @@ export function Trains() {
       pointAt(train.dir, train.sRendered, scratch);
       matrix.makeTranslation(scratch.x, train.y, scratch.z);
       mesh.setMatrixAt(i, matrix);
+
+      // A soft wash-shadow under the paper: an elevated train floats a big
+      // faint one offset southeast, a tunnel train almost none (world/shadows).
+      pushShadow(scratch.x, scratch.z, train.y, train.modelL * 0.32);
 
       const glow = lineGlow(train.lineId, LINE_BY_ID.get(train.lineId)?.color ?? "#5fe3b0");
       colorAttr.setXYZ(i, glow.r, glow.g, glow.b);

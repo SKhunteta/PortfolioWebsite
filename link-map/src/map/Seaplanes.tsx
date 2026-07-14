@@ -23,6 +23,7 @@ import { projectLatLng } from "./network";
 import { CLOCK } from "../world/clock";
 import { LIVE } from "../world/palettes";
 import { sunPhase } from "../world/sun";
+import { pushShadow } from "../world/shadows";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
 const VERT = /* glsl */ `
@@ -196,6 +197,7 @@ export function Seaplanes() {
   }, []);
 
   const mooredWritten = useRef(false);
+  const mooredPos = useMemo(() => MOORED.map((s) => projectLatLng(s.lat, s.lng)), []);
 
   useFrame(() => {
     const mesh = meshRef.current;
@@ -217,8 +219,15 @@ export function Seaplanes() {
       matrix.compose(position.set(x, y, z), quaternion, scale.setScalar(f.toyLengthKm));
       mesh.setMatrixAt(i, matrix);
       fadeAttr.setX(i, daylight);
+      // The float-plane's shadow races the water on the takeoff run and rides
+      // far and faint at altitude — fading out with the plane through dusk.
+      pushShadow(x, z, y, f.toyLengthKm * 0.5, 0.7 * daylight);
     }
     fadeAttr.needsUpdate = true;
+
+    // The moored pair rests on the water: a small steady shade, every frame
+    // (the queue is drained each frame, so this can't be a write-once).
+    for (const p of mooredPos) pushShadow(p.x, p.z, 0, FLIGHTS[0].toyLengthKm * 0.5, 0.6);
 
     // The moored pair never moves — write those matrices once.
     if (!mooredWritten.current) {

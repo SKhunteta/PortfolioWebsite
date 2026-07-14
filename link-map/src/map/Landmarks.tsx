@@ -19,6 +19,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { projectLatLng } from "./network";
 import { LIVE } from "../world/palettes";
 import { alpenglow } from "../world/sun";
+import { pushShadow } from "../world/shadows";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
 const VERT = /* glsl */ `
@@ -69,6 +70,27 @@ const FRAG = /* glsl */ `
     gl_FragColor = vec4(mix(c, uFog, fogFactor()), a);
   }
 `;
+
+// The notable shadow-casters (#41): the tall downtown and Bellevue towers,
+// the Needle, the Great Wheel out over the water, the stadiums, the Spheres
+// and Gas Works. [lat, lng, footprint radius km, height km] — pushed into the
+// wash-shadow queue each frame so the skyline grounds itself on the paper.
+export const LANDMARK_SHADOWS: [number, number, number, number][] = [
+  [47.6045, -122.3305, 0.18, 1.5], // Columbia Center
+  [47.6106, -122.3348, 0.14, 1.3], // Rainier Square
+  [47.6082, -122.3369, 0.15, 1.18], // 1201 Third
+  [47.6103, -122.332, 0.13, 1.1], // Two Union Square
+  [47.6067, -122.3327, 0.13, 1.02], // F5 Tower
+  [47.6019, -122.3318, 0.08, 0.72], // Smith Tower
+  [47.6205, -122.3493, 0.14, 0.96], // Space Needle
+  [47.6061, -122.3426, 0.11, 0.26], // the Great Wheel, over the water
+  [47.5952, -122.3316, 0.22, 0.2], // Lumen Field
+  [47.5914, -122.3325, 0.24, 0.16], // T-Mobile Park
+  [47.6156, -122.3389, 0.12, 0.13], // the Amazon Spheres
+  [47.645, -122.3352, 0.1, 0.24], // Gas Works drums
+  [47.6155, -122.1953, 0.13, 0.9], // Bellevue 600
+  [47.617, -122.2015, 0.13, 0.85], // Lincoln Square North
+];
 
 /** A footprint-anchored box: base sits on the paper at (lat, lng). */
 function tower(lat: number, lng: number, w: number, h: number, d: number, yaw = 0) {
@@ -244,6 +266,14 @@ function buildGeometry(): THREE.BufferGeometry {
 export function Landmarks() {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const geometry = useMemo(buildGeometry, []);
+  const shadowCasters = useMemo(
+    () =>
+      LANDMARK_SHADOWS.map(([lat, lng, foot, h]) => {
+        const { x, z } = projectLatLng(lat, lng);
+        return { x, z, foot, h };
+      }),
+    []
+  );
 
   useFrame(() => {
     const m = materialRef.current;
@@ -251,6 +281,9 @@ export function Landmarks() {
     m.uniforms.uOpacity.value = LIVE.landmarkOpacity;
     m.uniforms.uFogDensity.value = LIVE.fogDensity;
     m.uniforms.uAlpenglow.value = alpenglow();
+    // The skyline grounds itself: each notable tower and landmark drops a soft
+    // wash-shadow, longer and fainter the taller it stands (world/shadows).
+    for (const c of shadowCasters) pushShadow(c.x, c.z, c.h, c.foot, 0.9);
   });
 
   return (

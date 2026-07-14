@@ -8,6 +8,7 @@ import { Water } from "./map/Water";
 import { Parks } from "./map/Parks";
 import { Roads } from "./map/Roads";
 import { Landmarks } from "./map/Landmarks";
+import { Shadows } from "./map/Shadows";
 import { Ferries } from "./map/Ferries";
 import { Seaplanes } from "./map/Seaplanes";
 import { CityLights } from "./map/CityLights";
@@ -86,6 +87,8 @@ export default function App() {
         <Trains />
         <TrainModel />
         <Trails />
+        {/* Drains the shadow queue AFTER every caster has filled it this frame. */}
+        <Shadows />
         <Labels />
         <CameraRig />
         <Composer />

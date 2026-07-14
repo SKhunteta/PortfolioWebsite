@@ -21,6 +21,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { projectLatLng } from "./network";
 import { CLOCK } from "../world/clock";
 import { LIVE } from "../world/palettes";
+import { pushShadow } from "../world/shadows";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
 const VERT = /* glsl */ `
@@ -180,6 +181,8 @@ export function Ferries() {
         scale.setScalar(v.toyLengthKm)
       );
       mesh.setMatrixAt(i, matrix);
+      // A faint shade on the water beneath the hull.
+      pushShadow(x, z, 0, v.toyLengthKm * 0.5, 0.8);
     }
     mesh.instanceMatrix.needsUpdate = true;
   });
