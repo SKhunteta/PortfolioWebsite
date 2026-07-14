@@ -264,7 +264,7 @@ function stadium(
   // the bowl (offset along Z), aim the span (spanYaw rotates offset and arch
   // together, so it stays square to the bowl), then lift it to the roofline.
   for (const a of arches) {
-    const arch = new THREE.TorusGeometry(a.R, a.tube, 5, 26, Math.PI);
+    const arch = new THREE.TorusGeometry(a.R, a.tube, 7, 28, Math.PI);
     arch.translate(0, 0, a.off);
     arch.rotateY(spanYaw);
     arch.translate(0, h * 0.88, 0);
@@ -417,17 +417,22 @@ function buildGeometry(): THREE.BufferGeometry {
   //     wears its twin roof canopies over the long stands; T-Mobile Park its
   //     single great retractable-roof arch, the tallest ridge in SODO. Their
   //     spans align with the SODO grid's slight tilt off true north. ---
+  //     Footprints pulled back in from the first pass: the two bowls sit only
+  //     ~0.42 km apart, so the old widths merged them into one brown blob and
+  //     their roofs read as nothing. Tighter ovals + thicker, taller arches
+  //     read as two DISTINCT stadiums with clear crowns, and a keep-out in
+  //     Buildings.tsx now clears the town fabric off both.
   parts.push(
-    stadium(47.5952, -122.3316, 0.34, 0.52, 0.1, Math.PI / 2 + 0.12, [
-      { R: 0.26, tube: 0.03, off: 0.11 },
-      { R: 0.26, tube: 0.03, off: -0.11 },
+    stadium(47.5952, -122.3316, 0.26, 0.36, 0.12, Math.PI / 2 + 0.12, [
+      { R: 0.17, tube: 0.05, off: 0.075 },
+      { R: 0.17, tube: 0.05, off: -0.075 },
     ]),
-  ); // Lumen Field — twin canopies running the length of the bowl
+  ); // Lumen Field — twin canopies over the two long stands
   parts.push(
-    stadium(47.5914, -122.3325, 0.42, 0.44, 0.09, 0.12, [
-      { R: 0.24, tube: 0.032, off: 0 },
+    stadium(47.5914, -122.3325, 0.3, 0.3, 0.11, 0.12, [
+      { R: 0.2, tube: 0.06, off: 0 },
     ]),
-  ); // T-Mobile Park — the single great retractable-roof arch across the bowl
+  ); // T-Mobile Park — the single great retractable-roof arch, tallest in SODO
 
   // --- the working waterfront: gantry cranes ranked along the East
   //     Waterway, booms raked over the water — Terminal 18 faces east,
