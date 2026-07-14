@@ -92,10 +92,12 @@ function framePlane(
   camera.position.lerp(desiredCam, k);
 }
 
-// Nearest live train to a world point (a reel ride stop's anchor), or undefined
-// when the network is empty — night, or the feed asleep, in which case the reel
-// falls back to an orbit at the anchor.
-function nearestTrainTo(x: number, z: number): TrainState | undefined {
+// Nearest live train to a world point (a reel ride stop's anchor) within maxKm,
+// or undefined when none is close enough — night, the feed asleep, or simply no
+// train on that stretch of track just now — in which case the reel falls back
+// to an orbit at the anchor. The distance gate keeps a ride HONEST: we only
+// "ride the Lake Washington crossing" when a train is actually on it.
+function nearestTrainTo(x: number, z: number, maxKm: number): TrainState | undefined {
   let best: TrainState | undefined;
   let bestD = Infinity;
   for (const t of TRAINS.values()) {
@@ -106,7 +108,7 @@ function nearestTrainTo(x: number, z: number): TrainState | undefined {
       best = t;
     }
   }
-  return best;
+  return bestD <= maxKm ? best : undefined;
 }
 
 // Index of the airborne jet currently nearest a world point — the reel latches
@@ -406,7 +408,9 @@ export function CameraRig() {
         if (shot.seg !== reelSeg.current) {
           reelSeg.current = shot.seg;
           reelTrainId.current =
-            shot.kind === "train" ? nearestTrainTo(shot.x, shot.z)?.id ?? null : null;
+            shot.kind === "train"
+              ? nearestTrainTo(shot.x, shot.z, CONFIG.camera.observeRideMaxKm)?.id ?? null
+              : null;
           reelPlaneIdx.current = shot.kind === "plane" ? nearestFlightTo(shot.x, shot.z) : null;
         }
         if (shot.label !== reelLabel.current) {

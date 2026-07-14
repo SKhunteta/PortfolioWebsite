@@ -151,6 +151,10 @@ export const CONFIG = {
     // pause — so toggling Observe starts the cinematic flight almost at once,
     // yet a touch still hands the wheel back for a beat before the reel resumes.
     observeGraceS: 4,
+    // A reel ride only latches onto a train within this far of the stop's
+    // anchor; past it the stop falls back to a low orbit, so we never claim to
+    // "ride the crossing" while chasing a train that's actually downtown.
+    observeRideMaxKm: 6,
     // Cinematic idle tour (observer/tour.ts): after this many seconds of no
     // input the camera leaves its downtown drift and tours the whole line,
     // holding dwellS at each stop and travelS between them. Set well past
@@ -160,11 +164,12 @@ export const CONFIG = {
     tour: { dwellS: 7, travelS: 6 },
     // The Observe reel (observer/tour.ts `observeShot`): while Observe mode runs
     // the print through a whole day, the camera also takes a slow, curated
-    // flight around the most gorgeous parts of the city — dropping low over the
-    // downtown tunnel, riding the light rail and the jets, skimming the
-    // cyclists and the Lake Washington crossing. dwellS holds at each stop
-    // (long enough to settle into a ride), travelS glides between them.
-    observeReel: { dwellS: 8.5, travelS: 5 },
+    // flight around the most gorgeous parts of the city — riding the light rail
+    // and the jets (the reel's heart), dropping low over the downtown tunnel,
+    // skimming the cyclists. dwellS is the SHORT hold for the orbit interludes;
+    // the rides carry their own longer dwell (tour.ts RIDE_DWELL_S) so most of
+    // the reel is spent in a low, zoomed-in chase. travelS glides between stops.
+    observeReel: { dwellS: 7, travelS: 5 },
     minDistance: 0.8,
     maxDistance: 90,
     // Close enough that the toy S700 fills the frame; speed pulls it back.
@@ -172,8 +177,10 @@ export const CONFIG = {
     // The jetliner ride: farther back and a touch higher than the train chase
     // (the toy 737 is longer and moves faster), offset behind the nose along
     // the flight path so the camera sits in the plane's wake as it climbs,
-    // banks and touches down.
-    planeChaseOffsetKm: { back: 1.35, up: 0.34 },
+    // banks and touches down. Sits a little higher (and a touch farther back)
+    // than a pure tail-chase so the ride shows more of the city sliding by
+    // below the wing, not just the fuselage ahead.
+    planeChaseOffsetKm: { back: 1.5, up: 0.52 },
     chaseLerp: 2.2, // per-second exponential approach
     doubleTapPx: 48, // train pick radius in screen space
   },
