@@ -43,7 +43,7 @@ const planeFwd = new THREE.Vector3();
 // The tour's live framing, reused each frame so the idle circuit never allocates.
 const tourScratch: TourFraming = { x: 0, z: 0, radiusKm: 0, elevation: 0 };
 // The Observe reel's live shot, reused each frame likewise.
-const reelScratch: ReelShot = { x: 0, z: 0, radiusKm: 0, elevation: 0, kind: "orbit", seg: -1, label: "", detail: false };
+const reelScratch: ReelShot = { x: 0, z: 0, radiusKm: 0, elevation: 0, kind: "orbit", seg: -1, label: "", detail: false, random: false };
 // Scratch for picking the nearest train to a reel stop (never allocates).
 const pick = { x: 0, z: 0 };
 // Scratch for the orca reel stop's live, time-of-day-driven centre.
@@ -174,6 +174,20 @@ function nearestTrainTo(x: number, z: number, maxKm: number): TrainState | undef
     }
   }
   return bestD <= maxKm ? best : undefined;
+}
+
+// Any one live train, picked uniformly at random — the reel's "surprise" stop,
+// so the cut sometimes lands on whatever happens to be running rather than the
+// same curated crossing every loop. Undefined only when the feed is asleep and
+// no train exists at all, in which case the reel falls back to an orbit.
+function randomLiveTrain(): TrainState | undefined {
+  const n = TRAINS.size;
+  if (n === 0) return undefined;
+  let i = Math.floor(Math.random() * n);
+  for (const t of TRAINS.values()) {
+    if (i-- <= 0) return t;
+  }
+  return undefined;
 }
 
 // Index of the airborne jet currently nearest a world point — the reel latches
@@ -481,7 +495,10 @@ export function CameraRig() {
           reelSeg.current = shot.seg;
           reelTrainId.current =
             shot.kind === "train"
-              ? nearestTrainTo(shot.x, shot.z, CONFIG.camera.observeRideMaxKm)?.id ?? null
+              ? (shot.random
+                  ? randomLiveTrain()
+                  : nearestTrainTo(shot.x, shot.z, CONFIG.camera.observeRideMaxKm)
+                )?.id ?? null
               : null;
           reelPlaneIdx.current = shot.kind === "plane" ? nearestFlightTo(shot.x, shot.z) : null;
         }
