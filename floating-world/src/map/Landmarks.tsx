@@ -120,21 +120,23 @@ function brewery(lat: number, lng: number, w: number, h: number, d: number, yaw 
   return geo;
 }
 
-/** The Kraken Community Iceplex: three barrel-roofed NHL rinks riding the
- *  Northgate Station garage podium, the team's practice house. */
+/** The Kraken Community Iceplex: three flat-roofed rinks under one long
+ *  building — the Seattle Kraken's practice house and headquarters — sitting
+ *  at grade beside Northgate Station, on the old mall's parking lots. (Not
+ *  perched on the transit garage; it's its own building next to the station.) */
 function iceplex(lat: number, lng: number) {
   const { x, z } = projectLatLng(lat, lng);
   const parts: THREE.BufferGeometry[] = [];
-  const podium = new THREE.BoxGeometry(0.32, 0.05, 0.2);
-  podium.translate(0, 0.025, 0);
-  parts.push(podium);
+  // A low massing block at grade — the shared concourse / ground floor the
+  // three rinks rise off of, not a garage the building rides on.
+  const base = new THREE.BoxGeometry(0.32, 0.05, 0.2);
+  base.translate(0, 0.025, 0);
+  parts.push(base);
   for (const dx of [-0.1, 0, 0.1] as const) {
-    const wall = new THREE.BoxGeometry(0.085, 0.06, 0.18);
-    wall.translate(dx, 0.08, 0);
-    const roof = new THREE.CylinderGeometry(0.045, 0.045, 0.18, 8);
-    roof.rotateX(Math.PI / 2); // barrel vault running front-to-back over the ice
-    roof.translate(dx, 0.11, 0);
-    parts.push(wall, roof);
+    // Each rink is a flat-roofed hall, the real building's boxy massing.
+    const hall = new THREE.BoxGeometry(0.085, 0.1, 0.18);
+    hall.translate(dx, 0.1, 0); // floor sits on the concourse top (y = 0.05)
+    parts.push(hall);
   }
   const geo = mergeGeometries(parts, false)!;
   parts.forEach((g) => g.dispose());
@@ -253,8 +255,9 @@ function buildGeometry(): THREE.BufferGeometry {
   // --- neighborhood haunts strung along the line: the small places that make
   //     a commute personal, each dropped at its real address and toy-scaled
   //     like everything else so it still reads on the paper ---
-  // Kraken Community Iceplex — the three-rink practice house atop the
-  //   Northgate Station garage (10601 5th Ave NE).
+  // Kraken Community Iceplex — the Kraken's three-rink practice house and
+  //   headquarters beside Northgate Station, on the old mall's lots
+  //   (10601 5th Ave NE).
   parts.push(iceplex(47.70611, -122.32528));
   // Bellevue Brewing — the Spring District brewpub off the 2 Line
   //   (12190 NE District Way).
