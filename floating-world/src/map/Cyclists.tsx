@@ -26,6 +26,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { projectLatLng } from "./network";
+import { BASEMAP_WATER, HAS_BASEMAP } from "./basemap";
 import { CLOCK } from "../world/clock";
 import { LIVE } from "../world/palettes";
 import { PROFILE } from "../world/device";
@@ -68,8 +69,7 @@ interface Route {
   loop: boolean; // closed ring (Green Lake) vs. out-and-back trail (Burke-Gilman)
 }
 
-function route(latlngs: [number, number][], loop = false): Route {
-  const base = latlngs.map(([lat, lng]) => projectLatLng(lat, lng));
+function routeFromXZ(base: { x: number; z: number }[], loop = false): Route {
   // A loop closes back onto its first point, so append it as a real vertex —
   // then the closing segment is just another leg the sampler walks.
   const pts = loop ? [...base, base[0]] : base;
@@ -78,6 +78,13 @@ function route(latlngs: [number, number][], loop = false): Route {
     cum.push(cum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].z - pts[i - 1].z));
   }
   return { pts, cum, lengthKm: cum[cum.length - 1], loop };
+}
+
+function route(latlngs: [number, number][], loop = false): Route {
+  return routeFromXZ(
+    latlngs.map(([lat, lng]) => projectLatLng(lat, lng)),
+    loop
+  );
 }
 
 // The Burke-Gilman's core arc across the visible map: Ballard → Fremont → Gas
@@ -94,23 +101,96 @@ const BURKE_GILMAN = route([
   [47.6790, -122.2770], // Matthews Beach
 ]);
 
-// The Green Lake path: the ~4.5 km ring around the lake that everyone in
-// Seattle knows, walked and ridden all day. Coarse real waypoints tracing the
-// shoreline loop counter-clockwise from the north end; `loop` closes it so a
-// rider just keeps going around instead of turning back.
-const GREEN_LAKE = route(
-  [
-    [47.6847, -122.3340], // north shore
-    [47.6835, -122.3298], // northeast
-    [47.6807, -122.3280], // east shore (Latona / East Green Lake Dr)
-    [47.6779, -122.3298], // southeast
-    [47.6767, -122.3340], // south shore (Aqua Theater end)
-    [47.6779, -122.3382], // southwest
-    [47.6807, -122.3400], // west shore (West Green Lake Dr)
-    [47.6835, -122.3382], // northwest
-  ],
-  true
-);
+// The Green Lake path: the ring AROUND the lake that everyone in Seattle knows,
+// walked and ridden all day. Riders must stay on the surrounding park path, not
+// out on the water — so we trace the lake's ACTUAL baked shoreline
+// (basemap.json, water polygon) and push every vertex outward from its centroid
+// so the ridden ring hugs the bank just beyond the wave pattern. `loop` closes
+// it so a rider just keeps going around instead of turning back.
+const GREEN_LAKE_CENTER = projectLatLng(47.6807, -122.334);
+// How far the ridden ring sits OUTSIDE the shoreline, in km — a uniform buffer
+// so riders travel the surrounding bank, never the water. ~0.11 clears the
+// seigaiha wash and the toy bike's own width.
+const GREEN_LAKE_MARGIN = 0.11;
+
+/** The baked Green Lake polygon, pushed outward by a uniform margin into a
+ *  rideable ring on the bank — or null if the basemap is the placeholder stub
+ *  (no real water to hug). Offsetting along each vertex's outward normal keeps
+ *  the whole ring off the water even where the real shoreline curves inward,
+ *  which a simple centroid-scale can't. */
+function greenLakeRing(): { x: number; z: number }[] | null {
+  if (!HAS_BASEMAP || BASEMAP_WATER.length === 0) return null;
+  let best: [number, number][] | null = null;
+  let bestD = Infinity;
+  for (const w of BASEMAP_WATER) {
+    let sx = 0;
+    let sz = 0;
+    for (const [x, z] of w.ring) {
+      sx += x;
+      sz += z;
+    }
+    const cx = sx / w.ring.length;
+    const cz = sz / w.ring.length;
+    const d = Math.hypot(cx - GREEN_LAKE_CENTER.x, cz - GREEN_LAKE_CENTER.z);
+    if (d < bestD) {
+      bestD = d;
+      best = w.ring;
+    }
+  }
+  // Nothing lake-like near Green Lake (unexpected on the real basemap): bail to
+  // the hand-authored fallback rather than ring some far-off pond.
+  if (!best || bestD > 1.0) return null;
+  // Baked rings often repeat the first point at the end; drop it so per-vertex
+  // normals and the loop's closing segment don't double up.
+  const ring =
+    best.length > 1 &&
+    Math.hypot(best[0][0] - best[best.length - 1][0], best[0][1] - best[best.length - 1][1]) < 1e-3
+      ? best.slice(0, -1)
+      : best;
+  let sx = 0;
+  let sz = 0;
+  for (const [x, z] of ring) {
+    sx += x;
+    sz += z;
+  }
+  const cx = sx / ring.length;
+  const cz = sz / ring.length;
+  const n = ring.length;
+  return ring.map((p, i) => {
+    const prev = ring[(i - 1 + n) % n];
+    const next = ring[(i + 1) % n];
+    // Average of the two adjacent edge normals: the local outward direction.
+    let nx = p[1] - prev[1] + (next[1] - p[1]);
+    let nz = -(p[0] - prev[0]) - (next[0] - p[0]);
+    const len = Math.hypot(nx, nz) || 1;
+    nx /= len;
+    nz /= len;
+    // Point it away from the lake centre (the shoreline is star-shaped about it).
+    if (nx * (p[0] - cx) + nz * (p[1] - cz) < 0) {
+      nx = -nx;
+      nz = -nz;
+    }
+    return { x: p[0] + nx * GREEN_LAKE_MARGIN, z: p[1] + nz * GREEN_LAKE_MARGIN };
+  });
+}
+
+// Fallback loop (placeholder basemap only): a coarse ring authored from real
+// Green Lake waypoints, already sized to clear the water.
+const GREEN_LAKE_FALLBACK: [number, number][] = [
+  [47.685, -122.334], // north shore
+  [47.6836, -122.3285], // northeast
+  [47.6805, -122.327], // east shore (East Green Lake Dr)
+  [47.6772, -122.3285], // southeast
+  [47.676, -122.334], // south shore (Aqua Theater end)
+  [47.6772, -122.3395], // southwest
+  [47.6805, -122.341], // west shore (West Green Lake Dr)
+  [47.6836, -122.3395], // northwest
+];
+
+const GREEN_LAKE = (() => {
+  const ring = greenLakeRing();
+  return ring ? routeFromXZ(ring, true) : route(GREEN_LAKE_FALLBACK, true);
+})();
 
 // Deterministic 0..1 hash — no Math.random, so reloads lay the riders out the
 // same way every time (the scene's determinism rule).
