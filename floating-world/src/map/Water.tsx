@@ -24,6 +24,7 @@ import { buildStrip, mergeStrips } from "./ribbon";
 import { CLOCK } from "../world/clock";
 import { LIVE } from "../world/palettes";
 import { CONFIG } from "../world/config";
+import { tideLevel } from "../world/tide";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
 const WOBBLE_GLSL = /* glsl */ `
@@ -132,15 +133,23 @@ const EDGE_FRAG = /* glsl */ `
   varying vec2 vUv;
   uniform vec3 uColor;
   uniform float uIntensity;
+  uniform float uTide; // -1 ebb .. +1 flood — a slow astronomical breath
   void main() {
-    float across = abs(vUv.y * 2.0 - 1.0);
-    float core = pow(smoothstep(1.0, 0.0, across), 1.6);
+    // uTide walks the waterline across the strand: at flood the pigment pools
+    // wider and deeper up the paper, at ebb it thins back to a faint line and
+    // recedes. Sub-perceptual moment to moment, hours to swing — the Sound
+    // breathing. See world/tide.ts (astronomical phase, never a gauge number).
+    float band = (vUv.y * 2.0 - 1.0) - uTide * 0.2; // waterline drifts with tide
+    float across = abs(band);
+    float reach = 0.85 + uTide * 0.28;               // flood pools further out
+    float core = pow(smoothstep(reach, 0.0, across), 1.6);
     float pool = 0.75 + 0.35 * wcNoise(vWorld * 2.2); // pigment pooling
+    float tideGain = 0.72 + 0.28 * (uTide * 0.5 + 0.5); // more pigment at flood
     // Normal-blended pigment (mix toward fog per the raw-ShaderMaterial
     // contract): literal blue pooling along the shoreline, able to darken
     // the bright paper it meets.
     vec3 c = mix(uColor, uFog, fogFactor());
-    gl_FragColor = vec4(c, core * pool * uIntensity);
+    gl_FragColor = vec4(c, core * pool * uIntensity * tideGain);
   }
 `;
 
@@ -205,6 +214,9 @@ export function Water() {
   const fillRef = useRef<THREE.ShaderMaterial>(null);
   const overRef = useRef<THREE.ShaderMaterial>(null);
   const edgeRef = useRef<THREE.ShaderMaterial>(null);
+  // The tide moves over hours; sampling it every few seconds is plenty and
+  // keeps the suncalc call off the hot path.
+  const tideRef = useRef({ next: 0, val: tideLevel() });
 
   const { fillGeometry, edgeGeometry } = useMemo(() => {
     const polys = HAS_BASEMAP ? BASEMAP_WATER : fallbackPolygons();
@@ -251,7 +263,12 @@ export function Water() {
       overRef.current.uniforms.uSeigaihaIntensity.value = LIVE.seigaihaIntensity;
     }
     if (edgeRef.current) {
+      if (CLOCK.t >= tideRef.current.next) {
+        tideRef.current.val = tideLevel();
+        tideRef.current.next = CLOCK.t + 4;
+      }
       edgeRef.current.uniforms.uTime.value = CLOCK.t;
+      edgeRef.current.uniforms.uTide.value = tideRef.current.val;
       edgeRef.current.uniforms.uIntensity.value = LIVE.waterEdgeIntensity;
       edgeRef.current.uniforms.uFogDensity.value = LIVE.fogDensity;
     }
@@ -322,6 +339,7 @@ export function Water() {
           uniforms={{
             uColor: { value: LIVE.waterEdge },
             uIntensity: { value: LIVE.waterEdgeIntensity },
+            uTide: { value: 0 },
             uFog: { value: LIVE.fog },
             uFogDensity: { value: LIVE.fogDensity },
             ...wobbleUniforms(),
