@@ -25,6 +25,7 @@ import { LIVE } from "../world/palettes";
 import { INPUT_TOUCH } from "../world/device";
 import { initPlatformSites, initUndergroundSites, PLATFORM_PULSE } from "./platformPulse";
 import { motifForName } from "./motifs";
+import { audioArrival } from "../audio/engine";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "../map/watercolorGlsl";
 
 interface StationSlot {
@@ -326,6 +327,9 @@ export function Stations() {
       // Arrival = the dwell rising edge. React write on events only —
       // the hot path never touches the store per-frame.
       if (dwelling && !slot.wasDwelling && dwellMark) {
+        // Every arrival strikes a koto pluck, pitched by line (the engine
+        // rate-limits the first-poll burst itself). No-op when audio is off.
+        audioArrival(dwellMark.lineId);
         if (CLOCK.t > CAPTION_QUIET_START_S && CLOCK.t - lastCaptionT > CAPTION_COOLDOWN_S) {
           lastCaptionT = CLOCK.t;
           const line = LINE_BY_ID.get(dwellMark.lineId);

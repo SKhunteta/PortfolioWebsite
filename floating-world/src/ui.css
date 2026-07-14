@@ -247,7 +247,8 @@ body {
    phones. Sits below the observe button, which owns the top-right corner. */
 .hud-weather {
   position: fixed;
-  top: calc(max(14px, env(safe-area-inset-top)) + 52px);
+  /* Below the observe + sound buttons in the shared top-right column. */
+  top: calc(max(14px, env(safe-area-inset-top)) + 106px);
   right: max(20px, env(safe-area-inset-right));
   font-size: 10px;
   letter-spacing: 0.2em;
@@ -615,6 +616,56 @@ body {
   animation: hud-pulse 3s ease-in-out infinite;
 }
 
+/* The ambient-sound toggle: a twin of the observe button, stacked just below
+   it in the same top-right ink column. Muted by default; lit vermilion-warm
+   when the print is breathing. Full 44px touch target for phones. */
+.hud-sound {
+  position: fixed;
+  top: calc(max(14px, env(safe-area-inset-top)) + 52px);
+  right: max(20px, env(safe-area-inset-right));
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 15px;
+  font-family: var(--hud-serif);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #6f5a3e;
+  background: rgba(242, 230, 198, 0.34);
+  border: 1px solid rgba(122, 101, 73, 0.38);
+  border-radius: 3px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  text-shadow: var(--fw-halo);
+  transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}
+.hud-sound:hover {
+  background: rgba(242, 230, 198, 0.55);
+  color: #4a3721;
+}
+.hud-sound:focus-visible {
+  outline: 2px solid rgba(199, 62, 42, 0.55);
+  outline-offset: 2px;
+}
+.hud-sound .hud-dot {
+  background: #a89675;
+}
+/* Breathing: the dot warms to vermilion (the live register) and pulses, so the
+   button says the print is making sound the way the badge says it's live. */
+.hud-sound-on {
+  background: rgba(199, 62, 42, 0.14);
+  border-color: rgba(199, 62, 42, 0.48);
+  color: #b0472c;
+}
+.hud-sound-on .hud-dot {
+  background: #c73e2a;
+  box-shadow: 0 0 8px #c73e2a88;
+  animation: hud-pulse 3s ease-in-out infinite;
+}
+
 .hud-attrib {
   position: fixed;
   left: max(22px, env(safe-area-inset-left));
@@ -629,8 +680,8 @@ body {
 
 .hud-debug {
   position: fixed;
-  /* Below the observe button + weather word (dev-only readout, same corner). */
-  top: calc(max(14px, env(safe-area-inset-top)) + 74px);
+  /* Below the observe + sound buttons and the weather word (dev-only). */
+  top: calc(max(14px, env(safe-area-inset-top)) + 128px);
   right: max(20px, env(safe-area-inset-right));
   font-size: 11px;
   letter-spacing: 0.1em;

@@ -8,6 +8,7 @@ import { useUi, TRAINS, Mode } from "../trains/store";
 import { STATION_BY_ID } from "../map/network";
 import { identityForName } from "../stations/identity";
 import { toggleObserve } from "../world/observe";
+import { useAudioUi } from "../audio/engine";
 import { useWeather } from "../world/weather";
 import { TIER } from "../world/device";
 import { HAS_BASEMAP } from "../map/basemap";
@@ -54,6 +55,8 @@ export function Hud() {
   const observing = useUi((s) => s.observing);
   const observeShotLabel = useUi((s) => s.observeShotLabel);
   const touring = useUi((s) => s.touring);
+  const soundOn = useAudioUi((s) => s.enabled);
+  const toggleSound = useAudioUi((s) => s.toggle);
   // The underground hall the camera has dived into — its name and real artwork
   // name the quiet caption while you're down there ("Capitol Hill · 'Jet Kiss'").
   const diveId = useUi((s) => s.diveStationId);
@@ -183,6 +186,24 @@ export function Hud() {
       >
         <span className="hud-dot" />
         {observing ? "observing" : "observe"}
+      </button>
+
+      {/* The room tone: a generative ambient print-hum keyed to the same sun,
+          weather and trains as the paint. Off by default — a breathing sheet
+          shouldn't ambush anyone with sound, and browsers block autoplay. */}
+      <button
+        type="button"
+        className={`hud-sound ${soundOn ? "hud-sound-on" : ""}`}
+        onClick={toggleSound}
+        aria-pressed={soundOn}
+        title={
+          soundOn
+            ? "mute — the print falls silent"
+            : "let the print breathe — ambient sound keyed to the light"
+        }
+      >
+        <span className="hud-dot" />
+        {soundOn ? "sound" : "muted"}
       </button>
 
       {/* ODbL attribution — shown only when OSM geography is on screen. */}
