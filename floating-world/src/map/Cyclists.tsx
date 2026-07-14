@@ -1,8 +1,8 @@
 // The Burke-Gilman cyclists: a few toy riders gliding Seattle's famous
 // rail-trail, which threads right past the U-District and Husky Stadium stops —
-// so the bikes cross the rail world instead of decorating a corner of it. The
-// opposite of the anonymous freeway wash (map/TrafficWash.tsx): these are HERO
-// figures you can pick out and follow, exactly like the ferries. Background
+// so the bikes cross the rail world instead of decorating a corner of it. Kin
+// to the street cars (map/Cars.tsx), but these are HERO figures you can pick
+// out and follow along a named trail, exactly like the ferries. Background
 // paint, not data — like Rainier and the ferries they belong to the page: a
 // real trail, a real riding pace, deterministic from the scene clock, never
 // presented as live. Their count-of-visible thins with the real Seattle hour

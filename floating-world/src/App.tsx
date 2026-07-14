@@ -8,7 +8,7 @@ import { GroundPlane } from "./map/GroundPlane";
 import { Water } from "./map/Water";
 import { Parks } from "./map/Parks";
 import { Roads } from "./map/Roads";
-import { TrafficWash } from "./map/TrafficWash";
+import { Cars } from "./map/Cars";
 import { Forest } from "./map/Forest";
 import { Buildings } from "./map/Buildings";
 import { Landmarks } from "./map/Landmarks";
@@ -93,7 +93,7 @@ export default function App() {
         <Water />
         <GroundPlane />
         <Roads />
-        <TrafficWash />
+        <Cars />
         <Forest />
         <Buildings />
         <Landmarks />

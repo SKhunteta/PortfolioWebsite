@@ -44,8 +44,8 @@ export interface Palette {
   parkOpacity: number;
   road: THREE.Color; // dry-brush sumi ink by day, lantern gold by night
   roadIntensity: number;
-  traffic: THREE.Color; // abstract vehicle-flow shimmer scrolling the roads
-  trafficIntensity: number; // palette floor; real Seattle hour scales the rest
+  traffic: THREE.Color; // warm headlamp/tail color for the street cars (map/Cars.tsx)
+  trafficIntensity: number; // car body/opacity floor; real Seattle hour scales the fleet
   landmark: THREE.Color; // hand-inked silhouettes (Needle, skyline, Rainier)
   landmarkOpacity: number;
   tree: THREE.Color; // the evergreen carpet — conifer silhouettes on the land

@@ -58,6 +58,10 @@ export interface DeviceProfile {
   // Burke-Gilman riders (map/Cyclists.tsx) — ONE instanced draw call, count is
   // how many hero figures ride the trail at once.
   cyclistCount: number;
+  // Street cars (map/Cars.tsx) — ONE instanced draw call; count is the size of
+  // the fleet distributed across the road network (the real Seattle hour thins
+  // how many are visible). Fill/JS-pose budget, so it scales with the tier.
+  carCount: number;
 }
 
 const PROFILES: Record<Tier, DeviceProfile> = {
@@ -75,6 +79,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     birdCount: 9,
     platformMotes: 4,
     cyclistCount: 3,
+    carCount: 70,
   },
   tablet: {
     dpr: [1, 2],
@@ -90,6 +95,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     birdCount: 13,
     platformMotes: 6,
     cyclistCount: 4,
+    carCount: 130,
   },
   desktop: {
     dpr: [1, 2],
@@ -105,6 +111,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     birdCount: 16,
     platformMotes: 8,
     cyclistCount: 5,
+    carCount: 190,
   },
 };
 
