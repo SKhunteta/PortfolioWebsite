@@ -11,7 +11,7 @@ import { toggleObserve } from "../world/observe";
 import { useAudioUi } from "../audio/engine";
 import { useWeather } from "../world/weather";
 import { TIER } from "../world/device";
-import { SOUND_FEATURE_ENABLED } from "../world/config";
+import { SOUND_FEATURE_ENABLED, OBSERVE_FEATURE_ENABLED } from "../world/config";
 import { HAS_BASEMAP } from "../map/basemap";
 import { PrintFrame } from "./PrintFrame";
 import { TimeOfDay } from "./TimeOfDay";
@@ -175,20 +175,22 @@ export function Hud() {
       {/* The optional day-runner: sweeps the print through a whole Seattle day
           and back, on demand. Off by default — the piece stays keyed to the
           real sun until you ask to watch it breathe. */}
-      <button
-        type="button"
-        className={`hud-observe ${observing ? "hud-observe-on" : ""}`}
-        onClick={toggleObserve}
-        aria-pressed={observing}
-        title={
-          observing
-            ? "stop — return to the real sun over Seattle"
-            : "run the print through a whole day"
-        }
-      >
-        <span className="hud-dot" />
-        {observing ? "observing" : "observe"}
-      </button>
+      {OBSERVE_FEATURE_ENABLED && (
+        <button
+          type="button"
+          className={`hud-observe ${observing ? "hud-observe-on" : ""}`}
+          onClick={toggleObserve}
+          aria-pressed={observing}
+          title={
+            observing
+              ? "stop — return to the real sun over Seattle"
+              : "run the print through a whole day"
+          }
+        >
+          <span className="hud-dot" />
+          {observing ? "observing" : "observe"}
+        </button>
+      )}
 
       {/* The manual time-of-day dial: pin the light to any Seattle hour by hand,
           or hand it back to the real sun. Subtle twin of the observe button,
