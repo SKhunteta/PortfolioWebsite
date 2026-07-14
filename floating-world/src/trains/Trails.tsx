@@ -102,8 +102,14 @@ export function Trails() {
       // and the tail both stays wider (taper) and fades slower (tailPow), so
       // the stroke reads longer without needing a longer sample window.
       const far = train.farFactor;
-      const widthMul = 1 + (CONFIG.trail.farWidthBoost - 1) * far;
-      const intensityMul = 1 + (CONFIG.trail.farIntensityBoost - 1) * far;
+      // Ridership as pigment: how full the train is scales the stroke's width
+      // and ink around a neutral half-full (world/ridership.ts). A crowded
+      // train lays down a heavier, wetter brushstroke; an empty one a whisper.
+      const load = CONFIG.trail.load;
+      const loadWidth = 1 + load.widthGain * (train.load - load.neutral);
+      const loadInk = 1 + load.inkGain * (train.load - load.neutral);
+      const widthMul = (1 + (CONFIG.trail.farWidthBoost - 1) * far) * loadWidth;
+      const intensityMul = (1 + (CONFIG.trail.farIntensityBoost - 1) * far) * loadInk;
       const taper = 0.85 - 0.25 * far;
       const tailPow = 1 - 0.3 * far;
 

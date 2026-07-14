@@ -15,6 +15,7 @@ import * as THREE from "three";
 import { createNoise2D } from "simplex-noise";
 import { pointAt, tangentAt } from "../map/network";
 import { FLIGHTS, airlinerPoseAt, type FlightPose } from "../map/Airliners";
+import { tourFraming, tourEnabled, tourForced, type TourFraming } from "./tour";
 import { TRAINS, useUi } from "../trains/store";
 import { CONFIG } from "../world/config";
 import { CLOCK } from "../world/clock";
@@ -30,6 +31,8 @@ const ndc = new THREE.Vector3();
 const planePose: FlightPose = { x: 0, z: 0, y: 0, yaw: 0, pitch: 0, roll: 0 };
 const planePos = new THREE.Vector3();
 const planeFwd = new THREE.Vector3();
+// The tour's live framing, reused each frame so the idle circuit never allocates.
+const tourScratch: TourFraming = { x: 0, z: 0, radiusKm: 0, elevation: 0 };
 
 // The drift's home: downtown, where the tunnel, both waters, and the busiest
 // stretch of track all sit (see CONFIG.camera.heart* for why not CENTROID).
@@ -66,6 +69,9 @@ export function CameraRig() {
   // before the drift carries you elsewhere.
   const driftTheta = useRef(1.35);
   const initialized = useRef(false);
+  // Mirrors the store's `touring` flag so we only push a zustand update on the
+  // frame the tour starts or stops, never every frame.
+  const touringRef = useRef(false);
 
   // Aspect-compensated FOV; chase narrows it a touch.
   useFrame(() => {
@@ -213,6 +219,10 @@ export function CameraRig() {
     const controls = controlsRef.current;
     if (!controls) return;
 
+    // Reconciled against touringRef at the end of the frame so any exit path
+    // (a chase, a grab, drift-before-the-tour) clears the flag uniformly.
+    let touringThisFrame = false;
+
     if (!initialized.current) {
       initialized.current = true;
       controls.target.set(HEART.x, 0, HEART.z);
@@ -264,25 +274,58 @@ export function CameraRig() {
       controls.target.lerp(planePos, k);
       camera.position.lerp(desiredCam, k);
     } else {
-      const idle = CLOCK.t - lastInteraction.current > CONFIG.camera.idleResumeS;
-      if (idle) {
+      const idleFor = CLOCK.t - lastInteraction.current;
+      // ?tour=on starts the circuit immediately, bypassing the idle wait.
+      if (idleFor > CONFIG.camera.idleResumeS || tourForced()) {
         // Drift: slow theta, micro-sway, radius breathing. All eased so the
         // handoff from user orbit is seamless.
         driftTheta.current += CONFIG.camera.driftRadSec * CLOCK.dt;
         const sway = noise2D(CLOCK.t * 0.02, 7.3) * 1.6;
         const f = driftFraming(size.width / size.height);
-        const radius = f.radius + CONFIG.camera.driftBreathKm * (CLOCK.breath - 0.5);
+
+        // Home orbit by default; the cinematic tour walks this centre and
+        // framing around the whole line once the idle stretch is long enough.
+        let centerX: number = HEART.x;
+        let centerZ: number = HEART.z;
+        let radiusBase = f.radius;
+        let elevation = f.elevation;
+        // idleFor is Infinity on a page nobody has touched yet (lastInteraction
+        // starts at -Infinity so the drift opens immediately). For the tour's
+        // TIMER we want a finite "seconds idle": time since the last touch, or
+        // since load when there's been none — so the tour begins tourAfterS
+        // after the opening drift, not on the very first frame.
+        const idleClock = Number.isFinite(idleFor) ? idleFor : CLOCK.t;
+        touringThisFrame =
+          tourEnabled() && (tourForced() || idleClock > CONFIG.camera.tourAfterS);
+        if (touringThisFrame) {
+          const w = tourFraming(
+            tourForced() ? CLOCK.t : idleClock - CONFIG.camera.tourAfterS,
+            tourScratch
+          );
+          centerX = w.x;
+          centerZ = w.z;
+          radiusBase = w.radiusKm;
+          elevation = w.elevation;
+        }
+
+        const radius = radiusBase + CONFIG.camera.driftBreathKm * (CLOCK.breath - 0.5);
         desiredCam.set(
-          HEART.x + radius * Math.cos(driftTheta.current + sway * 0.05),
-          radius * Math.sin(f.elevation),
-          HEART.z + radius * Math.sin(driftTheta.current + sway * 0.05) * 0.62
+          centerX + radius * Math.cos(driftTheta.current + sway * 0.05),
+          radius * Math.sin(elevation),
+          centerZ + radius * Math.sin(driftTheta.current + sway * 0.05) * 0.62
         );
         const k = 1 - Math.exp(-0.35 * CLOCK.dt);
         camera.position.lerp(desiredCam, k);
-        controls.target.x += (HEART.x + sway * 0.4 - controls.target.x) * k;
-        controls.target.z += (HEART.z - controls.target.z) * k;
+        controls.target.x += (centerX + sway * 0.4 - controls.target.x) * k;
+        controls.target.z += (centerZ - controls.target.z) * k;
         controls.target.y += (0 - controls.target.y) * k;
       }
+    }
+
+    // One zustand write per transition, from any branch above.
+    if (touringThisFrame !== touringRef.current) {
+      touringRef.current = touringThisFrame;
+      useUi.getState().setTouring(touringThisFrame);
     }
     controls.update();
   });

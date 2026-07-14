@@ -31,6 +31,13 @@ export interface TrainState {
   trailCount: number;
   lastSampleT: number;
   dwelling: boolean;
+  // Ridership as pigment (world/ridership.ts): occupancy is the real feed
+  // value 0..1 when the GTFS-RT feed carries it, else null; load is the
+  // smoothed effective load the trail ink reads — real when known, otherwise
+  // the clock-keyed ambient estimate. Eased in the tween so a crowd arrives
+  // like a wash, not a switch.
+  occupancy: number | null;
+  load: number;
 }
 
 export const TRAINS = new Map<string, TrainState>();
@@ -64,6 +71,8 @@ export function makeTrain(
     trailCount: 0,
     lastSampleT: -1,
     dwelling: false,
+    occupancy: null,
+    load: 0.5, // neutral until the tween eases it toward the real target
   };
 }
 
@@ -83,12 +92,17 @@ interface UiState {
   // True while the optional "observe" mode is sweeping the print through a
   // whole day (world/observe.ts owns the sweep; this is the React mirror).
   observing: boolean;
+  // True while the camera is running its unattended cinematic tour of the line
+  // (observer/tour.ts) — set on the tour's entry/exit transitions only, never
+  // per frame. Drives the quiet "touring" hint in the HUD.
+  touring: boolean;
   setMode: (mode: Mode, fetchedAt: string | null) => void;
   setHoverStation: (id: string | null) => void;
   setFollowTrain: (id: string | null) => void;
   setFollowPlane: (index: number | null) => void;
   setCaption: (text: string | null) => void;
   setObserving: (observing: boolean) => void;
+  setTouring: (touring: boolean) => void;
 }
 
 export const useUi = create<UiState>((set) => ({
@@ -99,6 +113,7 @@ export const useUi = create<UiState>((set) => ({
   followPlaneIndex: null,
   caption: null,
   observing: false,
+  touring: false,
   setMode: (mode, fetchedAt) => set({ mode, fetchedAt }),
   setHoverStation: (hoverStationId) => set({ hoverStationId }),
   // Picking a train releases any plane chase, and vice versa — one rider.
@@ -107,4 +122,5 @@ export const useUi = create<UiState>((set) => ({
   setCaption: (text) =>
     set((s) => (text ? { caption: { text, key: (s.caption?.key ?? 0) + 1 } } : { caption: null })),
   setObserving: (observing) => set({ observing }),
+  setTouring: (touring) => set({ touring }),
 }));

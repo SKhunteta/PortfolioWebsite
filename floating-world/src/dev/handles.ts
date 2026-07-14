@@ -69,6 +69,10 @@ export function installHandles() {
         lineId: t.lineId,
         directionId: t.dir.directionId,
         s: t.sRendered,
+        // Ridership: the eased ink weight, and the real feed occupancy (or null
+        // when the estimate is carrying it) — see world/ridership.ts.
+        load: t.load,
+        occupancy: t.occupancy,
       })),
   };
 }

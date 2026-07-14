@@ -21,7 +21,7 @@ const HOUR_FMT =
       })
     : null;
 
-function localHour(date: Date): number {
+export function localHour(date: Date): number {
   if (!HOUR_FMT) return 12; // SSR / no-Intl fallback: assume midday
   let h = 0;
   let m = 0;
