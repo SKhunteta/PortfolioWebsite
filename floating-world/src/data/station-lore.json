@@ -28,7 +28,7 @@
  "northgate": {
   "neighborhood": "Northgate",
   "opened": "2021-10-02",
-  "blurb": "A major transit hub adjacent to Northgate Mall and the NHL Kraken community ice rink. The pedestrian bridge connects to North Seattle College.",
+  "blurb": "A major transit hub adjacent to Northgate Mall and the Kraken Community Iceplex, the NHL team's three-rink practice house riding the station garage. The pedestrian bridge connects to North Seattle College.",
   "notableFact": "The John Lewis Memorial Bridge at Northgate spans I-5 to connect the station with North Seattle College."
  },
  "roosevelt": {
@@ -51,7 +51,7 @@
  "capitolhill": {
   "neighborhood": "Capitol Hill",
   "opened": "2016-03-19",
-  "blurb": "Seattle's most vibrant and eclectic neighborhood, known for its nightlife, diverse dining scene, and the iconic Pike/Pine corridor. A cultural hub of the city.",
+  "blurb": "Seattle's most vibrant and eclectic neighborhood, known for its nightlife, diverse dining scene, and the iconic Pike/Pine corridor. Broadway threads south past Stoup Brewing's beer hall, the Himalayan basement Annapurna Cafe, and the plant-based bar Life on Mars. A cultural hub of the city.",
   "notableFact": "Capitol Hill station features 'Jet Kiss' by artist Mike Ross, two repurposed Navy jets suspended over the platform."
  },
  "westlake": {
@@ -205,7 +205,7 @@
  "springdistrict": {
   "neighborhood": "Spring District",
   "opened": "2024-04-27",
-  "blurb": "A brand-new neighborhood built around the station. The Spring District is home to a major Meta campus and the Global Innovation Exchange.",
+  "blurb": "A brand-new neighborhood built around the station. The Spring District is home to a major Meta campus, the Global Innovation Exchange, and Bellevue Brewing's brewpub a block from the platform.",
   "notableFact": "The Spring District is one of the first neighborhoods in the region designed from the ground up around a light rail station."
  },
  "belred": {

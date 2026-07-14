@@ -2,9 +2,11 @@
 // Seattle — downtown's massed towers, the Space Needle, the SODO stadiums,
 // UW's campus and Husky Stadium, SeaTac's runways, the working waterfront's
 // gantry cranes, the Great Wheel, Gas Works' rusted drums, the Amazon
-// Spheres, Bellevue's second skyline across the lake for the 2 Line, and —
-// ghosted at real scale on the horizons — Mount Rainier southeast and the
-// Olympics west. Toy-scaled like the trains (~4–5× real height,
+// Spheres, Bellevue's second skyline across the lake for the 2 Line, a
+// handful of neighborhood haunts strung along the line (the Kraken's
+// Iceplex at Northgate, brewpubs and Broadway cafés), and — ghosted at real
+// scale on the horizons — Mount Rainier southeast and the Olympics west.
+// Toy-scaled like the trains (~4–5× real height,
 // the storybook register), merged into ONE geometry / ONE draw call, and
 // painted with the same watercolor wash + fog contract as every other
 // normal-blended layer. depthWrite stays false (the train model remains the
@@ -95,6 +97,47 @@ function crane(lat: number, lng: number, boomYaw: number) {
   legs.dispose();
   boom.dispose();
   geo.rotateY(boomYaw);
+  geo.translate(x, 0, z);
+  return geo;
+}
+
+/** A brewery / beer hall: a boxy taproom with a pair of fermentation tanks
+ *  standing beside it — the working silhouette every Seattle brewpub shares. */
+function brewery(lat: number, lng: number, w: number, h: number, d: number, yaw = 0) {
+  const { x, z } = projectLatLng(lat, lng);
+  const hall = new THREE.BoxGeometry(w, h, d);
+  hall.translate(0, h / 2, 0);
+  const tallTank = new THREE.CylinderGeometry(h * 0.26, h * 0.26, h * 1.4, 10);
+  tallTank.translate(w * 0.5 + h * 0.32, h * 0.7, -d * 0.12);
+  const shortTank = new THREE.CylinderGeometry(h * 0.22, h * 0.22, h * 1.1, 10);
+  shortTank.translate(w * 0.5 + h * 0.72, h * 0.55, d * 0.22);
+  const geo = mergeGeometries([hall, tallTank, shortTank], false)!;
+  hall.dispose();
+  tallTank.dispose();
+  shortTank.dispose();
+  if (yaw) geo.rotateY(yaw);
+  geo.translate(x, 0, z);
+  return geo;
+}
+
+/** The Kraken Community Iceplex: three barrel-roofed NHL rinks riding the
+ *  Northgate Station garage podium, the team's practice house. */
+function iceplex(lat: number, lng: number) {
+  const { x, z } = projectLatLng(lat, lng);
+  const parts: THREE.BufferGeometry[] = [];
+  const podium = new THREE.BoxGeometry(0.32, 0.05, 0.2);
+  podium.translate(0, 0.025, 0);
+  parts.push(podium);
+  for (const dx of [-0.1, 0, 0.1] as const) {
+    const wall = new THREE.BoxGeometry(0.085, 0.06, 0.18);
+    wall.translate(dx, 0.08, 0);
+    const roof = new THREE.CylinderGeometry(0.045, 0.045, 0.18, 8);
+    roof.rotateX(Math.PI / 2); // barrel vault running front-to-back over the ice
+    roof.translate(dx, 0.11, 0);
+    parts.push(wall, roof);
+  }
+  const geo = mergeGeometries(parts, false)!;
+  parts.forEach((g) => g.dispose());
   geo.translate(x, 0, z);
   return geo;
 }
@@ -206,6 +249,24 @@ function buildGeometry(): THREE.BufferGeometry {
   parts.push(tower(47.612, -122.1966, 0.22, 0.6, 0.22)); // Symetra-ish
   parts.push(tower(47.6178, -122.1968, 0.2, 0.52, 0.2)); // NE 8th fill
   parts.push(tower(47.6133, -122.1935, 0.2, 0.46, 0.2)); // fill by the station
+
+  // --- neighborhood haunts strung along the line: the small places that make
+  //     a commute personal, each dropped at its real address and toy-scaled
+  //     like everything else so it still reads on the paper ---
+  // Kraken Community Iceplex — the three-rink practice house atop the
+  //   Northgate Station garage (10601 5th Ave NE).
+  parts.push(iceplex(47.70611, -122.32528));
+  // Bellevue Brewing — the Spring District brewpub off the 2 Line
+  //   (12190 NE District Way).
+  parts.push(brewery(47.6241, -122.1777, 0.12, 0.09, 0.1, 0.2));
+  // Capitol Hill trio, strung south down Broadway / the Pike–Pine corridor:
+  //   Stoup Brewing's beer hall at Broadway & Union (1158 Broadway) …
+  parts.push(brewery(47.61347, -122.32072, 0.1, 0.08, 0.085, -0.35));
+  //   Annapurna Cafe, the Himalayan basement a block below the station
+  //   (1833 Broadway) …
+  parts.push(tower(47.61855, -122.32104, 0.07, 0.055, 0.06));
+  //   … and Life on Mars, the plant-based bar at Pike & Harvard (722 E Pike).
+  parts.push(tower(47.61423, -122.31958, 0.07, 0.07, 0.055, 0.3));
 
   // --- SeaTac: the paired runways (flat inked strokes) + control tower ---
   parts.push(tower(47.44, -122.3116, 0.06, 0.012, 3.0)); // 16L/34R
