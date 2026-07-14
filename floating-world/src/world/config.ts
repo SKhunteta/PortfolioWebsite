@@ -5,6 +5,13 @@
 // to re-enable.
 export const SOUND_FEATURE_ENABLED = false;
 
+// Temporarily disables the Observe world toggle (the HUD's top-right
+// "observe" button that sweeps the sun through a whole Seattle day and
+// flies the cinematic reel) without removing any of the observe code. The
+// __linkMap.observe() dev handle still works. Flip back to true to re-expose
+// the button in the HUD.
+export const OBSERVE_FEATURE_ENABLED = false;
+
 export const CONFIG = {
   poll: {
     intervalMs: 10_000, // matches the backend cache TTL
