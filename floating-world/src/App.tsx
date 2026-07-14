@@ -15,7 +15,9 @@ import { Buildings } from "./map/Buildings";
 import { Landmarks } from "./map/Landmarks";
 import { Kasumi } from "./map/Kasumi";
 import { Ferries } from "./map/Ferries";
+import { Orcas } from "./map/Orcas";
 import { Cyclists } from "./map/Cyclists";
+import { MontlakeCut } from "./map/MontlakeCut";
 import { Seaplanes } from "./map/Seaplanes";
 import { Airliners } from "./map/Airliners";
 import { Wakes } from "./map/Wakes";
@@ -103,7 +105,9 @@ export default function App() {
         <Kasumi />
         <Wakes />
         <Ferries />
+        <Orcas />
         <Cyclists />
+        <MontlakeCut />
         <Seaplanes />
         <Airliners />
         <Birds />
