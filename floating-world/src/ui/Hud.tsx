@@ -11,6 +11,7 @@ import { toggleObserve } from "../world/observe";
 import { useAudioUi } from "../audio/engine";
 import { useWeather } from "../world/weather";
 import { TIER } from "../world/device";
+import { SOUND_FEATURE_ENABLED } from "../world/config";
 import { HAS_BASEMAP } from "../map/basemap";
 import { PrintFrame } from "./PrintFrame";
 
@@ -190,21 +191,25 @@ export function Hud() {
 
       {/* The room tone: a generative ambient print-hum keyed to the same sun,
           weather and trains as the paint. Off by default — a breathing sheet
-          shouldn't ambush anyone with sound, and browsers block autoplay. */}
-      <button
-        type="button"
-        className={`hud-sound ${soundOn ? "hud-sound-on" : ""}`}
-        onClick={toggleSound}
-        aria-pressed={soundOn}
-        title={
-          soundOn
-            ? "mute — the print falls silent"
-            : "let the print breathe — ambient sound keyed to the light"
-        }
-      >
-        <span className="hud-dot" />
-        {soundOn ? "sound" : "muted"}
-      </button>
+          shouldn't ambush anyone with sound, and browsers block autoplay.
+          Temporarily disabled via SOUND_FEATURE_ENABLED (world/config.ts) —
+          code stays intact, just not exposed in the HUD right now. */}
+      {SOUND_FEATURE_ENABLED && (
+        <button
+          type="button"
+          className={`hud-sound ${soundOn ? "hud-sound-on" : ""}`}
+          onClick={toggleSound}
+          aria-pressed={soundOn}
+          title={
+            soundOn
+              ? "mute — the print falls silent"
+              : "let the print breathe — ambient sound keyed to the light"
+          }
+        >
+          <span className="hud-dot" />
+          {soundOn ? "sound" : "muted"}
+        </button>
+      )}
 
       {/* ODbL attribution — shown only when OSM geography is on screen. */}
       {HAS_BASEMAP && <div className="hud-attrib">map data © OpenStreetMap</div>}
