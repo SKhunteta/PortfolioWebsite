@@ -47,3 +47,29 @@ export function sunPhase(date = new Date()): number {
   if (override != null) return override;
   return sunPhaseAt(date);
 }
+
+// The HUD's manual time-of-day dial walks a full Seattle day by hand. We anchor
+// its 0..1 sweep to today's solar midnight (nadir) as a REAL instant, so the arc
+// is timezone- and DST-correct no matter where the viewer sits: frac 0 = deep
+// night, ~0.5 = solar noon, 1 = back to night. Each step is a true instant fed
+// straight into sunPhaseAt, so the light curve stays as honest as the live sun.
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function dayFractionToDate(frac: number): Date {
+  const nadir = SunCalc.getTimes(new Date(), SEATTLE.lat, SEATTLE.lng).nadir;
+  return new Date(nadir.getTime() + frac * DAY_MS);
+}
+
+/** Honest sun phase for a 0..1 position across today's Seattle solar day. */
+export function sunPhaseForFraction(frac: number): number {
+  return sunPhaseAt(dayFractionToDate(frac));
+}
+
+/** The Seattle wall-clock time at a 0..1 day position, e.g. "6:42 AM". */
+export function seattleClockAt(frac: number): string {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Los_Angeles",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(dayFractionToDate(frac));
+}

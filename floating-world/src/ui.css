@@ -616,6 +616,158 @@ body {
   animation: hud-pulse 3s ease-in-out infinite;
 }
 
+/* The time-of-day dial: a subtle twin of the observe button, stacked just below
+   it in the same top-right ink column. A sun-dot toggle that opens a thin slider
+   to walk the print through any Seattle hour, then hand it back to the live sun. */
+.hud-time {
+  position: fixed;
+  top: calc(max(14px, env(safe-area-inset-top)) + 52px);
+  right: max(20px, env(safe-area-inset-right));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  z-index: 5;
+}
+.hud-time-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 15px;
+  font-family: var(--hud-serif);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #6f5a3e;
+  background: rgba(242, 230, 198, 0.34);
+  border: 1px solid rgba(122, 101, 73, 0.38);
+  border-radius: 3px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  text-shadow: var(--fw-halo);
+  transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}
+.hud-time-toggle:hover {
+  background: rgba(242, 230, 198, 0.55);
+  color: #4a3721;
+}
+.hud-time-toggle:focus-visible {
+  outline: 2px solid rgba(199, 62, 42, 0.55);
+  outline-offset: 2px;
+}
+.hud-time-toggle .hud-dot {
+  background: #a89675;
+}
+/* Pinned: the dot warms to the simulated-gold, echoing the observe button —
+   the light is being driven by hand, not read live off the sun. */
+.hud-time-on {
+  background: rgba(201, 151, 46, 0.16);
+  border-color: rgba(201, 151, 46, 0.5);
+  color: #9a7526;
+}
+.hud-time-on .hud-dot {
+  background: #c9972e;
+  box-shadow: 0 0 8px #c9972e88;
+}
+.hud-time-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(230px, 62vw);
+  padding: 12px 14px;
+  background: rgba(242, 230, 198, 0.52);
+  border: 1px solid rgba(122, 101, 73, 0.38);
+  border-radius: 3px;
+  text-shadow: var(--fw-halo);
+}
+.hud-time-range {
+  width: 100%;
+  height: 26px;
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+.hud-time-range::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    #2c3350 0%,
+    #7a5a86 24%,
+    #e6d3a2 50%,
+    #c9972e 72%,
+    #2c3350 100%
+  );
+}
+.hud-time-range::-moz-range-track {
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    #2c3350 0%,
+    #7a5a86 24%,
+    #e6d3a2 50%,
+    #c9972e 72%,
+    #2c3350 100%
+  );
+}
+.hud-time-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: #f2e6c6;
+  border: 1px solid rgba(122, 101, 73, 0.7);
+  box-shadow: 0 1px 3px rgba(51, 38, 26, 0.35);
+}
+.hud-time-range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #f2e6c6;
+  border: 1px solid rgba(122, 101, 73, 0.7);
+  box-shadow: 0 1px 3px rgba(51, 38, 26, 0.35);
+}
+.hud-time-range:focus-visible {
+  outline: 2px solid rgba(199, 62, 42, 0.55);
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+.hud-time-readout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--hud-serif);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: #6f5a3e;
+}
+.hud-time-live {
+  font-family: var(--hud-serif);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #b0472c;
+  background: transparent;
+  border: 1px solid rgba(199, 62, 42, 0.42);
+  border-radius: 3px;
+  padding: 5px 12px;
+  min-height: 32px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+.hud-time-live:hover {
+  background: rgba(199, 62, 42, 0.12);
+}
+
 /* The ambient-sound toggle: a twin of the observe button, stacked just below
    it in the same top-right ink column. Muted by default; lit vermilion-warm
    when the print is breathing. Full 44px touch target for phones. */
