@@ -18,6 +18,7 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { projectLatLng } from "./network";
 import { LIVE } from "../world/palettes";
+import { alpenglow } from "../world/sun";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
 const VERT = /* glsl */ `
@@ -42,6 +43,7 @@ const FRAG = /* glsl */ `
   varying vec3 vNormal;
   uniform vec3 uColor;
   uniform float uOpacity;
+  uniform float uAlpenglow; // 0..1 twilight flush (world/sun.ts)
   void main() {
     float wash = wcFbm(vWorld * 0.8 + vY * 2.1); // pigment mottle per face
     // A fixed key light from the northwest sky: sunlit and shadowed faces
@@ -55,7 +57,14 @@ const FRAG = /* glsl */ `
     // Watercolor still pools faintly at the base.
     c *= mix(1.08, 0.94, smoothstep(0.0, 0.9, vY));
     // Snowline — only Rainier and the Olympics climb past ~1.6 km.
-    c = mix(c, vec3(0.62, 0.7, 0.8), smoothstep(1.6, 3.6, vY) * 0.85);
+    float snow = smoothstep(1.6, 3.6, vY);
+    c = mix(c, vec3(0.62, 0.7, 0.8), snow * 0.85);
+    // Alpenglow: at real sunrise/sunset the high snow flushes pink-gold while
+    // the city below still sits in shadow. Scales with the snow mask and the
+    // twilight signal, and leans a touch harder on the sun-facing slopes so
+    // the flush has a direction. Stays under the bloom line (normal blend).
+    float sunFace = 0.5 + 0.5 * dot(n, normalize(vec3(-0.7, 0.18, 0.55)));
+    c = mix(c, vec3(1.0, 0.63, 0.55), snow * uAlpenglow * (0.3 + 0.45 * sunFace));
     float a = uOpacity * (0.94 + 0.12 * wash);
     gl_FragColor = vec4(mix(c, uFog, fogFactor()), a);
   }
@@ -241,6 +250,7 @@ export function Landmarks() {
     if (!m) return;
     m.uniforms.uOpacity.value = LIVE.landmarkOpacity;
     m.uniforms.uFogDensity.value = LIVE.fogDensity;
+    m.uniforms.uAlpenglow.value = alpenglow();
   });
 
   return (
@@ -254,6 +264,7 @@ export function Landmarks() {
           uOpacity: { value: LIVE.landmarkOpacity },
           uFog: { value: LIVE.fog },
           uFogDensity: { value: LIVE.fogDensity },
+          uAlpenglow: { value: 0 },
         }}
         transparent
         depthWrite={false}
