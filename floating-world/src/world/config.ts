@@ -1,5 +1,10 @@
 // Baked tuning. Leva-tune in dev, then move the numbers here.
 
+// Temporarily disables the ambient sound feature (HUD toggle + engine
+// activation) without removing any of the audio code. Flip back to true
+// to re-enable.
+export const SOUND_FEATURE_ENABLED = false;
+
 export const CONFIG = {
   poll: {
     intervalMs: 10_000, // matches the backend cache TTL
