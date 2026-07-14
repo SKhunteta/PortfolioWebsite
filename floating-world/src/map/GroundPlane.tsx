@@ -28,8 +28,28 @@ import { LIVE } from "../world/palettes";
 import { WEATHER } from "../world/weather";
 import { CLOCK } from "../world/clock";
 import { PROFILE } from "../world/device";
-import { CENTROID } from "./network";
+import { CENTROID, projectLatLng } from "./network";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
+
+// Seattle's seven hills, at their real centers with a relative prominence
+// weight. The ground shader sums a soft gaussian bump at each and lights the
+// result from the northwest (the landmark key light), so the flat sheet gains
+// a stylized topographic relief — the city reads HILLY without any 3D geometry.
+// Like kasumi and the seigaiha wave-fans it's stylized paint, not a data
+// readout: it prints no elevation and can't lie about a height.
+const HILL_LATLNG: [number, number, number][] = [
+  [47.637, -122.357, 1.0], // Queen Anne — the high one
+  [47.625, -122.32, 0.9], // Capitol Hill
+  [47.609, -122.325, 0.7], // First Hill
+  [47.579, -122.311, 0.85], // Beacon Hill
+  [47.65, -122.4, 0.8], // Magnolia bluff
+  [47.581, -122.387, 0.9], // West Seattle / Admiral
+  [47.668, -122.355, 0.7], // Phinney Ridge / Crown Hill
+];
+const HILLS = HILL_LATLNG.map(([lat, lng, w]) => {
+  const { x, z } = projectLatLng(lat, lng);
+  return new THREE.Vector3(x, z, w * 0.12); // z-component carries the bump weight (km)
+});
 
 const VERT = /* glsl */ `
   ${FOG_VARYINGS_VERT}
@@ -43,6 +63,7 @@ const VERT = /* glsl */ `
 `;
 
 const FRAG = /* glsl */ `
+  #define NHILLS ${HILLS.length}
   ${NOISE_GLSL}
   ${FOG_VARYINGS_FRAG}
   uniform vec3 uGround;
@@ -51,6 +72,10 @@ const FRAG = /* glsl */ `
   uniform float uOpacity;
   uniform float uRain; // eased live weather (world/weather.ts)
   uniform float uTime;
+  uniform vec3 uHills[NHILLS]; // xy = world center, z = bump weight (km)
+  uniform float uHillR2;       // gaussian radius², km²
+  uniform float uHillK;        // gradient → normal steepness
+  uniform float uHillStrength; // shading amount (a wash, stays subtle)
   void main() {
     // Living paper: the wash and the tooth drift sub-perceptually on the
     // already-bound clock — the sheet itself breathes, never fast enough to
@@ -65,6 +90,19 @@ const FRAG = /* glsl */ `
     // and it costs nothing on a dry day (uRain eases back to 0).
     float wet = wcNoise(vWorld * 5.0 + vec2(0.0, uTime * 0.28));
     c *= 1.0 - uRain * 0.2 * smoothstep(0.55, 0.95, wet);
+    // The seven hills: gradient of a sum-of-gaussians heightfield gives a
+    // surface normal, lit from the NW like the landmark massing. NW-facing
+    // slopes catch the light, SE slopes fall into shadow — relief around the
+    // flat baseline (dot of straight-up with the light ≈ 0.85).
+    vec2 grad = vec2(0.0);
+    for (int i = 0; i < NHILLS; i++) {
+      vec2 d = vWorld - uHills[i].xy;
+      float e = uHills[i].z * exp(-dot(d, d) / uHillR2);
+      grad += (-2.0 / uHillR2) * d * e;
+    }
+    vec3 nrm = normalize(vec3(-uHillK * grad.x, 1.0, -uHillK * grad.y));
+    float shade = dot(nrm, normalize(vec3(-0.5, 0.85, -0.45))) - 0.85;
+    c *= 1.0 + uHillStrength * shade;
     gl_FragColor = vec4(mix(c, uFog, fogFactor()), uOpacity);
   }
 `;
@@ -103,6 +141,10 @@ export function GroundPlane() {
           uOpacity: { value: LIVE.groundOpacity },
           uRain: { value: 0 },
           uTime: { value: 0 },
+          uHills: { value: HILLS },
+          uHillR2: { value: 1.69 }, // ~1.3 km hill radius
+          uHillK: { value: 6.0 },
+          uHillStrength: { value: 0.14 }, // subtle — a relief wash, not a bevel
         }}
         transparent
         depthWrite={false}

@@ -7,6 +7,7 @@ import { CLOCK } from "../world/clock";
 import { setPhaseOverride } from "../world/sun";
 import { startObserve, stopObserve, toggleObserve } from "../world/observe";
 import { setTideOverride } from "../world/tide";
+import { setBloomOverride } from "../world/bloom";
 import { setWeatherOverride, WeatherKind } from "../world/weather";
 import { TIER } from "../world/device";
 
@@ -44,6 +45,7 @@ export function installHandles() {
     // Run the print through a whole day; pass a boolean to force on/off.
     observe: (on?: boolean) => (on === undefined ? toggleObserve() : on ? startObserve() : stopObserve()),
     setTide: (level: number | null) => setTideOverride(level),
+    setBloom: (level: number | null) => setBloomOverride(level),
     setWeather: (k: WeatherKind | null) => setWeatherOverride(k),
     follow: (index: number) => {
       const ids = [...TRAINS.keys()];

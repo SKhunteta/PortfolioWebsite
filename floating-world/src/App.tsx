@@ -10,6 +10,7 @@ import { Parks } from "./map/Parks";
 import { Roads } from "./map/Roads";
 import { Cars } from "./map/Cars";
 import { Forest } from "./map/Forest";
+import { Sakura } from "./map/Sakura";
 import { Buildings } from "./map/Buildings";
 import { Landmarks } from "./map/Landmarks";
 import { Kasumi } from "./map/Kasumi";
@@ -96,6 +97,7 @@ export default function App() {
         <Roads />
         <Cars />
         <Forest />
+        <Sakura />
         <Buildings />
         <Landmarks />
         <Kasumi />

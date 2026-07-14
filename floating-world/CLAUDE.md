@@ -37,7 +37,11 @@ it on a second monitor and the print breathes at them.
   (`src/data/station-identity.json`) is researched real-world color; never
   restyle the data, only how the palette mixes it.
 - Rainier ghosts the horizon at real scale with **Fuji's warm-white snow
-  cap**. Ferries, floatplanes, stadium nights, the Needle beacon — all the
+  cap**; **Mount Baker** answers it on the northern horizon as a cooler second
+  Fuji (its own `aBaker` vertex flag drives the bold cap + sumi keyline, but
+  none of Rainier's dawn vermilion), with **Glacier Peak and the Cascade
+  crest** closing the eastern wall — Rainier SE, Cascades E/N, Olympics W.
+  Ferries, floatplanes, stadium nights, the Needle beacon — all the
   deterministic ambient life carries over unchanged.
 - **Airliners** (`map/Airliners.tsx`, one InstancedMesh): a toy SeaTac fleet,
   half Delta half Alaska (the livery is a baked canvas atlas — wordmark + tail
@@ -48,6 +52,20 @@ it on a second monitor and the print breathes at them.
   clock, never live. Unlike the daylight-VFR floatplanes they hold through the
   night (the palette only dims them). Livery whites are clamped below the
   bright-paper bloom line in the shader.
+- More real Seattle geography woven into `map/Landmarks.tsx` (one merged
+  geometry): **Pike Place Market**, **Boeing Field / the Museum of Flight**,
+  the **city of bridges** (the I-90 and SR-520 floating spans the trains and
+  highways ride across Lake Washington, plus the ship-canal drawbridges), the
+  **Ballard Locks** where the canal meets the Sound, and the **far-shore
+  islands** the ferries sail to (Bainbridge, Vashon, Blake). The **seven
+  hills** are a stylized sum-of-gaussians hillshade in the ground shader
+  (`map/GroundPlane.tsx`) — relief, not geometry — and **shore lighthouses**
+  (West Point, Alki, Mukilteo) flash over the Sound from `map/CityLights.tsx`.
+- **Sakura** (`map/Sakura.tsx`, one instanced draw call): cherry-blossom
+  canopies clustered at the real bloom sites (UW Quad, the Arboretum, Green
+  Lake, Seward Park). SEASONAL and honest — keyed to `world/bloom.ts` (up in
+  mid-March, full late March, gone by mid-April, nothing the rest of the
+  year), the same honesty rule the birds and seaplanes keep. `?bloom=` pins it.
 - **Kasumi** (`map/Kasumi.tsx`, one draw call): the classic horizontal mist
   bands of ukiyo-e drift slowly across the middle distance, colored
   `LIVE.fog` with a thin gilt (kinkumo) edge. They yield to REAL fog
@@ -162,6 +180,7 @@ files: both editions must agree on the network contract.
 
 `__linkMapStats` ({fps, mode, trains, tier}, refreshed 1 Hz),
 `__linkMap` (`setPhase(0..1|null)`, `setWeather(kind|null)`,
+`setTide(level|null)`, `setBloom(0..1|null)`,
 `follow(index)`, `release()`, `observe(on?)`) — handle NAMES are shared with
 link-map on purpose; `scripts/device-smoke.mjs` depends on them. `observe()`
 toggles the optional "observe" mode (the HUD's top-right button): it sweeps
@@ -169,6 +188,7 @@ the sun through a whole Seattle day in ~60 s on loop, driving the phase
 override each frame from the real `sunPhaseAt` (`world/observe.ts`); off
 restores whatever override was live before.
 `?debug` shows the HUD readout; `?tier=` forces a device tier;
-`?phase=` pins the sun; `?weather=` pins the sky; `?gamenight` lights the
+`?phase=` pins the sun; `?weather=` pins the sky; `?tide=` pins the tide;
+`?bloom=peak|none|0..1` pins the cherry-blossom season; `?gamenight` lights the
 stadiums. `scripts/device-smoke.mjs` is the per-tier
 regression harness (playwright-core, chromium at /opt/pw-browsers/chromium).
