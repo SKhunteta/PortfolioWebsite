@@ -75,6 +75,7 @@ interface Light {
   dx?: number; // world-unit offset from the projected lat/lng (post-projection)
   dz?: number;
   ferrisWheel?: boolean; // the Great Wheel's rim lights, cycling color at night
+  ferrisWheelSpill?: boolean; // the wheel's soft central wash (same cycle, dimmer)
 }
 
 // The Great Wheel on Pier 57 (matches the torus built in Landmarks.tsx: hub
@@ -84,9 +85,9 @@ interface Light {
 // next over a few seconds, so the change never jump-cuts.
 const WHEEL_LAT = 47.6061;
 const WHEEL_LNG = -122.3426;
-const WHEEL_HUB_Y = 0.15;
-const WHEEL_R = 0.11;
-const WHEEL_RIM_LIGHTS = 8;
+const WHEEL_HUB_Y = 0.26; // matches the enlarged torus hub in Landmarks.tsx
+const WHEEL_R = 0.22;
+const WHEEL_RIM_LIGHTS = 12;
 const WHEEL_PALETTE = [
   new THREE.Color("#ff5c48"), // vermilion
   new THREE.Color("#ffb347"), // amber gold
@@ -204,12 +205,25 @@ export const LIGHTS: Light[] = [
       y: WHEEL_HUB_Y + Math.sin(a) * WHEEL_R,
       dx: Math.cos(a) * WHEEL_R,
       dz: 0,
-      scaleKm: 0.045,
+      scaleKm: 0.09,
       color: WHEEL_PALETTE[0].clone(),
       ferrisWheel: true,
       label: "Seattle Great Wheel",
     } as Light;
   }),
+  // A soft central spill at the hub — a wide, dim wash of the same cycling
+  // colour, so the wheel still reads as one glowing disc at drift distance
+  // even before the individual rim lights resolve.
+  {
+    lat: WHEEL_LAT,
+    lng: WHEEL_LNG,
+    y: WHEEL_HUB_Y,
+    scaleKm: 0.5,
+    color: WHEEL_PALETTE[0].clone(),
+    ferrisWheel: true,
+    ferrisWheelSpill: true,
+    label: "Seattle Great Wheel",
+  },
 ];
 
 const FORCE_GAMENIGHT =
@@ -298,7 +312,9 @@ export function CityLights() {
         wheelColor(CLOCK.t, wheelColorScratch);
         colorAttr.setXYZ(i, wheelColorScratch.r, wheelColorScratch.g, wheelColorScratch.b);
         colorChanged = true;
-        const glow = night * 0.85 * (0.9 + 0.1 * CLOCK.breath);
+        const glow = l.ferrisWheelSpill
+          ? night * 0.3 * (0.9 + 0.1 * CLOCK.breath)
+          : night * 0.85 * (0.9 + 0.1 * CLOCK.breath);
         glowAttr.setX(i, glow);
         CITY_LIGHT_GLOW[i] = glow;
       } else if (l.venue) {

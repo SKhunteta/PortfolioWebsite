@@ -350,16 +350,18 @@ function buildGeometry(): THREE.BufferGeometry {
     }
   }
 
-  // --- the Great Wheel on Pier 57: a hoop over the waterline, A-frame legs ---
+  // --- the Great Wheel on Pier 57: a hoop over the waterline, A-frame legs —
+  //     nearly doubled from a first pass that was true-toy-scale but read as
+  //     a hairline at drift distance, the same fix the Needle needed ---
   {
     const { x, z } = projectLatLng(47.6061, -122.3426);
-    const wheel = new THREE.TorusGeometry(0.11, 0.016, 6, 22);
-    wheel.translate(x, 0.15, z); // plane vertical, axle roughly along the pier
+    const wheel = new THREE.TorusGeometry(0.22, 0.03, 7, 24);
+    wheel.translate(x, 0.26, z); // plane vertical, axle roughly along the pier
     parts.push(wheel);
     for (const side of [-1, 1]) {
-      const leg = new THREE.BoxGeometry(0.02, 0.17, 0.02);
+      const leg = new THREE.BoxGeometry(0.035, 0.3, 0.035);
       leg.rotateX(side * 0.38);
-      leg.translate(x, 0.08, z + side * 0.035);
+      leg.translate(x, 0.14, z + side * 0.06);
       parts.push(leg);
     }
   }
