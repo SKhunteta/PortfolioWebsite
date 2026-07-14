@@ -31,20 +31,22 @@ import { TIER } from "../world/device";
 
 // --- musical material -------------------------------------------------------
 
-// A warm major pentatonic — the koto/woodblock idiom without the cliché, and
-// gentle enough to sit under a drone without ever souring. Semitone offsets
-// within an octave; the pool below stacks two octaves of them.
-const PENTATONIC = [0, 2, 4, 7, 9];
+// Hirajoshi — the classic koto tuning (root, whole step, minor third, fifth,
+// minor sixth). Its two semitone leans (the 2→3 and 7→8) are the sound of the
+// instrument: unmistakably Japanese, and consonant over a root/fifth/octave
+// drone whose tones all live in the scale. Semitone offsets within an octave;
+// the pool below stacks two octaves of them.
+const HIRAJOSHI = [0, 2, 3, 7, 8];
 const ROOT_MIDI = 48; // C3 — the pad's fundamental
 
 const midiToFreq = (m: number) => 440 * Math.pow(2, (m - 69) / 12);
 
-// The pluck note pool: two octaves of the pentatonic above the pad. 1 Line
-// draws from the lower half (matcha, grounded), 2 Line from the upper (Prussian,
-// bright) — the two lines ring as two registers of the same scale.
+// The pluck note pool: two octaves of the scale above the pad. 1 Line draws
+// from the lower half (matcha, grounded), 2 Line from the upper (Prussian,
+// bright) — the two lines ring as two registers of the same koto.
 const PLUCK_POOL: number[] = [];
 for (let oct = 0; oct < 2; oct++) {
-  for (const step of PENTATONIC) PLUCK_POOL.push(ROOT_MIDI + 24 + oct * 12 + step);
+  for (const step of HIRAJOSHI) PLUCK_POOL.push(ROOT_MIDI + 24 + oct * 12 + step);
 }
 
 // A tiny self-contained PRNG (mulberry32): musical variation that doesn't
@@ -356,6 +358,13 @@ class AmbientEngine {
     out.connect(this.muffle);
     out.connect(this.reverbSend);
 
+    // Koto oshide: on some notes, lean up into the pitch from a semitone below
+    // and settle — the string pressed and released, the bend that reads as the
+    // instrument's own voice. A small share of plucks, so it's an inflection,
+    // not a mannerism.
+    const bend = this.rng() < 0.28;
+    const bendFrom = freq * Math.pow(2, -1 / 12);
+
     const partials: [number, number, OscillatorType][] = [
       [1, 1, "sine"],
       [2.01, 0.4, "sine"],
@@ -364,7 +373,12 @@ class AmbientEngine {
     for (const [mult, amp, type] of partials) {
       const osc = ctx.createOscillator();
       osc.type = type;
-      osc.frequency.value = freq * mult;
+      if (bend) {
+        osc.frequency.setValueAtTime(bendFrom * mult, now);
+        osc.frequency.setTargetAtTime(freq * mult, now + 0.01, 0.055);
+      } else {
+        osc.frequency.value = freq * mult;
+      }
       const g = ctx.createGain();
       g.gain.value = 0;
       const peak = level * amp;
@@ -391,10 +405,11 @@ class AmbientEngine {
     // Every ~20-34 s the pad drifts by a pentatonic step — slow, generative
     // movement so the drone is never a held dead chord.
     if (now >= this.nextDriftT) {
-      // Nudge the root a pentatonic step, kept within a small warm band around
-      // C3 so the pad wanders without ever climbing off into a new key.
+      // Nudge the root by a consonant step (a whole tone or a minor third —
+      // the scale's own lower degrees), kept within a small warm band around
+      // C3 so the pad wanders modally without ever climbing off into a new key.
       const dir = this.rng() < 0.5 ? -1 : 1;
-      const step = PENTATONIC[1 + Math.floor(this.rng() * (PENTATONIC.length - 1))];
+      const step = this.rng() < 0.5 ? 2 : 3;
       const target = this.droneRootMidi + dir * step;
       this.droneRootMidi = Math.max(ROOT_MIDI - 3, Math.min(ROOT_MIDI + 5, target));
       const intervals = LIGHT ? [0, 7, 12] : [0, 7, 12, 19];
