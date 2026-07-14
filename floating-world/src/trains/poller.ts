@@ -9,6 +9,7 @@ import { CONFIG } from "../world/config";
 import { PROFILE } from "../world/device";
 import { CLOCK } from "../world/clock";
 import { TRAINS, makeTrain, useUi, Mode } from "./store";
+import { isObserving } from "../world/observe";
 
 interface ApiVehicle {
   id: string;
@@ -126,12 +127,20 @@ export function startPoller(): () => void {
   const poll = async () => {
     if (stopped) return;
     if (document.hidden) return; // visibilitychange re-arms us
+    // Observe mode owns the train set (its deterministic ambient fleet) and the
+    // mode badge; don't fetch or fold — just keep the loop alive so the live feed
+    // resumes the moment Observe ends.
+    if (isObserving()) return schedule(CONFIG.poll.intervalMs);
     try {
       const res = await fetch(`${apiBase()}/api/linkmap/vehicles`, {
         signal: AbortSignal.timeout(9000),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      fold((await res.json()) as ApiResponse);
+      const data = (await res.json()) as ApiResponse;
+      // Observe may have started while this fetch was in flight — drop the
+      // result rather than repopulating TRAINS / clobbering the badge.
+      if (isObserving()) return schedule(CONFIG.poll.intervalMs);
+      fold(data);
       failures = 0;
       schedule(CONFIG.poll.intervalMs);
     } catch {

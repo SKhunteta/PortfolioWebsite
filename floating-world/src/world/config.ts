@@ -162,33 +162,42 @@ export const CONFIG = {
     // display (a screensaver, a gallery) drifts into the tour.
     tourAfterS: 42,
     tour: { dwellS: 7, travelS: 6 },
-    // The Observe reel (observer/tour.ts `observeShot`) is a highlight reel of
-    // the most scenic parts of the line, PHASE-LOCKED to the day-sweep: it's
-    // sampled by the displayed day fraction, so its pacing (which stop, how long
-    // it holds, how long it glides in) lives entirely in tour.ts's `REEL` /
-    // `TRAVEL_FRAC` and breathes with the sun-warp — no seconds-based dwell here.
+    // The Observe reel (observer/tour.ts `observeShot`) runs on its OWN seconds
+    // clock — explicit, even per-stop holds — decoupled from the sun-warp so its
+    // pacing never gets crushed (a flashed-by midday stop) or dragged (a dead
+    // night orbit). `travelS` glides between stops; `orbitDwellS` is the SHORT
+    // hold for the orbit interludes (rides/close-ups/vistas carry their own
+    // longer dwell in tour.ts's `REEL`, so most of the reel is spent riding the
+    // trains and jets low through the print). The whole loop's length is
+    // REEL_PERIOD (tour.ts), and the sky day-sweep is locked to the same period
+    // (observe.ts `CYCLE_S`) so a stop lands under roughly the same sky each loop.
+    observeReel: { travelS: 1.5, orbitDwellS: 3 },
     minDistance: 0.8,
     maxDistance: 90,
     // The free-orbit / aerial tilt clamp on OrbitControls (polar angle from
     // straight-down): 1.38 rad ≈ 79°, so the camera can never flip under the
     // map. CameraRig relaxes it per-frame ONLY while a low vista holds (below).
     maxPolarAngle: 1.38,
-    // The low, at-grade "vista" shots (observer/tour.ts `vista` stops, framed by
-    // CameraRig `frameTrackside`): the camera drops to an eye-line beside the
-    // rail and looks ALONG the glowing ribbon toward the horizon, so it recedes
-    // to a vanishing point under Rainier — the reference-photo shot. These need
-    // the polar clamp relaxed past vertical and the 0.8 km distance floor
-    // dropped, both applied per-frame ONLY while a vista holds (free-orbit keeps
-    // the 1.38 clamp, so manual control is unchanged).
+    // The low "vista" shots (observer/tour.ts `vista` stops, framed by CameraRig
+    // `frameTracksideChase`): the camera drops to an eye-line beside the rail and
+    // FOLLOWS a latched train down the line (the same at-vehicle-level ride as the
+    // manual click-to-follow), composed so the glowing ribbon recedes past it to
+    // the scenic horizon — Rainier on the southern run, the skyline out of SODO.
+    // These need the polar clamp relaxed past vertical and the 0.8 km distance
+    // floor dropped, both applied per-frame ONLY while a vista holds (free-orbit
+    // keeps the 1.38 clamp, so manual control is unchanged).
     atGradeMaxPolar: 1.62, // ~93°: look at (and a hair above) the horizon
     tracksideMinDistance: 0.15,
-    trackside: {
-      camHeightKm: 0.03, // ~30 m eye-line, above at-grade rail (0.02) and water (−0.06)
-      backKm: 0.9, // set back along the rail behind the subject
-      sideKm: 0.35, // lateral offset → the rail sweeps diagonally (three-quarter)
-      lookAheadKm: 6, // target pushed down-tangent toward the horizon/mountain
-      lookHeightKm: 0.05, // target a hair above the camera → a faint upward tilt
+    tracksideChase: {
+      camHeightKm: 0.05, // ~50 m eye-line, above at-grade rail (0.02) and water (−0.06)
+      backKm: 0.6, // set back along the rail on the anti-scenic side of the train
+      sideKm: 0.3, // lateral offset → the rail sweeps diagonally (three-quarter)
+      speedBackK: 4, // extra set-back the faster the ridden train runs
+      lookAheadKm: 2.5, // target pushed down-tangent PAST the train toward the horizon:
+      //                   small = plain vehicle follow, large = ribbon-to-horizon
+      lookHeightKm: 0.06, // target a hair above the camera → a faint upward tilt
       fovBoost: 3, // widen the lens a touch → exaggerate the receding leading line
+      maxKm: 12, // widened latch radius: a vista rides the nearest train within this
     },
     // Close enough that the toy S700 fills the frame; speed pulls it back.
     chaseOffsetKm: { back: 0.7, up: 0.26 },
