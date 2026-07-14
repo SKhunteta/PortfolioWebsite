@@ -14,6 +14,7 @@ import { TIER } from "../world/device";
 import { SOUND_FEATURE_ENABLED } from "../world/config";
 import { HAS_BASEMAP } from "../map/basemap";
 import { PrintFrame } from "./PrintFrame";
+import { TimeOfDay } from "./TimeOfDay";
 
 const MODE_LABEL: Record<Mode, string> = {
   live: "live",
@@ -188,6 +189,11 @@ export function Hud() {
         <span className="hud-dot" />
         {observing ? "observing" : "observe"}
       </button>
+
+      {/* The manual time-of-day dial: pin the light to any Seattle hour by hand,
+          or hand it back to the real sun. Subtle twin of the observe button,
+          stacked just below it in the same top-right ink column. */}
+      <TimeOfDay />
 
       {/* The room tone: a generative ambient print-hum keyed to the same sun,
           weather and trains as the paint. Off by default — a breathing sheet
