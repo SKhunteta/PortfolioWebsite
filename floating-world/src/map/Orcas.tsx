@@ -238,6 +238,14 @@ function podCenterAt(tod: number, t: number, out: PodCenter): PodCenter {
   return out;
 }
 
+/** The pod's live centre right now (real clock time `t`, honoring ?tod=/the
+ *  observe-mode sweep exactly like the render loop) — for the Observe reel's
+ *  orca close-up (`observer/CameraRig.tsx`) to chase without duplicating the
+ *  time-of-day resolution. */
+export function orcaPodCenterNow(t: number, out: PodCenter): PodCenter {
+  return podCenterAt(podTimeOfDay(), t, out);
+}
+
 interface Breath {
   y: number; // vertical offset — dips under the wash between leaps
   pitch: number; // nose-down on the dive, up on the rise
