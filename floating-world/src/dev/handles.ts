@@ -2,6 +2,8 @@
 // read __linkMapStats; __linkMap pokes the piece.
 
 import { TRAINS, useUi } from "../trains/store";
+import { FLIGHTS, airlinerPoseAt } from "../map/Airliners";
+import { CLOCK } from "../world/clock";
 import { setPhaseOverride } from "../world/sun";
 import { startObserve, stopObserve, toggleObserve } from "../world/observe";
 import { setTideOverride } from "../world/tide";
@@ -48,7 +50,16 @@ export function installHandles() {
       useUi.getState().setFollowTrain(ids[index] ?? null);
     },
     followId: (id: string) => useUi.getState().setFollowTrain(id),
+    // Ride one of the airborne jets (index into Airliners' FLIGHTS).
+    followPlane: (index: number) => useUi.getState().setFollowPlane(index),
     release: () => useUi.getState().setFollowTrain(null),
+    // For the smoke harness / a curious console: the airborne jets' live world
+    // positions, so a plane can be located and chased deterministically.
+    planeList: () =>
+      FLIGHTS.map((f, i) => {
+        const p = airlinerPoseAt(f, CLOCK.t, { x: 0, z: 0, y: 0, yaw: 0, pitch: 0, roll: 0 });
+        return { index: i, x: p.x, y: p.y, z: p.z };
+      }),
     // For the smoke harness: pick a train on a known curve deterministically.
     trainList: () =>
       [...TRAINS.values()].map((t) => ({
