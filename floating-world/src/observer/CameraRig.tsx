@@ -28,6 +28,11 @@ import {
 import { orcaPodCenterNow } from "../map/Orcas";
 import { observeDisplayFrac } from "../world/observe";
 import { TRAINS, useUi, type TrainState } from "../trains/store";
+import {
+  UNDERGROUND_SITES,
+  undergroundSiteById,
+  type UndergroundSite,
+} from "../stations/platformPulse";
 import { CONFIG } from "../world/config";
 import { CLOCK } from "../world/clock";
 import { PROFILE, fovForAspect } from "../world/device";
@@ -170,6 +175,26 @@ function frameTunnelDive(
   );
   const up = THREE.MathUtils.lerp(CONFIG.camera.chaseOffsetKm.up, dive.upKm, s);
   desiredCam.set(trainPos.x - scratch.x * back, up, trainPos.z - scratch.z * back);
+  controls.target.lerp(trainPos, k);
+  camera.position.lerp(desiredCam, k);
+}
+
+// Click-to-descend into a fixed underground hall. Unlike frameTunnelDive (which
+// rides a moving train down a portal), this HOLDS a near-overhead, slightly
+// angled look-down over the hall's platform floor, so its art fresco reads up
+// through the translucent paper. The target eases onto the floor (rail depth);
+// the camera eases to a point set back (south) and up, a gentle downward tilt
+// rather than a dead-overhead orthographic stare. Fixed station coords → no
+// train latch, no allocation.
+function frameStationDive(
+  controls: OrbitControlsImpl,
+  camera: THREE.PerspectiveCamera,
+  site: UndergroundSite,
+  k: number
+) {
+  const dive = CONFIG.camera.stationDive;
+  trainPos.set(site.x, site.y, site.z); // the platform floor (tunnel depth)
+  desiredCam.set(site.x, dive.upKm, site.z + dive.backKm);
   controls.target.lerp(trainPos, k);
   camera.position.lerp(desiredCam, k);
 }
@@ -340,6 +365,7 @@ export function CameraRig() {
   const size = useThree((s) => s.size);
   const followId = useUi((s) => s.followTrainId);
   const followPlane = useUi((s) => s.followPlaneIndex);
+  const diveId = useUi((s) => s.diveStationId);
   const observing = useUi((s) => s.observing);
   const lastInteraction = useRef(-Infinity);
   // The Observe reel's latched ride target, so the cinematic flight never
@@ -452,15 +478,35 @@ export function CameraRig() {
       return { index: bestIndex, px: bestPx };
     };
 
+    // Underground halls are diveable exactly like trains/jets are chaseable:
+    // project each hall's surface seal position and take the nearest to the tap.
+    // (Surface/elevated stations aren't in UNDERGROUND_SITES, so they never dive.)
+    const pickStation = (clientX: number, clientY: number, rect: DOMRect) => {
+      let bestId: string | null = null;
+      let bestPx = Infinity;
+      for (const site of UNDERGROUND_SITES) {
+        const d = pxDistTo(site.x, 0.045, site.z, clientX, clientY, rect);
+        if (d < bestPx) {
+          bestPx = d;
+          bestId = site.id;
+        }
+      }
+      return { id: bestId, px: bestPx };
+    };
+
     const onDoubleActivate = (x: number, y: number) => {
       const rect = el.getBoundingClientRect();
       const train = pickTrain(x, y, rect);
       const plane = pickPlane(x, y, rect);
-      // Whichever glowing thing is nearer to the tap wins, provided it's within
-      // the pick radius; a double-tap on empty map picks neither and exits.
-      const best = plane.px < train.px ? plane : train;
-      if (best.px > CONFIG.camera.doubleTapPx) {
-        useUi.getState().setFollowTrain(null); // empty map = let go of whatever we rode
+      const station = pickStation(x, y, rect);
+      // Whichever glowing thing is nearest to the tap wins, provided it's within
+      // the pick radius: an underground hall dives, a train/jet rides, and a
+      // double-tap on empty map picks none and lets go of whatever we held.
+      const nearestPx = Math.min(train.px, plane.px, station.px);
+      if (nearestPx > CONFIG.camera.doubleTapPx) {
+        useUi.getState().setFollowTrain(null); // empty map = release (also rises out of a dive)
+      } else if (station.id && station.px === nearestPx) {
+        useUi.getState().setDiveStation(station.id);
       } else if (plane.px < train.px) {
         useUi.getState().setFollowPlane(plane.index);
       } else {
@@ -475,8 +521,10 @@ export function CameraRig() {
       if (e.buttons) {
         lastInteraction.current = CLOCK.t;
         const ui = useUi.getState();
-        // setFollowTrain(null) releases both riders (the setters are exclusive).
-        if (ui.followTrainId !== null || ui.followPlaneIndex !== null) ui.setFollowTrain(null);
+        // setFollowTrain(null) releases all three riders (train/plane/dive — the
+        // setters are exclusive), so a drag rises out of a dive too.
+        if (ui.followTrainId !== null || ui.followPlaneIndex !== null || ui.diveStationId !== null)
+          ui.setFollowTrain(null);
       }
     };
     const onPointerUp = (e: PointerEvent) => {
@@ -543,6 +591,8 @@ export function CameraRig() {
     if (followId && !train) useUi.getState().setFollowTrain(null);
     const plane = followPlane !== null ? FLIGHTS[followPlane] : undefined;
     if (followPlane !== null && !plane) useUi.getState().setFollowTrain(null);
+    const diveSite = diveId ? undergroundSiteById(diveId) : undefined;
+    if (diveId && !diveSite) useUi.getState().setDiveStation(null);
 
     // Observe bookkeeping: reset the latch + open the reel immediately (treat the
     // page as long-idle) the frame Observe turns on; clear its HUD label the
@@ -593,6 +643,13 @@ export function CameraRig() {
     } else if (plane) {
       // Manual ride: sit in the jet's wake as it climbs, banks and flares.
       framePlane(controls, camera, plane, chaseK);
+    } else if (diveSite) {
+      // Manual descent: hold over an underground hall's platform floor in a
+      // near-overhead look-down, so its art fresco reads up through the paper.
+      // detailThisFrame narrows the FOV and drops the min-distance floor below so
+      // the camera can sit close over the disc.
+      frameStationDive(controls, camera, diveSite, chaseK);
+      detailThisFrame = true;
     } else {
       const idleFor = CLOCK.t - lastInteraction.current;
       const observeActive = observing && idleFor > CONFIG.camera.observeGraceS;

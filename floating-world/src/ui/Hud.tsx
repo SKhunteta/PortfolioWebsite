@@ -5,6 +5,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useUi, TRAINS, Mode } from "../trains/store";
+import { STATION_BY_ID } from "../map/network";
+import { identityForName } from "../stations/identity";
 import { toggleObserve } from "../world/observe";
 import { useWeather } from "../world/weather";
 import { TIER } from "../world/device";
@@ -52,6 +54,11 @@ export function Hud() {
   const observing = useUi((s) => s.observing);
   const observeShotLabel = useUi((s) => s.observeShotLabel);
   const touring = useUi((s) => s.touring);
+  // The underground hall the camera has dived into — its name and real artwork
+  // name the quiet caption while you're down there ("Capitol Hill · 'Jet Kiss'").
+  const diveId = useUi((s) => s.diveStationId);
+  const diveStation = diveId ? STATION_BY_ID.get(diveId) : undefined;
+  const diveArt = diveStation ? identityForName(diveStation.name)?.art : undefined;
   // Speaks only after a real fetch (or a ?weather= pin) — see world/weather.
   const weatherWord = useWeather((s) => s.label);
   const [settled, setSettled] = useState(false);
@@ -137,17 +144,26 @@ export function Hud() {
         </div>
       )}
 
+      {/* Descended into an underground hall: name the place and its real artwork,
+          with the way back out. Shares the chase line's styling. */}
+      {diveStation && (
+        <div className="hud-chase">
+          {diveStation.name}
+          {diveArt ? ` · ${diveArt}` : ""} · esc to rise
+        </div>
+      )}
+
       {/* The unattended tour's one quiet line: it says why the camera drifts
           the whole line on its own, and that any touch hands you the wheel.
           Suppressed while chasing (the two never overlap). */}
-      {touring && !observing && !following && followingPlane === null && (
+      {touring && !observing && !following && followingPlane === null && !diveId && (
         <div className="hud-tour">touring the line · move to take the wheel</div>
       )}
 
       {/* Observe's reel narrates where the slow cinematic flight has taken you —
           "the underground", "the cyclists", "riding the jet". Shares the quiet
           tour caption's styling; only up while Observe is panning. */}
-      {observing && observeShotLabel && !following && followingPlane === null && (
+      {observing && observeShotLabel && !following && followingPlane === null && !diveId && (
         <div className="hud-tour">{observeShotLabel}</div>
       )}
 
