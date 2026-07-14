@@ -52,8 +52,10 @@ const VERT = /* glsl */ `
   ${FOG_VARYINGS_VERT}
   attribute float aRainier;
   attribute float aBaker;
+  attribute float aTacoma;
   varying float vRainier;
   varying float vBaker;
+  varying float vTacoma;
   varying float vY;
   varying vec3 vNormal;
   void main() {
@@ -62,6 +64,7 @@ const VERT = /* glsl */ `
     vY = world.y;
     vRainier = aRainier;
     vBaker = aBaker;
+    vTacoma = aTacoma;
     vNormal = normalize(normalMatrix * normal); // world-space normal — correct for both the static merged landmarks and the Great Wheel, which rotates
     vec4 mv = viewMatrix * world;
     vFogDepth = -mv.z;
@@ -76,6 +79,7 @@ const FRAG = /* glsl */ `
   varying vec3 vNormal;
   varying float vRainier;
   varying float vBaker;
+  varying float vTacoma;
   uniform vec3 uColor;
   uniform float uOpacity;
   uniform vec2 uRainierAxis; // Rainier's world xz — the axis the veins radiate from
@@ -86,6 +90,11 @@ const FRAG = /* glsl */ `
   const vec3 INK  = vec3(0.26, 0.18, 0.12); // sumi keyline
   const vec3 RED_FUJI = vec3(0.72, 0.30, 0.22); // Gaifū Kaisei vermilion flank
   const vec3 PLUM = vec3(0.33, 0.24, 0.42);     // dusk indigo-plum
+  // The Tacoma Dome's real palette: the pale timber roof (warm off-white,
+  // held just under the bloom line like the airliner liveries) and the
+  // rust-red wood concourse wall that rings its base.
+  const vec3 TACOMA_ROOF = vec3(0.90, 0.89, 0.85);
+  const vec3 TACOMA_WALL = vec3(0.55, 0.30, 0.21);
 
   void main() {
     float wash = wcFbm(vWorld * 0.8 + vY * 2.1); // pigment mottle per face
@@ -105,6 +114,11 @@ const FRAG = /* glsl */ `
     vec3 rainierBody = mix(uColor, mix(uColor, RED_FUJI, 0.9), uDawn * flankGrad);
     rainierBody = mix(rainierBody, mix(uColor, PLUM, 0.85), uDusk * flankGrad);
     vec3 body = mix(uColor, rainierBody, vRainier);
+    // --- Tacoma Dome: its real colours, not the generic pigment — the pale
+    //     roof up top, the rust-red concourse below, split at the drum line
+    //     (~y 0.16 in world units where the hemisphere meets its base ring). ---
+    vec3 tacomaBody = mix(TACOMA_WALL, TACOMA_ROOF, smoothstep(0.14, 0.20, vY));
+    body = mix(body, tacomaBody, vTacoma);
 
     vec3 c = body * key * (0.85 + 0.3 * wash);
     // Watercolor still pools faintly at the base.
@@ -136,7 +150,7 @@ const FRAG = /* glsl */ `
     //     Olympics ghosting the far horizon. Bold in linework, not in light.
     vec3 wpos = vec3(vWorld.x, vY, vWorld.y);
     vec3 view = normalize(cameraPosition - wpos);
-    float rim = smoothstep(0.55, 0.98, 1.0 - max(0.0, dot(n, view))) * max(vRainier, vBaker);
+    float rim = smoothstep(0.55, 0.98, 1.0 - max(0.0, dot(n, view))) * max(max(vRainier, vBaker), vTacoma * 0.7);
     c = mix(c, INK, rim * 0.32);
 
     float a = uOpacity * (0.94 + 0.12 * wash);
@@ -476,19 +490,27 @@ function buildGeometry(): THREE.BufferGeometry {
   //     (no station, not on the Link), but on a clear print it's there, a low
   //     pale bubble on the rust-red concourse. Its own hemisphere cap sits on
   //     a short drum, scaled up from true-toy so it survives at drift distance
-  //     the way the Needle and Wheel did. No mythic flag — it stays a quiet,
-  //     atmospheric silhouette like the far islands, never Rainier's Fuji. ---
-  {
+  //     the way the Needle and Wheel did. Carries its OWN `aTacoma` vertex flag
+  //     (set below) so the shader can paint its real colours — pale timber roof,
+  //     rust-red concourse — instead of the generic landmark pigment, plus a
+  //     faint sumi rim so the white dome reads as drawn against the pale sky.
+  //     Distinct from Rainier's Fuji flag: no dawn vermilion, no snow-veins. ---
+  const tacoma = (() => {
     const { x, z } = projectLatLng(47.2364, -122.4241);
-    const drum = new THREE.CylinderGeometry(0.9, 0.95, 0.16, 14);
-    drum.translate(x, 0.08, z);
+    const dParts: THREE.BufferGeometry[] = [];
+    const drum = new THREE.CylinderGeometry(1.15, 1.22, 0.18, 16);
+    drum.translate(x, 0.09, z);
     // A shallow hemisphere — the dome is far wider than it is tall, a saucer
-    // not a ball, so we squash the cap to ~0.45 its radius in height.
-    const cap = new THREE.SphereGeometry(0.95, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
-    cap.scale(1, 0.45, 1);
-    cap.translate(x, 0.16, z);
-    parts.push(drum, cap);
-  }
+    // not a ball, so we squash the cap to ~0.42 its radius in height.
+    const cap = new THREE.SphereGeometry(1.22, 18, 9, 0, Math.PI * 2, 0, Math.PI / 2);
+    cap.scale(1, 0.42, 1);
+    cap.translate(x, 0.18, z);
+    dParts.push(drum, cap);
+    const g = mergeGeometries(dParts, false)!;
+    dParts.forEach((p) => p.dispose());
+    return g;
+  })();
+  parts.push(tacoma);
 
   // --- Mount Rainier, ~85 km southeast: the print's Fuji. Nudged a touch
   //     taller so its snow cap climbs clear of the mist bands and reads as a
@@ -610,6 +632,10 @@ function buildGeometry(): THREE.BufferGeometry {
       "aBaker",
       new THREE.BufferAttribute(new Float32Array(n).fill(g === baker ? 1 : 0), 1)
     );
+    g.setAttribute(
+      "aTacoma",
+      new THREE.BufferAttribute(new Float32Array(n).fill(g === tacoma ? 1 : 0), 1)
+    );
   }
 
   const merged = mergeGeometries(parts, false)!;
@@ -697,6 +723,7 @@ function buildWheelGeometry(): THREE.BufferGeometry {
   const n = geo.attributes.position.count;
   geo.setAttribute("aRainier", new THREE.BufferAttribute(new Float32Array(n), 1));
   geo.setAttribute("aBaker", new THREE.BufferAttribute(new Float32Array(n), 1));
+  geo.setAttribute("aTacoma", new THREE.BufferAttribute(new Float32Array(n), 1));
   return geo;
 }
 
