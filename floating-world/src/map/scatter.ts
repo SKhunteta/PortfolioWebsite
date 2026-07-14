@@ -7,6 +7,7 @@
 // rest of map/ uses. One-time cost at layer init — never per frame.
 
 import { BASEMAP_WATER, BASEMAP_PARKS, BASEMAP_ROADS } from "./basemap";
+import { CONFIG } from "../world/config";
 
 /** mulberry32 — a tiny fast seeded PRNG. Same seed → same sequence, so the
  *  scatter is stable across reloads (no Math.random anywhere on the map). */
@@ -132,34 +133,42 @@ export const GEO_BBOX: BBox = (() => {
 export interface RoadPoint {
   x: number;
   z: number;
-  nx: number; // unit normal to the road (which way the frontage faces)
+  nx: number; // unit outward normal — points AWAY from the road centerline
   nz: number;
 }
 
-/** Walk every road polyline at ~spacingKm and emit a point on each side,
- *  offset off the centerline — the frontages that the town lines up along. */
-export function sampleRoadFrontages(spacingKm: number, offsetKm: number): RoadPoint[] {
+/** Walk every road polyline at ~spacingKm and emit a frontage point on each
+ *  side. The point is set off the centerline by the road's OWN painted
+ *  half-width plus `gapKm`, so the frontage line lands just outside the ink
+ *  stroke — a house placed here (and pushed further out by its footprint in
+ *  Buildings.tsx) fronts the street instead of sitting on top of it. */
+export function sampleRoadFrontages(spacingKm: number, gapKm: number): RoadPoint[] {
   const out: RoadPoint[] = [];
-  const roads = [...BASEMAP_ROADS.major, ...BASEMAP_ROADS.arterial];
-  for (const line of roads) {
-    for (let i = 0; i < line.length - 1; i++) {
-      const [ax, az] = line[i];
-      const [bx, bz] = line[i + 1];
-      const dx = bx - ax;
-      const dz = bz - az;
-      const len = Math.hypot(dx, dz);
-      if (len < 1e-4) continue;
-      const ux = dx / len;
-      const uz = dz / len;
-      const nx = -uz; // left normal
-      const nz = ux;
-      const steps = Math.max(1, Math.floor(len / spacingKm));
-      for (let s = 0; s < steps; s++) {
-        const t = (s + 0.5) / steps;
-        const px = ax + dx * t;
-        const pz = az + dz * t;
-        out.push({ x: px + nx * offsetKm, z: pz + nz * offsetKm, nx, nz });
-        out.push({ x: px - nx * offsetKm, z: pz - nz * offsetKm, nx: -nx, nz: -nz });
+  const classes: [[number, number][][], number][] = [
+    [BASEMAP_ROADS.major, CONFIG.basemap.roadWidthKm.major / 2 + gapKm],
+    [BASEMAP_ROADS.arterial, CONFIG.basemap.roadWidthKm.arterial / 2 + gapKm],
+  ];
+  for (const [roads, offsetKm] of classes) {
+    for (const line of roads) {
+      for (let i = 0; i < line.length - 1; i++) {
+        const [ax, az] = line[i];
+        const [bx, bz] = line[i + 1];
+        const dx = bx - ax;
+        const dz = bz - az;
+        const len = Math.hypot(dx, dz);
+        if (len < 1e-4) continue;
+        const ux = dx / len;
+        const uz = dz / len;
+        const nx = -uz; // left normal
+        const nz = ux;
+        const steps = Math.max(1, Math.floor(len / spacingKm));
+        for (let s = 0; s < steps; s++) {
+          const t = (s + 0.5) / steps;
+          const px = ax + dx * t;
+          const pz = az + dz * t;
+          out.push({ x: px + nx * offsetKm, z: pz + nz * offsetKm, nx, nz });
+          out.push({ x: px - nx * offsetKm, z: pz - nz * offsetKm, nx: -nx, nz: -nz });
+        }
       }
     }
   }
