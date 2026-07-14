@@ -435,7 +435,12 @@ export function CameraRig() {
     // (and open it immediately by treating the page as long-idle); clear its
     // HUD label the frame it turns off.
     if (observing && !wasObserving.current) {
-      observeClock.current = 0;
+      // Start the clock PAST the opening stop's travel-in so the reel opens
+      // already "arrived" on REEL[0] — the random train chase latches at once
+      // and zooms in from the drift position, instead of orbiting downtown for
+      // travelS seconds first. Every later loop-around into REEL[0] still glides
+      // in normally (the clock only jumps on this turn-on frame).
+      observeClock.current = CONFIG.camera.observeReel.travelS;
       reelSeg.current = -1;
       lastInteraction.current = -Infinity;
     }
