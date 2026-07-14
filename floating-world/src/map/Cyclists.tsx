@@ -1,13 +1,16 @@
-// The Burke-Gilman cyclists: a few toy riders gliding Seattle's famous
-// rail-trail, which threads right past the U-District and Husky Stadium stops —
-// so the bikes cross the rail world instead of decorating a corner of it. The
-// opposite of the anonymous freeway wash (map/TrafficWash.tsx): these are HERO
-// figures you can pick out and follow, exactly like the ferries. Background
-// paint, not data — like Rainier and the ferries they belong to the page: a
-// real trail, a real riding pace, deterministic from the scene clock, never
-// presented as live. Their count-of-visible thins with the real Seattle hour
-// (world/traffic.ts): a couple at dawn, fuller on a bright midday, near-empty
-// after dark.
+// The Burke-Gilman cyclists AND the Green Lake loop riders: a few toy riders
+// gliding Seattle's famous rail-trail — which threads right past the U-District
+// and Husky Stadium stops — plus a ring of riders circling Green Lake on its
+// beloved lakeside path. So the bikes cross the rail world instead of
+// decorating a corner of it. The opposite of the anonymous freeway wash
+// (map/TrafficWash.tsx): these are HERO figures you can pick out and follow,
+// exactly like the ferries. Background paint, not data — like Rainier and the
+// ferries they belong to the page: real routes, a real riding pace,
+// deterministic from the scene clock, never presented as live. Their
+// count-of-visible thins with the real Seattle hour (world/traffic.ts): a
+// couple at dawn, fuller on a bright midday, near-empty after dark. The
+// Burke-Gilman is a linear trail (a bike turns around at each end); Green Lake
+// is a closed loop (a rider just keeps going around).
 //
 // ONE InstancedMesh (one draw call, matching the instanced-everything rule),
 // matrices written imperatively in useFrame — the hot path never touches
@@ -62,15 +65,19 @@ interface Route {
   pts: { x: number; z: number }[];
   cum: number[];
   lengthKm: number;
+  loop: boolean; // closed ring (Green Lake) vs. out-and-back trail (Burke-Gilman)
 }
 
-function route(latlngs: [number, number][]): Route {
-  const pts = latlngs.map(([lat, lng]) => projectLatLng(lat, lng));
+function route(latlngs: [number, number][], loop = false): Route {
+  const base = latlngs.map(([lat, lng]) => projectLatLng(lat, lng));
+  // A loop closes back onto its first point, so append it as a real vertex —
+  // then the closing segment is just another leg the sampler walks.
+  const pts = loop ? [...base, base[0]] : base;
   const cum = [0];
   for (let i = 1; i < pts.length; i++) {
     cum.push(cum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].z - pts[i - 1].z));
   }
-  return { pts, cum, lengthKm: cum[cum.length - 1] };
+  return { pts, cum, lengthKm: cum[cum.length - 1], loop };
 }
 
 // The Burke-Gilman's core arc across the visible map: Ballard → Fremont → Gas
@@ -87,6 +94,24 @@ const BURKE_GILMAN = route([
   [47.6790, -122.2770], // Matthews Beach
 ]);
 
+// The Green Lake path: the ~4.5 km ring around the lake that everyone in
+// Seattle knows, walked and ridden all day. Coarse real waypoints tracing the
+// shoreline loop counter-clockwise from the north end; `loop` closes it so a
+// rider just keeps going around instead of turning back.
+const GREEN_LAKE = route(
+  [
+    [47.6847, -122.3340], // north shore
+    [47.6835, -122.3298], // northeast
+    [47.6807, -122.3280], // east shore (Latona / East Green Lake Dr)
+    [47.6779, -122.3298], // southeast
+    [47.6767, -122.3340], // south shore (Aqua Theater end)
+    [47.6779, -122.3382], // southwest
+    [47.6807, -122.3400], // west shore (West Green Lake Dr)
+    [47.6835, -122.3382], // northwest
+  ],
+  true
+);
+
 // Deterministic 0..1 hash — no Math.random, so reloads lay the riders out the
 // same way every time (the scene's determinism rule).
 function hash(n: number): number {
@@ -94,15 +119,28 @@ function hash(n: number): number {
 }
 
 export interface Rider {
+  route: Route; // which path this rider travels
   phase: number; // fraction of the round trip already ridden at t = 0
   speedKmS: number; // real-ish riding pace
 }
 
-const COUNT = PROFILE.cyclistCount;
-const RIDERS: Rider[] = Array.from({ length: COUNT }, (_, i) => ({
-  phase: (i + 0.5) / COUNT,
-  speedKmS: CONFIG.cyclist.speedKmS * (0.85 + 0.3 * hash(i * 3.1)),
-}));
+// Both rider sets share ONE instanced mesh (the one-draw-call rule): build a
+// flat list, tagging each with its route. Phases spread each set evenly along
+// its own path so no two riders stack, and a hashed speed jitter keeps the pack
+// from moving in lockstep. The seed offset on the loop set keeps its jitter
+// independent of the trail set's.
+function fleet(route: Route, count: number, seed: number): Rider[] {
+  return Array.from({ length: count }, (_, i) => ({
+    route,
+    phase: (i + 0.5) / count,
+    speedKmS: CONFIG.cyclist.speedKmS * (0.85 + 0.3 * hash((i + seed) * 3.1)),
+  }));
+}
+
+const RIDERS: Rider[] = [
+  ...fleet(BURKE_GILMAN, PROFILE.cyclistCount, 0),
+  ...fleet(GREEN_LAKE, PROFILE.greenLakeCyclistCount, 100),
+];
 
 export interface RiderPose {
   x: number;
@@ -112,22 +150,32 @@ export interface RiderPose {
 
 const pose: RiderPose = { x: 0, z: 0, yaw: 0 };
 
-/** Where a rider is at clock time t: ping-pong along the trail (a bike simply
- *  turns around at each end). Heading is the forward tangent. */
+/** Where a rider is at clock time t. On a loop the rider rides on forever around
+ *  the ring; on a trail it ping-pongs (a bike simply turns around at each end).
+ *  Heading is the forward tangent. */
 function riderPoseAt(r: Rider, t: number, out: RiderPose = pose): RiderPose {
-  const crossS = BURKE_GILMAN.lengthKm / r.speedKmS;
-  const period = 2 * crossS;
-  const p = (t + r.phase * period) % period;
+  const rt = r.route;
   let s: number;
   let forward: boolean;
-  if (p < crossS) {
+  if (rt.loop) {
+    // One lap = lengthKm; wrap the distance around and always ride forward.
+    const lap = rt.lengthKm / r.speedKmS;
+    const p = (t + r.phase * lap) % lap;
     s = p * r.speedKmS;
     forward = true;
   } else {
-    s = BURKE_GILMAN.lengthKm - (p - crossS) * r.speedKmS;
-    forward = false;
+    const crossS = rt.lengthKm / r.speedKmS;
+    const period = 2 * crossS;
+    const p = (t + r.phase * period) % period;
+    if (p < crossS) {
+      s = p * r.speedKmS;
+      forward = true;
+    } else {
+      s = rt.lengthKm - (p - crossS) * r.speedKmS;
+      forward = false;
+    }
   }
-  const { pts, cum } = BURKE_GILMAN;
+  const { pts, cum } = rt;
   let i = 1;
   while (i < cum.length - 1 && cum[i] < s) i++;
   const f = THREE.MathUtils.clamp((s - cum[i - 1]) / Math.max(1e-6, cum[i] - cum[i - 1]), 0, 1);
