@@ -9,7 +9,8 @@
 // waterfront bluff, Boeing Field's runways and the Museum of Flight, the city's
 // bridges (the I-90 and SR-520 floating spans across Lake Washington and the
 // ship-canal drawbridges), the Ballard Locks where the canal meets the Sound,
-// the far-shore islands the ferries sail to (Bainbridge, Vashon, Blake), and —
+// the far-shore islands the ferries sail to (Bainbridge, Vashon, Blake), the
+// Tacoma Dome ghosted on the far southern horizon past Rainier, and —
 // ghosted at real scale on the horizons — Mount Rainier southeast, Mount Baker
 // and the Cascade wall east/north, and the Olympics west.
 // Toy-scaled like the trains (~4–5× real height,
@@ -469,6 +470,25 @@ function buildGeometry(): THREE.BufferGeometry {
   // Westfield Southcenter, the Tukwila mall east of the airport
   //   (2800 Southcenter Pkwy)
   parts.push(tower(47.45888, -122.25818, 0.56, 0.13, 0.44, -0.1));
+
+  // --- the Tacoma Dome, ~45 km south-southwest: the great white timber dome
+  //     ghosted on the far horizon PAST Rainier's flank — you can't ride to it
+  //     (no station, not on the Link), but on a clear print it's there, a low
+  //     pale bubble on the rust-red concourse. Its own hemisphere cap sits on
+  //     a short drum, scaled up from true-toy so it survives at drift distance
+  //     the way the Needle and Wheel did. No mythic flag — it stays a quiet,
+  //     atmospheric silhouette like the far islands, never Rainier's Fuji. ---
+  {
+    const { x, z } = projectLatLng(47.2364, -122.4241);
+    const drum = new THREE.CylinderGeometry(0.9, 0.95, 0.16, 14);
+    drum.translate(x, 0.08, z);
+    // A shallow hemisphere — the dome is far wider than it is tall, a saucer
+    // not a ball, so we squash the cap to ~0.45 its radius in height.
+    const cap = new THREE.SphereGeometry(0.95, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+    cap.scale(1, 0.45, 1);
+    cap.translate(x, 0.16, z);
+    parts.push(drum, cap);
+  }
 
   // --- Mount Rainier, ~85 km southeast: the print's Fuji. Nudged a touch
   //     taller so its snow cap climbs clear of the mist bands and reads as a
