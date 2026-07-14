@@ -61,6 +61,23 @@ export const CONFIG = {
     seigaihaRadiusKm: 0.8,
     seigaihaRings: 4,
   },
+  // The abstract traffic current (map/TrafficWash.tsx): a two-lane flow scrolled
+  // along the road ribbons. yLift floats it a hair over the ink stroke; widthMul
+  // hugs it a touch past the stroke edge; dashKm sets the bead spacing and
+  // speedKmS the scroll pace (~cruising, matching the tween's vNominal).
+  traffic: {
+    yLift: 0.004,
+    widthMul: 1.15,
+    dashKm: 0.5,
+    speedKmS: 0.02,
+  },
+  // The Burke-Gilman cyclists (map/Cyclists.tsx): toy figures, storybook-large
+  // like the trains and ferries, riding at a real ~18 km/h pace.
+  cyclist: {
+    toyLenKm: 0.13,
+    speedKmS: 0.005,
+    y: 0.02,
+  },
   trail: {
     sampleEveryS: 0.12,
     widthKm: 0.09,

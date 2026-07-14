@@ -22,28 +22,40 @@ import { CLOCK } from "../world/clock";
 import { LIVE } from "../world/palettes";
 import { PROFILE } from "../world/device";
 import { CONFIG } from "../world/config";
+import { useUi } from "../trains/store";
 import { PLATFORM_SITES, PLATFORM_PULSE } from "./platformPulse";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "../map/watercolorGlsl";
 
 const VERT = /* glsl */ `
   ${FOG_VARYINGS_VERT}
-  attribute float aSeed;  // per-figure scatter/animation seed
-  attribute float aSize;  // per-figure height, km
-  attribute float aPulse; // this figure's station dwell pulse (updated per frame)
+  attribute float aSeed;      // per-figure scatter/animation seed
+  attribute float aSize;      // per-figure height, km
+  attribute float aPulse;     // this figure's station dwell pulse (updated per frame)
+  attribute vec2 aScatter;    // offset from the platform entrance (km) at rest
+  attribute float aCaretaker; // 1 = the lone figure kept when the network rests
   uniform float uTime;
+  uniform float uGather;      // how far the crowd tightens toward the entrance on dwell
   varying vec2 vUv;
   varying float vPulse;
   varying float vSeed;
+  varying float vCare;
   void main() {
     vUv = uv;
     vPulse = aPulse;
     vSeed = aSeed;
-    vec4 center = modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+    vCare = aCaretaker;
+    // A gathering crowd tightens toward the entrance as its train pulls in and
+    // loosens back to a loitering scatter as it leaves — driven straight off
+    // the honest dwell pulse, so the motion can never outrun the trains.
+    vec3 offset = vec3(aScatter.x, 0.0, aScatter.y) * (1.0 - uGather * aPulse);
+    vec4 center = modelMatrix * (instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0) + vec4(offset, 0.0));
     vWorld = center.xz;
     vec4 mv = viewMatrix * center;
-    // A crowd shifts its weight: a small bob and sway on the clock, each
-    // figure on its own phase so the platform stirs rather than pulses.
+    // A crowd shifts its weight: a bob and sway on the clock, plus a slower
+    // lateral wander so a few figures stroll rather than stand — each on its
+    // own phase so the platform stirs rather than pulses.
     mv.x += sin(uTime * 0.9 + aSeed * 6.283) * 0.004;
+    mv.x += sin(uTime * 0.32 + aSeed * 21.7) * 0.006;
     mv.y += sin(uTime * 2.1 + aSeed * 3.14) * 0.005;
     // View-facing billboard, taller than wide, anchored at the feet (uv.y = 0
     // sits on the paper, the figure stands up from there).
@@ -60,12 +72,18 @@ const FRAG = /* glsl */ `
   varying vec2 vUv;
   varying float vPulse;
   varying float vSeed;
+  varying float vCare;
   uniform vec3 uWarm;
   uniform float uOpacity;
+  uniform float uResting;
   void main() {
     // A crowd only reads once its station really hosts a train — a far train
     // grazing the dwell radius shouldn't sketch ghosts on every platform.
     float crowd = smoothstep(0.09, 0.7, vPulse);
+    // When the whole network rests, keep one lone caretaker on a handful of
+    // platforms so an empty print still has a person in it — not a ghost town.
+    // In live/simulated mode uResting is 0 and the crowd stays fully honest.
+    crowd = max(crowd, vCare * uResting * 0.55);
     if (crowd < 0.01) discard;
     // A standing figure: a vertical lozenge for the body, a small head above.
     vec2 p = vUv - vec2(0.5, 0.42);
@@ -110,14 +128,25 @@ export function PlatformLife() {
     const size = new Float32Array(POOL);
     const pulse = new Float32Array(POOL);
     const siteOf = new Int32Array(POOL);
-    // Per-figure identity only; the actual scatter positions are written into
-    // the instance matrices on the first frame (the mesh isn't mounted yet).
+    // Per-figure scatter (offset from the entrance) rides an attribute now —
+    // the instance matrices just place the pool at each site center, and the
+    // shader spreads the crowd out from there and gathers it back on dwell.
+    const scatter = new Float32Array(POOL * 2);
+    const caretaker = new Float32Array(POOL);
+    const radius = CONFIG.station.sealRadiusKm * 0.85;
     let k = 0;
     for (let s = 0; s < SITE_COUNT; s++) {
       for (let m = 0; m < PER; m++) {
         seed[k] = unit(s * 3.1 + m * 1.9);
         size[k] = 0.05 + unit(s * 9.2 + m * 4.4) * 0.035;
         siteOf[k] = s;
+        const ang = unit(s * 31.7 + m * 7.13) * Math.PI * 2;
+        const rad = Math.sqrt(unit(s * 5.3 + m * 2.9)) * radius;
+        scatter[k * 2] = Math.cos(ang) * rad;
+        scatter[k * 2 + 1] = Math.sin(ang) * rad;
+        // A lone caretaker on every fifth platform — enough to keep a resting
+        // print inhabited, sparse enough that it still reads as "resting".
+        caretaker[k] = m === 0 && s % 5 === 0 ? 1 : 0;
         k++;
       }
     }
@@ -126,30 +155,27 @@ export function PlatformLife() {
     geometry.setAttribute("aSeed", new THREE.InstancedBufferAttribute(seed, 1));
     geometry.setAttribute("aSize", new THREE.InstancedBufferAttribute(size, 1));
     geometry.setAttribute("aPulse", pulseAttr);
+    geometry.setAttribute("aScatter", new THREE.InstancedBufferAttribute(scatter, 2));
+    geometry.setAttribute("aCaretaker", new THREE.InstancedBufferAttribute(caretaker, 1));
     return { geometry, pulseAttr, siteOf };
   }, [SITE_COUNT, POOL]);
 
   const placed = useRef(false);
+  const resting = useRef(0);
 
   useFrame(() => {
     const mesh = meshRef.current;
     if (!mesh || !PLATFORM_PULSE.ready) return;
 
-    // Place the pool once (the mesh exists now; positions never change again).
+    // Place the pool once at each site center (the mesh exists now; the crowd's
+    // spread lives in aScatter, so these matrices never change again).
     if (!placed.current) {
       placed.current = true;
-      const radius = CONFIG.station.sealRadiusKm * 0.85;
       let k = 0;
       for (let s = 0; s < SITE_COUNT; s++) {
         const site = PLATFORM_SITES[s];
         for (let m = 0; m < PER; m++) {
-          const ang = unit(s * 31.7 + m * 7.13) * Math.PI * 2;
-          const rad = Math.sqrt(unit(s * 5.3 + m * 2.9)) * radius;
-          matrix.makeTranslation(
-            site.x + Math.cos(ang) * rad,
-            site.y,
-            site.z + Math.sin(ang) * rad
-          );
+          matrix.makeTranslation(site.x, site.y, site.z);
           mesh.setMatrixAt(k, matrix);
           k++;
         }
@@ -165,6 +191,10 @@ export function PlatformLife() {
     const mat = mesh.material as THREE.ShaderMaterial;
     mat.uniforms.uTime.value = CLOCK.t;
     mat.uniforms.uFogDensity.value = LIVE.fogDensity;
+    // Fade the resting caretaker in/out as the badge flips, so it never pops.
+    const restTarget = useUi.getState().mode === "resting" ? 1 : 0;
+    resting.current += (restTarget - resting.current) * Math.min(1, CLOCK.dt * 1.5);
+    mat.uniforms.uResting.value = resting.current;
   });
 
   if (POOL === 0) return null;
@@ -184,6 +214,8 @@ export function PlatformLife() {
           uWarm: { value: LIVE.station }, // palette-by-reference: persimmon by day, amber by night
           uOpacity: { value: 0.85 },
           uTime: { value: 0 },
+          uGather: { value: 0.55 }, // crowd tightens ~halfway to the entrance on full dwell
+          uResting: { value: 0 },
           uFog: { value: LIVE.fog },
           uFogDensity: { value: LIVE.fogDensity },
         }}
