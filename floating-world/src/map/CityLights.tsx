@@ -1,8 +1,10 @@
 // The city's small lights: the Space Needle's red aircraft beacon breathing
-// at the top of the spire, and the two SODO stadium bowls that come up warm
-// on real game nights (map/stadiumNights.ts — Mariners, Sounders, Seahawks
-// home dates baked from the real schedules). Ambient truth, ferry-style:
-// deterministic from the wall clock, never presented as live telemetry.
+// at the top of the spire, the shore lighthouses flashing over the Sound
+// (West Point, Alki Point, Mukilteo — each on its own period), and the two
+// SODO stadium bowls that come up warm on real game nights
+// (map/stadiumNights.ts — Mariners, Sounders, Seahawks home dates baked from
+// the real schedules). Ambient truth, ferry-style: deterministic from the
+// wall clock, never presented as live telemetry.
 //
 // ONE InstancedMesh of view-facing painted-glow quads (one draw call),
 // additive like the train sprites. The beacon's core deliberately crosses
@@ -66,14 +68,48 @@ interface Light {
   y: number;
   scaleKm: number;
   color: THREE.Color;
-  venue?: StadiumVenue; // stadium domes; absent = the Needle beacon
+  venue?: StadiumVenue; // stadium domes
+  lighthouse?: { periodS: number; phase: number }; // shore beacons on the Sound
   label?: string;
+  // no venue and no lighthouse ⇒ the Needle's red aircraft beacon
 }
 
 export const LIGHTS: Light[] = [
   // The beacon rides just above the spire tip (Landmarks.tsx builds the
   // Needle to y ≈ 1.07 at this toy scale).
   { lat: 47.6205, lng: -122.3493, y: 1.09, scaleKm: 0.16, color: new THREE.Color("#ff5c48") },
+  // Shore lighthouses guarding the Sound — West Point off Discovery Park,
+  // Alki Point at the mouth of Elliott Bay, and Mukilteo far to the north.
+  // Each keeps its own flash character (period + phase), a warm-white ember
+  // that just kisses the bloom line at the top of its flash — the working
+  // waterfront's night-lights, deterministic from the clock like the beacon.
+  {
+    lat: 47.662,
+    lng: -122.4356,
+    y: 0.06,
+    scaleKm: 0.13,
+    color: new THREE.Color("#ffe6c0"),
+    lighthouse: { periodS: 10, phase: 0 },
+    label: "West Point Light",
+  },
+  {
+    lat: 47.5763,
+    lng: -122.4206,
+    y: 0.06,
+    scaleKm: 0.13,
+    color: new THREE.Color("#ffe6c0"),
+    lighthouse: { periodS: 7.5, phase: 2.1 },
+    label: "Alki Point Light",
+  },
+  {
+    lat: 47.9497,
+    lng: -122.3045,
+    y: 0.06,
+    scaleKm: 0.13,
+    color: new THREE.Color("#ffe6c0"),
+    lighthouse: { periodS: 5, phase: 4.0 },
+    label: "Mukilteo Light",
+  },
   // Each stadium comes up in two registers, matched to how it really lights:
   // a broad warm floodlit-concourse spill washing the bowl, and a tighter,
   // higher accent tracing its signature roof arch in its own colour — Lumen
@@ -201,6 +237,16 @@ export function CityLights() {
         // source.
         const g = gameGlow.current[l.venue];
         const glow = g * night * 0.35 * (0.92 + 0.08 * CLOCK.breath);
+        glowAttr.setX(i, glow);
+        CITY_LIGHT_GLOW[i] = glow;
+      } else if (l.lighthouse) {
+        // A flashing shore beacon: mostly dark with a brief warm flash on its
+        // own period, so the three lights wink out of step. Flash peak ~1.05
+        // just grazes the bloom line — a soft ember on the water, softer than
+        // the Needle. Night creature like the rest.
+        const { periodS, phase } = l.lighthouse;
+        const s = 0.5 + 0.5 * Math.sin((CLOCK.t * Math.PI * 2) / periodS + phase);
+        const glow = Math.pow(s, 5) * night * 1.05;
         glowAttr.setX(i, glow);
         CITY_LIGHT_GLOW[i] = glow;
       } else {

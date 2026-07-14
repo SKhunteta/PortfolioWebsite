@@ -5,8 +5,13 @@
 // Amazon Spheres, Bellevue's second skyline across the lake for the 2 Line,
 // the region's big malls (Alderwood up north, Southcenter down in Tukwila), a
 // handful of neighborhood haunts strung along the line (the Kraken's
-// Iceplex at Northgate, brewpubs and Broadway cafés), and — ghosted at real
-// scale on the horizons — Mount Rainier southeast and the Olympics west.
+// Iceplex at Northgate, brewpubs and Broadway cafés), Pike Place Market on the
+// waterfront bluff, Boeing Field's runways and the Museum of Flight, the city's
+// bridges (the I-90 and SR-520 floating spans across Lake Washington and the
+// ship-canal drawbridges), the Ballard Locks where the canal meets the Sound,
+// the far-shore islands the ferries sail to (Bainbridge, Vashon, Blake), and —
+// ghosted at real scale on the horizons — Mount Rainier southeast, Mount Baker
+// and the Cascade wall east/north, and the Olympics west.
 // Toy-scaled like the trains (~4–5× real height,
 // the storybook register), merged into ONE geometry / ONE draw call, and
 // painted with the same watercolor wash + fog contract as every other
@@ -32,7 +37,9 @@ const ss = (a: number, b: number, x: number) => {
 const VERT = /* glsl */ `
   ${FOG_VARYINGS_VERT}
   attribute float aRainier;
+  attribute float aBaker;
   varying float vRainier;
+  varying float vBaker;
   varying float vY;
   varying vec3 vNormal;
   void main() {
@@ -41,6 +48,7 @@ const VERT = /* glsl */ `
     vY = world.y;
     vNormal = normal; // geometry is baked in world space; the mesh never moves
     vRainier = aRainier;
+    vBaker = aBaker;
     vec4 mv = viewMatrix * world;
     vFogDepth = -mv.z;
     gl_Position = projectionMatrix * mv;
@@ -53,6 +61,7 @@ const FRAG = /* glsl */ `
   varying float vY;
   varying vec3 vNormal;
   varying float vRainier;
+  varying float vBaker;
   uniform vec3 uColor;
   uniform float uOpacity;
   uniform vec2 uRainierAxis; // Rainier's world xz — the axis the veins radiate from
@@ -100,14 +109,20 @@ const FRAG = /* glsl */ `
     float thr = mix(0.34, 0.9, 1.0 - tongue);               // deeper down, only the strongest veins hold
     float veinSnow = max(solidCap, smoothstep(thr, thr + 0.12, channel) * tongue);
     float olympicSnow = smoothstep(1.4, 3.4, vY) * 0.93;
-    c = mix(c, SNOW, mix(olympicSnow, veinSnow, vRainier));
+    // Mount Baker: a bold, near-solid Hokusai cap sliding far down the flank —
+    // a COOL second Fuji on the northern horizon, with none of Rainier's dawn
+    // vermilion (the body tint below rides on vRainier alone).
+    float bakerSnow = max(smoothstep(2.2, 2.7, vY), smoothstep(1.1, 2.7, vY) * 0.9);
+    float snowAmt = mix(olympicSnow, veinSnow, vRainier);
+    snowAmt = mix(snowAmt, bakerSnow, vBaker);
+    c = mix(c, SNOW, snowAmt);
 
     // --- Sumi keyline: a fresnel rim inks Rainier's silhouette so it reads as
     //     the DRAWN hero of the sheet, not an atmospheric stain like the
     //     Olympics ghosting the far horizon. Bold in linework, not in light.
     vec3 wpos = vec3(vWorld.x, vY, vWorld.y);
     vec3 view = normalize(cameraPosition - wpos);
-    float rim = smoothstep(0.55, 0.98, 1.0 - max(0.0, dot(n, view))) * vRainier;
+    float rim = smoothstep(0.55, 0.98, 1.0 - max(0.0, dot(n, view))) * max(vRainier, vBaker);
     c = mix(c, INK, rim * 0.32);
 
     float a = uOpacity * (0.94 + 0.12 * wash);
@@ -234,6 +249,41 @@ function iceplex(lat: number, lng: number) {
   const geo = mergeGeometries(parts, false)!;
   parts.forEach((g) => g.dispose());
   geo.translate(x, 0, z);
+  return geo;
+}
+
+/** A low inked bridge deck spanning A→B across the water. The floating bridges
+ *  ride the surface (y≈0, no piers); the high spans lift their deck and drop a
+ *  few legs to the water so they read as trestles, not paint on the sheet. */
+function bridge(
+  latA: number,
+  lngA: number,
+  latB: number,
+  lngB: number,
+  w: number,
+  y: number,
+  piers = 0
+) {
+  const a = projectLatLng(latA, lngA);
+  const b = projectLatLng(latB, lngB);
+  const dx = b.x - a.x;
+  const dz = b.z - a.z;
+  const len = Math.hypot(dx, dz);
+  const yaw = Math.atan2(dz, dx);
+  const segs: THREE.BufferGeometry[] = [];
+  const deck = new THREE.BoxGeometry(len, 0.02, w); // built along +x from the origin
+  deck.translate(len / 2, y, 0);
+  segs.push(deck);
+  for (let i = 0; i < piers; i++) {
+    const t = (i + 1) / (piers + 1);
+    const leg = new THREE.BoxGeometry(w * 0.5, y, w * 0.5);
+    leg.translate(len * t, y / 2, 0);
+    segs.push(leg);
+  }
+  const geo = mergeGeometries(segs, false)!;
+  segs.forEach((g) => g.dispose());
+  geo.rotateY(-yaw); // aim the +x deck along the A→B heading in world XZ
+  geo.translate(a.x, 0, a.z);
   return geo;
 }
 
@@ -416,13 +466,104 @@ function buildGeometry(): THREE.BufferGeometry {
   parts.push(peak(47.8358, -123.0864, 3.4, 2.0)); // Buckhorn ridge, north end
   parts.push(peak(47.5217, -123.2372, 3.2, 1.9)); // Washington/Ellinor massif
 
-  // Tag every vertex with whether it belongs to Rainier (1) or not (0). The
-  // flag must exist on ALL parts or mergeGeometries refuses the merge; the
-  // fragment shader keys the mythic paint off it so nothing else is touched.
+  // --- Mount Baker, ~150 km north: a second Fuji on the northern horizon.
+  //     Wears the bold Hokusai cap and the sumi keyline (the aBaker flag set
+  //     below drives the paint), but stays a COOL distant cone — none of
+  //     Rainier's dawn vermilion. Real scale, like Rainier and the Olympics.
+  const baker = (() => {
+    const { x, z } = projectLatLng(48.7767, -121.8144);
+    const cone = new THREE.ConeGeometry(7.0, 4.2, 9);
+    cone.translate(x, 2.1, z);
+    return cone;
+  })();
+  parts.push(baker);
+
+  // --- the Cascade wall on the eastern horizon: Glacier Peak's snowfield to
+  //     the northeast and a ridge of crest summits due east behind Bellevue —
+  //     the range that closes the third side of the mountain frame (Rainier
+  //     southeast, the Olympics west). Atmospheric like the Olympics: the
+  //     smooth Hokusai snowline, half-dissolved in the far mist. ---
+  parts.push(peak(48.1118, -121.1132, 4.0, 2.3)); // Glacier Peak
+  parts.push(peak(47.8021, -121.113, 3.2, 1.7)); // Mount Index, crest north
+  parts.push(peak(47.4751, -120.9029, 3.6, 1.9)); // Mount Stuart, far east
+  parts.push(peak(47.531, -121.42, 2.6, 1.2)); // Snoqualmie crest
+  parts.push(peak(47.4879, -121.7223, 1.8, 0.8)); // Mount Si, the near wall
+
+  // --- the city of bridges: the floating spans the trains and highways ride
+  //     across Lake Washington, and the ship-canal drawbridges that stitch the
+  //     water thread from the lake out to the Sound. Inked decks like the
+  //     landmarks; the floating pair rides the water, the high spans sit on
+  //     piers. ---
+  // I-90 — the 2 Line's OWN crossing: Seattle → Mercer Island (the Lacey V.
+  //   Murrow / Homer Hadley floating bridge), then the East Channel span to
+  //   Bellevue.
+  parts.push(bridge(47.5903, -122.2905, 47.5912, -122.2566, 0.08, 0.03));
+  parts.push(bridge(47.5873, -122.2385, 47.5866, -122.2098, 0.07, 0.1, 2));
+  // SR-520 — one of the longest floating bridges on earth, Montlake → Medina.
+  parts.push(bridge(47.6427, -122.2758, 47.63, -122.2085, 0.08, 0.03));
+  // Ship-canal spans, each a raised inked deck on piers.
+  parts.push(bridge(47.6452, -122.3477, 47.6512, -122.3472, 0.05, 0.12, 2)); // Aurora (Hwy 99)
+  parts.push(bridge(47.6468, -122.3497, 47.65, -122.3496, 0.04, 0.08, 1)); // Fremont
+  parts.push(bridge(47.6556, -122.3762, 47.6624, -122.376, 0.05, 0.1, 2)); // Ballard
+  parts.push(bridge(47.6518, -122.3202, 47.6557, -122.32, 0.04, 0.09, 1)); // University
+  parts.push(bridge(47.6446, -122.3045, 47.648, -122.3044, 0.04, 0.08, 1)); // Montlake
+  // West Seattle high bridge over the Duwamish.
+  parts.push(bridge(47.5717, -122.333, 47.5726, -122.3545, 0.06, 0.12, 2));
+
+  // --- Hiram M. Chittenden (Ballard) Locks: where the ship canal steps down to
+  //     the Sound — the lock-chamber walls inked across the cut, with the little
+  //     administration building on the south bank ---
+  {
+    const { x, z } = projectLatLng(47.6657, -122.3966);
+    const wallA = new THREE.BoxGeometry(0.12, 0.03, 0.018);
+    wallA.translate(x, 0.015, z - 0.03);
+    const wallB = new THREE.BoxGeometry(0.12, 0.03, 0.018);
+    wallB.translate(x, 0.015, z);
+    const wallC = new THREE.BoxGeometry(0.16, 0.03, 0.018);
+    wallC.translate(x + 0.02, 0.015, z + 0.04);
+    const house = new THREE.BoxGeometry(0.05, 0.06, 0.05);
+    house.translate(x - 0.055, 0.03, z + 0.07);
+    parts.push(wallA, wallB, wallC, house);
+  }
+
+  // --- the far shores across the Sound: Bainbridge, Vashon and little Blake
+  //     Island — ghosted forested ridges the ferries actually sail to, half
+  //     dissolved in the marine haze like the Olympics beyond. Low and wide
+  //     (no snowline), so they read as LAND massing, not peaks. ---
+  parts.push(peak(47.653, -122.525, 2.2, 0.7)); // Bainbridge, north ridge
+  parts.push(peak(47.62, -122.53, 2.0, 0.6)); // Bainbridge, south
+  parts.push(peak(47.415, -122.46, 2.6, 0.7)); // Vashon Island spine
+  parts.push(peak(47.38, -122.47, 2.2, 0.6)); // Vashon, south
+  parts.push(peak(47.54, -122.488, 0.9, 0.4)); // Blake Island
+
+  // --- Pike Place Market: the long market arcade stepping down the waterfront
+  //     bluff, with the clock-and-sign pylon at its north end ---
+  parts.push(tower(47.6097, -122.3421, 0.1, 0.09, 0.26, 0.35)); // the arcade (long axis along the bluff)
+  parts.push(tower(47.6101, -122.3419, 0.05, 0.16, 0.04, 0.35)); // the neon sign / clock pylon
+
+  // --- Boeing Field / King County International (KBFI): the region's SECOND
+  //     airfield, south of downtown — its runways inked like SeaTac's strips,
+  //     a control tower, and the Museum of Flight's great glass gallery on the
+  //     west apron ---
+  parts.push(tower(47.53, -122.302, 0.05, 0.01, 2.0)); // main runway 14R/32L (N–S)
+  parts.push(tower(47.53, -122.3055, 0.035, 0.01, 1.4)); // 14L/32R
+  parts.push(tower(47.5322, -122.301, 0.04, 0.16, 0.04)); // control tower
+  parts.push(tower(47.5178, -122.2966, 0.16, 0.1, 0.16, 0.1)); // Museum of Flight
+
+  // Tag every vertex with whether it belongs to Rainier (1), Baker (1 on its
+  // own flag), or neither. A flag must exist on ALL parts or mergeGeometries
+  // refuses the merge; the fragment shader keys the mythic paint off each so
+  // nothing else is touched.
   for (const g of parts) {
     const n = g.attributes.position.count;
-    const flag = new Float32Array(n).fill(g === rainier ? 1 : 0);
-    g.setAttribute("aRainier", new THREE.BufferAttribute(flag, 1));
+    g.setAttribute(
+      "aRainier",
+      new THREE.BufferAttribute(new Float32Array(n).fill(g === rainier ? 1 : 0), 1)
+    );
+    g.setAttribute(
+      "aBaker",
+      new THREE.BufferAttribute(new Float32Array(n).fill(g === baker ? 1 : 0), 1)
+    );
   }
 
   const merged = mergeGeometries(parts, false)!;
