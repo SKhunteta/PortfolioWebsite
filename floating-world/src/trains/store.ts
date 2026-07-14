@@ -35,6 +35,10 @@ export interface TrainState {
 
 export const TRAINS = new Map<string, TrainState>();
 
+// Cap on how many trains cast a water reflection (map/Reflections.tsx); matches
+// the render cap so every live train that crosses the lake shimmers.
+export const MAX_TRAINS_REFLECTED = 48;
+
 export function makeTrain(
   id: string,
   lineId: string,

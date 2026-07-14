@@ -68,7 +68,7 @@ interface Light {
   label?: string;
 }
 
-const LIGHTS: Light[] = [
+export const LIGHTS: Light[] = [
   // The beacon rides just above the spire tip (Landmarks.tsx builds the
   // Needle to y ≈ 1.07 at this toy scale).
   { lat: 47.6205, lng: -122.3493, y: 1.09, scaleKm: 0.16, color: new THREE.Color("#ff5c48") },
@@ -98,6 +98,12 @@ const LIGHTS: Light[] = [
 const FORCE_GAMENIGHT =
   typeof window !== "undefined" &&
   new URLSearchParams(window.location.search).has("gamenight");
+
+// The live glow each light is putting out this frame, mirrored for
+// map/Reflections.tsx so a beacon's ember and a lit bowl pour onto the nearest
+// water at exactly their own strength — read straight from here, never a second
+// copy of the pulse and the schedule.
+export const CITY_LIGHT_GLOW: number[] = LIGHTS.map(() => 0);
 
 const BEACON_PERIOD_S = 2.8;
 const GLOW_POLL_S = 5; // wall-clock schedule checks — not a per-frame cost
@@ -170,12 +176,16 @@ export function CityLights() {
         // Peaks ~0.35 (×2 where the domes overlap) — a wash, never a bloom
         // source.
         const g = gameGlow.current[l.venue];
-        glowAttr.setX(i, g * night * 0.35 * (0.92 + 0.08 * CLOCK.breath));
+        const glow = g * night * 0.35 * (0.92 + 0.08 * CLOCK.breath);
+        glowAttr.setX(i, glow);
+        CITY_LIGHT_GLOW[i] = glow;
       } else {
         // The beacon: a slow red blink, sharpened so it winks rather than
         // throbs. Night peak ~1.6 — the one deliberate HDR ember up there.
         const s = 0.5 + 0.5 * Math.sin((CLOCK.t * Math.PI * 2) / BEACON_PERIOD_S);
-        glowAttr.setX(i, Math.pow(s, 3) * night * 1.6);
+        const glow = Math.pow(s, 3) * night * 1.6;
+        glowAttr.setX(i, glow);
+        CITY_LIGHT_GLOW[i] = glow;
       }
     }
     glowAttr.needsUpdate = true;
