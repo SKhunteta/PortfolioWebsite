@@ -318,11 +318,16 @@ body {
   bottom: calc(max(18px, env(safe-area-inset-bottom)) + 30px);
   width: min(320px, calc(100vw - 44px));
   color: #3d2f1f;
-  /* Shared paper halo for every line in the card — ink must survive the
-     dark lantern night as well as the bright day. */
-  text-shadow:
-    0 0 3px rgba(242, 230, 198, 0.9),
-    0 0 14px rgba(242, 230, 198, 0.6);
+  /* A real washi card behind the ink — the halo alone can't hold dark ink
+     against the dark lantern-night scene, so the card floats on paper of its
+     own (the cartouche does the same). Reads on the bright day look too. */
+  background: rgba(240, 229, 201, 0.82);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  border-radius: 3px;
+  box-shadow: 0 2px 22px rgba(28, 20, 12, 0.28);
+  /* A quiet paper halo still softens the ink onto the card. */
+  text-shadow: 0 0 3px rgba(242, 230, 198, 0.8);
   pointer-events: none;
   user-select: none;
   opacity: 0;
@@ -330,8 +335,9 @@ body {
   transition: opacity 0.55s ease, transform 0.55s ease;
   /* The station's real signature color runs down the card's spine — a
      vermilion-toned seal edge by default. */
-  border-left: 2px solid rgba(199, 62, 42, 0.35);
-  padding-left: 13px;
+  border: 1px solid rgba(74, 55, 33, 0.22);
+  border-left: 2px solid rgba(199, 62, 42, 0.55);
+  padding: 15px 16px 16px;
 }
 .station-panel-open {
   opacity: 1;
@@ -341,8 +347,8 @@ body {
    touch-friendly dismiss, ink on paper, anchored at the card's top-right. */
 .station-panel-close {
   position: absolute;
-  top: -6px;
-  right: 0;
+  top: 2px;
+  right: 2px;
   width: 40px;
   height: 40px;
   display: flex;
