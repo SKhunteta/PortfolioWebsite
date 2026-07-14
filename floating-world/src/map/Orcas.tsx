@@ -183,14 +183,22 @@ function whalePoseAt(w: Whale, t: number, out: WhalePose = pose): WhalePose {
   const dir = outbound ? 1 : -1;
   out.yaw = Math.atan2(-dz * dir, dx * dir);
 
-  // The breathing arc: a brief breach (bodyUp near 1) then a long dive.
+  // The porpoising leap: a dolphin-like arc that drives the body clear of the
+  // water, hangs level at the apex, then knifes back in nose-first before a
+  // long submerged glide. A wide gaussian shapes the rise so the emergence and
+  // re-entry stay graceful rather than a spiky pop.
   const u = (t / w.surfPeriodS + w.surfPhase) % 1;
-  const bodyUp = Math.exp(-Math.pow((u - 0.5) / 0.17, 2)); // gaussian breach
-  out.y = -0.05 + 0.11 * bodyUp; // sinks below the wash, then breaks it
-  out.pitch = (u - 0.5) * -0.7 * bodyUp; // nose up rising, down diving
-  out.surf = THREE.MathUtils.smoothstep(bodyUp, 0.55, 0.95);
-  // A ghost of the dark body glides just under the surface between breaches.
-  out.fade = 0.16 + 0.84 * THREE.MathUtils.smoothstep(bodyUp, 0.05, 0.4);
+  const bodyUp = Math.exp(-Math.pow((u - 0.5) / 0.2, 2)); // gaussian leap
+  out.y = -0.06 + 0.15 * bodyUp; // glides under the wash, then arcs above it
+  // Pitch rides tangent to the arc: proportional to the leap's vertical
+  // velocity (dy/du of the gaussian), so the nose lifts on the climb, levels
+  // at the apex, and angles down on re-entry — the rolling swoop of a
+  // porpoising dolphin rather than a flat bob.
+  const climb = -(u - 0.5) * bodyUp; // dy/du shape: + rising, − diving
+  out.pitch = THREE.MathUtils.clamp(climb * 8.0, -0.85, 0.85);
+  out.surf = THREE.MathUtils.smoothstep(bodyUp, 0.5, 0.92);
+  // A ghost of the dark body glides just under the surface between leaps.
+  out.fade = 0.16 + 0.84 * THREE.MathUtils.smoothstep(bodyUp, 0.06, 0.42);
   return out;
 }
 
