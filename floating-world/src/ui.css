@@ -337,6 +337,35 @@ body {
   opacity: 1;
   transform: translateY(0);
 }
+/* The one interactive element in an otherwise pointer-transparent card: a
+   touch-friendly dismiss, ink on paper, anchored at the card's top-right. */
+.station-panel-close {
+  position: absolute;
+  top: -6px;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #55432b;
+  font-family: var(--hud-serif);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  text-shadow:
+    0 0 3px rgba(242, 230, 198, 0.95),
+    0 0 14px rgba(242, 230, 198, 0.7);
+}
+.station-panel-close:hover,
+.station-panel-close:active {
+  color: #c73e2a;
+}
 .station-panel-name {
   font-family: var(--hud-serif);
   font-size: 13.5px;
@@ -344,6 +373,8 @@ body {
   letter-spacing: 0.26em;
   text-transform: uppercase;
   text-shadow: 0 1px 16px rgba(242, 230, 198, 0.95);
+  /* Keep the name clear of the close button (touch) at top-right. */
+  padding-right: 34px;
 }
 .station-panel-swatch {
   display: inline-block;
@@ -360,6 +391,7 @@ body {
   letter-spacing: 0.14em;
   color: #7a6549;
   text-shadow: 0 1px 14px rgba(242, 230, 198, 0.9);
+  padding-right: 34px;
 }
 /* What the real station looks like — the researched identity line. */
 .station-panel-look {
