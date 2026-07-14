@@ -11,6 +11,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useUi } from "../trains/store";
 import { STATION_BY_ID } from "../map/network";
+import { INPUT_TOUCH } from "../world/device";
 import { loreForName, openedYear, StationLore } from "./lore";
 import { identityForName, StationIdentity } from "./identity";
 import { arrivalsForStation, formatEta, Arrival } from "./arrivals";
@@ -55,11 +56,23 @@ function buildData(id: string): PanelData | null {
 
 export function StationPanel() {
   const hoverId = useUi((s) => s.hoverStationId);
+  const setHoverStation = useUi((s) => s.setHoverStation);
   // `data` persists through the fade-out so the card doesn't blank mid-dissolve.
   const [data, setData] = useState<PanelData | null>(null);
   const [arrivals, setArrivals] = useState<Arrival[]>([]);
   const open = hoverId != null;
   const clearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Dismiss with Escape too — a keyboard way out to match the tap-away and the
+  // close button (the tap-opened card was easy to open, hard to leave).
+  useEffect(() => {
+    if (hoverId == null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setHoverStation(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [hoverId, setHoverStation]);
 
   useEffect(() => {
     if (hoverId == null) {
@@ -95,6 +108,18 @@ export function StationPanel() {
       className={`station-panel ${open ? "station-panel-open" : ""}`}
       style={data.accent ? { borderLeftColor: data.accent } : undefined}
     >
+      {/* Tap opened this card; give touch an obvious way to close it (desktop
+          dismisses on hover-out). */}
+      {INPUT_TOUCH && (
+        <button
+          type="button"
+          className="station-panel-close"
+          aria-label="Close station panel"
+          onClick={() => setHoverStation(null)}
+        >
+          ×
+        </button>
+      )}
       <div className="station-panel-name">
         {data.accent && (
           <span className="station-panel-swatch" style={{ background: data.accent }} />

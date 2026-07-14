@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { PROFILE } from "./world/device";
 import { LIVE } from "./world/palettes";
+import { useUi } from "./trains/store";
 import { GroundPlane } from "./map/GroundPlane";
 import { Water } from "./map/Water";
 import { Parks } from "./map/Parks";
@@ -75,6 +76,10 @@ export default function App() {
           powerPreference: "high-performance",
         }}
         camera={{ fov: PROFILE.baseFov, near: 0.1, far: 500, position: [0, 26, 18] }}
+        // Tap/click anywhere off a station closes its open card — the easy way
+        // out for the tap-to-open panel (stations stopPropagation, so a real
+        // hit never reaches here).
+        onPointerMissed={() => useUi.getState().setHoverStation(null)}
       >
         <AtmosphereDriver />
         <SkyBokashi />
