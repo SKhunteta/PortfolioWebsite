@@ -17,7 +17,17 @@ interface ApiVehicle {
   lon: number;
   heading?: number | null;
   dwelling?: boolean;
+  // Real crowding 0..1 when the GTFS-RT feed carries it; absent otherwise.
+  // Drives the trail's ink weight (world/ridership.ts) — never shown as a count.
+  occupancy?: number | null;
   timestamp: number;
+}
+
+/** Feed occupancy is honest data or nothing — a finite 0..1 or null. */
+function readOccupancy(v: ApiVehicle): number | null {
+  return typeof v.occupancy === "number" && Number.isFinite(v.occupancy)
+    ? Math.max(0, Math.min(1, v.occupancy))
+    : null;
 }
 
 interface ApiResponse {
@@ -79,6 +89,7 @@ function fold(payload: ApiResponse) {
       existing.lastPollT = CLOCK.t;
       existing.sTarget = snap.sKm;
       existing.dwelling = Boolean(v.dwelling);
+      existing.occupancy = readOccupancy(v);
       existing.missedPolls = 0;
     } else {
       const snap = bestSnap(line.directions, x, z);
@@ -87,6 +98,7 @@ function fold(payload: ApiResponse) {
       const train = makeTrain(v.id, v.line, snap.dir, snap.sKm, PROFILE.trailSegments);
       train.lastPollT = CLOCK.t;
       train.dwelling = Boolean(v.dwelling);
+      train.occupancy = readOccupancy(v);
       TRAINS.set(v.id, train);
     }
   }

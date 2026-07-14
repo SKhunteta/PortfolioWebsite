@@ -50,6 +50,7 @@ export function Hud() {
   const followingPlane = useUi((s) => s.followPlaneIndex);
   const caption = useUi((s) => s.caption);
   const observing = useUi((s) => s.observing);
+  const touring = useUi((s) => s.touring);
   // Speaks only after a real fetch (or a ?weather= pin) — see world/weather.
   const weatherWord = useWeather((s) => s.label);
   const [settled, setSettled] = useState(false);
@@ -124,6 +125,13 @@ export function Hud() {
         <div className="hud-chase">
           {followingPlane !== null ? "riding the jet" : "following"} · esc to let go
         </div>
+      )}
+
+      {/* The unattended tour's one quiet line: it says why the camera drifts
+          the whole line on its own, and that any touch hands you the wheel.
+          Suppressed while chasing (the two never overlap). */}
+      {touring && !following && followingPlane === null && (
+        <div className="hud-tour">touring the line · move to take the wheel</div>
       )}
 
       {/* The optional day-runner: sweeps the print through a whole Seattle day

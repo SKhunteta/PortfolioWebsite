@@ -333,6 +333,37 @@ body {
   pointer-events: none;
 }
 
+/* The idle-tour hint: same quiet chrome as the chase line, but it eases in
+   slowly so the unattended camera's takeover never announces itself abruptly. */
+.hud-tour {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: max(18px, env(safe-area-inset-bottom));
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #7a6549;
+  user-select: none;
+  pointer-events: none;
+  animation: hud-tour-in 2.4s ease both;
+}
+
+@keyframes hud-tour-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-tour {
+    animation-duration: 0.01ms;
+  }
+}
+
 /* Station reading card: lore whisper + live arrivals, fading up on hover/tap.
    Left column, lifted clear of the attribution line; pointer-transparent so
    it never intercepts a drag or a station tap underneath. */

@@ -6,8 +6,13 @@
 import type { TrainState } from "./store";
 import { CONFIG } from "../world/config";
 import { railHeightAt } from "../map/grade";
+import { ridershipLoad } from "../world/ridership";
 
 const Y_LERP_PER_S = 2.0;
+// Ridership drifts slowly — a crowd builds and empties like a wash of pigment,
+// not a switch. Slower than the height lerp so a poll-to-poll occupancy jump
+// (or the ambient hour ticking over) never pops the ink.
+const LOAD_LERP_PER_S = 0.5;
 
 export function advanceTrain(t: TrainState, dt: number, nowT: number) {
   const remaining = t.sTarget - t.sRendered;
@@ -39,6 +44,11 @@ export function advanceTrain(t: TrainState, dt: number, nowT: number) {
   // popping to the next discrete grade height.
   const targetY = railHeightAt(t.dir, t.sRendered) + 0.06;
   t.y += (targetY - t.y) * Math.min(1, dt * Y_LERP_PER_S);
+
+  // Ridership: ease the ink weight toward the effective load (real feed
+  // occupancy when known, else the clock-keyed ambient estimate).
+  const loadTarget = ridershipLoad(t);
+  t.load += (loadTarget - t.load) * Math.min(1, dt * LOAD_LERP_PER_S);
 }
 
 /** Record a trail sample if the cadence says so. */

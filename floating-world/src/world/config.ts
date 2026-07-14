@@ -109,6 +109,11 @@ export const CONFIG = {
     // passing train smears a visible brushstroke across the print.
     farWidthBoost: 1.7,
     farIntensityBoost: 1.7,
+    // Ridership as pigment (world/ridership.ts): a train's load 0..1 scales the
+    // brushstroke's width and ink around a neutral half-full. A packed train
+    // drags a bolder, wetter stroke; an empty late-night run a faint whisper.
+    // Gentle gains — this is a mood on the ink, not a data readout.
+    load: { neutral: 0.5, widthGain: 0.6, inkGain: 0.85 },
   },
   station: {
     radiusKm: 0.08,
@@ -142,6 +147,13 @@ export const CONFIG = {
     driftRadSec: 0.02, // slow orbit
     driftBreathKm: 2.2,
     idleResumeS: 30,
+    // Cinematic idle tour (observer/tour.ts): after this many seconds of no
+    // input the camera leaves its downtown drift and tours the whole line,
+    // holding dwellS at each stop and travelS between them. Set well past
+    // idleResumeS so an attentive visitor never trips it — only a truly idle
+    // display (a screensaver, a gallery) drifts into the tour.
+    tourAfterS: 42,
+    tour: { dwellS: 7, travelS: 6 },
     minDistance: 0.8,
     maxDistance: 90,
     // Close enough that the toy S700 fills the frame; speed pulls it back.

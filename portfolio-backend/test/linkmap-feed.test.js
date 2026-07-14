@@ -5,6 +5,7 @@ import {
   matchLineId,
   isFeedStale,
   extractLinkVehicles,
+  readOccupancy,
 } from "../services/linkFeed.js";
 
 const NOW = Date.UTC(2026, 6, 15, 15, 30, 0);
@@ -55,6 +56,36 @@ test("extracts Link vehicles and drops non-Link / stale / positionless ones", ()
     heading: 180,
     timestamp: Math.floor(NOW / 1000) - 30,
   });
+});
+
+test("occupancy: percentage wins, else status enum, else null", () => {
+  assert.equal(readOccupancy({ occupancyPercentage: 80 }), 0.8);
+  assert.equal(readOccupancy({ occupancyPercentage: 250 }), 1); // clamped
+  assert.equal(readOccupancy({ occupancyStatus: 0 }), 0.05); // EMPTY
+  assert.equal(readOccupancy({ occupancyStatus: 5 }), 1.0); // FULL
+  // percentage takes priority over a status when both are present
+  assert.equal(readOccupancy({ occupancyPercentage: 30, occupancyStatus: 5 }), 0.3);
+  // no ridership signal -> null (client falls back to its ambient estimate)
+  assert.equal(readOccupancy({}), null);
+  assert.equal(readOccupancy({ occupancyStatus: 7 }), null); // NO_DATA_AVAILABLE
+  assert.equal(readOccupancy(undefined), null);
+});
+
+test("extracted vehicle carries occupancy only when the feed reports it", () => {
+  const feed = {
+    entity: [
+      entity(), // no occupancy fields
+      entity({
+        vehicle: { id: "veh-2" },
+        trip: { routeId: "40_2LINE" },
+        occupancyStatus: 3, // STANDING_ROOM_ONLY
+      }),
+    ],
+  };
+  const vehicles = extractLinkVehicles(feed, KNOWN, NOW);
+  assert.equal(vehicles.length, 2);
+  assert.equal("occupancy" in vehicles[0], false);
+  assert.equal(vehicles[1].occupancy, 0.7);
 });
 
 test("tolerates protobufjs Long-style timestamps", () => {

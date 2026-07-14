@@ -38,6 +38,35 @@ export function isFeedStale(headerTimestampSec, nowMs) {
   return nowMs - headerTimestampSec * 1000 > FEED_STALE_MS;
 }
 
+// GTFS-RT OccupancyStatus enum -> a representative 0..1 crowding fraction.
+// The art reads this as ink weight, not a headcount, so a coarse mapping is
+// honest enough. Statuses that carry NO ridership signal (no data, not
+// boardable) map to null so the client falls back to its ambient estimate
+// rather than painting a train as empty on a guess.
+const OCCUPANCY_FRACTION = {
+  0: 0.05, // EMPTY
+  1: 0.25, // MANY_SEATS_AVAILABLE
+  2: 0.5, // FEW_SEATS_AVAILABLE
+  3: 0.7, // STANDING_ROOM_ONLY
+  4: 0.9, // CRUSHED_STANDING_ROOM_ONLY
+  5: 1.0, // FULL
+  6: 1.0, // NOT_ACCEPTING_PASSENGERS (at/over capacity)
+};
+
+// Real crowding as a 0..1 fraction, or null when the feed says nothing usable.
+// occupancy_percentage (when a sane number) wins; otherwise the status enum.
+export function readOccupancy(vehicle) {
+  const pct = toNum(vehicle?.occupancyPercentage);
+  if (pct != null && Number.isFinite(pct) && pct >= 0) {
+    return Math.min(1, pct / 100);
+  }
+  const status = vehicle?.occupancyStatus;
+  if (status != null && Object.prototype.hasOwnProperty.call(OCCUPANCY_FRACTION, status)) {
+    return OCCUPANCY_FRACTION[status];
+  }
+  return null;
+}
+
 // FeedMessage -> contract vehicles, Link routes only, fresh positions only.
 export function extractLinkVehicles(feed, knownRouteIds, nowMs) {
   const vehicles = [];
@@ -48,14 +77,20 @@ export function extractLinkVehicles(feed, knownRouteIds, nowMs) {
     if (!line) continue;
     const ts = toNum(v.timestamp);
     if (ts && nowMs - ts * 1000 > VEHICLE_STALE_MS) continue;
-    vehicles.push({
+    const vehicle = {
       id: v.vehicle?.id || entity.id,
       line,
       lat: v.position.latitude,
       lon: v.position.longitude,
       heading: v.position.bearing ?? null,
       timestamp: ts || Math.floor(nowMs / 1000),
-    });
+    };
+    // Only carry occupancy when the feed actually reports it — a missing field
+    // stays missing on the wire, so the client can honestly fall back to its
+    // clock-keyed ambient estimate instead of a fabricated zero.
+    const occupancy = readOccupancy(v);
+    if (occupancy != null) vehicle.occupancy = occupancy;
+    vehicles.push(vehicle);
   }
   return vehicles;
 }
