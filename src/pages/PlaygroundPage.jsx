@@ -159,13 +159,13 @@ const STATIC_STANDALONE = [
   },
   {
     id: "floating-world",
-    title: "The Floating World",
+    title: "Sound & Rail",
     kindLabel: "WebGL visualization",
     tagline: "Seattle's light rail as a moving ukiyo-e print.",
     description:
       "The Living Link, repainted as a Japanese woodblock print: the same real trains on the same true geometry, gliding across warm washi paper — Prussian-blue water woven with seigaiha wave-fans, vermilion hanko seals for stations, kasumi mist drifting over the ink-drawn city, and Rainier standing in for Fuji on the horizon. Live when the feed breathes, honest simulation when it sleeps.",
     tags: ["three.js", "realtime", "ukiyo-e"],
-    cta: "Enter the floating world",
+    cta: "Enter Sound & Rail",
     href: "/floating-world/",
     urlLabel: "builtbyshrey.com/floating-world",
     theme: {

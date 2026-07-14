@@ -132,7 +132,7 @@ const Footer = () => {
                   href="/floating-world/"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
-                  The Floating World
+                  Sound & Rail
                 </a>
               </li>
               <li>

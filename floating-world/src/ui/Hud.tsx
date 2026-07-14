@@ -93,7 +93,7 @@ export function Hud() {
       <PrintFrame settled={settled} />
 
       <div className={`hud-title ${settled ? "hud-settled" : ""}`}>
-        <h1>The Floating World</h1>
+        <h1>Sound &amp; Rail</h1>
         <p>Seattle light rail · a woodblock print in motion</p>
       </div>
 
