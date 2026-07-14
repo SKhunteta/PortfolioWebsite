@@ -22,6 +22,7 @@ import { projectLatLng } from "./network";
 import { CLOCK } from "../world/clock";
 import { LIVE } from "../world/palettes";
 import { pushShadow } from "../world/shadows";
+import { setWake } from "../world/wakes";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
 const VERT = /* glsl */ `
@@ -183,6 +184,8 @@ export function Ferries() {
       mesh.setMatrixAt(i, matrix);
       // A faint shade on the water beneath the hull.
       pushShadow(x, z, 0, v.toyLengthKm * 0.5, 0.8);
+      // Where the hull cuts the water, the biolum can wake behind it (#14).
+      setWake(i, x, z, i < 2 ? 1 : 0.75);
     }
     mesh.instanceMatrix.needsUpdate = true;
   });

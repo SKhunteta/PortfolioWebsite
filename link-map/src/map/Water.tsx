@@ -22,7 +22,16 @@ import { buildStrip, mergeStrips } from "./ribbon";
 import { CLOCK } from "../world/clock";
 import { LIVE } from "../world/palettes";
 import { CONFIG } from "../world/config";
+import { sunPhase } from "../world/sun";
+import { WEATHER, MARINE } from "../world/weather";
+import { WAKES, MAX_WAKES } from "../world/wakes";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
+
+// ?biolum forces the warm/calm gate on for demos and tests (night still
+// required — bioluminescence is a night sight), like ?gamenight lights the
+// stadiums.
+const BIOLUM_FORCE =
+  typeof window !== "undefined" && new URLSearchParams(window.location.search).has("biolum");
 
 const WOBBLE_GLSL = /* glsl */ `
   uniform float uTime;
@@ -83,12 +92,16 @@ const FILL_FRAG = /* glsl */ `
   ${NOISE_GLSL}
   ${FOG_VARYINGS_FRAG}
   ${SEIGAIHA_GLSL}
+  #define WAKE_COUNT ${MAX_WAKES}
   uniform vec3 uWater;
   uniform vec3 uSeigaiha;
   uniform float uSeigaihaIntensity;
   uniform float uOpacity;
   uniform float uBreath;
   uniform float uTime;
+  uniform vec3 uWakes[WAKE_COUNT]; // xy world pos, z = strength
+  uniform float uBiolum;           // warm * calm * night gate (0..1)
+  uniform vec3 uBiolumColor;
   void main() {
     float blotch = 0.80 + 0.35 * wcFbm(vWorld * 0.6);
     vec3 water = uWater;
@@ -99,6 +112,19 @@ const FILL_FRAG = /* glsl */ `
       // and the global breath surfaces then submerges it (~9 s).
       float silk = smoothstep(0.42, 0.72, wcNoise(vWorld * 0.08 + vec2(uTime * 0.008, -uTime * 0.006)));
       water = mix(water, uSeigaiha, fan * silk * uBreath * uSeigaihaIntensity);
+    }
+    // Bioluminescence (#14): on warm, calm nights the Sound wakes in a faint
+    // teal glow where the boats stir it — a soft bloom around each wake,
+    // twinkling on a fine drifting sparkle and surfacing on the global breath.
+    if (uBiolum > 0.001) {
+      float glow = 0.0;
+      for (int i = 0; i < WAKE_COUNT; i++) {
+        float d = distance(vWorld, uWakes[i].xy);
+        glow += uWakes[i].z * exp(-d * d / 0.3); // ~0.5 km bloom behind the hull
+      }
+      glow = min(glow, 1.2);
+      float spark = smoothstep(0.5, 1.0, wcNoise(vWorld * 9.0 + vec2(uTime * 0.5, -uTime * 0.4)));
+      water += uBiolumColor * uBiolum * glow * (0.35 + 0.85 * spark) * (0.6 + 0.4 * uBreath);
     }
     vec3 c = mix(water, uFog, fogFactor());
     gl_FragColor = vec4(c, uOpacity * blotch * (0.9 + 0.1 * uBreath));
@@ -230,6 +256,11 @@ export function Water() {
       fillRef.current.uniforms.uFogDensity.value = LIVE.fogDensity;
       fillRef.current.uniforms.uOpacity.value = 0.62;
       fillRef.current.uniforms.uSeigaihaIntensity.value = LIVE.seigaihaIntensity;
+      // Biolum gate (#14): warm (real temp) AND calm (not churned by rain) AND
+      // night — a bloom only the dark, still, warm Sound shows. Honest: warmth
+      // is 0 until a real fetch, so a blocked feed never fakes it.
+      const warm = BIOLUM_FORCE ? 1 : MARINE.warmth;
+      fillRef.current.uniforms.uBiolum.value = warm * (1 - WEATHER.rain) * (1 - sunPhase());
     }
     if (edgeRef.current) {
       edgeRef.current.uniforms.uTime.value = CLOCK.t;
@@ -259,6 +290,9 @@ export function Water() {
             uFogDensity: { value: LIVE.fogDensity },
             uOpacity: { value: 0.62 },
             uBreath: { value: 0 },
+            uWakes: { value: WAKES },
+            uBiolum: { value: 0 },
+            uBiolumColor: { value: new THREE.Color(0.16, 0.85, 0.7) },
             ...wobbleUniforms(),
           }}
           transparent
