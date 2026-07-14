@@ -115,7 +115,7 @@ export function tourFraming(elapsedS: number, out: TourFraming): TourFraming {
 // the Burke-Gilman where the cyclists cross the rail world. CameraRig executes
 // it (finds the train, does the chase math); tour.ts just supplies the timeline.
 
-export type ShotKind = "orbit" | "train" | "plane";
+export type ShotKind = "orbit" | "train" | "plane" | "orca";
 
 interface ReelStop {
   kind: ShotKind;
@@ -153,10 +153,13 @@ const REEL: ReelStop[] = [
   // windows, read section by section. Same anchor, so the detail latches onto
   // the very train we've been riding.
   { kind: "train", anchor: "C05", fallback: { x: -0.29, z: -0.18 }, radiusKm: 6, elevation: 0.5, label: "up close: the light rail", dwellS: DETAIL_DWELL_S, detail: true },
-  // Down low over the downtown transit tunnel: the underground stations
-  // (Westlake, Symphony, Pioneer Square, Chinatown) and the light shafts that
-  // sink from their seals to the platforms below the paper.
-  { kind: "orbit", anchor: "C03", fallback: { x: -0.35, z: -0.6 }, radiusKm: 6.5, elevation: 0.4, label: "the underground" },
+  // Ride a train down into the downtown transit tunnel: the portal dip reads
+  // as the train sinks below the translucent paper, then a low hold over the
+  // underground stations (Westlake, Symphony, Pioneer Square, Chinatown) and
+  // the light shafts that sink from their seals to the platforms below —
+  // falls back to an orbit at the portal when no train is in the tunnel just
+  // then (honesty rule: night, feed asleep).
+  { kind: "train", anchor: "C03", fallback: { x: -0.35, z: -0.6 }, radiusKm: 5, elevation: 0.32, label: "diving into the underground", dwellS: RIDE_DWELL_S },
   // Ride the 2 Line out across Lake Washington — the water crossing, chased
   // low (an orbit over the lake when no train is on the bridge just then).
   { kind: "train", anchor: "E07", fallback: { x: 7.42, z: 2.0 }, radiusKm: 10.5, elevation: 0.5, label: "the Lake Washington crossing", dwellS: RIDE_DWELL_S },
@@ -166,6 +169,12 @@ const REEL: ReelStop[] = [
   // not the same curated crossing every loop, an honest random pick, so the
   // reel occasionally surprises even a visitor who's watched it loop before.
   { kind: "train", anchor: "C03", fallback: { x: -0.35, z: -0.6 }, radiusKm: 7, elevation: 0.5, label: "a train, somewhere on the line", dwellS: RIDE_DWELL_S, random: true },
+  // Slide in tight on the orca pod porpoising through the Sound — a very
+  // close, low hold so the sumi dorsal strokes and foam-white eyepatch fill
+  // the frame. Anchor/fallback are unused: CameraRig chases the pod's live,
+  // time-of-day-driven centre (`map/Orcas.tsx` `orcaPodCenterNow`) instead of
+  // a fixed station, since the pod migrates around the Sound over the day.
+  { kind: "orca", anchor: "__orcas__", fallback: { x: -3.4, z: -1.2 }, radiusKm: 0.34, elevation: 0.28, label: "up close: the orcas", dwellS: DETAIL_DWELL_S, detail: true },
   // Ride a jet through the SeaTac touch-and-go pattern, up over the valley.
   { kind: "plane", anchor: "C37", fallback: { x: 2.64, z: 17.9 }, radiusKm: 12, elevation: 0.62, label: "riding the jet", dwellS: RIDE_DWELL_S },
   // Then slide onto its flank: the Delta/Alaska tail device and the fuselage
@@ -256,4 +265,12 @@ export function tourEnabled(): boolean {
 /** True when ?tour=on pins the tour to start immediately (demos/tests). */
 export function tourForced(): boolean {
   return tourParam() === "on";
+}
+
+/** The REEL stop's own kind at segment index `seg` — true throughout both the
+ *  travel-in and the hold (unlike `ReelShot.kind`, which `observeShot` forces
+ *  to "orbit" while travelling). CameraRig uses this to keep chasing the
+ *  orca pod's live centre during the glide in, not just once arrived. */
+export function reelStopKind(seg: number): ShotKind {
+  return REEL[seg].kind;
 }

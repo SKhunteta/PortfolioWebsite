@@ -20,9 +20,11 @@ import {
   tourEnabled,
   tourForced,
   observeShot,
+  reelStopKind,
   type TourFraming,
   type ReelShot,
 } from "./tour";
+import { orcaPodCenterNow } from "../map/Orcas";
 import { TRAINS, useUi, type TrainState } from "../trains/store";
 import { CONFIG } from "../world/config";
 import { CLOCK } from "../world/clock";
@@ -44,6 +46,8 @@ const tourScratch: TourFraming = { x: 0, z: 0, radiusKm: 0, elevation: 0 };
 const reelScratch: ReelShot = { x: 0, z: 0, radiusKm: 0, elevation: 0, kind: "orbit", seg: -1, label: "", detail: false, random: false };
 // Scratch for picking the nearest train to a reel stop (never allocates).
 const pick = { x: 0, z: 0 };
+// Scratch for the orca reel stop's live, time-of-day-driven centre.
+const orcaCenter = { x: 0, z: 0 };
 
 // Settle the camera behind and above a train, along its travel tangent — the
 // chase frame, shared by the manual double-tap follow and the Observe reel's
@@ -516,6 +520,13 @@ export function CameraRig() {
           if (shot.detail) framePlaneDetail(controls, camera, jet, chaseK);
           else framePlane(controls, camera, jet, chaseK); // perspective of plane
           ridingThisFrame = true;
+          detailThisFrame = shot.detail;
+        } else if (reelStopKind(shot.seg) === "orca") {
+          // The orca close-up: chase the pod's own live, time-of-day-driven
+          // centre (it migrates around the Sound) rather than a fixed anchor,
+          // throughout both the glide in and the hold.
+          orcaPodCenterNow(CLOCK.t, orcaCenter);
+          applyOrbit(orcaCenter.x, orcaCenter.z, shot.radiusKm, shot.elevation);
           detailThisFrame = shot.detail;
         } else {
           // An orbit stop — or a rail stop with no train nearby (night, feed
