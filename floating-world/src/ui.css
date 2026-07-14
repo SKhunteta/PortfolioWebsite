@@ -34,6 +34,28 @@ body {
   user-select: none;
   transition: opacity 3.5s ease;
 }
+/* The halo alone hugs the glyph strokes — it can't fill the counters and the
+   space between the masthead words. At sunset the map warms to a mid-brown
+   right next to the ink, and the title nearly vanishes. So the masthead
+   floats on paper of its own, exactly like the cartouche and station card: a
+   soft washi wash, blurred to a cloud so it reads as the print's paper showing
+   through rather than a chrome box. It stays invisible on the cream day look
+   (same pigment as the sheet) and separates the ink on every darker phase. */
+.hud-title::before {
+  content: "";
+  position: absolute;
+  inset: -12px -24px -14px -20px;
+  z-index: -1;
+  border-radius: 12px;
+  background: radial-gradient(
+    130% 120% at 22% 40%,
+    rgba(243, 231, 200, 0.9),
+    rgba(243, 231, 200, 0.55) 52%,
+    rgba(243, 231, 200, 0) 100%
+  );
+  filter: blur(7px);
+  pointer-events: none;
+}
 .hud-title h1 {
   margin: 0;
   font-family: var(--hud-serif);
@@ -48,7 +70,9 @@ body {
   margin: 7px 0 0;
   font-size: clamp(10px, 1.15vw, 12.5px);
   letter-spacing: 0.2em;
-  color: #8a7355;
+  /* A touch deeper than the old #8a7355 so the opening line holds against a
+     warm sunset map, not just the cream day paper. Still a quiet warm brown. */
+  color: #6f5a3e;
 }
 .hud-settled {
   opacity: 0.38;
