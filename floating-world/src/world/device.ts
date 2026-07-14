@@ -61,6 +61,10 @@ export interface DeviceProfile {
   // Green Lake loop riders (map/Cyclists.tsx) — the same instanced draw call,
   // circling the lake's famous path instead of the linear rail-trail.
   greenLakeCyclistCount: number;
+  // Street cars (map/Cars.tsx) — ONE instanced draw call; count is the size of
+  // the fleet distributed across the road network (the real Seattle hour thins
+  // how many are visible). Fill/JS-pose budget, so it scales with the tier.
+  carCount: number;
 }
 
 const PROFILES: Record<Tier, DeviceProfile> = {
@@ -79,6 +83,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     platformMotes: 4,
     cyclistCount: 3,
     greenLakeCyclistCount: 3,
+    carCount: 70,
   },
   tablet: {
     dpr: [1, 2],
@@ -95,6 +100,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     platformMotes: 6,
     cyclistCount: 4,
     greenLakeCyclistCount: 4,
+    carCount: 130,
   },
   desktop: {
     dpr: [1, 2],
@@ -111,6 +117,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     platformMotes: 8,
     cyclistCount: 5,
     greenLakeCyclistCount: 6,
+    carCount: 190,
   },
 };
 

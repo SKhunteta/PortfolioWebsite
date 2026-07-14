@@ -1,10 +1,11 @@
-// Real Seattle traffic pressure, by the clock — NOT by data. The road wash
-// (map/TrafficWash.tsx) and the Burke-Gilman cyclists (map/Cyclists.tsx) key
-// their density to the actual local hour in Seattle: thick at the morning and
+// Real Seattle traffic pressure, by the clock — NOT by data. The street cars
+// (map/Cars.tsx) and the Burke-Gilman cyclists (map/Cyclists.tsx) key their
+// density to the actual local hour in Seattle: thick at the morning and
 // evening peaks, a midday plateau, near-empty at 3am. It is the ferry tier of
 // honesty — "true to the clock, deterministic, never presented as live" — and
-// because both consumers render an ABSTRACT flow (a shimmer, a few figures),
-// never countable vehicles, it can't be mistaken for a live feed.
+// because both consumers render clearly STYLIZED toy vehicles (a few carts, a
+// few riders) with no per-vehicle feed behind them, never a precise count, it
+// can't be mistaken for a live feed.
 //
 // ?traffic=off|0..1 pins it for demos, tests, and screenshots (matching the
 // ?phase= / ?weather= pins the rest of the piece already uses).

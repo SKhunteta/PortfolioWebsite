@@ -2,15 +2,15 @@
 // gliding Seattle's famous rail-trail — which threads right past the U-District
 // and Husky Stadium stops — plus a ring of riders circling Green Lake on its
 // beloved lakeside path. So the bikes cross the rail world instead of
-// decorating a corner of it. The opposite of the anonymous freeway wash
-// (map/TrafficWash.tsx): these are HERO figures you can pick out and follow,
-// exactly like the ferries. Background paint, not data — like Rainier and the
-// ferries they belong to the page: real routes, a real riding pace,
-// deterministic from the scene clock, never presented as live. Their
-// count-of-visible thins with the real Seattle hour (world/traffic.ts): a
-// couple at dawn, fuller on a bright midday, near-empty after dark. The
-// Burke-Gilman is a linear trail (a bike turns around at each end); Green Lake
-// is a closed loop (a rider just keeps going around).
+// decorating a corner of it. Kin to the street cars (map/Cars.tsx), but these
+// are HERO figures you can pick out and follow along a named route, exactly
+// like the ferries. Background paint, not data — like Rainier and the ferries
+// they belong to the page: real routes, a real riding pace, deterministic from
+// the scene clock, never presented as live. Their count-of-visible thins with
+// the real Seattle hour (world/traffic.ts): a couple at dawn, fuller on a
+// bright midday, near-empty after dark. The Burke-Gilman is a linear trail (a
+// bike turns around at each end); Green Lake is a closed loop (a rider just
+// keeps going around).
 //
 // ONE InstancedMesh (one draw call, matching the instanced-everything rule),
 // matrices written imperatively in useFrame — the hot path never touches

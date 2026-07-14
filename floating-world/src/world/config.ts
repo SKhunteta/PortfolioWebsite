@@ -75,17 +75,22 @@ export const CONFIG = {
     seigaihaRadiusKm: 0.8,
     seigaihaRings: 4,
   },
-  // The stylized traffic (map/TrafficWash.tsx): two lanes of discrete carts
-  // scrolled along the road ribbons. yLift floats them a hair over the ink
-  // stroke; widthMul hugs them a touch past the stroke edge; dashKm sets the
-  // car-to-car slot spacing (shorter than the old smear so the street reads
-  // as many small vehicles) and speedKmS the pace (~cruising, matching the
-  // tween's vNominal).
-  traffic: {
-    yLift: 0.004,
-    widthMul: 1.15,
-    dashKm: 0.36,
-    speedKmS: 0.02,
+  // The street traffic (map/Cars.tsx): individual toy cars gliding the real
+  // road network — the ferry/cyclist tier of honesty (deterministic ambient
+  // life, keyed to the real Seattle hour, never a live feed). toyLenKm is the
+  // storybook car length; speedKmS a city-driving pace (~40 km/h); y floats
+  // them a hair over the road ink; laneOffsetKm slides opposing directions to
+  // opposite sides of the stroke; fadeKm is the run at each corridor end over
+  // which a car eases in/out so the loop never pops; minCorridorKm is the
+  // shortest road segment long enough to drive.
+  car: {
+    toyLenKm: 0.11,
+    speedKmS: 0.011,
+    speedJitter: 0.35, // ±fraction, deterministic per car
+    y: 0.022,
+    laneOffsetKm: 0.03,
+    fadeKm: 0.14,
+    minCorridorKm: 0.45,
   },
   // The Burke-Gilman cyclists (map/Cyclists.tsx): toy figures, storybook-large
   // like the trains and ferries, riding at a real ~18 km/h pace.
