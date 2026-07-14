@@ -1,13 +1,16 @@
-// The Burke-Gilman cyclists: a few toy riders gliding Seattle's famous
-// rail-trail, which threads right past the U-District and Husky Stadium stops —
-// so the bikes cross the rail world instead of decorating a corner of it. Kin
-// to the street cars (map/Cars.tsx), but these are HERO figures you can pick
-// out and follow along a named trail, exactly like the ferries. Background
-// paint, not data — like Rainier and the ferries they belong to the page: a
-// real trail, a real riding pace, deterministic from the scene clock, never
-// presented as live. Their count-of-visible thins with the real Seattle hour
-// (world/traffic.ts): a couple at dawn, fuller on a bright midday, near-empty
-// after dark.
+// The Burke-Gilman cyclists AND the Green Lake loop riders: a few toy riders
+// gliding Seattle's famous rail-trail — which threads right past the U-District
+// and Husky Stadium stops — plus a ring of riders circling Green Lake on its
+// beloved lakeside path. So the bikes cross the rail world instead of
+// decorating a corner of it. Kin to the street cars (map/Cars.tsx), but these
+// are HERO figures you can pick out and follow along a named route, exactly
+// like the ferries. Background paint, not data — like Rainier and the ferries
+// they belong to the page: real routes, a real riding pace, deterministic from
+// the scene clock, never presented as live. Their count-of-visible thins with
+// the real Seattle hour (world/traffic.ts): a couple at dawn, fuller on a
+// bright midday, near-empty after dark. The Burke-Gilman is a linear trail (a
+// bike turns around at each end); Green Lake is a closed loop (a rider just
+// keeps going around).
 //
 // ONE InstancedMesh (one draw call, matching the instanced-everything rule),
 // matrices written imperatively in useFrame — the hot path never touches
@@ -23,6 +26,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { projectLatLng } from "./network";
+import { BASEMAP_WATER, HAS_BASEMAP } from "./basemap";
 import { CLOCK } from "../world/clock";
 import { LIVE } from "../world/palettes";
 import { PROFILE } from "../world/device";
@@ -62,15 +66,25 @@ interface Route {
   pts: { x: number; z: number }[];
   cum: number[];
   lengthKm: number;
+  loop: boolean; // closed ring (Green Lake) vs. out-and-back trail (Burke-Gilman)
 }
 
-function route(latlngs: [number, number][]): Route {
-  const pts = latlngs.map(([lat, lng]) => projectLatLng(lat, lng));
+function routeFromXZ(base: { x: number; z: number }[], loop = false): Route {
+  // A loop closes back onto its first point, so append it as a real vertex —
+  // then the closing segment is just another leg the sampler walks.
+  const pts = loop ? [...base, base[0]] : base;
   const cum = [0];
   for (let i = 1; i < pts.length; i++) {
     cum.push(cum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].z - pts[i - 1].z));
   }
-  return { pts, cum, lengthKm: cum[cum.length - 1] };
+  return { pts, cum, lengthKm: cum[cum.length - 1], loop };
+}
+
+function route(latlngs: [number, number][], loop = false): Route {
+  return routeFromXZ(
+    latlngs.map(([lat, lng]) => projectLatLng(lat, lng)),
+    loop
+  );
 }
 
 // The Burke-Gilman's core arc across the visible map: Ballard → Fremont → Gas
@@ -87,6 +101,97 @@ const BURKE_GILMAN = route([
   [47.6790, -122.2770], // Matthews Beach
 ]);
 
+// The Green Lake path: the ring AROUND the lake that everyone in Seattle knows,
+// walked and ridden all day. Riders must stay on the surrounding park path, not
+// out on the water — so we trace the lake's ACTUAL baked shoreline
+// (basemap.json, water polygon) and push every vertex outward from its centroid
+// so the ridden ring hugs the bank just beyond the wave pattern. `loop` closes
+// it so a rider just keeps going around instead of turning back.
+const GREEN_LAKE_CENTER = projectLatLng(47.6807, -122.334);
+// How far the ridden ring sits OUTSIDE the shoreline, in km — a uniform buffer
+// so riders travel the surrounding bank, never the water. ~0.11 clears the
+// seigaiha wash and the toy bike's own width.
+const GREEN_LAKE_MARGIN = 0.11;
+
+/** The baked Green Lake polygon, pushed outward by a uniform margin into a
+ *  rideable ring on the bank — or null if the basemap is the placeholder stub
+ *  (no real water to hug). Offsetting along each vertex's outward normal keeps
+ *  the whole ring off the water even where the real shoreline curves inward,
+ *  which a simple centroid-scale can't. */
+function greenLakeRing(): { x: number; z: number }[] | null {
+  if (!HAS_BASEMAP || BASEMAP_WATER.length === 0) return null;
+  let best: [number, number][] | null = null;
+  let bestD = Infinity;
+  for (const w of BASEMAP_WATER) {
+    let sx = 0;
+    let sz = 0;
+    for (const [x, z] of w.ring) {
+      sx += x;
+      sz += z;
+    }
+    const cx = sx / w.ring.length;
+    const cz = sz / w.ring.length;
+    const d = Math.hypot(cx - GREEN_LAKE_CENTER.x, cz - GREEN_LAKE_CENTER.z);
+    if (d < bestD) {
+      bestD = d;
+      best = w.ring;
+    }
+  }
+  // Nothing lake-like near Green Lake (unexpected on the real basemap): bail to
+  // the hand-authored fallback rather than ring some far-off pond.
+  if (!best || bestD > 1.0) return null;
+  // Baked rings often repeat the first point at the end; drop it so per-vertex
+  // normals and the loop's closing segment don't double up.
+  const ring =
+    best.length > 1 &&
+    Math.hypot(best[0][0] - best[best.length - 1][0], best[0][1] - best[best.length - 1][1]) < 1e-3
+      ? best.slice(0, -1)
+      : best;
+  let sx = 0;
+  let sz = 0;
+  for (const [x, z] of ring) {
+    sx += x;
+    sz += z;
+  }
+  const cx = sx / ring.length;
+  const cz = sz / ring.length;
+  const n = ring.length;
+  return ring.map((p, i) => {
+    const prev = ring[(i - 1 + n) % n];
+    const next = ring[(i + 1) % n];
+    // Average of the two adjacent edge normals: the local outward direction.
+    let nx = p[1] - prev[1] + (next[1] - p[1]);
+    let nz = -(p[0] - prev[0]) - (next[0] - p[0]);
+    const len = Math.hypot(nx, nz) || 1;
+    nx /= len;
+    nz /= len;
+    // Point it away from the lake centre (the shoreline is star-shaped about it).
+    if (nx * (p[0] - cx) + nz * (p[1] - cz) < 0) {
+      nx = -nx;
+      nz = -nz;
+    }
+    return { x: p[0] + nx * GREEN_LAKE_MARGIN, z: p[1] + nz * GREEN_LAKE_MARGIN };
+  });
+}
+
+// Fallback loop (placeholder basemap only): a coarse ring authored from real
+// Green Lake waypoints, already sized to clear the water.
+const GREEN_LAKE_FALLBACK: [number, number][] = [
+  [47.685, -122.334], // north shore
+  [47.6836, -122.3285], // northeast
+  [47.6805, -122.327], // east shore (East Green Lake Dr)
+  [47.6772, -122.3285], // southeast
+  [47.676, -122.334], // south shore (Aqua Theater end)
+  [47.6772, -122.3395], // southwest
+  [47.6805, -122.341], // west shore (West Green Lake Dr)
+  [47.6836, -122.3395], // northwest
+];
+
+const GREEN_LAKE = (() => {
+  const ring = greenLakeRing();
+  return ring ? routeFromXZ(ring, true) : route(GREEN_LAKE_FALLBACK, true);
+})();
+
 // Deterministic 0..1 hash — no Math.random, so reloads lay the riders out the
 // same way every time (the scene's determinism rule).
 function hash(n: number): number {
@@ -94,15 +199,28 @@ function hash(n: number): number {
 }
 
 export interface Rider {
+  route: Route; // which path this rider travels
   phase: number; // fraction of the round trip already ridden at t = 0
   speedKmS: number; // real-ish riding pace
 }
 
-const COUNT = PROFILE.cyclistCount;
-const RIDERS: Rider[] = Array.from({ length: COUNT }, (_, i) => ({
-  phase: (i + 0.5) / COUNT,
-  speedKmS: CONFIG.cyclist.speedKmS * (0.85 + 0.3 * hash(i * 3.1)),
-}));
+// Both rider sets share ONE instanced mesh (the one-draw-call rule): build a
+// flat list, tagging each with its route. Phases spread each set evenly along
+// its own path so no two riders stack, and a hashed speed jitter keeps the pack
+// from moving in lockstep. The seed offset on the loop set keeps its jitter
+// independent of the trail set's.
+function fleet(route: Route, count: number, seed: number): Rider[] {
+  return Array.from({ length: count }, (_, i) => ({
+    route,
+    phase: (i + 0.5) / count,
+    speedKmS: CONFIG.cyclist.speedKmS * (0.85 + 0.3 * hash((i + seed) * 3.1)),
+  }));
+}
+
+const RIDERS: Rider[] = [
+  ...fleet(BURKE_GILMAN, PROFILE.cyclistCount, 0),
+  ...fleet(GREEN_LAKE, PROFILE.greenLakeCyclistCount, 100),
+];
 
 export interface RiderPose {
   x: number;
@@ -112,22 +230,32 @@ export interface RiderPose {
 
 const pose: RiderPose = { x: 0, z: 0, yaw: 0 };
 
-/** Where a rider is at clock time t: ping-pong along the trail (a bike simply
- *  turns around at each end). Heading is the forward tangent. */
+/** Where a rider is at clock time t. On a loop the rider rides on forever around
+ *  the ring; on a trail it ping-pongs (a bike simply turns around at each end).
+ *  Heading is the forward tangent. */
 function riderPoseAt(r: Rider, t: number, out: RiderPose = pose): RiderPose {
-  const crossS = BURKE_GILMAN.lengthKm / r.speedKmS;
-  const period = 2 * crossS;
-  const p = (t + r.phase * period) % period;
+  const rt = r.route;
   let s: number;
   let forward: boolean;
-  if (p < crossS) {
+  if (rt.loop) {
+    // One lap = lengthKm; wrap the distance around and always ride forward.
+    const lap = rt.lengthKm / r.speedKmS;
+    const p = (t + r.phase * lap) % lap;
     s = p * r.speedKmS;
     forward = true;
   } else {
-    s = BURKE_GILMAN.lengthKm - (p - crossS) * r.speedKmS;
-    forward = false;
+    const crossS = rt.lengthKm / r.speedKmS;
+    const period = 2 * crossS;
+    const p = (t + r.phase * period) % period;
+    if (p < crossS) {
+      s = p * r.speedKmS;
+      forward = true;
+    } else {
+      s = rt.lengthKm - (p - crossS) * r.speedKmS;
+      forward = false;
+    }
   }
-  const { pts, cum } = BURKE_GILMAN;
+  const { pts, cum } = rt;
   let i = 1;
   while (i < cum.length - 1 && cum[i] < s) i++;
   const f = THREE.MathUtils.clamp((s - cum[i - 1]) / Math.max(1e-6, cum[i] - cum[i - 1]), 0, 1);

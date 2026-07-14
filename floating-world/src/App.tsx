@@ -16,6 +16,7 @@ import { Kasumi } from "./map/Kasumi";
 import { Ferries } from "./map/Ferries";
 import { Cyclists } from "./map/Cyclists";
 import { Seaplanes } from "./map/Seaplanes";
+import { Airliners } from "./map/Airliners";
 import { Wakes } from "./map/Wakes";
 import { Birds } from "./map/Birds";
 import { CityLights } from "./map/CityLights";
@@ -102,6 +103,7 @@ export default function App() {
         <Ferries />
         <Cyclists />
         <Seaplanes />
+        <Airliners />
         <Birds />
         <CityLights />
         <Reflections />

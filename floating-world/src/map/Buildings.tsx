@@ -92,7 +92,7 @@ export function Buildings() {
     const target = PROFILE.buildingCount;
     // Frontages on both sides of every road; shuffle so the town spreads
     // across the whole network instead of filling the first streets.
-    const pts = sampleRoadFrontages(0.11, 0.045);
+    const pts = sampleRoadFrontages(0.11, 0.02);
     for (let i = pts.length - 1; i > 0; i--) {
       const j = Math.floor(rand() * (i + 1));
       const t = pts[i];
@@ -118,16 +118,24 @@ export function Buildings() {
       const townGate = smoothstep(0.5, 0.86, townField);
       const keepProb = Math.min(1, downtown + townGate * 0.85);
       if (rand() > keepProb) continue;
-      // Face the street, with a jitter, and a little slop off the frontage so
-      // the rows don't read as a ruled line.
+      // Face the street, with a jitter on the yaw so the rows don't read as a
+      // ruled line.
       const yaw = Math.atan2(p.nx, p.nz) + (rand() - 0.5) * 0.6;
-      const jx = (rand() - 0.5) * 0.04;
-      const jz = (rand() - 0.5) * 0.04;
       const w = 0.045 + rand() * 0.075;
       const d = 0.045 + rand() * 0.075;
       let h = 0.04 + rand() * 0.07 + downtown * (0.07 + rand() * 0.36);
       if (rand() < 0.02) h *= 1.9; // the odd tower breaking the roofline
-      pos.set(p.x + jx, 0.001, p.z + jz);
+      // The frontage point (p) already sits just outside the road stroke.
+      // Set the house back by its own footprint so its street-facing wall — not
+      // its center — lands on the frontage line, and jitter ONLY along the
+      // street (jt) or further from it (jn, one-sided): a house must never
+      // wander back onto the road it fronts.
+      const footHalf = Math.max(w, d) / 2;
+      const setout = footHalf + rand() * 0.03;
+      const tx = p.nz; // road tangent (perpendicular to the outward normal)
+      const tz = -p.nx;
+      const jt = (rand() - 0.5) * 0.08;
+      pos.set(p.x + p.nx * setout + tx * jt, 0.001, p.z + p.nz * setout + tz * jt);
       q.setFromAxisAngle(up, yaw);
       scl.set(w, h, d);
       m.compose(pos, q, scl);

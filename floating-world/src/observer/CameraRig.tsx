@@ -73,6 +73,9 @@ export function CameraRig() {
   useEffect(() => {
     (window as unknown as Record<string, unknown>).__linkMapCamera = camera;
   }, [camera]);
+  useEffect(() => {
+    (window as unknown as Record<string, unknown>).__linkMapControls = controlsRef.current;
+  });
 
   // Pointer bookkeeping: any grab pauses drift and breaks a chase.
   useEffect(() => {
