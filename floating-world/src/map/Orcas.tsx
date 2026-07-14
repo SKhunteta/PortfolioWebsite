@@ -270,29 +270,102 @@ function breathAt(w: Whale, t: number, out: Breath = breath): Breath {
   return out;
 }
 
-/** Unit-length orca along +X, waterline y = 0: a tapered back that breaks the
- *  surface, a tall dorsal fin raked back at mid-body, a tail stock. White
- *  markings are painted in the shader from local position. */
+/** Scale a box's cross-section (Y, Z) along its X axis by profileY/profileZ —
+ *  s runs 0 at the −X end to 1 at the +X end — and lift each slice by arch(s).
+ *  Turns a plain box lying along +X into a tapered, arched body instead of a
+ *  uniform slab. Normals are recomputed after merging, so leaving them stale
+ *  here is fine. */
+function sculpt(
+  geo: THREE.BufferGeometry,
+  x0: number,
+  x1: number,
+  profileY: (s: number) => number,
+  profileZ: (s: number) => number,
+  arch: (s: number) => number = () => 0
+): void {
+  const pos = geo.attributes.position as THREE.BufferAttribute;
+  for (let i = 0; i < pos.count; i++) {
+    const s = THREE.MathUtils.clamp((pos.getX(i) - x0) / (x1 - x0), 0, 1);
+    pos.setY(i, pos.getY(i) * profileY(s) + arch(s));
+    pos.setZ(i, pos.getZ(i) * profileZ(s));
+  }
+  pos.needsUpdate = true;
+}
+
+/** Unit-length orca along +X, waterline y = 0: a rounded, arched back that
+ *  breaks the surface, a blunt melon head (an orca leads with a bulb, never a
+ *  point), a tall raked dorsal fin at mid-body and flat tail flukes. The old
+ *  flat torpedo body + 45°-rotated nose cone read as a missile; the taper,
+ *  melon and flukes are what make the silhouette a whale. White markings are
+ *  painted in the shader from local position. */
 function buildOrca(): THREE.BufferGeometry {
   const parts: THREE.BufferGeometry[] = [];
-  const back = new THREE.BoxGeometry(0.6, 0.09, 0.14);
-  back.translate(0.02, 0.03, 0);
-  parts.push(back);
-  const head = new THREE.BoxGeometry(0.16, 0.08, 0.11);
-  head.rotateY(Math.PI / 4);
-  head.translate(0.3, 0.03, 0);
-  parts.push(head);
-  const stock = new THREE.BoxGeometry(0.22, 0.05, 0.07);
-  stock.translate(-0.34, 0.03, 0);
-  parts.push(stock);
-  // The fin: a thin slab raked back, unit height — the pose scales it and the
-  // per-whale dorsalK stretches the bull's tall.
-  const fin = new THREE.BoxGeometry(0.09, 0.2, 0.02);
-  fin.translate(-0.02, 0.14, 0);
-  fin.applyMatrix4(new THREE.Matrix4().makeShear(0, 0, -0.35, 0, 0, 0)); // rake x back as y rises
+
+  // Body: fattest just forward of centre, tapering to a rounded snout ahead and
+  // a thin peduncle aft, spine arched so the back surfaces as a curve.
+  const girth = (s: number) => {
+    const core = Math.sin(Math.PI * Math.pow(s, 1.2)); // fullness peaks forward of centre
+    return 0.16 + 0.84 * Math.pow(Math.max(core, 0), 0.62);
+  };
+  const body = new THREE.BoxGeometry(0.62, 0.12, 0.17, 28, 3, 3);
+  sculpt(
+    body,
+    -0.31,
+    0.31,
+    (s) => 0.5 + 0.5 * girth(s), // belly keeps some depth even at the ends
+    (s) => girth(s), // width pinches to the nose and tail
+    (s) => 0.055 * Math.sin(Math.PI * s) // arch the spine
+  );
+  body.translate(0, 0.035, 0);
+  parts.push(body);
+
+  // Melon: the blunt, rounded forehead, softened at the front.
+  const melon = new THREE.BoxGeometry(0.14, 0.1, 0.12, 6, 4, 4);
+  sculpt(
+    melon,
+    -0.07,
+    0.07,
+    (s) => 1 - 0.55 * s * s,
+    (s) => 1 - 0.55 * s * s
+  );
+  melon.translate(0.3, 0.05, 0);
+  parts.push(melon);
+
+  // Dorsal fin: tall, raked back, chord and thickness tapering to the tip —
+  // THE orca signature. The pose scales it and per-whale dorsalK stretches the
+  // bull's tallest. Thicker than a slab so it never vanishes edge-on.
+  const fin = new THREE.BoxGeometry(0.14, 0.26, 0.045, 1, 10, 1);
+  {
+    const p = fin.attributes.position as THREE.BufferAttribute;
+    for (let i = 0; i < p.count; i++) {
+      const h = (p.getY(i) + 0.13) / 0.26; // 0 base → 1 tip
+      p.setX(i, p.getX(i) * (1 - 0.72 * h) - 0.02 * h); // narrows + trailing edge falls back
+      p.setZ(i, p.getZ(i) * (1 - 0.45 * h));
+    }
+    p.needsUpdate = true;
+  }
+  fin.applyMatrix4(new THREE.Matrix4().makeShear(0, 0, -0.32, 0, 0, 0)); // rake x back as y rises
+  fin.translate(-0.03, 0.14, 0);
   parts.push(fin);
+
+  // Tail flukes: flat horizontal blades at the peduncle, swept back and lifted
+  // at the tips — the surest sign this is a whale and not a torpedo.
+  const flukes = new THREE.BoxGeometry(0.14, 0.03, 0.4, 6, 1, 8);
+  {
+    const p = flukes.attributes.position as THREE.BufferAttribute;
+    for (let i = 0; i < p.count; i++) {
+      const tip = Math.abs(p.getZ(i)) / 0.2; // 0 centre → 1 tip
+      p.setX(i, p.getX(i) * (1 - 0.55 * tip) - 0.06 * tip); // sweep the tips back
+      p.setY(i, p.getY(i) + 0.03 * tip); // and lift them
+    }
+    p.needsUpdate = true;
+  }
+  flukes.translate(-0.34, 0.03, 0);
+  parts.push(flukes);
+
   const merged = mergeGeometries(parts, false)!;
   parts.forEach((g) => g.dispose());
+  merged.computeVertexNormals();
   return merged;
 }
 
