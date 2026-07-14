@@ -174,6 +174,18 @@ export const CONFIG = {
     maxDistance: 90,
     // Close enough that the toy S700 fills the frame; speed pulls it back.
     chaseOffsetKm: { back: 0.7, up: 0.26 },
+    // The Observe reel's "diving into the underground" stop: a grade-aware lift
+    // on top of the ordinary chase. As the ridden train sinks from at-grade
+    // toward tunnel depth (`ribbon.y.tunnel`), the camera eases from the low
+    // wake-chase (`chaseOffsetKm`) toward these values — RISING to `up` and
+    // pulling nearly overhead (`back` shrinks toward the portal) — so the shot
+    // becomes a look-down that watches the train slip under the translucent
+    // paper past the underground light shafts, instead of tilting low along its
+    // heading and sweeping Elliott Bay (the water plane sits at basemap.waterY
+    // −0.06, ABOVE the −0.22 tunnel) onto the horizon. Camera height only ever
+    // grows here, so it stays well clear of the water. Raise `upKm` if the
+    // water still peeks in at wide aspects.
+    tunnelDive: { backKm: 0.15, upKm: 0.85 },
     // The jetliner ride: farther back and a touch higher than the train chase
     // (the toy 737 is longer and moves faster), offset behind the nose along
     // the flight path so the camera sits in the plane's wake as it climbs,

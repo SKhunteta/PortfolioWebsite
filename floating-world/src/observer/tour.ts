@@ -139,6 +139,13 @@ interface ReelStop {
    *  supplies the travel-in framing so the cut in stays smooth; only which
    *  train gets ridden is left to chance. Ignored on plane/orbit stops. */
   random?: boolean;
+  /** A train RIDE stop (`kind` "train") into the downtown transit tunnel:
+   *  CameraRig reads this to swap the ordinary wake chase for a grade-aware
+   *  lift (`frameTunnelDive`) — as the train sinks toward tunnel depth the
+   *  camera rises into a look-down that watches it slip under the paper,
+   *  instead of tilting low and sweeping the water into frame. Ignored on
+   *  plane/orbit stops. */
+  dive?: boolean;
 }
 
 // Rides dwell this long; orbit interludes use the shorter observeReel.dwellS.
@@ -159,7 +166,7 @@ const REEL: ReelStop[] = [
   // the light shafts that sink from their seals to the platforms below —
   // falls back to an orbit at the portal when no train is in the tunnel just
   // then (honesty rule: night, feed asleep).
-  { kind: "train", anchor: "C03", fallback: { x: -0.35, z: -0.6 }, radiusKm: 5, elevation: 0.32, label: "diving into the underground", dwellS: RIDE_DWELL_S },
+  { kind: "train", anchor: "C03", fallback: { x: -0.35, z: -0.6 }, radiusKm: 5, elevation: 0.32, label: "diving into the underground", dwellS: RIDE_DWELL_S, dive: true },
   // Ride the 2 Line out across Lake Washington — the water crossing, chased
   // low (an orbit over the lake when no train is on the bridge just then).
   { kind: "train", anchor: "E07", fallback: { x: 7.42, z: 2.0 }, radiusKm: 10.5, elevation: 0.5, label: "the Lake Washington crossing", dwellS: RIDE_DWELL_S },
@@ -200,6 +207,7 @@ export interface ReelShot extends TourFraming {
   label: string;
   detail: boolean; // true on a holding detail close-up (never while travelling)
   random: boolean; // true on a holding train stop that should ride ANY live train
+  dive: boolean; // true on the holding tunnel ride (never while travelling)
 }
 
 /** The Observe reel's shot at a number of seconds in, written into `out`.
@@ -235,6 +243,7 @@ export function observeShot(elapsedS: number, out: ReelShot): ReelShot {
     out.kind = "orbit";
     out.detail = false;
     out.random = false;
+    out.dive = false;
     out.x = lerp(prevC.x, curC.x, u);
     out.z = lerp(prevC.z, curC.z, u);
     out.radiusKm = lerp(prev.radiusKm, cur.radiusKm, u);
@@ -244,6 +253,7 @@ export function observeShot(elapsedS: number, out: ReelShot): ReelShot {
     out.kind = cur.kind;
     out.detail = cur.detail ?? false;
     out.random = cur.random ?? false;
+    out.dive = cur.dive ?? false;
     out.x = curC.x;
     out.z = curC.z;
     out.radiusKm = cur.radiusKm;
