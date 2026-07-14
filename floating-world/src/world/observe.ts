@@ -23,16 +23,19 @@
 
 import { sunPhaseAt, setPhaseOverride, getPhaseOverride } from "./sun";
 import { useUi } from "../trains/store";
+import { REEL_PERIOD } from "../observer/tour";
+import { startAmbientTrains, stopAmbientTrains, tickAmbientTrains } from "../trains/ambient";
+import { CLOCK } from "./clock";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-// One full day-and-night sweeps by in this many real seconds. Longer than the
-// old constant-pace 60 s: the sweep now LINGERS through sunset, so it needs
-// more real time to let the golden hour breathe without the bright midday
-// plateau (now the fastest stretch) dragging the whole loop out. The camera
-// reel is phase-locked to this sweep (indexed by the displayed day fraction,
-// via observeDisplayFrac), so its scenic vistas always land under the right
-// sky; a touch more room here lets those held dusk shots breathe.
-const CYCLE_S = 120;
+// One full day-and-night sweeps by in this many real seconds. The sweep still
+// LINGERS through sunset and hurries the flat midday (buildWarp), but its pacing
+// is now the SKY's alone — the camera reel runs on its own even seconds clock
+// (observer/tour.ts + CameraRig `observeClock`), no longer indexed by this
+// fraction. We lock the day length to the reel's REEL_PERIOD so the two share a
+// period: a given reel stop lands under roughly the same sky each loop (loose
+// phase affinity), without the old phase-lock crushing the reel's pacing.
+const CYCLE_S = REEL_PERIOD;
 
 let active = false;
 let elapsed = 0; // real seconds into the current sweep
@@ -131,14 +134,21 @@ export function observeDayFrac(): number | null {
 
 // The day fraction actually ON SCREEN right now (0/1 = local midnight, ~0.5 =
 // solar noon) — the LINEAR sweep position run through the same warp the sun
-// uses, so it tracks the visible sky rather than raw real-time. The camera reel
-// keys off this (observer/tour.ts `observeShot`), so a stop authored in the
-// dusk band always plays under a dusk sky, and the warp's twilight-lingering
-// automatically hands the dusk vistas their long, glowing hold. Null when
-// observe isn't running.
+// uses, so it tracks the visible sky rather than raw real-time. Null when
+// observe isn't running. (This is the SKY's position; the camera reel runs on
+// its own even seconds clock — see pinnedReelSeconds for the ?reel= pin.)
 export function observeDisplayFrac(): number | null {
   if (!active) return null;
   return reelPin ?? warpedDayFrac((elapsed / CYCLE_S) % 1);
+}
+
+// The reel clock position, in SECONDS, when the sweep is frozen by ?reel= /
+// reelAt() — the pin's 0..1 fraction mapped onto the reel's own loop length so a
+// screenshot lands the matching stop. Null when unpinned (CameraRig then uses
+// its live `observeClock`). The sky is pinned separately via observeDisplayFrac,
+// so ?reel=0.8 freezes a ~dusk sky AND jumps the reel ~80% through its loop.
+export function pinnedReelSeconds(): number | null {
+  return reelPin === null ? null : reelPin * REEL_PERIOD;
 }
 
 export function startObserve() {
@@ -152,6 +162,9 @@ export function startObserve() {
   reelPin = readReelParam();
   active = true;
   useUi.getState().setObserving(true);
+  // Take over the train set with the deterministic ambient fleet (the poller is
+  // gated off while we observe) so the reel always has trains to ride and frame.
+  startAmbientTrains();
 }
 
 export function stopObserve() {
@@ -159,6 +172,8 @@ export function stopObserve() {
   active = false;
   setPhaseOverride(savedOverride);
   useUi.getState().setObserving(false);
+  // Hand the train set back to the live feed.
+  stopAmbientTrains();
 }
 
 export function toggleObserve() {
@@ -167,9 +182,11 @@ export function toggleObserve() {
 }
 
 // Called from the single frame driver (Trains.tsx) with the clamped dt, before
-// sunPhase() is read for the frame.
+// sunPhase() is read AND before the trains advance for the frame.
 export function tickObserve(dt: number) {
   if (!active) return;
+  // Self-propel the ambient fleet before Trains.tsx advances the tween this frame.
+  tickAmbientTrains(CLOCK.t);
   elapsed += dt;
   const clockFrac = (elapsed / CYCLE_S) % 1; // 0..1 of real time across a sweep
   // Warped so sunset dwells and noon flies — unless pinned to a fixed fraction
