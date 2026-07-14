@@ -60,8 +60,8 @@ const VERT = /* glsl */ `
     vec3 right = normalize(cross(up, toCam));
     // A living stillness: a slow weight-shift sway and a fainter bob, each on
     // the figure's own phase, so the cast breathes rather than stands frozen.
-    float sway = sin(uTime * 0.55 + aSeed * 6.283) * 0.010;
-    float bob = sin(uTime * 1.7 + aSeed * 3.14) * 0.004;
+    float sway = sin(uTime * 0.55 + aSeed * 6.283) * h * 0.05;
+    float bob = sin(uTime * 1.7 + aSeed * 3.14) * h * 0.02;
     vec3 world = base + right * ((uv.x - 0.5) * w + sway) + up * (uv.y * h + bob);
     vWorld = world.xz;
     vec4 mv = viewMatrix * vec4(world, 1.0);
@@ -122,105 +122,94 @@ const FRAG = /* glsl */ `
     vec2 p = vUv;
     vec3 accent = fract(vSeed * 7.0) < 0.5 ? uIndigo : uVermilion;
 
+    // Biker-sized: at this scale only the one bold identifying prop survives, so
+    // each character is pared to a body, a clear head, and a single big read —
+    // parasol, hat, rod, kite, staff, or a shared umbrella. Strokes are thick so
+    // they don't fall below a pixel; the fine touches (obi, bindle, kite-tail,
+    // staff-ring) are dropped on purpose.
     if (arch == 0) {
-      // BIJIN under a wagasa — a slim figure, an obi sash, a parasol overhead.
-      float body = kimono(p, 0.5, 0.11, 0.60);
-      float head = ell(p, vec2(0.5, 0.69), vec2(0.072, 0.086));
-      float obi = (1.0 - smoothstep(0.03, 0.05, abs(p.y - 0.44))) * step(abs(p.x - 0.5), 0.12);
-      float pole = seg(p, vec2(0.5, 0.90), vec2(0.5, 0.44), 0.010);
-      float dome = ell(p, vec2(0.5, 0.90), vec2(0.30, 0.115));
+      // BIJIN — a figure under a big wagasa.
+      float body = kimono(p, 0.5, 0.13, 0.54);
+      float head = ell(p, vec2(0.5, 0.64), vec2(0.09, 0.105));
+      float pole = seg(p, vec2(0.5, 0.86), vec2(0.5, 0.40), 0.022);
+      float dome = ell(p, vec2(0.5, 0.87), vec2(0.36, 0.15));
       col = mix(col, accent * 0.9, body);
       col = mix(col, uWarm * 0.92, head);
-      col = mix(col, uSumi, obi * 0.85);
       col = mix(col, uSumi, pole * 0.9);
       col = mix(col, fract(vSeed * 7.0) < 0.5 ? uVermilion : uIndigo, dome);
-      m = max(max(body, head), max(max(obi, pole), dome));
+      m = max(max(body, head), max(pole, dome));
     } else if (arch == 1) {
-      // TRAVELLER — kasa hat, walking staff and bindle; a lantern after dark.
-      float body = kimono(p, 0.47, 0.12, 0.60);
-      float head = ell(p, vec2(0.47, 0.69), vec2(0.072, 0.086));
-      float hat = kasa(p, 0.47, 0.74, 0.90, 0.24);
-      float staff = seg(p, vec2(0.72, 0.05), vec2(0.72, 0.82), 0.010);
-      float bindle = ell(p, vec2(0.72, 0.80), vec2(0.05, 0.045));
+      // TRAVELLER — a big conical kasa and a thick staff; a lantern after dark.
+      float body = kimono(p, 0.46, 0.14, 0.54);
+      float head = ell(p, vec2(0.46, 0.62), vec2(0.088, 0.10));
+      float hat = kasa(p, 0.46, 0.66, 0.92, 0.32);
+      float staff = seg(p, vec2(0.74, 0.03), vec2(0.74, 0.78), 0.020);
       col = mix(col, uIndigo * 0.92, body);
       col = mix(col, uWarm * 0.92, head);
       col = mix(col, uStraw, hat);
       col = mix(col, uSumi, staff * 0.9);
-      col = mix(col, uStraw * 0.8, bindle);
-      m = max(max(body, head), max(hat, max(staff, bindle)));
-      float lant = ell(p, vec2(0.24, 0.42), vec2(0.05, 0.066)) * step(0.05, night);
-      float str = seg(p, vec2(0.33, 0.52), vec2(0.24, 0.48), 0.008) * step(0.05, night);
-      col = mix(col, uSumi, str * 0.8);
+      m = max(max(body, head), max(hat, staff));
+      float lant = ell(p, vec2(0.22, 0.40), vec2(0.075, 0.095)) * step(0.05, night);
       col = mix(col, uLantern * mix(0.5, 3.0, night), lant);
-      m = max(m, max(lant, str));
+      m = max(m, lant);
       glow = lant * night;
     } else if (arch == 2) {
-      // FISHERMAN — a broad hat, a long rod and a line down to the water.
-      float body = kimono(p, 0.42, 0.13, 0.55);
-      float head = ell(p, vec2(0.42, 0.63), vec2(0.072, 0.084));
-      float hat = kasa(p, 0.42, 0.66, 0.82, 0.27);
-      float rod = seg(p, vec2(0.50, 0.40), vec2(0.93, 0.92), 0.009);
-      float line = seg(p, vec2(0.93, 0.92), vec2(0.93, 0.06), 0.004) * 0.75;
+      // FISHERMAN — a broad hat and a thick rod slanting out over the water.
+      float body = kimono(p, 0.40, 0.15, 0.50);
+      float head = ell(p, vec2(0.40, 0.58), vec2(0.088, 0.10));
+      float hat = kasa(p, 0.40, 0.60, 0.84, 0.34);
+      float rod = seg(p, vec2(0.46, 0.38), vec2(0.94, 0.92), 0.016);
       col = mix(col, uStraw * 0.85, body);
       col = mix(col, uWarm * 0.92, head);
       col = mix(col, uStraw, hat);
       col = mix(col, uSumi, rod * 0.9);
-      col = mix(col, uSumi, line * 0.7);
-      m = max(max(body, head), max(hat, max(rod, line)));
-      float lant = ell(p, vec2(0.20, 0.40), vec2(0.048, 0.063)) * step(0.05, night);
+      m = max(max(body, head), max(hat, rod));
+      float lant = ell(p, vec2(0.18, 0.38), vec2(0.072, 0.092)) * step(0.05, night);
       col = mix(col, uLantern * mix(0.5, 3.0, night), lant);
       m = max(m, lant);
       glow = lant * night;
     } else if (arch == 3) {
-      // KITE-FLYER — the kite rides high by day; by night it becomes a lantern.
-      float body = kimono(p, 0.45, 0.12, 0.60);
-      float head = ell(p, vec2(0.45, 0.69), vec2(0.072, 0.086));
+      // KITE-FLYER — a big kite on a string by day; a lantern by night.
+      float body = kimono(p, 0.44, 0.14, 0.54);
+      float head = ell(p, vec2(0.44, 0.63), vec2(0.088, 0.10));
       col = mix(col, accent * 0.9, body);
       col = mix(col, uWarm * 0.92, head);
       m = max(body, head);
-      // Day: string + diamond kite drifting on the wind.
-      vec2 kc = vec2(0.86 + 0.03 * sin(uTime * 0.7 + vSeed * 5.0), 0.94 + 0.03 * sin(uTime * 0.9));
-      float string = seg(p, vec2(0.55, 0.55), kc, 0.005) * uDay;
-      float kite = diamond(p, kc, vec2(0.075, 0.10)) * uDay;
-      float tail = (diamond(p, kc + vec2(0.0, -0.10), vec2(0.02, 0.025))
-                  + diamond(p, kc + vec2(0.0, -0.16), vec2(0.016, 0.02))) * uDay;
+      vec2 kc = vec2(0.82 + 0.04 * sin(uTime * 0.7 + vSeed * 5.0), 0.90 + 0.04 * sin(uTime * 0.9));
+      float string = seg(p, vec2(0.52, 0.50), kc, 0.012) * uDay;
+      float kite = diamond(p, kc, vec2(0.13, 0.17)) * uDay;
       col = mix(col, uSumi, string * 0.8);
       col = mix(col, uVermilion, kite);
-      col = mix(col, uIndigo, tail);
-      m = max(m, max(string, max(kite, tail)));
-      // Night: a lantern in hand instead.
-      float lant = ell(p, vec2(0.66, 0.46), vec2(0.05, 0.066)) * step(0.05, night);
-      float str = seg(p, vec2(0.56, 0.54), vec2(0.66, 0.52), 0.008) * step(0.05, night);
-      col = mix(col, uSumi, str * 0.8);
+      m = max(m, max(string, kite));
+      float lant = ell(p, vec2(0.66, 0.44), vec2(0.075, 0.095)) * step(0.05, night);
       col = mix(col, uLantern * mix(0.5, 3.0, night), lant);
-      m = max(m, max(lant, str));
+      m = max(m, lant);
       glow = lant * night;
     } else if (arch == 4) {
-      // PILGRIM MONK — a wide robe, a round hat, a ringed shakujō staff.
-      float body = kimono(p, 0.47, 0.20, 0.62);
-      float head = ell(p, vec2(0.47, 0.71), vec2(0.070, 0.084));
-      float hat = ell(p, vec2(0.47, 0.76), vec2(0.16, 0.055));
-      float staff = seg(p, vec2(0.74, 0.05), vec2(0.74, 0.88), 0.010);
-      float ring = ell(p, vec2(0.74, 0.90), vec2(0.045, 0.05))
-                 - ell(p, vec2(0.74, 0.90), vec2(0.026, 0.030));
+      // PILGRIM MONK — a wide saffron robe, a round hat, a thick staff.
+      float body = kimono(p, 0.46, 0.22, 0.56);
+      float head = ell(p, vec2(0.46, 0.66), vec2(0.085, 0.10));
+      float hat = ell(p, vec2(0.46, 0.72), vec2(0.19, 0.065));
+      float staff = seg(p, vec2(0.76, 0.03), vec2(0.76, 0.84), 0.020);
+      float top = ell(p, vec2(0.76, 0.85), vec2(0.05, 0.055));
       col = mix(col, uSaffron, body);
       col = mix(col, uWarm * 0.92, head);
       col = mix(col, uStraw * 0.9, hat);
       col = mix(col, uSumi, staff * 0.9);
-      col = mix(col, uSumi, clamp(ring, 0.0, 1.0) * 0.9);
-      m = max(max(body, head), max(hat, max(staff, clamp(ring, 0.0, 1.0))));
-      float lant = ell(p, vec2(0.22, 0.42), vec2(0.048, 0.063)) * step(0.05, night);
+      col = mix(col, uSumi, top * 0.9);
+      m = max(max(body, head), max(hat, max(staff, top)));
+      float lant = ell(p, vec2(0.20, 0.40), vec2(0.072, 0.092)) * step(0.05, night);
       col = mix(col, uLantern * mix(0.5, 3.0, night), lant);
       m = max(m, lant);
       glow = lant * night;
     } else {
-      // LOVERS under one umbrella (aiaigasa) — two figures, one parasol.
-      float b1 = kimono(p, 0.39, 0.11, 0.58);
-      float b2 = kimono(p, 0.61, 0.11, 0.58);
-      float h1 = ell(p, vec2(0.39, 0.66), vec2(0.066, 0.080));
-      float h2 = ell(p, vec2(0.61, 0.66), vec2(0.066, 0.080));
-      float pole = seg(p, vec2(0.5, 0.90), vec2(0.5, 0.60), 0.010);
-      float dome = ell(p, vec2(0.5, 0.90), vec2(0.34, 0.12));
+      // LOVERS under one umbrella (aiaigasa) — two figures, one big parasol.
+      float b1 = kimono(p, 0.38, 0.12, 0.52);
+      float b2 = kimono(p, 0.62, 0.12, 0.52);
+      float h1 = ell(p, vec2(0.38, 0.60), vec2(0.08, 0.095));
+      float h2 = ell(p, vec2(0.62, 0.60), vec2(0.08, 0.095));
+      float pole = seg(p, vec2(0.5, 0.87), vec2(0.5, 0.54), 0.018);
+      float dome = ell(p, vec2(0.5, 0.88), vec2(0.42, 0.16));
       col = mix(col, uIndigo * 0.92, b1);
       col = mix(col, uVermilion * 0.92, b2);
       col = mix(col, uWarm * 0.92, max(h1, h2));
@@ -238,8 +227,9 @@ const FRAG = /* glsl */ `
 `;
 
 // The cast: [lat, lng, archetype, heightKm]. Real Seattle spots, each chosen to
-// suit the character. Heights are tree-tall so the figures read clearly at the
-// drift distance without towering over the storybook city.
+// suit the character. Heights are toy-scale — about a Burke-Gilman cyclist
+// (CONFIG.cyclist.toyLenKm ≈ 0.13) — so a hero reads as one of the little
+// ambient figures dotting the print, not a giant towering over the city.
 const BIJIN = 0,
   TRAVELLER = 1,
   FISHERMAN = 2,
@@ -248,12 +238,12 @@ const BIJIN = 0,
   LOVERS = 5;
 
 const CAST: [number, number, number, number][] = [
-  [47.6295, -122.3599, BIJIN, 0.22], // Kerry Park overlook, Queen Anne
-  [47.5765, -122.409, TRAVELLER, 0.22], // Alki Point — the open western shore, gazing back at the city
-  [47.6653, -122.396, FISHERMAN, 0.22], // Ballard Locks
-  [47.6456, -122.3345, KITE, 0.27], // Gas Works Park kite hill
-  [47.639, -122.295, MONK, 0.21], // Washington Park Arboretum
-  [47.681, -122.327, LOVERS, 0.2], // Green Lake path
+  [47.6295, -122.3599, BIJIN, 0.12], // Kerry Park overlook, Queen Anne
+  [47.5765, -122.409, TRAVELLER, 0.12], // Alki Point — the open western shore, gazing back at the city
+  [47.6653, -122.396, FISHERMAN, 0.11], // Ballard Locks
+  [47.6456, -122.3345, KITE, 0.15], // Gas Works Park kite hill (a touch taller — the kite rides above)
+  [47.639, -122.295, MONK, 0.12], // Washington Park Arboretum
+  [47.681, -122.327, LOVERS, 0.12], // Green Lake path
 ];
 
 const HEART = { x: CONFIG.camera.heartX, z: CONFIG.camera.heartZ };
