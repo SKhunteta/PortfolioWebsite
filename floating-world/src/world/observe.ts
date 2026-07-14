@@ -12,19 +12,88 @@
 // water, kasumi, city lights — everything that reads sunPhase() — follows for
 // free. Toggling off restores whatever override was in effect before (a
 // ?phase= pin, or the live sun).
+//
+// The sweep does NOT run at a constant clock: it EXPANDS the golden hours —
+// sunset most of all — and HURRIES through the flat midday. Real seconds across
+// the day are spent in proportion to a dwell weight that peaks through the
+// twilight bands and thins to a floor at noon (see buildWarp). The weight is
+// built from the ACTUAL sun for the day being swept, so we only re-pace the
+// same honest arc — never fake an altitude. CameraRig reads `isObserving()` to
+// fly its curated reel of the city while this runs.
 
 import { sunPhaseAt, setPhaseOverride, getPhaseOverride } from "./sun";
 import { useUi } from "../trains/store";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-// One full day-and-night sweeps by in this many real seconds — slow enough to
-// read dawn and dusk, quick enough that a visitor sees the whole arc.
-const CYCLE_S = 60;
+// One full day-and-night sweeps by in this many real seconds. Longer than the
+// old constant-pace 60 s: the sweep now LINGERS through sunset, so it needs
+// more real time to let the golden hour breathe without the bright midday
+// plateau (now the fastest stretch) dragging the whole loop out.
+const CYCLE_S = 90;
 
 let active = false;
 let elapsed = 0; // real seconds into the current sweep
 let baseMidnight = 0; // ms timestamp of the day we sweep across
 let savedOverride: number | null = null; // restored when observing stops
+
+// --- Day warp: dwell on sunset, hurry through the flat midday --------------
+// A lookup that re-paces the sweep. warpClock[i] is the normalized clock
+// fraction (0..1) at which the sweep reaches day fraction i / WARP_STEPS.
+// Rebuilt per sweep from the day's real sun, so the golden hours land where
+// they truly fall for the date.
+const WARP_STEPS = 256;
+const warpClock = new Float32Array(WARP_STEPS + 1); // 0..1, monotonic increasing
+
+// How many real seconds the sweep should linger at a given day fraction: a
+// thin floor everywhere, a strong peak through the twilight band, biased so a
+// SUNSET dwells longer than the matching sunrise.
+function dwellWeight(midnightMs: number, dayFrac: number): number {
+  const p = sunPhaseAt(new Date(midnightMs + dayFrac * DAY_MS));
+  // A hair later tells us which way the sun is moving: sinking = evening = the
+  // sunset we most want to expand.
+  const pNext = sunPhaseAt(new Date(midnightMs + (dayFrac + 1e-3) * DAY_MS));
+  const sinking = pNext < p;
+  // Twilight closeness: 1 at mid-transition (phase 0.5 — the golden moment),
+  // 0 at flat night or flat day.
+  const twilight = 1 - Math.abs(2 * p - 1);
+  const goldenBias = sinking ? 1.6 : 1.0; // sunset lingers longer than sunrise
+  // Floor keeps the sweep always moving; SMALLER in full day (p→1) than in
+  // deep night (p→0), so the noon plateau is the fastest stretch — daytime
+  // shrinks — while night keeps a gentle drift.
+  const floor = 0.12 + 0.12 * (1 - p);
+  return floor + 2.4 * twilight * twilight * goldenBias;
+}
+
+// Build warpClock as the normalized cumulative dwell weight across the day.
+function buildWarp(midnightMs: number) {
+  let cum = 0;
+  warpClock[0] = 0;
+  let prevW = dwellWeight(midnightMs, 0);
+  for (let i = 1; i <= WARP_STEPS; i++) {
+    const w = dwellWeight(midnightMs, i / WARP_STEPS);
+    cum += 0.5 * (prevW + w); // trapezoid (constant dx folds into the normalize)
+    prevW = w;
+    warpClock[i] = cum;
+  }
+  const total = cum || 1;
+  for (let i = 0; i <= WARP_STEPS; i++) warpClock[i] /= total;
+}
+
+// Invert the warp: a clock fraction (0..1) → the day fraction to show, so real
+// time is spent in proportion to the dwell weight.
+function warpedDayFrac(clockFrac: number): number {
+  const c = ((clockFrac % 1) + 1) % 1;
+  let lo = 0;
+  let hi = WARP_STEPS;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (warpClock[mid] <= c) lo = mid;
+    else hi = mid;
+  }
+  const span = warpClock[hi] - warpClock[lo] || 1;
+  const t = (c - warpClock[lo]) / span;
+  return (lo + t) / WARP_STEPS;
+}
 
 export function isObserving(): boolean {
   return active;
@@ -36,6 +105,7 @@ export function startObserve() {
   const midnight = new Date();
   midnight.setHours(0, 0, 0, 0);
   baseMidnight = midnight.getTime();
+  buildWarp(baseMidnight);
   elapsed = 0;
   active = true;
   useUi.getState().setObserving(true);
@@ -58,6 +128,7 @@ export function toggleObserve() {
 export function tickObserve(dt: number) {
   if (!active) return;
   elapsed += dt;
-  const dayFrac = (elapsed / CYCLE_S) % 1; // 0..1 across midnight→midnight
+  const clockFrac = (elapsed / CYCLE_S) % 1; // 0..1 of real time across a sweep
+  const dayFrac = warpedDayFrac(clockFrac); // warped so sunset dwells, noon flies
   setPhaseOverride(sunPhaseAt(new Date(baseMidnight + dayFrac * DAY_MS)));
 }

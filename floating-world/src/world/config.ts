@@ -147,6 +147,10 @@ export const CONFIG = {
     driftRadSec: 0.02, // slow orbit
     driftBreathKm: 2.2,
     idleResumeS: 30,
+    // While Observe mode runs, its camera reel takes over after this short a
+    // pause — so toggling Observe starts the cinematic flight almost at once,
+    // yet a touch still hands the wheel back for a beat before the reel resumes.
+    observeGraceS: 4,
     // Cinematic idle tour (observer/tour.ts): after this many seconds of no
     // input the camera leaves its downtown drift and tours the whole line,
     // holding dwellS at each stop and travelS between them. Set well past
@@ -154,6 +158,13 @@ export const CONFIG = {
     // display (a screensaver, a gallery) drifts into the tour.
     tourAfterS: 42,
     tour: { dwellS: 7, travelS: 6 },
+    // The Observe reel (observer/tour.ts `observeShot`): while Observe mode runs
+    // the print through a whole day, the camera also takes a slow, curated
+    // flight around the most gorgeous parts of the city — dropping low over the
+    // downtown tunnel, riding the light rail and the jets, skimming the
+    // cyclists and the Lake Washington crossing. dwellS holds at each stop
+    // (long enough to settle into a ride), travelS glides between them.
+    observeReel: { dwellS: 8.5, travelS: 5 },
     minDistance: 0.8,
     maxDistance: 90,
     // Close enough that the toy S700 fills the frame; speed pulls it back.

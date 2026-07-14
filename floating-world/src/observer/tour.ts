@@ -48,7 +48,10 @@ export interface TourFraming {
   elevation: number;
 }
 
-function centre(stop: TourStop): { x: number; z: number } {
+function centre(stop: { anchor: string; fallback: { x: number; z: number } }): {
+  x: number;
+  z: number;
+} {
   const st = STATION_BY_ID.get(stop.anchor);
   return st ? { x: st.x, z: st.z } : stop.fallback;
 }
@@ -86,6 +89,94 @@ export function tourFraming(elapsedS: number, out: TourFraming): TourFraming {
     out.elevation = lerp(prev.elevation, cur.elevation, u);
   } else {
     // Holding at the current stop.
+    out.x = curC.x;
+    out.z = curC.z;
+    out.radiusKm = cur.radiusKm;
+    out.elevation = cur.elevation;
+  }
+  return out;
+}
+
+// --- The Observe reel ------------------------------------------------------
+// Observe mode isn't only a day-sweep: while the sun runs through a whole day
+// the camera takes a slow, curated flight around the most gorgeous parts of the
+// city. Each stop is either an ORBIT (a slow framed circle, dropped low and
+// intimate) or a RIDE — the camera latches onto a nearby light-rail train, or a
+// SeaTac jet, and travels in its wake. The reel deliberately visits the two
+// things a static drift never shows: down low over the downtown transit tunnel
+// so the underground stations' light shafts read, and out along the
+// Burke-Gilman where the cyclists cross the rail world. CameraRig executes it
+// (finds the train, does the chase math); tour.ts just supplies the timeline.
+
+export type ShotKind = "orbit" | "train" | "plane";
+
+interface ReelStop {
+  kind: ShotKind;
+  /** Station id: the orbit centre, or where to look for a train to ride. */
+  anchor: string;
+  fallback: { x: number; z: number };
+  radiusKm: number;
+  elevation: number;
+  label: string;
+}
+
+const REEL: ReelStop[] = [
+  // Down low over the downtown transit tunnel: the underground stations
+  // (Westlake, Symphony, Pioneer Square, Chinatown) and the light shafts that
+  // sink from their seals to the platforms below the paper.
+  { kind: "orbit", anchor: "C03", fallback: { x: -0.35, z: -0.6 }, radiusKm: 6.5, elevation: 0.4, label: "the underground" },
+  // Ride the light rail as it climbs out of downtown.
+  { kind: "train", anchor: "C05", fallback: { x: -0.29, z: -0.18 }, radiusKm: 6, elevation: 0.5, label: "riding the light rail" },
+  // The Burke-Gilman cyclists where the trail threads past the U-District.
+  { kind: "orbit", anchor: "N07", fallback: { x: 1.35, z: -6.02 }, radiusKm: 7, elevation: 0.48, label: "the cyclists" },
+  // Out over Lake Washington on the 2 Line — the water crossing, skimmed low.
+  { kind: "orbit", anchor: "E07", fallback: { x: 7.42, z: 2.0 }, radiusKm: 10.5, elevation: 0.5, label: "over Lake Washington" },
+  // Ride a jet through the SeaTac touch-and-go pattern.
+  { kind: "plane", anchor: "C37", fallback: { x: 2.64, z: 17.9 }, radiusKm: 12, elevation: 0.62, label: "riding the jet" },
+  // The long southern airport run under Rainier — pull back and breathe, then
+  // the reel loops home to the tunnel.
+  { kind: "orbit", anchor: "C37", fallback: { x: 2.64, z: 17.9 }, radiusKm: 11, elevation: 0.74, label: "the airport run" },
+];
+
+export interface ReelShot extends TourFraming {
+  kind: ShotKind;
+  seg: number; // which REEL stop we're resolving (for latching a ride target)
+  label: string;
+}
+
+/** The Observe reel's shot at a number of seconds in, written into `out`.
+ *  While TRAVELLING between stops the shot is always an orbit that glides the
+ *  centre and framing from the previous stop to the next; while HOLDING it
+ *  becomes the stop's own kind (orbit, or a ride). Continuous in centre, radius
+ *  and elevation so CameraRig's smoothing never sees a jump. */
+export function observeShot(elapsedS: number, out: ReelShot): ReelShot {
+  const { dwellS, travelS } = CONFIG.camera.observeReel;
+  const segS = dwellS + travelS;
+  const n = REEL.length;
+  const period = n * segS;
+  const e = Number.isFinite(elapsedS) ? elapsedS : 0;
+  const tt = ((e % period) + period) % period;
+  const seg = Math.floor(tt / segS);
+  const local = tt - seg * segS;
+
+  const cur = REEL[seg];
+  const curC = centre(cur);
+  out.seg = seg;
+  out.label = cur.label;
+
+  if (local < travelS) {
+    // Travelling in from the previous stop — always an orbit, never a ride.
+    const prev = REEL[(seg - 1 + n) % n];
+    const prevC = centre(prev);
+    const u = smoothstep(local / travelS);
+    out.kind = "orbit";
+    out.x = lerp(prevC.x, curC.x, u);
+    out.z = lerp(prevC.z, curC.z, u);
+    out.radiusKm = lerp(prev.radiusKm, cur.radiusKm, u);
+    out.elevation = lerp(prev.elevation, cur.elevation, u);
+  } else {
+    // Holding at the stop — its own kind.
+    out.kind = cur.kind;
     out.x = curC.x;
     out.z = curC.z;
     out.radiusKm = cur.radiusKm;
