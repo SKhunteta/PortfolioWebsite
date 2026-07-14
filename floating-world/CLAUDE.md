@@ -39,6 +39,15 @@ it on a second monitor and the print breathes at them.
 - Rainier ghosts the horizon at real scale with **Fuji's warm-white snow
   cap**. Ferries, floatplanes, stadium nights, the Needle beacon — all the
   deterministic ambient life carries over unchanged.
+- **Airliners** (`map/Airliners.tsx`, one InstancedMesh): a toy SeaTac fleet,
+  half Delta half Alaska (the livery is a baked canvas atlas — wordmark + tail
+  device — with a per-instance `aAirline` flag sliding each jet onto its half,
+  so the split is structural). Two opposed touch-and-go circuits (34R north
+  flow east over the valley, 16C south flow west over the Sound) plus one of
+  each parked at the gates — ambient like the ferries, deterministic from the
+  clock, never live. Unlike the daylight-VFR floatplanes they hold through the
+  night (the palette only dims them). Livery whites are clamped below the
+  bright-paper bloom line in the shader.
 - **Kasumi** (`map/Kasumi.tsx`, one draw call): the classic horizontal mist
   bands of ukiyo-e drift slowly across the middle distance, colored
   `LIVE.fog` with a thin gilt (kinkumo) edge. They yield to REAL fog
