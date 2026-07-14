@@ -133,6 +133,12 @@ interface ReelStop {
    *  broadside close-up instead of a wake chase — CameraRig reads this to
    *  swap the framing. Ignored on orbit stops. */
   detail?: boolean;
+  /** A train RIDE stop (`kind` "train") that latches onto a genuinely random
+   *  live train instead of the nearest one to `anchor` — CameraRig reads this
+   *  to swap `nearestTrainTo` for a plain random pick. The anchor still
+   *  supplies the travel-in framing so the cut in stays smooth; only which
+   *  train gets ridden is left to chance. Ignored on plane/orbit stops. */
+  random?: boolean;
 }
 
 // Rides dwell this long; orbit interludes use the shorter observeReel.dwellS.
@@ -156,6 +162,10 @@ const REEL: ReelStop[] = [
   { kind: "train", anchor: "E07", fallback: { x: 7.42, z: 2.0 }, radiusKm: 10.5, elevation: 0.5, label: "the Lake Washington crossing", dwellS: RIDE_DWELL_S },
   // The Burke-Gilman cyclists where the trail threads past the U-District.
   { kind: "orbit", anchor: "N07", fallback: { x: 1.35, z: -6.02 }, radiusKm: 7, elevation: 0.48, label: "the cyclists" },
+  // A spontaneous cut to WHATEVER train happens to be out there right now —
+  // not the same curated crossing every loop, an honest random pick, so the
+  // reel occasionally surprises even a visitor who's watched it loop before.
+  { kind: "train", anchor: "C03", fallback: { x: -0.35, z: -0.6 }, radiusKm: 7, elevation: 0.5, label: "a train, somewhere on the line", dwellS: RIDE_DWELL_S, random: true },
   // Ride a jet through the SeaTac touch-and-go pattern, up over the valley.
   { kind: "plane", anchor: "C37", fallback: { x: 2.64, z: 17.9 }, radiusKm: 12, elevation: 0.62, label: "riding the jet", dwellS: RIDE_DWELL_S },
   // Then slide onto its flank: the Delta/Alaska tail device and the fuselage
@@ -180,6 +190,7 @@ export interface ReelShot extends TourFraming {
   seg: number; // which REEL stop we're resolving (for latching a ride target)
   label: string;
   detail: boolean; // true on a holding detail close-up (never while travelling)
+  random: boolean; // true on a holding train stop that should ride ANY live train
 }
 
 /** The Observe reel's shot at a number of seconds in, written into `out`.
@@ -214,6 +225,7 @@ export function observeShot(elapsedS: number, out: ReelShot): ReelShot {
     const u = smoothstep(local / travelS);
     out.kind = "orbit";
     out.detail = false;
+    out.random = false;
     out.x = lerp(prevC.x, curC.x, u);
     out.z = lerp(prevC.z, curC.z, u);
     out.radiusKm = lerp(prev.radiusKm, cur.radiusKm, u);
@@ -222,6 +234,7 @@ export function observeShot(elapsedS: number, out: ReelShot): ReelShot {
     // Holding at the stop — its own kind, and its detail framing if any.
     out.kind = cur.kind;
     out.detail = cur.detail ?? false;
+    out.random = cur.random ?? false;
     out.x = curC.x;
     out.z = curC.z;
     out.radiusKm = cur.radiusKm;
