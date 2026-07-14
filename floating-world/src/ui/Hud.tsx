@@ -71,7 +71,7 @@ export function Hud() {
     if (introDone.current || mode === "connecting") return;
     introDone.current = true;
     setIntro(introText(mode, TRAINS.size));
-    const t = setTimeout(() => setIntro(null), 13000);
+    const t = setTimeout(() => setIntro(null), 7000);
     return () => clearTimeout(t);
   }, [mode]);
 
@@ -111,7 +111,16 @@ export function Hud() {
       {weatherWord && <div className="hud-weather">{weatherWord}</div>}
 
       {intro && (
-        <div className="hud-intro">
+        <div
+          className="hud-intro hud-intro-dismissable"
+          onClick={() => setIntro(null)}
+          role="button"
+          tabIndex={0}
+          aria-label="Dismiss"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") setIntro(null);
+          }}
+        >
           <p>{intro}</p>
         </div>
       )}
