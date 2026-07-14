@@ -272,7 +272,16 @@ body {
   padding: 0 28px;
   pointer-events: none;
   user-select: none;
-  animation: hud-intro 13s ease forwards;
+  animation: hud-intro 7s ease forwards;
+}
+/* Tappable/clickable to dismiss early — the sentence only needs to be read
+   once, so anyone who's already caught it shouldn't have to wait it out. */
+.hud-intro-dismissable {
+  pointer-events: auto;
+  cursor: pointer;
+}
+.hud-intro-dismissable p {
+  pointer-events: auto;
 }
 .hud-intro p {
   max-width: 30em;
@@ -302,8 +311,8 @@ body {
 }
 @keyframes hud-intro {
   0% { opacity: 0; }
-  8% { opacity: 1; }
-  82% { opacity: 1; }
+  14% { opacity: 1; }
+  70% { opacity: 1; }
   100% { opacity: 0; }
 }
 
