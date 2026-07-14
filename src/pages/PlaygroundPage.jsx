@@ -166,8 +166,8 @@ const STATIC_STANDALONE = [
       "The Living Link, repainted as a Japanese woodblock print: the same real trains on the same true geometry, gliding across warm washi paper — Prussian-blue water woven with seigaiha wave-fans, vermilion hanko seals for stations, kasumi mist drifting over the ink-drawn city, and Rainier standing in for Fuji on the horizon. Live when the feed breathes, honest simulation when it sleeps.",
     tags: ["three.js", "realtime", "ukiyo-e"],
     cta: "Enter Sound & Rail",
-    href: "/floating-world/",
-    urlLabel: "builtbyshrey.com/floating-world",
+    href: "/sound-and-rail/",
+    urlLabel: "builtbyshrey.com/sound-and-rail",
     theme: {
       bg: "#f0e4c8",
       text: "#33261a",
