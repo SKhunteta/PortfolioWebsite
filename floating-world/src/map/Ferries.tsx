@@ -1,10 +1,12 @@
 // The ferries: two toy WSF boats trading the Colman Dock ↔ Bainbridge
 // crossing (they pass mid-Sound, like the real pair), and the little West
 // Seattle water taxi darting out to Seacrest. Background paint, not data —
-// like Rainier they belong to the page: real routes, real crossing speeds,
-// deterministic from the scene clock, never presented as live. Double-ended
-// boats never turn around; the return leg simply sails "backwards", exactly
-// like the real ones.
+// like Rainier they belong to the page: real routes, storybook crossing pace
+// (the hulls are storybook-large, so the speed is too — a literal-real 22-min
+// crossing just creeps a pixel a second and reads as frozen next to the
+// trains), deterministic from the scene clock, never presented as live.
+// Double-ended boats never turn around; the return leg simply sails
+// "backwards", exactly like the real ones.
 //
 // ONE InstancedMesh (one draw call, matching the instanced-everything rule);
 // matrices are written imperatively in useFrame — the hot path never touches
@@ -88,18 +90,20 @@ const WATER_TAXI = route([
 export interface Vessel {
   route: Route;
   toyLengthKm: number; // storybook-large, like the trains
-  speedKmS: number; // real crossing pace — ferries keep the trains' honesty
+  speedKmS: number; // storybook cruising pace — brisk enough to read as gliding
   dwellS: number; // held at the dock between runs
   phase: number; // fraction of the round trip already sailed at t = 0
 }
 
 // Shared with map/Wakes.tsx: the foam layer strings a wake behind each of
 // these hulls, reading their live pose + speed from the SAME function so the
-// wake can never disagree with the boat that cut it.
+// wake can never disagree with the boat that cut it. Speeds are tuned for the
+// scene (like the trains' ~0.02 nominal), not literal WSF knots — on the open
+// Sound, with no near reference, real pace looks static.
 export const FERRY_VESSELS: Vessel[] = [
-  { route: BAINBRIDGE, toyLengthKm: 0.21, speedKmS: 0.0095, dwellS: 150, phase: 0.18 },
-  { route: BAINBRIDGE, toyLengthKm: 0.21, speedKmS: 0.0095, dwellS: 150, phase: 0.68 },
-  { route: WATER_TAXI, toyLengthKm: 0.1, speedKmS: 0.0135, dwellS: 110, phase: 0.42 },
+  { route: BAINBRIDGE, toyLengthKm: 0.21, speedKmS: 0.024, dwellS: 90, phase: 0.18 },
+  { route: BAINBRIDGE, toyLengthKm: 0.21, speedKmS: 0.024, dwellS: 90, phase: 0.68 },
+  { route: WATER_TAXI, toyLengthKm: 0.1, speedKmS: 0.038, dwellS: 60, phase: 0.42 },
 ];
 
 export interface VesselPose {
