@@ -169,6 +169,50 @@ function brewery(lat: number, lng: number, w: number, h: number, d: number, yaw 
   return geo;
 }
 
+/** A SODO stadium: a low oval seating bowl crowned by one or more curved roof
+ *  arches — the silhouette that names the two halls beside the tracks. Each
+ *  arch is a half-torus (arc = π), which already stands as an arch in the XY
+ *  plane: base endpoints on the ground, peak overhead. We offset it across the
+ *  bowl, aim its span, and spring it from the roofline. Lumen Field wears twin
+ *  canopies over its stands; T-Mobile Park its single great retractable-roof
+ *  arch, the tallest thing in SODO. */
+function stadium(
+  lat: number,
+  lng: number,
+  w: number,
+  d: number,
+  h: number,
+  spanYaw: number,
+  arches: { R: number; tube: number; off: number }[],
+): THREE.BufferGeometry {
+  const { x, z } = projectLatLng(lat, lng);
+  const parts: THREE.BufferGeometry[] = [];
+
+  // The bowl: a low oval drum, flaring a touch at the base — the raked stands
+  // read as solid massing, not a flat pad.
+  const r = Math.max(w, d) * 0.5;
+  const bowl = new THREE.CylinderGeometry(r, r * 1.06, h, 20);
+  bowl.scale(w / (2 * r), 1, d / (2 * r));
+  bowl.translate(0, h / 2, 0);
+  parts.push(bowl);
+
+  // The roof arch(es): the half-torus spans X and peaks at +Y. Spread it across
+  // the bowl (offset along Z), aim the span (spanYaw rotates offset and arch
+  // together, so it stays square to the bowl), then lift it to the roofline.
+  for (const a of arches) {
+    const arch = new THREE.TorusGeometry(a.R, a.tube, 5, 26, Math.PI);
+    arch.translate(0, 0, a.off);
+    arch.rotateY(spanYaw);
+    arch.translate(0, h * 0.88, 0);
+    parts.push(arch);
+  }
+
+  const geo = mergeGeometries(parts, false)!;
+  parts.forEach((g) => g.dispose());
+  geo.translate(x, 0, z);
+  return geo;
+}
+
 /** The Kraken Community Iceplex: three flat-roofed rinks under one long
  *  building — the Seattle Kraken's practice house and headquarters — sitting
  *  at grade beside Northgate Station, on the old mall's parking lots. (Not
@@ -257,9 +301,21 @@ function buildGeometry(): THREE.BufferGeometry {
     }
   }
 
-  // --- SODO stadiums: two long low halls beside the tracks ---
-  parts.push(tower(47.5952, -122.3316, 0.34, 0.2, 0.5)); // Lumen Field
-  parts.push(tower(47.5914, -122.3325, 0.42, 0.16, 0.42)); // T-Mobile Park
+  // --- SODO stadiums: the two arched bowls beside the tracks. Lumen Field
+  //     wears its twin roof canopies over the long stands; T-Mobile Park its
+  //     single great retractable-roof arch, the tallest ridge in SODO. Their
+  //     spans align with the SODO grid's slight tilt off true north. ---
+  parts.push(
+    stadium(47.5952, -122.3316, 0.34, 0.52, 0.1, Math.PI / 2 + 0.12, [
+      { R: 0.26, tube: 0.03, off: 0.11 },
+      { R: 0.26, tube: 0.03, off: -0.11 },
+    ]),
+  ); // Lumen Field — twin canopies running the length of the bowl
+  parts.push(
+    stadium(47.5914, -122.3325, 0.42, 0.44, 0.09, 0.12, [
+      { R: 0.24, tube: 0.032, off: 0 },
+    ]),
+  ); // T-Mobile Park — the single great retractable-roof arch across the bowl
 
   // --- the working waterfront: gantry cranes ranked along the East
   //     Waterway, booms raked over the water — Terminal 18 faces east,
