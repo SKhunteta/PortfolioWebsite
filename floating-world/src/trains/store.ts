@@ -85,6 +85,11 @@ interface UiState {
   // (the airborne jets), or null. Mutually exclusive with followTrainId — the
   // camera rides one thing at a time.
   followPlaneIndex: number | null;
+  // The underground hall the camera has dived into (a station id), or null.
+  // A third camera "rider", mutually exclusive with followTrainId/followPlaneIndex:
+  // instead of riding a moving vehicle, the camera holds over a fixed hall's
+  // platform floor so its art fresco reads up through the paper (CameraRig).
+  diveStationId: string | null;
   // Ambient arrival captions ("Capitol Hill · 1 Line to Lynnwood") — set on
   // dwell EVENTS only (Stations.tsx rate-limits), never per-frame. The key
   // restarts the CSS fade when the same text repeats.
@@ -105,6 +110,7 @@ interface UiState {
   setHoverStation: (id: string | null) => void;
   setFollowTrain: (id: string | null) => void;
   setFollowPlane: (index: number | null) => void;
+  setDiveStation: (id: string | null) => void;
   setCaption: (text: string | null) => void;
   setObserving: (observing: boolean) => void;
   setObserveShot: (label: string | null) => void;
@@ -117,15 +123,23 @@ export const useUi = create<UiState>((set) => ({
   hoverStationId: null,
   followTrainId: null,
   followPlaneIndex: null,
+  diveStationId: null,
   caption: null,
   observing: false,
   observeShotLabel: null,
   touring: false,
   setMode: (mode, fetchedAt) => set({ mode, fetchedAt }),
   setHoverStation: (hoverStationId) => set({ hoverStationId }),
-  // Picking a train releases any plane chase, and vice versa — one rider.
-  setFollowTrain: (followTrainId) => set({ followTrainId, followPlaneIndex: null }),
-  setFollowPlane: (followPlaneIndex) => set({ followPlaneIndex, followTrainId: null }),
+  // The three camera riders (train / plane / underground dive) are exclusive —
+  // engaging one releases the others. Because setFollowTrain(null) is the
+  // universal "let go" call (Escape, drag, empty double-tap), clearing
+  // diveStationId here means every existing exit path also rises out of a dive.
+  setFollowTrain: (followTrainId) =>
+    set({ followTrainId, followPlaneIndex: null, diveStationId: null }),
+  setFollowPlane: (followPlaneIndex) =>
+    set({ followPlaneIndex, followTrainId: null, diveStationId: null }),
+  setDiveStation: (diveStationId) =>
+    set({ diveStationId, followTrainId: null, followPlaneIndex: null }),
   setCaption: (text) =>
     set((s) => (text ? { caption: { text, key: (s.caption?.key ?? 0) + 1 } } : { caption: null })),
   setObserving: (observing) => set({ observing }),
