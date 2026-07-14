@@ -10,6 +10,7 @@ import { setTideOverride } from "../world/tide";
 import { setBloomOverride } from "../world/bloom";
 import { setWeatherOverride, WeatherKind } from "../world/weather";
 import { TIER } from "../world/device";
+import { setAudioEnabled } from "../audio/engine";
 
 const stats = {
   fps: 0,
@@ -54,6 +55,10 @@ export function installHandles() {
     setTide: (level: number | null) => setTideOverride(level),
     setBloom: (level: number | null) => setBloomOverride(level),
     setWeather: (k: WeatherKind | null) => setWeatherOverride(k),
+    // The ambient room tone (world-keyed Web Audio). Toggle from the console
+    // as well as the HUD button; note a real user gesture is still needed the
+    // first time for the browser to un-suspend the audio context.
+    sound: (on: boolean) => setAudioEnabled(on),
     follow: (index: number) => {
       const ids = [...TRAINS.keys()];
       useUi.getState().setFollowTrain(ids[index] ?? null);

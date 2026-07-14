@@ -18,6 +18,7 @@ import { sunPhase } from "../world/sun";
 import { tickObserve } from "../world/observe";
 import { updatePalette } from "../world/palettes";
 import { easeWeather, applyWeather } from "../world/weather";
+import { audioTick } from "../audio/engine";
 import { TRAIN_MODEL } from "./TrainModel";
 import { FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "../map/watercolorGlsl";
 
@@ -143,6 +144,10 @@ export function Trains() {
     updatePalette(phase);
     easeWeather(CLOCK.dt);
     applyWeather(phase);
+    // The room tone follows the same phase + live weather (no-op when the
+    // audio toggle is off). Kept on the single driver so it can never drift
+    // out of step with the light it's painting.
+    audioTick(phase);
 
     const mesh = meshRef.current;
     if (!mesh) return;
