@@ -85,7 +85,7 @@ const WATER_TAXI = route([
   [47.5907, -122.3808], // Seacrest Park, West Seattle
 ]);
 
-interface Vessel {
+export interface Vessel {
   route: Route;
   toyLengthKm: number; // storybook-large, like the trains
   speedKmS: number; // real crossing pace — ferries keep the trains' honesty
@@ -93,25 +93,46 @@ interface Vessel {
   phase: number; // fraction of the round trip already sailed at t = 0
 }
 
-const VESSELS: Vessel[] = [
+// Shared with map/Wakes.tsx: the foam layer strings a wake behind each of
+// these hulls, reading their live pose + speed from the SAME function so the
+// wake can never disagree with the boat that cut it.
+export const FERRY_VESSELS: Vessel[] = [
   { route: BAINBRIDGE, toyLengthKm: 0.21, speedKmS: 0.0095, dwellS: 150, phase: 0.18 },
   { route: BAINBRIDGE, toyLengthKm: 0.21, speedKmS: 0.0095, dwellS: 150, phase: 0.68 },
   { route: WATER_TAXI, toyLengthKm: 0.1, speedKmS: 0.0135, dwellS: 110, phase: 0.42 },
 ];
 
-const pose = { x: 0, z: 0, yaw: 0 };
+export interface VesselPose {
+  x: number;
+  z: number;
+  yaw: number;
+  speed: number; // km/s along the route — 0 at the dock, so the wake dies
+}
+
+const pose: VesselPose = { x: 0, z: 0, yaw: 0, speed: 0 };
 
 /** Where a vessel is at clock time t: ping-pong along its route with a dock
- *  dwell at each end. Heading is always the forward tangent — double-ended. */
-function poseAt(v: Vessel, t: number) {
+ *  dwell at each end. Heading is always the forward tangent — double-ended.
+ *  Writes into `out` (defaults to a shared scratch pose) so map/Wakes.tsx can
+ *  read it without racing this module's own useFrame. */
+export function ferryPoseAt(v: Vessel, t: number, out: VesselPose = pose): VesselPose {
   const crossS = v.route.lengthKm / v.speedKmS;
   const period = 2 * (crossS + v.dwellS);
   const p = (t + v.phase * period) % period;
   let s: number;
-  if (p < crossS) s = p * v.speedKmS;
-  else if (p < crossS + v.dwellS) s = v.route.lengthKm;
-  else if (p < 2 * crossS + v.dwellS) s = v.route.lengthKm - (p - crossS - v.dwellS) * v.speedKmS;
-  else s = 0;
+  if (p < crossS) {
+    s = p * v.speedKmS;
+    out.speed = v.speedKmS;
+  } else if (p < crossS + v.dwellS) {
+    s = v.route.lengthKm;
+    out.speed = 0;
+  } else if (p < 2 * crossS + v.dwellS) {
+    s = v.route.lengthKm - (p - crossS - v.dwellS) * v.speedKmS;
+    out.speed = v.speedKmS;
+  } else {
+    s = 0;
+    out.speed = 0;
+  }
 
   const { pts, cum } = v.route;
   let i = 1;
@@ -119,10 +140,10 @@ function poseAt(v: Vessel, t: number) {
   const f = THREE.MathUtils.clamp((s - cum[i - 1]) / Math.max(1e-6, cum[i] - cum[i - 1]), 0, 1);
   const a = pts[i - 1];
   const b = pts[i];
-  pose.x = a.x + (b.x - a.x) * f;
-  pose.z = a.z + (b.z - a.z) * f;
-  pose.yaw = Math.atan2(-(b.z - a.z), b.x - a.x);
-  return pose;
+  out.x = a.x + (b.x - a.x) * f;
+  out.z = a.z + (b.z - a.z) * f;
+  out.yaw = Math.atan2(-(b.z - a.z), b.x - a.x);
+  return out;
 }
 
 /** Unit-length boat along +X, waterline at y = 0: hull with diamond points
@@ -170,9 +191,9 @@ export function Ferries() {
     m.uniforms.uOpacity.value = LIVE.ferryOpacity;
     m.uniforms.uWindowIntensity.value = LIVE.windowIntensity;
     m.uniforms.uFogDensity.value = LIVE.fogDensity;
-    for (let i = 0; i < VESSELS.length; i++) {
-      const v = VESSELS[i];
-      const { x, z, yaw } = poseAt(v, CLOCK.t);
+    for (let i = 0; i < FERRY_VESSELS.length; i++) {
+      const v = FERRY_VESSELS[i];
+      const { x, z, yaw } = ferryPoseAt(v, CLOCK.t);
       quaternion.setFromAxisAngle(UP, yaw);
       matrix.compose(
         position.set(x, 0, z),
@@ -187,7 +208,7 @@ export function Ferries() {
   return (
     <instancedMesh
       ref={meshRef}
-      args={[undefined, undefined, VESSELS.length]}
+      args={[undefined, undefined, FERRY_VESSELS.length]}
       geometry={geometry}
       renderOrder={6}
       frustumCulled={false}
