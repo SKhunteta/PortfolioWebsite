@@ -103,14 +103,17 @@ const LAKE_UNION_CIRCUIT = circuit([
   [47.6288, -122.339, 0], // the dock again
 ]);
 
-interface Flight {
+export interface Flight {
   toyLengthKm: number;
   speedKmS: number; // ~160 km/h — an Otter's honest working pace
   dwellS: number; // held at the dock between circuits
   phase: number; // fraction of the cycle already flown at t = 0
 }
 
-const FLIGHTS: Flight[] = [
+// Shared with map/Wakes.tsx: a float leaves a wake only while it is ON the
+// water (taxi + takeoff + landing run), so the wake layer reads both pose and
+// altitude from the SAME function and fades the foam out as the plane climbs.
+export const SEAPLANE_FLIGHTS: Flight[] = [
   { toyLengthKm: 0.13, speedKmS: 0.044, dwellS: 210, phase: 0.12 },
   { toyLengthKm: 0.13, speedKmS: 0.044, dwellS: 210, phase: 0.62 },
 ];
@@ -122,15 +125,28 @@ const MOORED = [
   { lat: 47.6291, lng: -122.3399, yaw: 2.65 },
 ];
 
-const pose = { x: 0, z: 0, y: 0, yaw: 0, pitch: 0 };
+export interface FlightPose {
+  x: number;
+  z: number;
+  y: number; // km above the paper — 0 while on the water
+  yaw: number;
+  pitch: number;
+  speed: number; // km/s along the circuit — 0 at the dock
+}
+
+const pose: FlightPose = { x: 0, z: 0, y: 0, yaw: 0, pitch: 0, speed: 0 };
 
 /** Where a flight is at clock time t: arc-length along the circuit with a
- *  dock dwell, altitude and pitch from the waypoint profile. */
-function poseAt(f: Flight, t: number) {
+ *  dock dwell, altitude and pitch from the waypoint profile. Writes into
+ *  `out` (defaults to a shared scratch pose) so map/Wakes.tsx can read it
+ *  without racing this module's own useFrame. */
+export function seaplanePoseAt(f: Flight, t: number, out: FlightPose = pose): FlightPose {
   const flightS = LAKE_UNION_CIRCUIT.lengthKm / f.speedKmS;
   const period = flightS + f.dwellS;
   const p = (t + f.phase * period) % period;
-  const s = p < flightS ? p * f.speedKmS : 0; // dwell parks it at the dock
+  const flying = p < flightS;
+  const s = flying ? p * f.speedKmS : 0; // dwell parks it at the dock
+  out.speed = flying ? f.speedKmS : 0;
 
   const { pts, cum } = LAKE_UNION_CIRCUIT;
   let i = 1;
@@ -139,12 +155,12 @@ function poseAt(f: Flight, t: number) {
   const fr = THREE.MathUtils.clamp((s - cum[i - 1]) / seg, 0, 1);
   const a = pts[i - 1];
   const b = pts[i];
-  pose.x = a.x + (b.x - a.x) * fr;
-  pose.z = a.z + (b.z - a.z) * fr;
-  pose.y = a.alt + (b.alt - a.alt) * fr;
-  pose.yaw = Math.atan2(-(b.z - a.z), b.x - a.x);
-  pose.pitch = THREE.MathUtils.clamp(Math.atan2(b.alt - a.alt, seg), -0.38, 0.38);
-  return pose;
+  out.x = a.x + (b.x - a.x) * fr;
+  out.z = a.z + (b.z - a.z) * fr;
+  out.y = a.alt + (b.alt - a.alt) * fr;
+  out.yaw = Math.atan2(-(b.z - a.z), b.x - a.x);
+  out.pitch = THREE.MathUtils.clamp(Math.atan2(b.alt - a.alt, seg), -0.38, 0.38);
+  return out;
 }
 
 /** Unit-length floatplane along +X, float keels at y = 0: fuselage on twin
@@ -177,7 +193,7 @@ function buildPlane(): THREE.BufferGeometry {
   return merged;
 }
 
-const COUNT = FLIGHTS.length + MOORED.length;
+const COUNT = SEAPLANE_FLIGHTS.length + MOORED.length;
 const matrix = new THREE.Matrix4();
 const position = new THREE.Vector3();
 const quaternion = new THREE.Quaternion();
@@ -209,9 +225,9 @@ export function Seaplanes() {
     // as the evening's last flight dissolving into the dusk.
     const daylight = THREE.MathUtils.smoothstep(sunPhase(), 0.12, 0.3);
 
-    for (let i = 0; i < FLIGHTS.length; i++) {
-      const f = FLIGHTS[i];
-      const { x, y, z, yaw, pitch } = poseAt(f, CLOCK.t);
+    for (let i = 0; i < SEAPLANE_FLIGHTS.length; i++) {
+      const f = SEAPLANE_FLIGHTS[i];
+      const { x, y, z, yaw, pitch } = seaplanePoseAt(f, CLOCK.t);
       euler.set(0, yaw, pitch, "YZX");
       quaternion.setFromEuler(euler);
       matrix.compose(position.set(x, y, z), quaternion, scale.setScalar(f.toyLengthKm));
@@ -230,9 +246,9 @@ export function Seaplanes() {
         matrix.compose(
           new THREE.Vector3(x, 0, z),
           quaternion,
-          scale.setScalar(FLIGHTS[0].toyLengthKm)
+          scale.setScalar(SEAPLANE_FLIGHTS[0].toyLengthKm)
         );
-        mesh.setMatrixAt(FLIGHTS.length + i, matrix);
+        mesh.setMatrixAt(SEAPLANE_FLIGHTS.length + i, matrix);
       }
     }
     mesh.instanceMatrix.needsUpdate = true;

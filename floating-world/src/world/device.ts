@@ -49,6 +49,12 @@ export interface DeviceProfile {
   // phones carry a lighter forest and a smaller town.
   treeCount: number;
   buildingCount: number;
+  // Ambient-life counts — each is ONE instanced draw call, count is the
+  // fill budget. birdCount: the dawn/dusk flock crossing the Sound
+  // (map/Birds.tsx). platformMotes: boarding dabs scattered per station on
+  // dwell (stations/PlatformLife.tsx) — the pool is stations × this.
+  birdCount: number;
+  platformMotes: number;
 }
 
 const PROFILES: Record<Tier, DeviceProfile> = {
@@ -63,6 +69,8 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     weatherOverlay: false,
     treeCount: 5000,
     buildingCount: 2200,
+    birdCount: 9,
+    platformMotes: 4,
   },
   tablet: {
     dpr: [1, 2],
@@ -75,6 +83,8 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     weatherOverlay: true,
     treeCount: 11000,
     buildingCount: 4000,
+    birdCount: 13,
+    platformMotes: 6,
   },
   desktop: {
     dpr: [1, 2],
@@ -87,6 +97,8 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     weatherOverlay: true,
     treeCount: 18000,
     buildingCount: 6500,
+    birdCount: 16,
+    platformMotes: 8,
   },
 };
 

@@ -23,6 +23,7 @@ import { CONFIG } from "../world/config";
 import { CLOCK } from "../world/clock";
 import { LIVE } from "../world/palettes";
 import { INPUT_TOUCH } from "../world/device";
+import { initPlatformSites, PLATFORM_PULSE } from "./platformPulse";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "../map/watercolorGlsl";
 
 interface StationSlot {
@@ -218,6 +219,10 @@ export function Stations() {
     const submerged = all.filter((s) => s.submerged);
     surface.forEach((s, i) => (s.orbIndex = i));
     submerged.forEach((s, i) => (s.orbIndex = i));
+    // Publish the boarding sites (index-aligned with the per-frame pulse write
+    // below) for PlatformLife.tsx: figures gather at the surface entrance even
+    // for underground halls, so every crowd stands on the paper.
+    initPlatformSites(all.map((s) => ({ x: s.x, z: s.z, y: 0.05 })));
     return { slots: all, surfaceSlots: surface, submergedSlots: submerged };
   }, []);
 
@@ -308,6 +313,7 @@ export function Stations() {
       slot.wasDwelling = dwelling;
 
       slot.pulse += ((dwelling ? 1 : 0) - slot.pulse) * Math.min(1, CLOCK.dt * 2.5);
+      if (PLATFORM_PULSE.ready) PLATFORM_PULSE.value[i] = slot.pulse; // → PlatformLife.tsx
       const swell = 1 + slot.pulse * (CONFIG.station.pulseScale - 1) * (0.6 + 0.4 * CLOCK.breath);
       const r = CONFIG.station.radiusKm * swell * toyScale;
       const mesh = slot.submerged ? submerged : surface;

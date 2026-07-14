@@ -14,12 +14,15 @@ import { Landmarks } from "./map/Landmarks";
 import { Kasumi } from "./map/Kasumi";
 import { Ferries } from "./map/Ferries";
 import { Seaplanes } from "./map/Seaplanes";
+import { Wakes } from "./map/Wakes";
+import { Birds } from "./map/Birds";
 import { CityLights } from "./map/CityLights";
 import { LineRibbons } from "./map/LineRibbons";
 import { Trains } from "./trains/Trains";
 import { TrainModel } from "./trains/TrainModel";
 import { Trails } from "./trains/Trails";
 import { Stations } from "./stations/Stations";
+import { PlatformLife } from "./stations/PlatformLife";
 import { Labels } from "./stations/Labels";
 import { CameraRig } from "./observer/CameraRig";
 import { Composer } from "./fx/Composer";
@@ -91,11 +94,14 @@ export default function App() {
         <Buildings />
         <Landmarks />
         <Kasumi />
+        <Wakes />
         <Ferries />
         <Seaplanes />
+        <Birds />
         <CityLights />
         <LineRibbons />
         <Stations />
+        <PlatformLife />
         <Trains />
         <TrainModel />
         <Trails />
