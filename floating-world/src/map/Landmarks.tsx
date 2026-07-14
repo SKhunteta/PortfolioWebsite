@@ -25,6 +25,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { projectLatLng } from "./network";
+import { CONFIG } from "../world/config";
 import { LIVE } from "../world/palettes";
 import { sunPhase, sunPhaseAt, getPhaseOverride } from "../world/sun";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
@@ -252,9 +253,18 @@ function iceplex(lat: number, lng: number) {
   return geo;
 }
 
+// Bridges span WATER, and the water sheet sits at CONFIG.basemap.waterY — NOT
+// the y=0 ground plane the land relief is drawn on. `y` is the deck's height
+// above that surface, so every deck and pier is anchored to the water: without
+// this, the floating spans hovered ~0.06 above the lake and the high spans'
+// legs stopped short of it — invisible at drift distance, plainly wrong (a
+// deck floating over open water, trestles reaching nothing) when you zoom in.
+const WATER_Y = CONFIG.basemap.waterY;
+
 /** A low inked bridge deck spanning A→B across the water. The floating bridges
- *  ride the surface (y≈0, no piers); the high spans lift their deck and drop a
- *  few legs to the water so they read as trestles, not paint on the sheet. */
+ *  ride the surface (y≈0 above the water, no piers); the high spans lift their
+ *  deck and drop a few legs to the water so they read as trestles, not paint
+ *  on the sheet. `y` is measured UP from the water surface (WATER_Y). */
 function bridge(
   latA: number,
   lngA: number,
@@ -270,14 +280,17 @@ function bridge(
   const dz = b.z - a.z;
   const len = Math.hypot(dx, dz);
   const yaw = Math.atan2(dz, dx);
+  const deckY = WATER_Y + y; // the deck rides `y` above the water, not the ground
   const segs: THREE.BufferGeometry[] = [];
   const deck = new THREE.BoxGeometry(len, 0.02, w); // built along +x from the origin
-  deck.translate(len / 2, y, 0);
+  deck.translate(len / 2, deckY, 0);
   segs.push(deck);
   for (let i = 0; i < piers; i++) {
     const t = (i + 1) / (piers + 1);
-    const leg = new THREE.BoxGeometry(w * 0.5, y, w * 0.5);
-    leg.translate(len * t, y / 2, 0);
+    // Each leg drops from the deck all the way down to the water surface.
+    const legH = deckY - WATER_Y;
+    const leg = new THREE.BoxGeometry(w * 0.5, legH, w * 0.5);
+    leg.translate(len * t, WATER_Y + legH / 2, 0);
     segs.push(leg);
   }
   const geo = mergeGeometries(segs, false)!;
