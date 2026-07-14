@@ -1,5 +1,5 @@
 // Orcas on the Sound: a Southern Resident matriline — the icon of the Salish
-// Sea — foraging the central basin west of Elliott Bay, porpoising through
+// Sea — ranging the central basin west of Elliott Bay, porpoising through
 // the Prussian water in sequence. Dorsal fins as sumi strokes cutting the
 // seigaiha waves, foam-white eyepatch and saddle, a puff of blow at each
 // surfacing. Whale-among-waves is a canonical woodblock composition; here it
@@ -7,10 +7,15 @@
 //
 // Background paint, not data — like Rainier and the ferries the pod belongs
 // to the page: real geography (the shipping-lane basin the resident pods
-// really travel), a real cruising pace and a real surface-and-dive rhythm,
-// deterministic from the scene clock. It is NOT a live sighting feed and
-// never claims to be one — the honesty rule holds; this is the ferry tier.
-// ?orcas=off hides the pod (?orcas=on / any other value forces it on).
+// really travel) and a real surface-and-dive rhythm. And like the residents,
+// it MOVES with the day: the foraging ground migrates around a loop of the
+// Sound keyed to the real Seattle hour (north through the small hours, west
+// off Bainbridge by morning, south past Blake at midday, back up the Elliott
+// Bay side by evening), milling as it goes. Deterministic from the clock; it
+// is NOT a live sighting feed and never claims to be one — the honesty rule
+// holds; this is the ferry tier.
+// ?orcas=off hides the pod (?orcas=on / any other value forces it on);
+// ?tod= pins the time of day (see below).
 //
 // ONE InstancedMesh (one draw call, matching the instanced-everything rule):
 // matrices, a submersion fade and a surfacing burst written imperatively in
@@ -26,6 +31,8 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { projectLatLng } from "./network";
 import { CLOCK } from "../world/clock";
 import { LIVE } from "../world/palettes";
+import { localHour } from "../world/traffic";
+import { observeDayFrac } from "../world/observe";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
 function parseOverride(): boolean | null {
@@ -35,6 +42,55 @@ function parseOverride(): boolean | null {
   return raw !== "off" && raw !== "0";
 }
 const OVERRIDE = parseOverride();
+
+// Time of day drives WHERE the pod is. Southern Residents range the whole
+// central Sound over a day — north on one tide, milling off Alki the next —
+// so the foraging ground the pod works migrates around a loop keyed to the
+// real Seattle hour. Honesty rule holds: true to the clock, deterministic,
+// never a live sighting feed.
+//
+// ?tod= pins it for demos, tests and screenshots (matching ?phase= / ?weather=
+// / ?traffic=): a 0..1 fraction of the day, an hour 0..24, or a named beat
+// (dawn|morning|noon|afternoon|dusk|night). Observe mode sweeps it with the
+// sun so the pod migrates through the day during a sweep.
+const TOD_NAMED: Record<string, number> = {
+  night: 0.0,
+  midnight: 0.0,
+  dawn: 6 / 24,
+  morning: 9 / 24,
+  noon: 0.5,
+  afternoon: 15 / 24,
+  dusk: 20 / 24,
+};
+function parseTodOverride(): number | null {
+  if (typeof window === "undefined") return null;
+  const raw = new URLSearchParams(window.location.search).get("tod");
+  if (raw == null) return null;
+  if (raw in TOD_NAMED) return TOD_NAMED[raw];
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return null;
+  // Accept either a 0..1 day fraction or a 0..24 clock hour.
+  return n > 1 ? (n % 24) / 24 : Math.max(0, Math.min(1, n));
+}
+const TOD_OVERRIDE = parseTodOverride();
+
+// Recomputing the Seattle hour every frame is wasteful (Intl.formatToParts
+// costs a little) and the pod's ground crawls; cache it and refresh every ~8s,
+// the same way traffic.ts throttles its hour read.
+const todCache = { at: -1e9, value: 0 };
+
+/** The pod's time-of-day, 0..1 across midnight→midnight. Pinned by ?tod=,
+ *  else the observe-mode sweep, else the real local Seattle hour. */
+function podTimeOfDay(): number {
+  if (TOD_OVERRIDE != null) return TOD_OVERRIDE;
+  const obs = observeDayFrac();
+  if (obs != null) return obs;
+  const now = typeof performance !== "undefined" ? performance.now() : 0;
+  if (now - todCache.at < 8000) return todCache.value;
+  todCache.at = now;
+  todCache.value = (localHour(new Date()) / 24) % 1;
+  return todCache.value;
+}
 
 const VERT = /* glsl */ `
   ${FOG_VARYINGS_VERT}
@@ -102,16 +158,40 @@ function track(latlngs: [number, number][]): Track {
   return { pts, cum, lengthKm: cum[cum.length - 1] };
 }
 
-// A north–south foraging line down the central basin, well west of Elliott
-// Bay and parallel to the Bainbridge ferry's mid-Sound reach — open water at
-// every point, bowed like a hand-drawn stroke.
-const BASIN = track([
-  [47.69, -122.445], // north basin, off Shilshole
-  [47.66, -122.44],
-  [47.625, -122.435], // abeam the mouth of Elliott Bay
-  [47.595, -122.43],
-  [47.565, -122.4245], // south toward Blake Island
+// The day's foraging grounds: a closed loop around the central basin the pod
+// works its way around over 24 hours, keyed to the Seattle hour. Every anchor
+// is open water — the main-basin channel between the Seattle shore and
+// Bainbridge, never onto a drawn island. The pod's centre rides this ring as
+// time of day advances (north through the small hours, west off Bainbridge by
+// morning, south past Blake toward Vashon at midday, back up the Elliott Bay
+// side through the evening), so at any hour it is somewhere different on the
+// Sound — the way the residents really range with the tide.
+const GROUNDS = track([
+  [47.695, -122.44], // ~midnight: north basin, off Shilshole / Meadow Point
+  [47.665, -122.462], // NW toward West Point / the Bainbridge shore
+  [47.625, -122.468], // W, mid-channel abeam Bainbridge
+  [47.59, -122.46], // SW, Rich Passage approach
+  [47.565, -122.438], // S, the Blake Island / Vashon channel
+  [47.575, -122.415], // SE, off Alki Point
+  [47.61, -122.408], // E, off the mouth of Elliott Bay
+  [47.655, -122.425], // NE, off West Point
+  [47.695, -122.44], // close the ring back to the north basin
 ]);
+
+// Where the pod's foraging centre sits at day fraction f (0..1): a point
+// travelled f of the way around the closed GROUNDS ring by arc length.
+function groundAt(f: number, out: { x: number; z: number }): { x: number; z: number } {
+  const L = GROUNDS.lengthKm;
+  const target = (((f % 1) + 1) % 1) * L;
+  const { pts, cum } = GROUNDS;
+  let i = 1;
+  while (i < cum.length - 1 && cum[i] < target) i++;
+  const seg = Math.max(1e-6, cum[i] - cum[i - 1]);
+  const t = THREE.MathUtils.clamp((target - cum[i - 1]) / seg, 0, 1);
+  out.x = pts[i - 1].x + (pts[i].x - pts[i - 1].x) * t;
+  out.z = pts[i - 1].z + (pts[i].z - pts[i - 1].z) * t;
+  return out;
+}
 
 interface Whale {
   toyLengthKm: number; // storybook-large, like the ferries
@@ -133,56 +213,44 @@ const POD: Whale[] = [
   { toyLengthKm: 0.075, lagKm: 0.31, offsetKm: 0.02, dorsalK: 0.42, surfPeriodS: 6.5, surfPhase: 0.5 },
 ];
 
-// The pod cruises ~11 km/h and forages back and forth along the basin rather
-// than transiting straight through — resident pods mill in the food, so they
-// stay reliably on the page. You read orcas by their surfacing blows, not
-// their lateral speed, so the cruise is deliberately slow and the porpoising
-// carries the life. A start offset seats the pod mid-basin at session open,
-// well inside the drift framing, instead of parked at the north end.
-const CRUISE_KM_S = 0.003;
+// Foraging never sits still: over the slow daily drift around GROUNDS the pod
+// mills — a leisurely lissajous wander around its current ground so it works
+// the food rather than parking on it. WANDER_R is the mill radius (in the
+// projected km the tracks use), the two slow rates give an unrepeating path.
+const WANDER_R = 0.32;
+const WANDER_RATE_X = 0.09; // ~70 s
+const WANDER_RATE_Z = 0.063; // ~100 s
+// Finite-difference step (clock seconds) used to read the pod's heading off
+// its own motion, so the whales face where they are actually swimming.
+const HEAD_EPS = 1.5;
 
-interface WhalePose {
+interface PodCenter {
   x: number;
   z: number;
-  yaw: number;
-  y: number; // vertical offset — dips under the wash between breaches
+}
+
+/** The pod's foraging centre at time of day `tod` and clock time `t`: the
+ *  slow daily migration around GROUNDS plus the local milling wander. */
+function podCenterAt(tod: number, t: number, out: PodCenter): PodCenter {
+  groundAt(tod, out); // slow migration around the Sound, by the hour
+  out.x += WANDER_R * Math.sin(t * WANDER_RATE_X); // local foraging mill
+  out.z += WANDER_R * Math.sin(t * WANDER_RATE_Z + 1.7);
+  return out;
+}
+
+interface Breath {
+  y: number; // vertical offset — dips under the wash between leaps
   pitch: number; // nose-down on the dive, up on the rise
   surf: number; // 0..1 surfacing burst (foam + blow) at the peak of the arc
   fade: number; // submersion alpha — a ghost under water, solid at the breach
 }
 
-const pose: WhalePose = { x: 0, z: 0, yaw: 0, y: 0, pitch: 0, surf: 0, fade: 1 };
-const nrm = new THREE.Vector2();
+const breath: Breath = { y: 0, pitch: 0, surf: 0, fade: 1 };
 
-/** Where a whale is at clock time t: the pod's lead ping-pongs along the
- *  basin, each member trailing by its lag and spread onto its lane offset;
- *  the porpoising arc drives y, pitch, the surfacing burst and the submersion
- *  fade off a shaped breathing pulse. */
-function whalePoseAt(w: Whale, t: number, out: WhalePose = pose): WhalePose {
-  // The pod's lead ping-pongs the basin (forage down, turn, forage back);
-  // triangle-wave the distance travelled into a position on the line. The
-  // 0.45-length seed opens the session with the pod already mid-Sound.
-  const travelled = t * CRUISE_KM_S + BASIN.lengthKm * 0.45;
-  const lead = travelled % (2 * BASIN.lengthKm);
-  const outbound = lead < BASIN.lengthKm;
-  const leadDist = outbound ? lead : 2 * BASIN.lengthKm - lead;
-  // Each member trails the lead by its lag (behind along the travel dir).
-  const dist = THREE.MathUtils.clamp(leadDist - w.lagKm * (outbound ? 1 : -1), 0, BASIN.lengthKm);
-
-  const { pts, cum } = BASIN;
-  let i = 1;
-  while (i < cum.length - 1 && cum[i] < dist) i++;
-  const f = THREE.MathUtils.clamp((dist - cum[i - 1]) / Math.max(1e-6, cum[i] - cum[i - 1]), 0, 1);
-  const a = pts[i - 1];
-  const b = pts[i];
-  const dx = b.x - a.x;
-  const dz = b.z - a.z;
-  nrm.set(-dz, dx).normalize().multiplyScalar(w.offsetKm);
-  out.x = a.x + dx * f + nrm.x;
-  out.z = a.z + dz * f + nrm.y;
-  const dir = outbound ? 1 : -1;
-  out.yaw = Math.atan2(-dz * dir, dx * dir);
-
+/** The porpoising breathing arc for one whale at clock time t — independent of
+ *  where on the Sound the pod is; drives y, pitch, the surfacing burst and the
+ *  submersion fade off a shaped breathing pulse. */
+function breathAt(w: Whale, t: number, out: Breath = breath): Breath {
   // The porpoising leap: a dolphin-like arc that drives the body clear of the
   // water, hangs level at the apex, then knifes back in nose-first before a
   // long submerged glide. A wide gaussian shapes the rise so the emergence and
@@ -233,6 +301,8 @@ const position = new THREE.Vector3();
 const quaternion = new THREE.Quaternion();
 const euler = new THREE.Euler();
 const scale = new THREE.Vector3();
+const centerNow: PodCenter = { x: 0, z: 0 };
+const centerAhead: PodCenter = { x: 0, z: 0 };
 
 export function Orcas() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
@@ -255,9 +325,29 @@ export function Orcas() {
     m.uniforms.uOpacity.value = LIVE.ferryOpacity;
     m.uniforms.uFogDensity.value = LIVE.fogDensity;
 
+    const t = CLOCK.t;
+    // The whole pod shares one foraging centre (migrating around the Sound by
+    // the hour) and one heading, read off the centre's own motion by finite
+    // difference so the pod faces where it is swimming.
+    const tod = podTimeOfDay();
+    podCenterAt(tod, t, centerNow);
+    podCenterAt(tod, t + HEAD_EPS, centerAhead);
+    let hx = centerAhead.x - centerNow.x;
+    let hz = centerAhead.z - centerNow.z;
+    const hlen = Math.hypot(hx, hz) || 1;
+    hx /= hlen;
+    hz /= hlen;
+    const yaw = Math.atan2(-hz, hx);
+    const perpX = -hz; // unit normal, for the pod's abreast spread
+    const perpZ = hx;
+
     for (let i = 0; i < POD.length; i++) {
       const w = POD[i];
-      const { x, z, yaw, y, pitch, surf, fade } = whalePoseAt(w, CLOCK.t);
+      // Formation: each member trails the centre by its lag along the heading
+      // and spreads onto its lane by its lateral offset.
+      const x = centerNow.x - hx * w.lagKm + perpX * w.offsetKm;
+      const z = centerNow.z - hz * w.lagKm + perpZ * w.offsetKm;
+      const { y, pitch, surf, fade } = breathAt(w, t);
       euler.set(0, yaw, pitch, "YZX");
       quaternion.setFromEuler(euler);
       // Non-uniform scale: uniform length, but the bull's dorsal stands taller

@@ -30,6 +30,14 @@ export function isObserving(): boolean {
   return active;
 }
 
+// The current position in the sweep, 0..1 across local midnight→midnight, or
+// null when observe isn't running. Lets time-of-day consumers (the orca pod's
+// foraging range) migrate through the day in step with the light during a
+// sweep, instead of freezing at the real wall-clock hour.
+export function observeDayFrac(): number | null {
+  return active ? (elapsed / CYCLE_S) % 1 : null;
+}
+
 export function startObserve() {
   if (active) return;
   savedOverride = getPhaseOverride();
