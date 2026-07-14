@@ -75,14 +75,16 @@ export const CONFIG = {
     seigaihaRadiusKm: 0.8,
     seigaihaRings: 4,
   },
-  // The abstract traffic current (map/TrafficWash.tsx): a two-lane flow scrolled
-  // along the road ribbons. yLift floats it a hair over the ink stroke; widthMul
-  // hugs it a touch past the stroke edge; dashKm sets the bead spacing and
-  // speedKmS the scroll pace (~cruising, matching the tween's vNominal).
+  // The stylized traffic (map/TrafficWash.tsx): two lanes of discrete carts
+  // scrolled along the road ribbons. yLift floats them a hair over the ink
+  // stroke; widthMul hugs them a touch past the stroke edge; dashKm sets the
+  // car-to-car slot spacing (shorter than the old smear so the street reads
+  // as many small vehicles) and speedKmS the pace (~cruising, matching the
+  // tween's vNominal).
   traffic: {
     yLift: 0.004,
     widthMul: 1.15,
-    dashKm: 0.5,
+    dashKm: 0.36,
     speedKmS: 0.02,
   },
   // The Burke-Gilman cyclists (map/Cyclists.tsx): toy figures, storybook-large
