@@ -23,7 +23,8 @@ import { CONFIG } from "../world/config";
 import { CLOCK } from "../world/clock";
 import { LIVE } from "../world/palettes";
 import { INPUT_TOUCH } from "../world/device";
-import { initPlatformSites, PLATFORM_PULSE } from "./platformPulse";
+import { initPlatformSites, initUndergroundSites, PLATFORM_PULSE } from "./platformPulse";
+import { motifForName } from "./motifs";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "../map/watercolorGlsl";
 
 interface StationSlot {
@@ -223,6 +224,30 @@ export function Stations() {
     // below) for PlatformLife.tsx: figures gather at the surface entrance even
     // for underground halls, so every crowd stands on the paper.
     initPlatformSites(all.map((s) => ({ x: s.x, z: s.z, y: 0.05 })));
+    // Also publish the DEEP platform of every underground hall for
+    // UndergroundLife.tsx — life + the station's real art, painted DOWN at the
+    // rail floor and seen up through the paper. pulseIndex is the slot's index
+    // in `all`, so it reads the same dwell pulse the loop below writes.
+    initUndergroundSites(
+      all
+        .map((s, i) => ({ s, i }))
+        .filter(({ s }) => s.submerged)
+        .map(({ s, i }) => {
+          const m = motifForName(s.name);
+          return {
+            pulseIndex: i,
+            x: s.x,
+            z: s.z,
+            y: s.railY,
+            accent: s.accent,
+            motif: m ? m.motif : -1,
+            colorB: m ? m.colorB : "#ffffff",
+            density: m ? m.density : 1,
+            speed: m ? m.speed : 1,
+            seed: (i * 12.9898) % 7.0,
+          };
+        })
+    );
     return { slots: all, surfaceSlots: surface, submergedSlots: submerged };
   }, []);
 

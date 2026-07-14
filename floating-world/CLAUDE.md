@@ -35,7 +35,17 @@ it on a second monitor and the print breathes at them.
 - Stations pulse on dwell as before, but their surface seals are
   **vermilion hanko stamps** — hero-opacity by day. Station identity data
   (`src/data/station-identity.json`) is researched real-world color; never
-  restyle the data, only how the palette mixes it.
+  restyle the data, only how the palette mixes it. The eight **underground
+  halls** are fleshed out below the paper (`stations/UndergroundLife.tsx`,
+  renderOrder 3): a backlit deep-platform crowd that gathers on the honest
+  dwell pulse, and a per-station **art fresco** painting each hall's real
+  signature artwork procedurally (`stations/motifs.ts` +
+  `stations/motifsGlsl.ts` — Beacon Hill's sea-forms, Capitol Hill's kissing
+  jets, UW's geologic glyphs, Symphony's cave-glyphs, Westlake's terra-cotta
+  vines, Pioneer Square's clocks, Roosevelt's gold ziggurat, U District's
+  light tubes), flaring into bloom on a train's arrival. The motif descriptor
+  (which shader, which second pigment) is a rendering choice kept OUT of the
+  researched identity JSON.
 - Rainier ghosts the horizon at real scale with **Fuji's warm-white snow
   cap**; **Mount Baker** answers it on the northern horizon as a cooler second
   Fuji (its own `aBaker` vertex flag drives the bold cap + sumi keyline, but
@@ -134,8 +144,10 @@ it on a second monitor and the print breathes at them.
   renderOrder 7, submerged at 3), station seals, underground light shafts,
   ferries, train cabs (×2/train), mid sections, headlights — and ONE
   preallocated buffer for all trails (drawRange trims), ONE merged geometry
-  per road class, per water layer, ONE for landmarks. Whole scene ≈ 27 draw
-  calls on every tier (link-map's ~25 + Kasumi + SkyBokashi).
+  per road class, per water layer, ONE for landmarks, plus the two submerged
+  underground layers (deep-platform crowd + art frescoes, UndergroundLife.tsx).
+  Whole scene ≈ 29 draw calls on every tier (link-map's ~25 + Kasumi +
+  SkyBokashi + the two underground layers).
   `frustumCulled = false` on instanced meshes — spread instances mis-cull.
 - Toy scale is per-object and camera-relative (trains `modelL`, station
   orbs' `toyScale`): a chased train eases toward real scale while the

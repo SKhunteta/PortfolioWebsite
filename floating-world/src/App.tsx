@@ -31,6 +31,7 @@ import { TrainModel } from "./trains/TrainModel";
 import { Trails } from "./trains/Trails";
 import { Stations } from "./stations/Stations";
 import { PlatformLife } from "./stations/PlatformLife";
+import { UndergroundLife } from "./stations/UndergroundLife";
 import { Labels } from "./stations/Labels";
 import { CameraRig } from "./observer/CameraRig";
 import { Composer } from "./fx/Composer";
@@ -118,6 +119,7 @@ export default function App() {
         <LineRibbons />
         <Stations />
         <PlatformLife />
+        <UndergroundLife />
         <Heroes />
         <Trains />
         <TrainModel />

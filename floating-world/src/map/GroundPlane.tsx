@@ -8,7 +8,8 @@
 // sections self-occlude):
 //   −1 sky bokashi (screen-space wipe, under everything) · 0 parks
 //   (under-wash, y −0.08) · 1 water fill under-layer (−0.06) · 3 tunnel
-//   ribbons (−0.22) + underground station orbs and their light shafts ·
+//   ribbons (−0.22) + underground station orbs, their light shafts, and the
+//   deep-platform crowd + art frescoes (UndergroundLife.tsx) ·
 //   4 ground/paper (0) · 4.5 water over-print (the blue block stamped above
 //   the sheet — see Water.tsx) · 4.6 water edge stroke (−0.05) · 4.65 water
 //   reflections (trains/ferries/city lights — Reflections.tsx) · 4.7 foam wake
