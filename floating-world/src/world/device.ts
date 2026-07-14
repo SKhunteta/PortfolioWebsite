@@ -58,6 +58,9 @@ export interface DeviceProfile {
   // Burke-Gilman riders (map/Cyclists.tsx) — ONE instanced draw call, count is
   // how many hero figures ride the trail at once.
   cyclistCount: number;
+  // Green Lake loop riders (map/Cyclists.tsx) — the same instanced draw call,
+  // circling the lake's famous path instead of the linear rail-trail.
+  greenLakeCyclistCount: number;
 }
 
 const PROFILES: Record<Tier, DeviceProfile> = {
@@ -75,6 +78,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     birdCount: 9,
     platformMotes: 4,
     cyclistCount: 3,
+    greenLakeCyclistCount: 3,
   },
   tablet: {
     dpr: [1, 2],
@@ -90,6 +94,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     birdCount: 13,
     platformMotes: 6,
     cyclistCount: 4,
+    greenLakeCyclistCount: 4,
   },
   desktop: {
     dpr: [1, 2],
@@ -105,6 +110,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     birdCount: 16,
     platformMotes: 8,
     cyclistCount: 5,
+    greenLakeCyclistCount: 6,
   },
 };
 
