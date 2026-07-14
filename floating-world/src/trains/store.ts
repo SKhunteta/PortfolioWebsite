@@ -92,6 +92,11 @@ interface UiState {
   // True while the optional "observe" mode is sweeping the print through a
   // whole day (world/observe.ts owns the sweep; this is the React mirror).
   observing: boolean;
+  // The Observe reel's current stop label ("the underground", "the cyclists",
+  // "riding the jet"…) or null when the reel isn't panning. Set on stop
+  // CHANGES only (CameraRig reconciles it), never per frame — the HUD's quiet
+  // caption for the cinematic flight.
+  observeShotLabel: string | null;
   // True while the camera is running its unattended cinematic tour of the line
   // (observer/tour.ts) — set on the tour's entry/exit transitions only, never
   // per frame. Drives the quiet "touring" hint in the HUD.
@@ -102,6 +107,7 @@ interface UiState {
   setFollowPlane: (index: number | null) => void;
   setCaption: (text: string | null) => void;
   setObserving: (observing: boolean) => void;
+  setObserveShot: (label: string | null) => void;
   setTouring: (touring: boolean) => void;
 }
 
@@ -113,6 +119,7 @@ export const useUi = create<UiState>((set) => ({
   followPlaneIndex: null,
   caption: null,
   observing: false,
+  observeShotLabel: null,
   touring: false,
   setMode: (mode, fetchedAt) => set({ mode, fetchedAt }),
   setHoverStation: (hoverStationId) => set({ hoverStationId }),
@@ -122,5 +129,6 @@ export const useUi = create<UiState>((set) => ({
   setCaption: (text) =>
     set((s) => (text ? { caption: { text, key: (s.caption?.key ?? 0) + 1 } } : { caption: null })),
   setObserving: (observing) => set({ observing }),
+  setObserveShot: (observeShotLabel) => set({ observeShotLabel }),
   setTouring: (touring) => set({ touring }),
 }));

@@ -42,7 +42,10 @@ export function installHandles() {
   w.__linkMapStats = stats;
   w.__linkMap = {
     setPhase: (p: number | null) => setPhaseOverride(p),
-    // Run the print through a whole day; pass a boolean to force on/off.
+    // Run the print through a whole day — the sweep lingers on sunset and hurries
+    // through noon — while the camera flies its curated reel of the city (low
+    // over the tunnel, riding the rail and the jets, past the cyclists and the
+    // lake). Pass a boolean to force on/off.
     observe: (on?: boolean) => (on === undefined ? toggleObserve() : on ? startObserve() : stopObserve()),
     setTide: (level: number | null) => setTideOverride(level),
     setBloom: (level: number | null) => setBloomOverride(level),

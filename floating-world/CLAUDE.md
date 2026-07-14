@@ -184,9 +184,18 @@ files: both editions must agree on the network contract.
 `follow(index)`, `release()`, `observe(on?)`) — handle NAMES are shared with
 link-map on purpose; `scripts/device-smoke.mjs` depends on them. `observe()`
 toggles the optional "observe" mode (the HUD's top-right button): it sweeps
-the sun through a whole Seattle day in ~60 s on loop, driving the phase
-override each frame from the real `sunPhaseAt` (`world/observe.ts`); off
-restores whatever override was live before.
+the sun through a whole Seattle day on loop, driving the phase override each
+frame from the real `sunPhaseAt` (`world/observe.ts`); off restores whatever
+override was live before. The sweep is re-paced (not constant): it EXPANDS the
+golden hours — sunset most of all — and hurries through the flat midday, by
+spending real seconds in proportion to a per-day dwell weight built from the
+real sun. While it runs, the camera also flies a curated cinematic REEL of the
+most gorgeous parts of the city (`observer/tour.ts` `observeShot`, executed by
+`observer/CameraRig.tsx`): low over the downtown transit tunnel (the underground
+stations), riding a light-rail train and a SeaTac jet in their wake, skimming
+the Burke-Gilman cyclists and the Lake Washington crossing — each stop narrated
+by a quiet HUD caption. The reel yields to a touch for a few seconds
+(`camera.observeGraceS`) so you can still take the wheel, then resumes.
 `?debug` shows the HUD readout; `?tier=` forces a device tier;
 `?phase=` pins the sun; `?weather=` pins the sky; `?tide=` pins the tide;
 `?bloom=peak|none|0..1` pins the cherry-blossom season; `?gamenight` lights the

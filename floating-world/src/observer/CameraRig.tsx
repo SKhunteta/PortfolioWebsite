@@ -14,9 +14,16 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import { createNoise2D } from "simplex-noise";
 import { pointAt, tangentAt } from "../map/network";
-import { FLIGHTS, airlinerPoseAt, type FlightPose } from "../map/Airliners";
-import { tourFraming, tourEnabled, tourForced, type TourFraming } from "./tour";
-import { TRAINS, useUi } from "../trains/store";
+import { FLIGHTS, airlinerPoseAt, type FlightPose, type Flight } from "../map/Airliners";
+import {
+  tourFraming,
+  tourEnabled,
+  tourForced,
+  observeShot,
+  type TourFraming,
+  type ReelShot,
+} from "./tour";
+import { TRAINS, useUi, type TrainState } from "../trains/store";
 import { CONFIG } from "../world/config";
 import { CLOCK } from "../world/clock";
 import { PROFILE, fovForAspect } from "../world/device";
@@ -33,6 +40,93 @@ const planePos = new THREE.Vector3();
 const planeFwd = new THREE.Vector3();
 // The tour's live framing, reused each frame so the idle circuit never allocates.
 const tourScratch: TourFraming = { x: 0, z: 0, radiusKm: 0, elevation: 0 };
+// The Observe reel's live shot, reused each frame likewise.
+const reelScratch: ReelShot = { x: 0, z: 0, radiusKm: 0, elevation: 0, kind: "orbit", seg: -1, label: "" };
+// Scratch for picking the nearest train to a reel stop (never allocates).
+const pick = { x: 0, z: 0 };
+
+// Settle the camera behind and above a train, along its travel tangent — the
+// chase frame, shared by the manual double-tap follow and the Observe reel's
+// "riding the light rail" stop.
+function frameTrain(
+  controls: OrbitControlsImpl,
+  camera: THREE.PerspectiveCamera,
+  train: TrainState,
+  k: number
+) {
+  pointAt(train.dir, train.sRendered, scratch);
+  trainPos.set(scratch.x, train.y, scratch.z);
+  tangentAt(train.dir, train.sRendered, scratch);
+  const back = CONFIG.camera.chaseOffsetKm.back + train.vEst * 8;
+  desiredCam.set(
+    trainPos.x - scratch.x * back,
+    CONFIG.camera.chaseOffsetKm.up,
+    trainPos.z - scratch.z * back
+  );
+  controls.target.lerp(trainPos, k);
+  camera.position.lerp(desiredCam, k);
+}
+
+// Sit in a jet's wake, offset back along its nose direction so the camera
+// climbs, banks and flares with the flight path — shared by the manual plane
+// chase and the reel's "riding the jet" stop.
+function framePlane(
+  controls: OrbitControlsImpl,
+  camera: THREE.PerspectiveCamera,
+  flight: Flight,
+  k: number
+) {
+  const pose = airlinerPoseAt(flight, CLOCK.t, planePose);
+  planePos.set(pose.x, pose.y, pose.z);
+  const cp = Math.cos(pose.pitch);
+  planeFwd
+    .set(cp * Math.cos(pose.yaw), Math.sin(pose.pitch), -cp * Math.sin(pose.yaw))
+    .normalize();
+  const off = CONFIG.camera.planeChaseOffsetKm;
+  desiredCam.set(
+    planePos.x - planeFwd.x * off.back,
+    planePos.y - planeFwd.y * off.back + off.up,
+    planePos.z - planeFwd.z * off.back
+  );
+  controls.target.lerp(planePos, k);
+  camera.position.lerp(desiredCam, k);
+}
+
+// Nearest live train to a world point (a reel ride stop's anchor) within maxKm,
+// or undefined when none is close enough — night, the feed asleep, or simply no
+// train on that stretch of track just now — in which case the reel falls back
+// to an orbit at the anchor. The distance gate keeps a ride HONEST: we only
+// "ride the Lake Washington crossing" when a train is actually on it.
+function nearestTrainTo(x: number, z: number, maxKm: number): TrainState | undefined {
+  let best: TrainState | undefined;
+  let bestD = Infinity;
+  for (const t of TRAINS.values()) {
+    pointAt(t.dir, t.sRendered, pick);
+    const d = Math.hypot(pick.x - x, pick.z - z);
+    if (d < bestD) {
+      bestD = d;
+      best = t;
+    }
+  }
+  return bestD <= maxKm ? best : undefined;
+}
+
+// Index of the airborne jet currently nearest a world point — the reel latches
+// onto it for the "riding the jet" stop. FLIGHTS is always populated, so this
+// never fails.
+function nearestFlightTo(x: number, z: number): number {
+  let best = 0;
+  let bestD = Infinity;
+  for (let i = 0; i < FLIGHTS.length; i++) {
+    const p = airlinerPoseAt(FLIGHTS[i], CLOCK.t, planePose);
+    const d = Math.hypot(p.x - x, p.z - z);
+    if (d < bestD) {
+      bestD = d;
+      best = i;
+    }
+  }
+  return best;
+}
 
 // The drift's home: downtown, where the tunnel, both waters, and the busiest
 // stretch of track all sit (see CONFIG.camera.heart* for why not CENTROID).
@@ -64,7 +158,20 @@ export function CameraRig() {
   const size = useThree((s) => s.size);
   const followId = useUi((s) => s.followTrainId);
   const followPlane = useUi((s) => s.followPlaneIndex);
+  const observing = useUi((s) => s.observing);
   const lastInteraction = useRef(-Infinity);
+  // The Observe reel's own timeline + latched ride target, so the cinematic
+  // flight keeps its place across a user's brief grab of the wheel and never
+  // switches trains/jets mid-stop.
+  const observeClock = useRef(0);
+  const wasObserving = useRef(false);
+  const reelSeg = useRef(-1);
+  const reelTrainId = useRef<string | null>(null);
+  const reelPlaneIdx = useRef<number | null>(null);
+  const reelLabel = useRef<string | null>(null);
+  // True on frames the reel is riding a train or jet — the FOV loop reads it to
+  // narrow the lens just as a manual chase does.
+  const observeRiding = useRef(false);
   // Start south of the network looking north — the city reads map-like
   // before the drift carries you elsewhere.
   const driftTheta = useRef(1.35);
@@ -76,7 +183,7 @@ export function CameraRig() {
   // Aspect-compensated FOV; chase narrows it a touch.
   useFrame(() => {
     const baseFov = fovForAspect(PROFILE.baseFov, size.width / size.height);
-    const chasing = followId !== null || followPlane !== null;
+    const chasing = followId !== null || followPlane !== null || observeRiding.current;
     const targetFov = chasing ? baseFov - 6 : baseFov;
     if (Math.abs(camera.fov - targetFov) > 0.05) {
       camera.fov += (targetFov - camera.fov) * Math.min(1, CLOCK.dt * 2);
@@ -239,61 +346,100 @@ export function CameraRig() {
     const plane = followPlane !== null ? FLIGHTS[followPlane] : undefined;
     if (followPlane !== null && !plane) useUi.getState().setFollowTrain(null);
 
+    // Observe bookkeeping: reset the reel's timeline the frame Observe turns on
+    // (and open it immediately by treating the page as long-idle); clear its
+    // HUD label the frame it turns off.
+    if (observing && !wasObserving.current) {
+      observeClock.current = 0;
+      reelSeg.current = -1;
+      lastInteraction.current = -Infinity;
+    }
+    if (!observing && wasObserving.current) {
+      reelSeg.current = -1;
+      reelTrainId.current = null;
+      reelPlaneIdx.current = null;
+      if (reelLabel.current !== null) {
+        reelLabel.current = null;
+        useUi.getState().setObserveShot(null);
+      }
+    }
+    wasObserving.current = observing;
+    if (observing) observeClock.current += CLOCK.dt;
+
+    const chaseK = 1 - Math.exp(-CONFIG.camera.chaseLerp * CLOCK.dt);
+    let ridingThisFrame = false;
+
+    // A slow framed orbit around a centre — the shared motion under the idle
+    // drift/tour AND the Observe reel's orbit stops. Advances driftTheta so the
+    // circle keeps turning; eases centre + position so every handoff is smooth.
+    const applyOrbit = (cx: number, cz: number, radiusBase: number, elevation: number) => {
+      driftTheta.current += CONFIG.camera.driftRadSec * CLOCK.dt;
+      const sway = noise2D(CLOCK.t * 0.02, 7.3) * 1.6;
+      const radius = radiusBase + CONFIG.camera.driftBreathKm * (CLOCK.breath - 0.5);
+      desiredCam.set(
+        cx + radius * Math.cos(driftTheta.current + sway * 0.05),
+        radius * Math.sin(elevation),
+        cz + radius * Math.sin(driftTheta.current + sway * 0.05) * 0.62
+      );
+      const k = 1 - Math.exp(-0.35 * CLOCK.dt);
+      camera.position.lerp(desiredCam, k);
+      controls.target.x += (cx + sway * 0.4 - controls.target.x) * k;
+      controls.target.z += (cz - controls.target.z) * k;
+      controls.target.y += (0 - controls.target.y) * k;
+    };
+
     if (train) {
-      // Chase: settle behind and above the train, along its travel tangent.
-      pointAt(train.dir, train.sRendered, scratch);
-      trainPos.set(scratch.x, train.y, scratch.z);
-      tangentAt(train.dir, train.sRendered, scratch);
-      const back = CONFIG.camera.chaseOffsetKm.back + train.vEst * 8;
-      desiredCam.set(
-        trainPos.x - scratch.x * back,
-        CONFIG.camera.chaseOffsetKm.up,
-        trainPos.z - scratch.z * back
-      );
-      const k = 1 - Math.exp(-CONFIG.camera.chaseLerp * CLOCK.dt);
-      controls.target.lerp(trainPos, k);
-      camera.position.lerp(desiredCam, k);
+      // Manual chase: settle behind and above the train, along its tangent.
+      frameTrain(controls, camera, train, chaseK);
     } else if (plane) {
-      // Ride the jet: sit in its wake, offset back along the nose direction
-      // (recovered from yaw + pitch) so the camera climbs, banks and flares
-      // with it. The forward vector matches Airliners' geometry orientation:
-      // +X nose, pitched about Z, then yawed about Y.
-      const pose = airlinerPoseAt(plane, CLOCK.t, planePose);
-      planePos.set(pose.x, pose.y, pose.z);
-      const cp = Math.cos(pose.pitch);
-      planeFwd
-        .set(cp * Math.cos(pose.yaw), Math.sin(pose.pitch), -cp * Math.sin(pose.yaw))
-        .normalize();
-      const off = CONFIG.camera.planeChaseOffsetKm;
-      desiredCam.set(
-        planePos.x - planeFwd.x * off.back,
-        planePos.y - planeFwd.y * off.back + off.up,
-        planePos.z - planeFwd.z * off.back
-      );
-      const k = 1 - Math.exp(-CONFIG.camera.chaseLerp * CLOCK.dt);
-      controls.target.lerp(planePos, k);
-      camera.position.lerp(desiredCam, k);
+      // Manual ride: sit in the jet's wake as it climbs, banks and flares.
+      framePlane(controls, camera, plane, chaseK);
     } else {
       const idleFor = CLOCK.t - lastInteraction.current;
-      // ?tour=on starts the circuit immediately, bypassing the idle wait.
-      if (idleFor > CONFIG.camera.idleResumeS || tourForced()) {
-        // Drift: slow theta, micro-sway, radius breathing. All eased so the
-        // handoff from user orbit is seamless.
-        driftTheta.current += CONFIG.camera.driftRadSec * CLOCK.dt;
-        const sway = noise2D(CLOCK.t * 0.02, 7.3) * 1.6;
-        const f = driftFraming(size.width / size.height);
+      const observeActive = observing && idleFor > CONFIG.camera.observeGraceS;
+      if (observeActive) {
+        // The Observe reel: a slow flight around the most gorgeous parts of the
+        // city — low over the underground tunnel, riding the rail and the jets,
+        // skimming the cyclists and the lake crossing. Yields to a recent touch
+        // (idleFor <= grace) so the visitor can still grab the wheel.
+        const shot = observeShot(observeClock.current, reelScratch);
+        // Latch the ride target once per stop, so we never switch trains or
+        // jets mid-shot, and push the stop's label to the HUD.
+        if (shot.seg !== reelSeg.current) {
+          reelSeg.current = shot.seg;
+          reelTrainId.current =
+            shot.kind === "train"
+              ? nearestTrainTo(shot.x, shot.z, CONFIG.camera.observeRideMaxKm)?.id ?? null
+              : null;
+          reelPlaneIdx.current = shot.kind === "plane" ? nearestFlightTo(shot.x, shot.z) : null;
+        }
+        if (shot.label !== reelLabel.current) {
+          reelLabel.current = shot.label;
+          useUi.getState().setObserveShot(shot.label);
+        }
 
-        // Home orbit by default; the cinematic tour walks this centre and
-        // framing around the whole line once the idle stretch is long enough.
+        const rideTrain =
+          shot.kind === "train" ? TRAINS.get(reelTrainId.current ?? "") : undefined;
+        if (rideTrain) {
+          frameTrain(controls, camera, rideTrain, chaseK); // perspective of light rail
+          ridingThisFrame = true;
+        } else if (shot.kind === "plane" && reelPlaneIdx.current !== null) {
+          framePlane(controls, camera, FLIGHTS[reelPlaneIdx.current], chaseK); // perspective of plane
+          ridingThisFrame = true;
+        } else {
+          // An orbit stop — or a rail stop with no train nearby (night, feed
+          // asleep): fall back to a slow orbit at the anchor.
+          applyOrbit(shot.x, shot.z, shot.radiusKm, shot.elevation);
+        }
+      } else if (idleFor > CONFIG.camera.idleResumeS || tourForced()) {
+        // Idle drift, and the cinematic tour once the idle stretch is long
+        // enough. idleFor is Infinity on an untouched page (drift opens at
+        // once); the tour TIMER wants a finite "seconds idle" instead.
+        const f = driftFraming(size.width / size.height);
         let centerX: number = HEART.x;
         let centerZ: number = HEART.z;
         let radiusBase = f.radius;
         let elevation = f.elevation;
-        // idleFor is Infinity on a page nobody has touched yet (lastInteraction
-        // starts at -Infinity so the drift opens immediately). For the tour's
-        // TIMER we want a finite "seconds idle": time since the last touch, or
-        // since load when there's been none — so the tour begins tourAfterS
-        // after the opening drift, not on the very first frame.
         const idleClock = Number.isFinite(idleFor) ? idleFor : CLOCK.t;
         touringThisFrame =
           tourEnabled() && (tourForced() || idleClock > CONFIG.camera.tourAfterS);
@@ -307,20 +453,11 @@ export function CameraRig() {
           radiusBase = w.radiusKm;
           elevation = w.elevation;
         }
-
-        const radius = radiusBase + CONFIG.camera.driftBreathKm * (CLOCK.breath - 0.5);
-        desiredCam.set(
-          centerX + radius * Math.cos(driftTheta.current + sway * 0.05),
-          radius * Math.sin(elevation),
-          centerZ + radius * Math.sin(driftTheta.current + sway * 0.05) * 0.62
-        );
-        const k = 1 - Math.exp(-0.35 * CLOCK.dt);
-        camera.position.lerp(desiredCam, k);
-        controls.target.x += (centerX + sway * 0.4 - controls.target.x) * k;
-        controls.target.z += (centerZ - controls.target.z) * k;
-        controls.target.y += (0 - controls.target.y) * k;
+        applyOrbit(centerX, centerZ, radiusBase, elevation);
       }
     }
+
+    observeRiding.current = ridingThisFrame;
 
     // One zustand write per transition, from any branch above.
     if (touringThisFrame !== touringRef.current) {
