@@ -1,8 +1,9 @@
 // Hand-inked landmarks: the silhouettes that make the diagram unmistakably
 // Seattle — downtown's massed towers, the Space Needle, the SODO stadiums,
-// UW's campus and Husky Stadium, SeaTac's runways, the working waterfront's
-// gantry cranes, the Great Wheel, Gas Works' rusted drums, the Amazon
-// Spheres, Bellevue's second skyline across the lake for the 2 Line, a
+// UW's campus and Husky Stadium, SeaTac's runways and terminal, the working
+// waterfront's gantry cranes, the Great Wheel, Gas Works' rusted drums, the
+// Amazon Spheres, Bellevue's second skyline across the lake for the 2 Line,
+// the region's big malls (Alderwood up north, Southcenter down in Tukwila), a
 // handful of neighborhood haunts strung along the line (the Kraken's
 // Iceplex at Northgate, brewpubs and Broadway cafés), and — ghosted at real
 // scale on the horizons — Mount Rainier southeast and the Olympics west.
@@ -268,10 +269,23 @@ function buildGeometry(): THREE.BufferGeometry {
   //   … and Life on Mars, the plant-based bar at Pike & Harvard (722 E Pike).
   parts.push(tower(47.61423, -122.31958, 0.07, 0.07, 0.055, 0.3));
 
-  // --- SeaTac: the paired runways (flat inked strokes) + control tower ---
+  // --- SeaTac: the paired runways (flat inked strokes), control tower, and
+  //     the long main terminal with its two satellite concourses east of the
+  //     aprons — the airport reads as a place, not just its strips ---
   parts.push(tower(47.44, -122.3116, 0.06, 0.012, 3.0)); // 16L/34R
   parts.push(tower(47.44, -122.3054, 0.06, 0.012, 3.0)); // 16C/34C
   parts.push(tower(47.4416, -122.3116, 0.05, 0.3, 0.05)); // tower
+  parts.push(tower(47.44384, -122.30173, 0.16, 0.2, 0.52)); // main terminal (N-S)
+  parts.push(tower(47.4455, -122.3089, 0.11, 0.14, 0.17)); // north satellite
+  parts.push(tower(47.4404, -122.3089, 0.11, 0.14, 0.17)); // south satellite
+
+  // --- the region's big malls: long low retail slabs, wide-footprint blocks
+  //     that anchor their suburbs like the stadiums anchor SODO ---
+  // Alderwood Mall, up in Lynnwood beyond the north terminus (3000 184th St SW)
+  parts.push(tower(47.82966, -122.27283, 0.5, 0.13, 0.36, 0.15));
+  // Westfield Southcenter, the Tukwila mall east of the airport
+  //   (2800 Southcenter Pkwy)
+  parts.push(tower(47.45888, -122.25818, 0.56, 0.13, 0.44, -0.1));
 
   // --- Mount Rainier, ~85 km southeast: the print's Fuji. Nudged a touch
   //     taller so its snow cap climbs clear of the mist bands and reads as a
