@@ -181,6 +181,24 @@ export const CONFIG = {
     // than a pure tail-chase so the ride shows more of the city sliding by
     // below the wing, not just the fuselage ahead.
     planeChaseOffsetKm: { back: 1.5, up: 0.52 },
+    // The Observe reel's close-up "detail" stops (observer/tour.ts `detail`
+    // flag): instead of sitting in the vehicle's wake, the camera slides in
+    // tight and OFF TO THE SIDE — a slow three-quarter broadside so the
+    // woodblock detail reads. `side` swings the camera onto the flank so the
+    // livery fills the frame; `fwd`/`back` gives the three-quarter angle (the
+    // train close-up sits a hair AHEAD to catch the nose cap + headlights and
+    // the wave running back down the flank, the jet a hair BEHIND to catch the
+    // tail device with the fuselage wordmark); `up` looks gently down the
+    // roofline. Distances are a small fraction of the ordinary chase so the
+    // ~200 m toy overfills the frame and the ink seams, lit windows and
+    // Prussian-over-vermilion wave (jet: tail device + wordmark) read.
+    trainDetailOffsetKm: { fwd: 0.06, side: 0.24, up: 0.07 },
+    planeDetailOffsetKm: { back: 0.14, side: 0.4, up: 0.12 },
+    // OrbitControls clamps camera-to-target to [minDistance, maxDistance]. The
+    // detail close-ups sit well inside the ordinary 0.8 km floor, so CameraRig
+    // drops the floor to this while a detail shot holds (restored afterward);
+    // still clear of the 0.1 km camera near plane.
+    detailMinDistance: 0.12,
     chaseLerp: 2.2, // per-second exponential approach
     doubleTapPx: 48, // train pick radius in screen space
   },

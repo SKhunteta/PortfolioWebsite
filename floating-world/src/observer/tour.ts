@@ -102,14 +102,18 @@ export function tourFraming(elapsedS: number, out: TourFraming): TourFraming {
 // the camera takes a slow, curated flight around the most gorgeous parts of the
 // city. Each stop is either an ORBIT (a slow framed circle, dropped low and
 // intimate) or a RIDE — the camera latches onto a nearby light-rail train, or a
-// SeaTac jet, and travels in its wake. The reel LEANS INTO the rides: they're
-// the piece at its most gorgeous (a low, zoomed-in chase through the print), so
-// they carry a longer dwell (`dwellS`) than the orbit interludes and outnumber
-// them. Between the rides it still drops the two things a static drift never
-// shows: low over the downtown transit tunnel so the underground stations'
-// light shafts read, and out along the Burke-Gilman where the cyclists cross
-// the rail world. CameraRig executes it (finds the train, does the chase math);
-// tour.ts just supplies the timeline.
+// SeaTac jet, and travels in its wake. A ride can also be a DETAIL stop: the
+// same latch, but the camera slides in tight and off to the side for a slow
+// three-quarter close-up where the woodblock detail reads — the S700's wave
+// livery, ink seams and lit windows; the jet's tail device and wordmark
+// (CameraRig owns the framing; here it's just the `detail` flag). The reel
+// LEANS INTO the rides: they're the piece at its most gorgeous (a low,
+// zoomed-in chase through the print), so they carry a longer dwell (`dwellS`)
+// than the orbit interludes and outnumber them. Between the rides it still
+// drops the two things a static drift never shows: low over the downtown
+// transit tunnel so the underground stations' light shafts read, and out along
+// the Burke-Gilman where the cyclists cross the rail world. CameraRig executes
+// it (finds the train, does the chase math); tour.ts just supplies the timeline.
 
 export type ShotKind = "orbit" | "train" | "plane";
 
@@ -122,16 +126,27 @@ interface ReelStop {
   elevation: number;
   label: string;
   /** Hold time at this stop; falls back to `observeReel.dwellS`. Rides run
-   *  longer than orbits so the reel spends most of its time riding. */
+   *  longer than orbits so the reel spends most of its time riding; detail
+   *  close-ups run longest so there's time to drink the woodblock in. */
   dwellS?: number;
+  /** A RIDE stop (`kind` train|plane) rendered as a tight three-quarter
+   *  broadside close-up instead of a wake chase — CameraRig reads this to
+   *  swap the framing. Ignored on orbit stops. */
+  detail?: boolean;
 }
 
 // Rides dwell this long; orbit interludes use the shorter observeReel.dwellS.
 const RIDE_DWELL_S = 14;
+// Detail close-ups hold longest — a slow drift down the flank of the toy.
+const DETAIL_DWELL_S = 16;
 
 const REEL: ReelStop[] = [
   // Ride the light rail out of downtown — the hero low chase through the print.
   { kind: "train", anchor: "C05", fallback: { x: -0.29, z: -0.18 }, radiusKm: 6, elevation: 0.5, label: "riding the light rail", dwellS: RIDE_DWELL_S },
+  // Then slide in tight for the S700 itself: the wave livery, ink seams and lit
+  // windows, read section by section. Same anchor, so the detail latches onto
+  // the very train we've been riding.
+  { kind: "train", anchor: "C05", fallback: { x: -0.29, z: -0.18 }, radiusKm: 6, elevation: 0.5, label: "up close: the light rail", dwellS: DETAIL_DWELL_S, detail: true },
   // Down low over the downtown transit tunnel: the underground stations
   // (Westlake, Symphony, Pioneer Square, Chinatown) and the light shafts that
   // sink from their seals to the platforms below the paper.
@@ -143,6 +158,9 @@ const REEL: ReelStop[] = [
   { kind: "orbit", anchor: "N07", fallback: { x: 1.35, z: -6.02 }, radiusKm: 7, elevation: 0.48, label: "the cyclists" },
   // Ride a jet through the SeaTac touch-and-go pattern, up over the valley.
   { kind: "plane", anchor: "C37", fallback: { x: 2.64, z: 17.9 }, radiusKm: 12, elevation: 0.62, label: "riding the jet", dwellS: RIDE_DWELL_S },
+  // Then slide onto its flank: the Delta/Alaska tail device and the fuselage
+  // wordmark, close enough to read the paint.
+  { kind: "plane", anchor: "C37", fallback: { x: 2.64, z: 17.9 }, radiusKm: 12, elevation: 0.62, label: "up close: the jet", dwellS: DETAIL_DWELL_S, detail: true },
   // The long southern airport run under Rainier — pull back and breathe, then
   // the reel loops home to ride the rail again.
   { kind: "orbit", anchor: "C37", fallback: { x: 2.64, z: 17.9 }, radiusKm: 11, elevation: 0.74, label: "the airport run" },
@@ -161,6 +179,7 @@ export interface ReelShot extends TourFraming {
   kind: ShotKind;
   seg: number; // which REEL stop we're resolving (for latching a ride target)
   label: string;
+  detail: boolean; // true on a holding detail close-up (never while travelling)
 }
 
 /** The Observe reel's shot at a number of seconds in, written into `out`.
@@ -188,18 +207,21 @@ export function observeShot(elapsedS: number, out: ReelShot): ReelShot {
   out.label = cur.label;
 
   if (local < travelS) {
-    // Travelling in from the previous stop — always an orbit, never a ride.
+    // Travelling in from the previous stop — always an orbit, never a ride
+    // (and never a detail close-up: the tight framing only holds once arrived).
     const prev = REEL[(seg - 1 + n) % n];
     const prevC = centre(prev);
     const u = smoothstep(local / travelS);
     out.kind = "orbit";
+    out.detail = false;
     out.x = lerp(prevC.x, curC.x, u);
     out.z = lerp(prevC.z, curC.z, u);
     out.radiusKm = lerp(prev.radiusKm, cur.radiusKm, u);
     out.elevation = lerp(prev.elevation, cur.elevation, u);
   } else {
-    // Holding at the stop — its own kind.
+    // Holding at the stop — its own kind, and its detail framing if any.
     out.kind = cur.kind;
+    out.detail = cur.detail ?? false;
     out.x = curC.x;
     out.z = curC.z;
     out.radiusKm = cur.radiusKm;
