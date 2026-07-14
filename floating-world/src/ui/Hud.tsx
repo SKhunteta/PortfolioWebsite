@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useUi, TRAINS, Mode } from "../trains/store";
+import { toggleObserve } from "../world/observe";
 import { useWeather } from "../world/weather";
 import { TIER } from "../world/device";
 import { HAS_BASEMAP } from "../map/basemap";
@@ -47,6 +48,7 @@ export function Hud() {
   const mode = useUi((s) => s.mode);
   const following = useUi((s) => s.followTrainId);
   const caption = useUi((s) => s.caption);
+  const observing = useUi((s) => s.observing);
   // Speaks only after a real fetch (or a ?weather= pin) — see world/weather.
   const weatherWord = useWeather((s) => s.label);
   const [settled, setSettled] = useState(false);
@@ -118,6 +120,24 @@ export function Hud() {
       )}
 
       {following && <div className="hud-chase">following · esc to let go</div>}
+
+      {/* The optional day-runner: sweeps the print through a whole Seattle day
+          and back, on demand. Off by default — the piece stays keyed to the
+          real sun until you ask to watch it breathe. */}
+      <button
+        type="button"
+        className={`hud-observe ${observing ? "hud-observe-on" : ""}`}
+        onClick={toggleObserve}
+        aria-pressed={observing}
+        title={
+          observing
+            ? "stop — return to the real sun over Seattle"
+            : "run the print through a whole day"
+        }
+      >
+        <span className="hud-dot" />
+        {observing ? "observing" : "observe"}
+      </button>
 
       {/* ODbL attribution — shown only when OSM geography is on screen. */}
       {HAS_BASEMAP && <div className="hud-attrib">map data © OpenStreetMap</div>}

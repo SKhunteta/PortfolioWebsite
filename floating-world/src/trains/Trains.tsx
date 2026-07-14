@@ -15,6 +15,7 @@ import { PROFILE } from "../world/device";
 import { CLOCK, tickClock } from "../world/clock";
 import { LIVE, lineGlow } from "../world/palettes";
 import { sunPhase } from "../world/sun";
+import { tickObserve } from "../world/observe";
 import { updatePalette } from "../world/palettes";
 import { easeWeather, applyWeather } from "../world/weather";
 import { TRAIN_MODEL } from "./TrainModel";
@@ -87,6 +88,7 @@ export function Trains() {
     // is the one always-mounted frame driver. Weather modulates the fresh
     // palette AFTER the lerp, so its moves never accumulate.
     tickClock(rawDt);
+    tickObserve(CLOCK.dt); // observe mode sweeps the sun across a whole day
     const phase = sunPhase();
     updatePalette(phase);
     easeWeather(CLOCK.dt);

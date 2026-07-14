@@ -220,10 +220,10 @@ body {
 
 /* The weather word: top-right, answering the title top-left. Quieter than
    the badge, clear of the caption/badge traffic along the bottom edge on
-   phones. Nudged down so the ?debug readout (same corner, dev only) fits. */
+   phones. Sits below the observe button, which owns the top-right corner. */
 .hud-weather {
   position: fixed;
-  top: calc(max(18px, env(safe-area-inset-top)) + 22px);
+  top: calc(max(14px, env(safe-area-inset-top)) + 52px);
   right: max(20px, env(safe-area-inset-right));
   font-size: 10px;
   letter-spacing: 0.2em;
@@ -491,6 +491,57 @@ body {
   }
 }
 
+/* The optional "observe" toggle: a quiet ink button in the top-right, above
+   the weather word and mirroring the mode badge across the sheet. Serif chrome
+   on a faint washi wash with the paper halo so it stays legible from bright day
+   to lantern night; a real touch target (min 44px tall) for phones. */
+.hud-observe {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(20px, env(safe-area-inset-right));
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 15px;
+  font-family: var(--hud-serif);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #6f5a3e;
+  background: rgba(242, 230, 198, 0.34);
+  border: 1px solid rgba(122, 101, 73, 0.38);
+  border-radius: 3px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  text-shadow: var(--fw-halo);
+  transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}
+.hud-observe:hover {
+  background: rgba(242, 230, 198, 0.55);
+  color: #4a3721;
+}
+.hud-observe:focus-visible {
+  outline: 2px solid rgba(199, 62, 42, 0.55);
+  outline-offset: 2px;
+}
+.hud-observe .hud-dot {
+  background: #a89675;
+}
+/* Running: the dot warms to the simulated-gold and breathes, echoing the
+   badge's live/simulated pulse — the print is being driven, not observed live. */
+.hud-observe-on {
+  background: rgba(201, 151, 46, 0.16);
+  border-color: rgba(201, 151, 46, 0.5);
+  color: #9a7526;
+}
+.hud-observe-on .hud-dot {
+  background: #c9972e;
+  box-shadow: 0 0 8px #c9972e88;
+  animation: hud-pulse 3s ease-in-out infinite;
+}
+
 .hud-attrib {
   position: fixed;
   left: max(22px, env(safe-area-inset-left));
@@ -505,7 +556,8 @@ body {
 
 .hud-debug {
   position: fixed;
-  top: max(18px, env(safe-area-inset-top));
+  /* Below the observe button + weather word (dev-only readout, same corner). */
+  top: calc(max(14px, env(safe-area-inset-top)) + 74px);
   right: max(20px, env(safe-area-inset-right));
   font-size: 11px;
   letter-spacing: 0.1em;

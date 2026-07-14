@@ -3,6 +3,7 @@
 
 import { TRAINS, useUi } from "../trains/store";
 import { setPhaseOverride } from "../world/sun";
+import { startObserve, stopObserve, toggleObserve } from "../world/observe";
 import { setTideOverride } from "../world/tide";
 import { setWeatherOverride, WeatherKind } from "../world/weather";
 import { TIER } from "../world/device";
@@ -38,6 +39,8 @@ export function installHandles() {
   w.__linkMapStats = stats;
   w.__linkMap = {
     setPhase: (p: number | null) => setPhaseOverride(p),
+    // Run the print through a whole day; pass a boolean to force on/off.
+    observe: (on?: boolean) => (on === undefined ? toggleObserve() : on ? startObserve() : stopObserve()),
     setTide: (level: number | null) => setTideOverride(level),
     setWeather: (k: WeatherKind | null) => setWeatherOverride(k),
     follow: (index: number) => {

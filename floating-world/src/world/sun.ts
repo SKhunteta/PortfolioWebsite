@@ -28,11 +28,22 @@ export function setPhaseOverride(value: number | null) {
   override = value == null ? null : Math.max(0, Math.min(1, value));
 }
 
-export function sunPhase(date = new Date()): number {
-  if (override != null) return override;
+export function getPhaseOverride(): number | null {
+  return override;
+}
+
+// The raw altitude→phase map, with no override — the honest sun over Seattle
+// at a given instant. Observe mode (world/observe.ts) sweeps `date` across a
+// whole day and feeds each step straight into the phase override.
+export function sunPhaseAt(date: Date): number {
   const altDeg =
     (SunCalc.getPosition(date, SEATTLE.lat, SEATTLE.lng).altitude * 180) / Math.PI;
   const t = (altDeg - NIGHT_ALT_DEG) / (DAY_ALT_DEG - NIGHT_ALT_DEG);
   const clamped = Math.max(0, Math.min(1, t));
   return clamped * clamped * (3 - 2 * clamped); // smoothstep
+}
+
+export function sunPhase(date = new Date()): number {
+  if (override != null) return override;
+  return sunPhaseAt(date);
 }

@@ -153,8 +153,12 @@ files: both editions must agree on the network contract.
 
 `__linkMapStats` ({fps, mode, trains, tier}, refreshed 1 Hz),
 `__linkMap` (`setPhase(0..1|null)`, `setWeather(kind|null)`,
-`follow(index)`, `release()`) — handle NAMES are shared with link-map on
-purpose; `scripts/device-smoke.mjs` depends on them.
+`follow(index)`, `release()`, `observe(on?)`) — handle NAMES are shared with
+link-map on purpose; `scripts/device-smoke.mjs` depends on them. `observe()`
+toggles the optional "observe" mode (the HUD's top-right button): it sweeps
+the sun through a whole Seattle day in ~60 s on loop, driving the phase
+override each frame from the real `sunPhaseAt` (`world/observe.ts`); off
+restores whatever override was live before.
 `?debug` shows the HUD readout; `?tier=` forces a device tier;
 `?phase=` pins the sun; `?weather=` pins the sky; `?gamenight` lights the
 stadiums. `scripts/device-smoke.mjs` is the per-tier

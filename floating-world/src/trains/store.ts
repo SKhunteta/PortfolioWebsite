@@ -70,10 +70,14 @@ interface UiState {
   // dwell EVENTS only (Stations.tsx rate-limits), never per-frame. The key
   // restarts the CSS fade when the same text repeats.
   caption: { text: string; key: number } | null;
+  // True while the optional "observe" mode is sweeping the print through a
+  // whole day (world/observe.ts owns the sweep; this is the React mirror).
+  observing: boolean;
   setMode: (mode: Mode, fetchedAt: string | null) => void;
   setHoverStation: (id: string | null) => void;
   setFollowTrain: (id: string | null) => void;
   setCaption: (text: string | null) => void;
+  setObserving: (observing: boolean) => void;
 }
 
 export const useUi = create<UiState>((set) => ({
@@ -82,9 +86,11 @@ export const useUi = create<UiState>((set) => ({
   hoverStationId: null,
   followTrainId: null,
   caption: null,
+  observing: false,
   setMode: (mode, fetchedAt) => set({ mode, fetchedAt }),
   setHoverStation: (hoverStationId) => set({ hoverStationId }),
   setFollowTrain: (followTrainId) => set({ followTrainId }),
   setCaption: (text) =>
     set((s) => (text ? { caption: { text, key: (s.caption?.key ?? 0) + 1 } } : { caption: null })),
+  setObserving: (observing) => set({ observing }),
 }));
