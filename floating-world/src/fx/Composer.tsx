@@ -7,8 +7,9 @@
 
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { EffectComposer, Bloom, Vignette, Noise } from "@react-three/postprocessing";
+import { EffectComposer, Bloom, Vignette, Noise, SMAA } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
+import { HalfFloatType } from "three";
 import { PROFILE } from "../world/device";
 import { LIVE } from "../world/palettes";
 
@@ -21,8 +22,17 @@ export function Composer() {
 
   if (PROFILE.composer === "off") return null;
 
+  // Half-float buffer so the painted-HDR sources (train cores ~2.6) survive to
+  // the bloom pass and the transparent washi grade presents correctly — a byte
+  // buffer crushes this scene to black. Desktop antialiases with SMAA and drops
+  // MSAA (multisampling 0): an MSAA byte/HDR render target composites this
+  // all-transparent scene to black, so the crisp sumi edges come from SMAA
+  // instead. Tablet keeps MSAA 4×. Mirrors the working meow-9/ketu-9 stacks.
+  const full = PROFILE.composer === "full";
+
   return (
-    <EffectComposer multisampling={PROFILE.composer === "full" ? 4 : 0}>
+    <EffectComposer multisampling={full ? 0 : 4} frameBufferType={HalfFloatType}>
+      {full ? <SMAA /> : <></>}
       <Bloom
         ref={bloomRef as never}
         mipmapBlur
@@ -30,7 +40,7 @@ export function Composer() {
         luminanceThreshold={1.0}
         luminanceSmoothing={0.08}
       />
-      {PROFILE.composer === "full" ? (
+      {full ? (
         <Noise premultiply blendFunction={BlendFunction.SCREEN} opacity={0.055} />
       ) : (
         <></>
