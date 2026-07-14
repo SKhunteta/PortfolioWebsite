@@ -72,29 +72,91 @@ function windowRects(): { x: number; y: number; w: number; h: number }[] {
   const rects = [];
   for (let x = 2; x < SIDE.w - 2; x += 34) {
     if ((x > 40 && x < 84) || (x > 142 && x < 186)) continue;
-    rects.push({ x: SIDE.x + x, y: SIDE.y + 15, w: 26, h: 18 });
+    rects.push({ x: SIDE.x + x, y: SIDE.y + 20, w: 26, h: 14 });
   }
   // door windows glow too
-  rects.push({ x: SIDE.x + 65, y: SIDE.y + 15, w: 8, h: 16 });
-  rects.push({ x: SIDE.x + 167, y: SIDE.y + 15, w: 8, h: 16 });
+  rects.push({ x: SIDE.x + 65, y: SIDE.y + 20, w: 8, h: 14 });
+  rects.push({ x: SIDE.x + 167, y: SIDE.y + 20, w: 8, h: 14 });
   return rects;
 }
 
+/** Rounded-rect path (arcTo — ES2021-safe, unlike ctx.roundRect). */
+function roundedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+/** The Sound Transit logo mark: a blue badge with two white "sound" arcs. */
+function drawStMark(ctx: CanvasRenderingContext2D, x: number, y: number, s: number) {
+  ctx.save();
+  ctx.fillStyle = ST_BLUE;
+  roundedRect(ctx, x, y, s, s, s * 0.22);
+  ctx.fill();
+  ctx.strokeStyle = "#f4efe2";
+  ctx.lineWidth = Math.max(1, s * 0.14);
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.arc(x + s * 0.34, y + s * 0.6, s * 0.26, -0.6, 1.9);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x + s * 0.6, y + s * 0.4, s * 0.26, Math.PI - 0.6, Math.PI + 1.9);
+  ctx.stroke();
+  ctx.restore();
+}
+
+/** "SoundTransit" (Sound bold) + "Link" wordmarks, one set per section,
+ *  matching the branding along the upper white band of a real Link LRV. */
+function drawBrand(ctx: CanvasRenderingContext2D, x0: number, y0: number) {
+  const s = 9;
+  const cy = y0 + 11;
+  ctx.textBaseline = "middle";
+  // SoundTransit (left)
+  const lx = x0 + 10;
+  drawStMark(ctx, lx, y0 + 6, s);
+  const tx = lx + s + 3;
+  ctx.fillStyle = ST_BLUE;
+  ctx.font = "bold 9px 'Helvetica Neue', Arial, sans-serif";
+  ctx.fillText("Sound", tx, cy);
+  const sw = ctx.measureText("Sound").width;
+  ctx.font = "9px 'Helvetica Neue', Arial, sans-serif";
+  ctx.fillText("Transit", tx + sw, cy);
+  // Link (right)
+  const rx = x0 + 196;
+  drawStMark(ctx, rx, y0 + 6, s);
+  ctx.fillStyle = ST_BLUE;
+  ctx.font = "bold 9px 'Helvetica Neue', Arial, sans-serif";
+  ctx.fillText("Link", rx + s + 3, cy);
+}
+
 // Sound Transit's identity kit, reprinted in woodblock pigment: sumi ink
-// where the navy was, warm washi body, Prussian (ai) over vermilion (beni)
-// for the paired wave — the ink outline is what keeps the toy legible on
-// bright paper.
+// where the navy was, warm washi body, ST turquoise (aqua) crest over
+// Prussian (ai) trough for the signature double wave, and the real
+// SoundTransit / Link wordmarks in ST blue — the ink outline is what keeps
+// the toy legible on bright paper.
 const INK = "#2a2119";
 const INK_DEEP = "#1a1410";
 const WASHI = "#efe5cd";
-const AI = "#2b4a77";
-const BENI = "#c7452e";
+const AI = "#2b4a77"; // Prussian blue — the lower wave
+const AQUA = "#57b3ac"; // ST turquoise — the crest wave
 const INDIGO = "#1f2f4d";
 const GLASS = "#17130e";
+const ST_BLUE = "#1f3a5f"; // SoundTransit / Link wordmarks + logo badge
 
-/** The double wave along the lower body — Prussian crest over vermilion
- *  trough, washi showing between, riding on the indigo skirt (the ST
- *  signature, printed). */
+/** The double wave along the lower body — ST turquoise crest over Prussian
+ *  trough, washi showing between, riding on the indigo skirt (the Sound
+ *  Transit signature, printed). */
 function paintWave(ctx: CanvasRenderingContext2D, baseY: number, color: string, amp: number, lift: number) {
   ctx.fillStyle = color;
   ctx.beginPath();
@@ -115,8 +177,9 @@ export function buildLiveryTexture(): THREE.CanvasTexture {
   canvas.height = H;
   const ctx = canvas.getContext("2d")!;
 
-  // --- side band (top->bottom): ink roofline, washi, BIG glass band,
-  //     washi, Prussian-over-vermilion double wave, indigo skirt ---
+  // --- side band (top->bottom): ink roofline, SoundTransit/Link wordmarks,
+  //     BIG glass band, washi, turquoise-over-Prussian double wave, indigo
+  //     skirt ---
   const grad = ctx.createLinearGradient(0, SIDE.y, 0, SIDE.y + SIDE.h);
   grad.addColorStop(0, "#d8cdb6"); // shoulder shading
   grad.addColorStop(0.2, WASHI);
@@ -126,32 +189,30 @@ export function buildLiveryTexture(): THREE.CanvasTexture {
   ctx.fillRect(SIDE.x, SIDE.y, SIDE.w, SIDE.h);
   // sumi roofline cap
   ctx.fillStyle = INK;
-  ctx.fillRect(SIDE.x, SIDE.y, SIDE.w, 7);
+  ctx.fillRect(SIDE.x, SIDE.y, SIDE.w, 5);
+  // real SoundTransit + Link wordmarks along the upper white band
+  drawBrand(ctx, SIDE.x, SIDE.y);
   // big glass band: near-continuous glazing with thin washi pillars + doors
+  const GY = SIDE.y + 18; // glass top, below the wordmark band
   ctx.fillStyle = GLASS;
-  ctx.fillRect(SIDE.x, SIDE.y + 13, SIDE.w, 22);
+  ctx.fillRect(SIDE.x, GY, SIDE.w, 18);
   ctx.fillStyle = "#f2ead6";
-  for (let x = 30; x < SIDE.w; x += 34) ctx.fillRect(SIDE.x + x, SIDE.y + 13, 2, 22);
+  for (let x = 30; x < SIDE.w; x += 34) ctx.fillRect(SIDE.x + x, GY, 2, 18);
   ctx.fillStyle = "#bfae8e"; // door leaves read slightly darker paper
-  ctx.fillRect(SIDE.x + 62, SIDE.y + 13, 14, 34);
-  ctx.fillRect(SIDE.x + 164, SIDE.y + 13, 14, 34);
+  ctx.fillRect(SIDE.x + 62, GY, 14, 30);
+  ctx.fillRect(SIDE.x + 164, GY, 14, 30);
   ctx.fillStyle = GLASS; // door windows
-  ctx.fillRect(SIDE.x + 65, SIDE.y + 15, 8, 16);
-  ctx.fillRect(SIDE.x + 167, SIDE.y + 15, 8, 16);
+  ctx.fillRect(SIDE.x + 65, GY + 2, 8, 14);
+  ctx.fillRect(SIDE.x + 167, GY + 2, 8, 14);
   // The signature double wave rides LOW on the body (photo reference:
-  // Prussian crest, washi gap, vermilion trough, thin indigo skirt at the
-  // very bottom). paintWave fills from its line DOWN, so layers paint
+  // turquoise crest, washi gap, Prussian-blue trough, thin indigo skirt at
+  // the very bottom). paintWave fills from its line DOWN, so layers paint
   // top-first: each later call must sit lower or it buries the ones before
   // it — the old trough→gap→crest order left only the crest visible.
-  paintWave(ctx, SIDE.y + 58, AI, 4, 9);
+  paintWave(ctx, SIDE.y + 58, AQUA, 4, 9);
   paintWave(ctx, SIDE.y + 58, WASHI, 3.5, 5.5); // washi gap between waves
-  paintWave(ctx, SIDE.y + 58, BENI, 3.5, 2);
+  paintWave(ctx, SIDE.y + 58, AI, 3.5, 2);
   paintWave(ctx, SIDE.y + SIDE.h, INDIGO, 3, 3); // thin indigo skirt, wavy top edge
-  // "SoundTransit" hint on the upper washi (unreadable-small, but the eye
-  // expects a mark there)
-  ctx.fillStyle = "#8a7355";
-  ctx.fillRect(SIDE.x + 96, SIDE.y + 9, 26, 2);
-  ctx.fillRect(SIDE.x + 214, SIDE.y + 9, 16, 2);
   // section-end bevels (the articulation joints read as ink seams — wider
   // than link-map's: the outline carries the toy on bright paper)
   ctx.fillStyle = INK_DEEP;
@@ -196,11 +257,11 @@ export function buildLiveryTexture(): THREE.CanvasTexture {
   ctx.fillStyle = "#e8e2cf";
   ctx.fillRect(FRONT.x + 8, FRONT.y + 42, 12, 6);
   ctx.fillRect(FRONT.x + 44, FRONT.y + 42, 12, 6);
-  // ST mark on the bumper — a little hanko: washi field, vermilion stamp
+  // ST mark on the bumper — the SoundTransit logo badge on a washi field
   ctx.fillStyle = WASHI;
-  ctx.fillRect(FRONT.x + 28, FRONT.y + 50, 8, 6);
-  ctx.fillStyle = BENI;
-  ctx.fillRect(FRONT.x + 28, FRONT.y + 53, 8, 3);
+  roundedRect(ctx, FRONT.x + 26, FRONT.y + 48, 12, 11, 2);
+  ctx.fill();
+  drawStMark(ctx, FRONT.x + 27, FRONT.y + 49, 9);
 
   // --- roof: warm equipment deck with ink edge trim ---
   ctx.fillStyle = "#c4b795";
