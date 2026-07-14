@@ -2,6 +2,7 @@
 // read __linkMapStats; __linkMap pokes the piece.
 
 import { TRAINS, useUi } from "../trains/store";
+import { UNDERGROUND_SITES } from "../stations/platformPulse";
 import { FLIGHTS, airlinerPoseAt } from "../map/Airliners";
 import { CLOCK } from "../world/clock";
 import { setPhaseOverride } from "../world/sun";
@@ -66,6 +67,13 @@ export function installHandles() {
     followId: (id: string) => useUi.getState().setFollowTrain(id),
     // Ride one of the airborne jets (index into Airliners' FLIGHTS).
     followPlane: (index: number) => useUi.getState().setFollowPlane(index),
+    // Descend into an underground hall by station id — the camera holds over its
+    // platform floor so the art fresco reads up through the paper (same mood a
+    // double-tap on the hall engages). release() rises back out.
+    dive: (id: string) => useUi.getState().setDiveStation(id),
+    // The diveable underground halls and their platform-floor positions, for the
+    // smoke harness / a curious console to descend deterministically.
+    diveList: () => UNDERGROUND_SITES.map((s) => ({ id: s.id, x: s.x, z: s.z, y: s.y })),
     release: () => useUi.getState().setFollowTrain(null),
     // For the smoke harness / a curious console: the airborne jets' live world
     // positions, so a plane can be located and chased deterministically.

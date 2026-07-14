@@ -29,6 +29,7 @@ export const PLATFORM_SITES: PlatformSite[] = [];
 // crowd and the art fresco read the very SAME dwell pulse the orb writes — no
 // second train-proximity scan, automatically honest in live/simulated/resting.
 export interface UndergroundSite {
+  id: string; // station id — lets the camera resolve a dive target's floor by id
   pulseIndex: number; // index into PLATFORM_PULSE.value (the station's slot index)
   x: number;
   z: number;
@@ -66,4 +67,10 @@ export function initPlatformSites(sites: PlatformSite[]) {
 export function initUndergroundSites(sites: UndergroundSite[]) {
   UNDERGROUND_SITES.length = 0;
   UNDERGROUND_SITES.push(...sites);
+}
+
+/** The underground hall with this station id, or undefined. Linear scan over the
+ *  eight halls — cheap, called only when the camera engages/frames a dive. */
+export function undergroundSiteById(id: string): UndergroundSite | undefined {
+  return UNDERGROUND_SITES.find((s) => s.id === id);
 }

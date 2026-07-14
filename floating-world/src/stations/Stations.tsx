@@ -236,6 +236,7 @@ export function Stations() {
         .map(({ s, i }) => {
           const m = motifForName(s.name);
           return {
+            id: s.id,
             pulseIndex: i,
             x: s.x,
             z: s.z,

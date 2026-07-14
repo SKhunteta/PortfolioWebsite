@@ -204,6 +204,13 @@ export const CONFIG = {
     // grows here, so it stays well clear of the water. Raise `upKm` if the
     // water still peeks in at wide aspects.
     tunnelDive: { backKm: 0.15, upKm: 0.85 },
+    // Click-to-descend into a fixed underground hall (CameraRig.frameStationDive):
+    // unlike the train tunnelDive (which rides a moving train down a portal), this
+    // holds a near-overhead, slightly-angled look-down over the hall's platform
+    // floor so its art fresco (~0.48 km disc) fills the frame and reads up through
+    // the paper. A hair lower/closer than tunnelDive; camera sits `backKm` south of
+    // the hall at height `upKm`, target on the floor. Tune in dev with `leva`.
+    stationDive: { backKm: 0.35, upKm: 0.7 },
     // The jetliner ride: farther back and a touch higher than the train chase
     // (the toy 737 is longer and moves faster), offset behind the nose along
     // the flight path so the camera sits in the plane's wake as it climbs,
