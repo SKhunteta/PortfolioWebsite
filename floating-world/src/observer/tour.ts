@@ -147,6 +147,14 @@ const RIDE_DWELL_S = 14;
 const DETAIL_DWELL_S = 16;
 
 const REEL: ReelStop[] = [
+  // The OPENING shot: the instant Observe is pressed, cut straight to a train
+  // picked at random and zoom into its wake — no orbit lead-in, no curated
+  // crossing, just "there's a train, ride it." CameraRig starts the reel clock
+  // PAST this stop's travel-in the first time Observe turns on, so the chase
+  // latches immediately (on later loop-arounds it glides in normally). It shares
+  // `random` with the mid-reel surprise stop, so the very first train you see is
+  // never the same one twice.
+  { kind: "train", anchor: "C05", fallback: { x: -0.29, z: -0.18 }, radiusKm: 6, elevation: 0.5, label: "catching a passing train", dwellS: RIDE_DWELL_S, random: true },
   // Ride the light rail out of downtown — the hero low chase through the print.
   { kind: "train", anchor: "C05", fallback: { x: -0.29, z: -0.18 }, radiusKm: 6, elevation: 0.5, label: "riding the light rail", dwellS: RIDE_DWELL_S },
   // Then slide in tight for the S700 itself: the wave livery, ink seams and lit
