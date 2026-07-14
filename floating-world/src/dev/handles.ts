@@ -3,6 +3,7 @@
 
 import { TRAINS, useUi } from "../trains/store";
 import { setPhaseOverride } from "../world/sun";
+import { setTideOverride } from "../world/tide";
 import { setWeatherOverride, WeatherKind } from "../world/weather";
 import { TIER } from "../world/device";
 
@@ -37,6 +38,7 @@ export function installHandles() {
   w.__linkMapStats = stats;
   w.__linkMap = {
     setPhase: (p: number | null) => setPhaseOverride(p),
+    setTide: (level: number | null) => setTideOverride(level),
     setWeather: (k: WeatherKind | null) => setWeatherOverride(k),
     follow: (index: number) => {
       const ids = [...TRAINS.keys()];
