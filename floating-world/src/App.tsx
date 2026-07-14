@@ -22,6 +22,7 @@ import { Seaplanes } from "./map/Seaplanes";
 import { Airliners } from "./map/Airliners";
 import { Wakes } from "./map/Wakes";
 import { Birds } from "./map/Birds";
+import { Heroes } from "./map/Heroes";
 import { CityLights } from "./map/CityLights";
 import { Reflections } from "./map/Reflections";
 import { LineRibbons } from "./map/LineRibbons";
@@ -116,6 +117,7 @@ export default function App() {
         <LineRibbons />
         <Stations />
         <PlatformLife />
+        <Heroes />
         <Trains />
         <TrainModel />
         <Trails />
