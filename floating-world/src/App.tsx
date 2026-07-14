@@ -12,7 +12,7 @@ import { Cars } from "./map/Cars";
 import { Forest } from "./map/Forest";
 import { Sakura } from "./map/Sakura";
 import { Buildings } from "./map/Buildings";
-import { Landmarks } from "./map/Landmarks";
+import { Landmarks, GreatWheel } from "./map/Landmarks";
 import { Kasumi } from "./map/Kasumi";
 import { Ferries } from "./map/Ferries";
 import { Orcas } from "./map/Orcas";
@@ -103,6 +103,7 @@ export default function App() {
         <Sakura />
         <Buildings />
         <Landmarks />
+        <GreatWheel />
         <Kasumi />
         <Wakes />
         <Ferries />

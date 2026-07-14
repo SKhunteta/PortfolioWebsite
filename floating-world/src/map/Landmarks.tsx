@@ -28,7 +28,18 @@ import { projectLatLng } from "./network";
 import { CONFIG } from "../world/config";
 import { LIVE } from "../world/palettes";
 import { sunPhase, sunPhaseAt, getPhaseOverride } from "../world/sun";
+import { CLOCK } from "../world/clock";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
+
+// The Great Wheel's hub, shared with its rim lights in map/CityLights.tsx —
+// keep these in sync if the wheel ever moves or resizes.
+export const WHEEL_LAT = 47.6061;
+export const WHEEL_LNG = -122.3426;
+export const WHEEL_HUB_Y = 0.26;
+export const WHEEL_R = 0.22;
+// A stately, unhurried rotation — always turning, never distracting on a
+// toy map watched for minutes at a time.
+export const WHEEL_SPIN_PERIOD_S = 120;
 
 const ss = (a: number, b: number, x: number) => {
   const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
@@ -47,9 +58,9 @@ const VERT = /* glsl */ `
     vec4 world = modelMatrix * vec4(position, 1.0);
     vWorld = world.xz;
     vY = world.y;
-    vNormal = normal; // geometry is baked in world space; the mesh never moves
     vRainier = aRainier;
     vBaker = aBaker;
+    vNormal = normalize(normalMatrix * normal); // world-space normal — correct for both the static merged landmarks and the Great Wheel, which rotates
     vec4 mv = viewMatrix * world;
     vFogDepth = -mv.z;
     gl_Position = projectionMatrix * mv;
@@ -350,14 +361,13 @@ function buildGeometry(): THREE.BufferGeometry {
     }
   }
 
-  // --- the Great Wheel on Pier 57: a hoop over the waterline, A-frame legs —
-  //     nearly doubled from a first pass that was true-toy-scale but read as
-  //     a hairline at drift distance, the same fix the Needle needed ---
+  // --- the Great Wheel on Pier 57: A-frame legs only — nearly doubled from a
+  //     first pass that was true-toy-scale but read as a hairline at drift
+  //     distance, the same fix the Needle needed. The hoop itself is NOT
+  //     merged here: it spins, so it's its own mesh (see GreatWheel() below),
+  //     while these static legs stay part of the merged landmark geometry. ---
   {
-    const { x, z } = projectLatLng(47.6061, -122.3426);
-    const wheel = new THREE.TorusGeometry(0.22, 0.03, 7, 24);
-    wheel.translate(x, 0.26, z); // plane vertical, axle roughly along the pier
-    parts.push(wheel);
+    const { x, z } = projectLatLng(WHEEL_LAT, WHEEL_LNG);
     for (const side of [-1, 1]) {
       const leg = new THREE.BoxGeometry(0.035, 0.3, 0.035);
       leg.rotateX(side * 0.38);
@@ -586,6 +596,35 @@ function buildGeometry(): THREE.BufferGeometry {
   return merged;
 }
 
+// The sun phase is a single 0..1 blend (night..day) with no dawn/dusk sign,
+// so we recover the direction (rising → Red Fuji vermilion, falling → dusk
+// plum) from the sun's TRAJECTORY, not from frame velocity — the real sun
+// crawls far too slowly to register frame-to-frame. Live: sample the honest
+// sun 10 min ahead. Override (observe sweep / ?phase=): the swept value moves
+// fast, so a smoothed velocity works, and a pinned-static phase defaults to
+// the hero Red Fuji. Shared by Landmarks() and GreatWheel() — both paint with
+// the same Rainier-flag shader and need the same dawn/dusk envelope.
+function dawnDuskEnv(
+  phaseRef: { current: number },
+  velRef: { current: number }
+): { dawn: number; dusk: number } {
+  const phase = sunPhase();
+  let dir: number;
+  if (getPhaseOverride() == null) {
+    const ahead = sunPhaseAt(new Date(Date.now() + 10 * 60 * 1000));
+    dir = ahead > phase + 1e-4 ? 1 : ahead < phase - 1e-4 ? -1 : 0;
+  } else {
+    const dp = phase - phaseRef.current;
+    velRef.current = velRef.current * 0.9 + (Math.abs(dp) > 1e-5 ? Math.sign(dp) : 0) * 0.1;
+    dir = Math.abs(velRef.current) < 0.05 ? 1 : Math.sign(velRef.current);
+  }
+  phaseRef.current = phase;
+
+  // The glow lives in the twilight band and falls to a pale ghost at noon.
+  const env = ss(0.06, 0.4, phase) * (1 - ss(0.5, 0.9, phase));
+  return { dawn: env * Math.max(0, dir), dusk: env * Math.max(0, -dir) };
+}
+
 export function Landmarks() {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const geometry = useMemo(buildGeometry, []);
@@ -593,13 +632,6 @@ export function Landmarks() {
     const { x, z } = projectLatLng(46.8523, -121.7603);
     return new THREE.Vector2(x, z);
   }, []);
-  // The sun phase is a single 0..1 blend (night..day) with no dawn/dusk sign,
-  // so we recover the direction (rising → Red Fuji vermilion, falling → dusk
-  // plum) from the sun's TRAJECTORY, not from frame velocity — the real sun
-  // crawls far too slowly to register frame-to-frame. Live: sample the honest
-  // sun 10 min ahead. Override (observe sweep / ?phase=): the swept value moves
-  // fast, so a smoothed velocity works, and a pinned-static phase defaults to
-  // the hero Red Fuji.
   const phaseRef = useRef(sunPhase());
   const velRef = useRef(0);
 
@@ -608,23 +640,9 @@ export function Landmarks() {
     if (!m) return;
     m.uniforms.uOpacity.value = LIVE.landmarkOpacity;
     m.uniforms.uFogDensity.value = LIVE.fogDensity;
-
-    const phase = sunPhase();
-    let dir: number;
-    if (getPhaseOverride() == null) {
-      const ahead = sunPhaseAt(new Date(Date.now() + 10 * 60 * 1000));
-      dir = ahead > phase + 1e-4 ? 1 : ahead < phase - 1e-4 ? -1 : 0;
-    } else {
-      const dp = phase - phaseRef.current;
-      velRef.current = velRef.current * 0.9 + (Math.abs(dp) > 1e-5 ? Math.sign(dp) : 0) * 0.1;
-      dir = Math.abs(velRef.current) < 0.05 ? 1 : Math.sign(velRef.current);
-    }
-    phaseRef.current = phase;
-
-    // The glow lives in the twilight band and falls to a pale ghost at noon.
-    const env = ss(0.06, 0.4, phase) * (1 - ss(0.5, 0.9, phase));
-    m.uniforms.uDawn.value = env * Math.max(0, dir);
-    m.uniforms.uDusk.value = env * Math.max(0, -dir);
+    const { dawn, dusk } = dawnDuskEnv(phaseRef, velRef);
+    m.uniforms.uDawn.value = dawn;
+    m.uniforms.uDusk.value = dusk;
   });
 
   return (
@@ -635,6 +653,74 @@ export function Landmarks() {
         fragmentShader={FRAG}
         uniforms={{
           uColor: { value: LIVE.landmark }, // palette-by-reference
+          uOpacity: { value: LIVE.landmarkOpacity },
+          uFog: { value: LIVE.fog },
+          uFogDensity: { value: LIVE.fogDensity },
+          uRainierAxis: { value: rainierAxis },
+          uDawn: { value: 0 },
+          uDusk: { value: 0 },
+        }}
+        transparent
+        depthWrite={false}
+        side={THREE.FrontSide}
+      />
+    </mesh>
+  );
+}
+
+/** The Great Wheel's hoop, centered at the local origin so the mesh itself
+ *  can spin — everything else in Landmarks.tsx is baked into one static
+ *  merged geometry, but this one landmark is always turning. */
+function buildWheelGeometry(): THREE.BufferGeometry {
+  const geo = new THREE.TorusGeometry(WHEEL_R, 0.03, 7, 24);
+  const n = geo.attributes.position.count;
+  geo.setAttribute("aRainier", new THREE.BufferAttribute(new Float32Array(n), 1));
+  geo.setAttribute("aBaker", new THREE.BufferAttribute(new Float32Array(n), 1));
+  return geo;
+}
+
+/** The Great Wheel's hoop — same watercolor shader and dawn/dusk paint as
+ *  every other landmark, but its own mesh so it can rotate independently. A
+ *  stately, always-on spin (WHEEL_SPIN_PERIOD_S), matched by its rim lights
+ *  in map/CityLights.tsx. Rendered as a sibling of <Landmarks/> in App.tsx;
+ *  its static A-frame legs stay in the main merged geometry above. */
+export function GreatWheel() {
+  const materialRef = useRef<THREE.ShaderMaterial>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
+  const geometry = useMemo(buildWheelGeometry, []);
+  const hub = useMemo(() => {
+    const { x, z } = projectLatLng(WHEEL_LAT, WHEEL_LNG);
+    return new THREE.Vector3(x, WHEEL_HUB_Y, z);
+  }, []);
+  // The wheel never carries the Rainier/Baker mythic paint (aRainier/aBaker
+  // are always 0), so the axis uniform is inert — a placeholder to satisfy
+  // the shared shader.
+  const rainierAxis = useMemo(() => new THREE.Vector2(0, 0), []);
+  const phaseRef = useRef(sunPhase());
+  const velRef = useRef(0);
+
+  useFrame(() => {
+    const m = materialRef.current;
+    if (m) {
+      m.uniforms.uOpacity.value = LIVE.landmarkOpacity;
+      m.uniforms.uFogDensity.value = LIVE.fogDensity;
+      const { dawn, dusk } = dawnDuskEnv(phaseRef, velRef);
+      m.uniforms.uDawn.value = dawn;
+      m.uniforms.uDusk.value = dusk;
+    }
+    if (meshRef.current) {
+      meshRef.current.rotation.z = (CLOCK.t / WHEEL_SPIN_PERIOD_S) * Math.PI * 2;
+    }
+  });
+
+  return (
+    <mesh ref={meshRef} geometry={geometry} position={hub} renderOrder={6} frustumCulled={false}>
+      <shaderMaterial
+        ref={materialRef}
+        vertexShader={VERT}
+        fragmentShader={FRAG}
+        uniforms={{
+          uColor: { value: LIVE.landmark },
           uOpacity: { value: LIVE.landmarkOpacity },
           uFog: { value: LIVE.fog },
           uFogDensity: { value: LIVE.fogDensity },

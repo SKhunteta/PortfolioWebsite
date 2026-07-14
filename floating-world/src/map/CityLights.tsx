@@ -27,6 +27,13 @@ import { LIVE } from "../world/palettes";
 import { sunPhase } from "../world/sun";
 import { useUi } from "../trains/store";
 import { stadiumGlow, stadiumTitle, StadiumVenue } from "./stadiumNights";
+import {
+  WHEEL_LAT,
+  WHEEL_LNG,
+  WHEEL_HUB_Y,
+  WHEEL_R,
+  WHEEL_SPIN_PERIOD_S,
+} from "./Landmarks";
 
 const VERT = /* glsl */ `
   attribute vec3 aColor;
@@ -76,17 +83,16 @@ interface Light {
   dz?: number;
   ferrisWheel?: boolean; // the Great Wheel's rim lights, cycling color at night
   ferrisWheelSpill?: boolean; // the wheel's soft central wash (same cycle, dimmer)
+  angle?: number; // rim lights only: base angle around the hub, spun live to match GreatWheel's rotation
 }
 
-// The Great Wheel on Pier 57 (matches the torus built in Landmarks.tsx: hub
-// at y ≈ 0.15, rim radius 0.11). A ring of rim lights, all breathing the
-// SAME colour together — the real wheel's night signature — cycling through
-// a jewel-toned palette. Each colour holds for a while, then eases into the
-// next over a few seconds, so the change never jump-cuts.
-const WHEEL_LAT = 47.6061;
-const WHEEL_LNG = -122.3426;
-const WHEEL_HUB_Y = 0.26; // matches the enlarged torus hub in Landmarks.tsx
-const WHEEL_R = 0.22;
+// The Great Wheel on Pier 57 — hub position/radius shared with the spinning
+// hoop mesh in map/Landmarks.tsx (GreatWheel()) so the rim lights always sit
+// right on the rim. A ring of rim lights, all breathing the SAME colour
+// together — the real wheel's night signature — cycling through a
+// jewel-toned palette. Each colour holds for a while, then eases into the
+// next over a few seconds, so the change never jump-cuts. The whole ring
+// also spins with the wheel (WHEEL_SPIN_PERIOD_S), recomputed every frame.
 const WHEEL_RIM_LIGHTS = 12;
 const WHEEL_PALETTE = [
   new THREE.Color("#ff5c48"), // vermilion
@@ -197,14 +203,15 @@ export const LIGHTS: Light[] = [
   },
   // The Great Wheel's rim lights — a ring around the hub, all cycling the
   // same colour together, a night creature like the beacon and lighthouses.
+  // Positions are recomputed every frame from `angle` + the live spin (see
+  // the useFrame loop below), so the ring turns with the hoop mesh.
   ...Array.from({ length: WHEEL_RIM_LIGHTS }, (_, i) => {
     const a = (i / WHEEL_RIM_LIGHTS) * Math.PI * 2;
     return {
       lat: WHEEL_LAT,
       lng: WHEEL_LNG,
       y: WHEEL_HUB_Y + Math.sin(a) * WHEEL_R,
-      dx: Math.cos(a) * WHEEL_R,
-      dz: 0,
+      angle: a,
       scaleKm: 0.09,
       color: WHEEL_PALETTE[0].clone(),
       ferrisWheel: true,
@@ -256,12 +263,16 @@ export function CityLights() {
     return { colorAttr, glowAttr, scaleAttr };
   }, []);
 
-  // Static positions — written once into the instance matrices.
+  // Static positions — written once into the instance matrices. Rim lights
+  // (angle !== undefined) are excluded: they're repositioned every frame
+  // below so the ring spins with GreatWheel's hoop mesh.
   const placed = useRef(false);
   const lastPollT = useRef(-Infinity);
   const gameGlow = useRef<Record<StadiumVenue, number>>({ lumen: 0, tmobile: 0 });
   const captioned = useRef<Set<StadiumVenue>>(new Set());
   const wheelColorScratch = useRef(new THREE.Color()).current;
+  const spinMatrix = useRef(new THREE.Matrix4()).current;
+  const wheelBase = useMemo(() => projectLatLng(WHEEL_LAT, WHEEL_LNG), []);
 
   useFrame(() => {
     const mesh = meshRef.current;
@@ -271,6 +282,7 @@ export function CityLights() {
       placed.current = true;
       const matrix = new THREE.Matrix4();
       LIGHTS.forEach((l, i) => {
+        if (l.angle !== undefined) return; // positioned live each frame instead
         const { x, z } = projectLatLng(l.lat, l.lng);
         matrix.makeTranslation(x + (l.dx ?? 0), l.y, z + (l.dz ?? 0));
         mesh.setMatrixAt(i, matrix);
@@ -303,6 +315,8 @@ export function CityLights() {
     // Both lights are night creatures: they barely read against daylight.
     const night = 1 - sunPhase() * 0.92;
     let colorChanged = false;
+    let matrixChanged = false;
+    const wheelSpin = (CLOCK.t / WHEEL_SPIN_PERIOD_S) * Math.PI * 2;
     for (let i = 0; i < LIGHTS.length; i++) {
       const l = LIGHTS[i];
       if (l.ferrisWheel) {
@@ -317,6 +331,18 @@ export function CityLights() {
           : night * 0.85 * (0.9 + 0.1 * CLOCK.breath);
         glowAttr.setX(i, glow);
         CITY_LIGHT_GLOW[i] = glow;
+        // Rim lights (not the central spill) always spin with GreatWheel's
+        // hoop mesh — recomputed every frame from the shared angular speed.
+        if (l.angle !== undefined) {
+          const ang = l.angle + wheelSpin;
+          spinMatrix.makeTranslation(
+            wheelBase.x + Math.cos(ang) * WHEEL_R,
+            WHEEL_HUB_Y + Math.sin(ang) * WHEEL_R,
+            wheelBase.z
+          );
+          mesh.setMatrixAt(i, spinMatrix);
+          matrixChanged = true;
+        }
       } else if (l.venue) {
         // Warm light-spill over the bowl, swelling gently on the breath.
         // Peaks ~0.35 (×2 where the domes overlap) — a wash, never a bloom
@@ -346,6 +372,7 @@ export function CityLights() {
     }
     glowAttr.needsUpdate = true;
     if (colorChanged) colorAttr.needsUpdate = true;
+    if (matrixChanged) mesh.instanceMatrix.needsUpdate = true;
   });
 
   return (
