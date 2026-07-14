@@ -55,6 +55,10 @@ export interface DeviceProfile {
   // dwell (stations/PlatformLife.tsx) — the pool is stations × this.
   birdCount: number;
   platformMotes: number;
+  // Deep-platform crowd for the underground halls (stations/UndergroundLife.tsx)
+  // — ONE instanced draw call, the pool is (underground stations) × this. The
+  // art frescoes beside it are a fixed 8 instances on every tier.
+  undergroundMotes: number;
   // Burke-Gilman riders (map/Cyclists.tsx) — ONE instanced draw call, count is
   // how many hero figures ride the trail at once.
   cyclistCount: number;
@@ -85,6 +89,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     buildingCount: 2200,
     birdCount: 9,
     platformMotes: 4,
+    undergroundMotes: 3,
     cyclistCount: 3,
     greenLakeCyclistCount: 3,
     carCount: 70,
@@ -103,6 +108,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     buildingCount: 4000,
     birdCount: 13,
     platformMotes: 6,
+    undergroundMotes: 5,
     cyclistCount: 4,
     greenLakeCyclistCount: 4,
     carCount: 130,
@@ -121,6 +127,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     buildingCount: 6500,
     birdCount: 16,
     platformMotes: 8,
+    undergroundMotes: 7,
     cyclistCount: 5,
     greenLakeCyclistCount: 6,
     carCount: 190,
