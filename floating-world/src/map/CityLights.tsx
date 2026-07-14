@@ -7,8 +7,10 @@
 // ONE InstancedMesh of view-facing painted-glow quads (one draw call),
 // additive like the train sprites. The beacon's core deliberately crosses
 // the 1.05 bloom line at the top of its night pulse — one tiny HDR ember on
-// the skyline; the stadium domes stay well under it, a warm light-spill
-// wash over the bowl, not a flare. By day both fade to almost nothing:
+// the skyline; the stadium lights stay well under it — a warm floodlit-bowl
+// wash under a cooler signature-coloured crown on each roof arch (Lumen's
+// blue-white, T-Mobile's magenta), a spill on the ridge, not a flare. By day
+// both fade to almost nothing:
 // beacons and floodlights don't read against the sun, so the map doesn't
 // pretend they do.
 //
@@ -72,24 +74,46 @@ export const LIGHTS: Light[] = [
   // The beacon rides just above the spire tip (Landmarks.tsx builds the
   // Needle to y ≈ 1.07 at this toy scale).
   { lat: 47.6205, lng: -122.3493, y: 1.09, scaleKm: 0.16, color: new THREE.Color("#ff5c48") },
-  // The two bowls sit ~400 m apart, so their domes overlap and their
-  // additive light adds — sized and dimmed so a double game night still
-  // reads warm, not white.
+  // Each stadium comes up in two registers, matched to how it really lights:
+  // a broad warm floodlit-concourse spill washing the bowl, and a tighter,
+  // higher accent tracing its signature roof arch in its own colour — Lumen
+  // Field's cool blue-white canopies, T-Mobile Park's T-Mobile-magenta arch.
+  // The two bowls sit ~400 m apart, so their spills overlap and add — sized so
+  // a double game night still reads warm, not white; the crowns stay well
+  // under the bloom line, a coloured wash on the ridge, never a flare.
   {
     lat: 47.5952,
     lng: -122.3316,
-    y: 0.28,
+    y: 0.26,
     scaleKm: 0.95,
     color: new THREE.Color("#ffc985"),
     venue: "lumen",
     label: "Lumen Field",
   },
   {
+    lat: 47.5952,
+    lng: -122.3316,
+    y: 0.35,
+    scaleKm: 0.5,
+    color: new THREE.Color("#a9c4ff"), // Seahawks/Sounders blue-white canopy light
+    venue: "lumen",
+    label: "Lumen Field",
+  },
+  {
     lat: 47.5914,
     lng: -122.3325,
-    y: 0.24,
+    y: 0.22,
     scaleKm: 0.95,
     color: new THREE.Color("#ffc985"),
+    venue: "tmobile",
+    label: "T-Mobile Park",
+  },
+  {
+    lat: 47.5914,
+    lng: -122.3325,
+    y: 0.33,
+    scaleKm: 0.55,
+    color: new THREE.Color("#e5219b"), // the arch's signature T-Mobile magenta
     venue: "tmobile",
     label: "T-Mobile Park",
   },
