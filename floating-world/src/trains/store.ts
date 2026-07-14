@@ -21,6 +21,7 @@ export interface TrainState {
   vEst: number; // km/s, smoothed — drives trail length and chase framing
   y: number; // smoothed height (dips through tunnels)
   modelL: number; // toy-scale model length (km), eased per camera distance
+  farFactor: number; // 0 (camera close) .. 1 (drift distance), smoothstepped
   lastPollT: number; // CLOCK.t when sTarget last moved
   pollGapS: number;
   missedPolls: number;
@@ -50,6 +51,7 @@ export function makeTrain(
     vEst: 0,
     y: 0.02,
     modelL: CONFIG.train.model.farLenKm,
+    farFactor: 1,
     lastPollT: 0,
     pollGapS: 10,
     missedPolls: 0,
