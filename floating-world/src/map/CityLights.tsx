@@ -72,6 +72,47 @@ interface Light {
   lighthouse?: { periodS: number; phase: number }; // shore beacons on the Sound
   label?: string;
   // no venue and no lighthouse ⇒ the Needle's red aircraft beacon
+  dx?: number; // world-unit offset from the projected lat/lng (post-projection)
+  dz?: number;
+  ferrisWheel?: boolean; // the Great Wheel's rim lights, cycling color at night
+}
+
+// The Great Wheel on Pier 57 (matches the torus built in Landmarks.tsx: hub
+// at y ≈ 0.15, rim radius 0.11). A ring of rim lights, all breathing the
+// SAME colour together — the real wheel's night signature — cycling through
+// a jewel-toned palette. Each colour holds for a while, then eases into the
+// next over a few seconds, so the change never jump-cuts.
+const WHEEL_LAT = 47.6061;
+const WHEEL_LNG = -122.3426;
+const WHEEL_HUB_Y = 0.15;
+const WHEEL_R = 0.11;
+const WHEEL_RIM_LIGHTS = 8;
+const WHEEL_PALETTE = [
+  new THREE.Color("#ff5c48"), // vermilion
+  new THREE.Color("#ffb347"), // amber gold
+  new THREE.Color("#7ee0a8"), // jade
+  new THREE.Color("#5ec8ff"), // sky teal
+  new THREE.Color("#8f7bff"), // violet
+  new THREE.Color("#ff6fae"), // rose
+];
+const WHEEL_HOLD_S = 6; // how long each colour holds before easing onward
+const WHEEL_FADE_S = 4; // how long the crossfade to the next colour takes
+
+function wheelColor(t: number, out: THREE.Color) {
+  const period = WHEEL_HOLD_S + WHEEL_FADE_S;
+  const total = WHEEL_PALETTE.length * period;
+  const tt = ((t % total) + total) % total;
+  const idx = Math.floor(tt / period);
+  const local = tt - idx * period;
+  const a = WHEEL_PALETTE[idx];
+  const b = WHEEL_PALETTE[(idx + 1) % WHEEL_PALETTE.length];
+  if (local < WHEEL_HOLD_S) {
+    out.copy(a);
+  } else {
+    const f = (local - WHEEL_HOLD_S) / WHEEL_FADE_S;
+    const s = f * f * (3 - 2 * f); // smoothstep: an eased, seamless crossfade
+    out.copy(a).lerp(b, s);
+  }
 }
 
 export const LIGHTS: Light[] = [
@@ -153,6 +194,22 @@ export const LIGHTS: Light[] = [
     venue: "tmobile",
     label: "T-Mobile Park",
   },
+  // The Great Wheel's rim lights — a ring around the hub, all cycling the
+  // same colour together, a night creature like the beacon and lighthouses.
+  ...Array.from({ length: WHEEL_RIM_LIGHTS }, (_, i) => {
+    const a = (i / WHEEL_RIM_LIGHTS) * Math.PI * 2;
+    return {
+      lat: WHEEL_LAT,
+      lng: WHEEL_LNG,
+      y: WHEEL_HUB_Y + Math.sin(a) * WHEEL_R,
+      dx: Math.cos(a) * WHEEL_R,
+      dz: 0,
+      scaleKm: 0.045,
+      color: WHEEL_PALETTE[0].clone(),
+      ferrisWheel: true,
+      label: "Seattle Great Wheel",
+    } as Light;
+  }),
 ];
 
 const FORCE_GAMENIGHT =
@@ -174,6 +231,7 @@ export function CityLights() {
   const { colorAttr, glowAttr, scaleAttr } = useMemo(() => {
     const n = LIGHTS.length;
     const colorAttr = new THREE.InstancedBufferAttribute(new Float32Array(n * 3), 3);
+    colorAttr.setUsage(THREE.DynamicDrawUsage);
     const glowAttr = new THREE.InstancedBufferAttribute(new Float32Array(n), 1);
     glowAttr.setUsage(THREE.DynamicDrawUsage);
     const scaleAttr = new THREE.InstancedBufferAttribute(new Float32Array(n), 1);
@@ -189,6 +247,7 @@ export function CityLights() {
   const lastPollT = useRef(-Infinity);
   const gameGlow = useRef<Record<StadiumVenue, number>>({ lumen: 0, tmobile: 0 });
   const captioned = useRef<Set<StadiumVenue>>(new Set());
+  const wheelColorScratch = useRef(new THREE.Color()).current;
 
   useFrame(() => {
     const mesh = meshRef.current;
@@ -199,7 +258,7 @@ export function CityLights() {
       const matrix = new THREE.Matrix4();
       LIGHTS.forEach((l, i) => {
         const { x, z } = projectLatLng(l.lat, l.lng);
-        matrix.makeTranslation(x, l.y, z);
+        matrix.makeTranslation(x + (l.dx ?? 0), l.y, z + (l.dz ?? 0));
         mesh.setMatrixAt(i, matrix);
       });
       mesh.instanceMatrix.needsUpdate = true;
@@ -229,9 +288,20 @@ export function CityLights() {
 
     // Both lights are night creatures: they barely read against daylight.
     const night = 1 - sunPhase() * 0.92;
+    let colorChanged = false;
     for (let i = 0; i < LIGHTS.length; i++) {
       const l = LIGHTS[i];
-      if (l.venue) {
+      if (l.ferrisWheel) {
+        // The rim lights breathe together, steady rather than blinking, and
+        // slide smoothly from one colour to the next (wheelColor handles the
+        // hold + crossfade so the change is always seamless).
+        wheelColor(CLOCK.t, wheelColorScratch);
+        colorAttr.setXYZ(i, wheelColorScratch.r, wheelColorScratch.g, wheelColorScratch.b);
+        colorChanged = true;
+        const glow = night * 0.85 * (0.9 + 0.1 * CLOCK.breath);
+        glowAttr.setX(i, glow);
+        CITY_LIGHT_GLOW[i] = glow;
+      } else if (l.venue) {
         // Warm light-spill over the bowl, swelling gently on the breath.
         // Peaks ~0.35 (×2 where the domes overlap) — a wash, never a bloom
         // source.
@@ -259,6 +329,7 @@ export function CityLights() {
       }
     }
     glowAttr.needsUpdate = true;
+    if (colorChanged) colorAttr.needsUpdate = true;
   });
 
   return (
