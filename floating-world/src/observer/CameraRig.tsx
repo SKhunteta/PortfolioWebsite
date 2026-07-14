@@ -43,7 +43,7 @@ const planeFwd = new THREE.Vector3();
 // The tour's live framing, reused each frame so the idle circuit never allocates.
 const tourScratch: TourFraming = { x: 0, z: 0, radiusKm: 0, elevation: 0 };
 // The Observe reel's live shot, reused each frame likewise.
-const reelScratch: ReelShot = { x: 0, z: 0, radiusKm: 0, elevation: 0, kind: "orbit", seg: -1, label: "", detail: false, random: false };
+const reelScratch: ReelShot = { x: 0, z: 0, radiusKm: 0, elevation: 0, kind: "orbit", seg: -1, label: "", detail: false, random: false, dive: false };
 // Scratch for picking the nearest train to a reel stop (never allocates).
 const pick = { x: 0, z: 0 };
 // Scratch for the orca reel stop's live, time-of-day-driven centre.
@@ -67,6 +67,41 @@ function frameTrain(
     CONFIG.camera.chaseOffsetKm.up,
     trainPos.z - scratch.z * back
   );
+  controls.target.lerp(trainPos, k);
+  camera.position.lerp(desiredCam, k);
+}
+
+// The Observe reel's "diving into the underground" stop. Same tail chase as
+// frameTrain while the train runs at grade, but as it sinks toward tunnel depth
+// the camera RISES and pulls nearly overhead — a look-down that watches the
+// train slip under the translucent paper (past the underground light shafts),
+// instead of tilting low along its heading and sweeping Elliott Bay onto the
+// horizon (the read that made this look like plunging below water). Camera
+// height only grows, so it stays well clear of the −0.06 water plane; the
+// target still follows the train down so it stays framed as it goes under.
+function frameTunnelDive(
+  controls: OrbitControlsImpl,
+  camera: THREE.PerspectiveCamera,
+  train: TrainState,
+  k: number
+) {
+  pointAt(train.dir, train.sRendered, scratch);
+  trainPos.set(scratch.x, train.y, scratch.z);
+  tangentAt(train.dir, train.sRendered, scratch);
+  // Descent 0..1 from at-grade to full tunnel depth, from the train's own
+  // smoothed height (grade.ts eases it down at the portal).
+  const atGradeY = CONFIG.ribbon.y["at-grade"];
+  const tunnelY = CONFIG.ribbon.y.tunnel;
+  const d = THREE.MathUtils.clamp((atGradeY - train.y) / (atGradeY - tunnelY), 0, 1);
+  const s = d * d * (3 - 2 * d); // smoothstep
+  const dive = CONFIG.camera.tunnelDive;
+  const back = THREE.MathUtils.lerp(
+    CONFIG.camera.chaseOffsetKm.back + train.vEst * 8,
+    dive.backKm,
+    s
+  );
+  const up = THREE.MathUtils.lerp(CONFIG.camera.chaseOffsetKm.up, dive.upKm, s);
+  desiredCam.set(trainPos.x - scratch.x * back, up, trainPos.z - scratch.z * back);
   controls.target.lerp(trainPos, k);
   camera.position.lerp(desiredCam, k);
 }
@@ -510,8 +545,10 @@ export function CameraRig() {
         const rideTrain =
           shot.kind === "train" ? TRAINS.get(reelTrainId.current ?? "") : undefined;
         if (rideTrain) {
-          // Wake chase, or the tight three-quarter broadside on a detail stop.
+          // Wake chase; the tight three-quarter broadside on a detail stop; or
+          // the grade-aware lift that rides it down into the tunnel on a dive.
           if (shot.detail) frameTrainDetail(controls, camera, rideTrain, chaseK);
+          else if (shot.dive) frameTunnelDive(controls, camera, rideTrain, chaseK); // into the underground
           else frameTrain(controls, camera, rideTrain, chaseK); // perspective of light rail
           ridingThisFrame = true;
           detailThisFrame = shot.detail;
