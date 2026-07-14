@@ -55,6 +55,9 @@ export interface DeviceProfile {
   // dwell (stations/PlatformLife.tsx) — the pool is stations × this.
   birdCount: number;
   platformMotes: number;
+  // Burke-Gilman riders (map/Cyclists.tsx) — ONE instanced draw call, count is
+  // how many hero figures ride the trail at once.
+  cyclistCount: number;
 }
 
 const PROFILES: Record<Tier, DeviceProfile> = {
@@ -71,6 +74,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     buildingCount: 2200,
     birdCount: 9,
     platformMotes: 4,
+    cyclistCount: 3,
   },
   tablet: {
     dpr: [1, 2],
@@ -85,6 +89,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     buildingCount: 4000,
     birdCount: 13,
     platformMotes: 6,
+    cyclistCount: 4,
   },
   desktop: {
     dpr: [1, 2],
@@ -99,6 +104,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     buildingCount: 6500,
     birdCount: 16,
     platformMotes: 8,
+    cyclistCount: 5,
   },
 };
 

@@ -8,11 +8,13 @@ import { GroundPlane } from "./map/GroundPlane";
 import { Water } from "./map/Water";
 import { Parks } from "./map/Parks";
 import { Roads } from "./map/Roads";
+import { TrafficWash } from "./map/TrafficWash";
 import { Forest } from "./map/Forest";
 import { Buildings } from "./map/Buildings";
 import { Landmarks } from "./map/Landmarks";
 import { Kasumi } from "./map/Kasumi";
 import { Ferries } from "./map/Ferries";
+import { Cyclists } from "./map/Cyclists";
 import { Seaplanes } from "./map/Seaplanes";
 import { Wakes } from "./map/Wakes";
 import { Birds } from "./map/Birds";
@@ -90,12 +92,14 @@ export default function App() {
         <Water />
         <GroundPlane />
         <Roads />
+        <TrafficWash />
         <Forest />
         <Buildings />
         <Landmarks />
         <Kasumi />
         <Wakes />
         <Ferries />
+        <Cyclists />
         <Seaplanes />
         <Birds />
         <CityLights />

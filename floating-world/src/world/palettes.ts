@@ -44,6 +44,8 @@ export interface Palette {
   parkOpacity: number;
   road: THREE.Color; // dry-brush sumi ink by day, lantern gold by night
   roadIntensity: number;
+  traffic: THREE.Color; // abstract vehicle-flow shimmer scrolling the roads
+  trafficIntensity: number; // palette floor; real Seattle hour scales the rest
   landmark: THREE.Color; // hand-inked silhouettes (Needle, skyline, Rainier)
   landmarkOpacity: number;
   tree: THREE.Color; // the evergreen carpet — conifer silhouettes on the land
@@ -88,6 +90,8 @@ const DAY: Palette = {
   parkOpacity: 0.5,
   road: new THREE.Color("#4c3a28"), // sumi ink strokes
   roadIntensity: 0.55,
+  traffic: new THREE.Color("#7a5230"), // warm ink-ochre flow over the sumi streets
+  trafficIntensity: 0.5,
   landmark: new THREE.Color("#8a5a40"), // warm sepia ink massing
   landmarkOpacity: 1.0,
   tree: new THREE.Color("#4f6347"), // muted evergreen — the forested land
@@ -127,6 +131,8 @@ const NIGHT: Palette = {
   parkOpacity: 0.28,
   road: new THREE.Color("#e0a55e"), // lantern-gold streets
   roadIntensity: 0.5,
+  traffic: new THREE.Color("#ecac5e"), // lantern-gold headlamp flow after dark
+  trafficIntensity: 0.55,
   landmark: new THREE.Color("#6e4436"),
   landmarkOpacity: 1.0,
   tree: new THREE.Color("#33382c"), // forests go to dark ink after dark
@@ -172,6 +178,7 @@ const COLOR_KEYS = [
   "waterEdge",
   "park",
   "road",
+  "traffic",
   "landmark",
   "tree",
   "building",
@@ -192,6 +199,7 @@ const SCALAR_KEYS = [
   "waterEdgeIntensity",
   "parkOpacity",
   "roadIntensity",
+  "trafficIntensity",
   "landmarkOpacity",
   "treeOpacity",
   "buildingOpacity",
