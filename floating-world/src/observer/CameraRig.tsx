@@ -41,7 +41,7 @@ const planeFwd = new THREE.Vector3();
 // The tour's live framing, reused each frame so the idle circuit never allocates.
 const tourScratch: TourFraming = { x: 0, z: 0, radiusKm: 0, elevation: 0 };
 // The Observe reel's live shot, reused each frame likewise.
-const reelScratch: ReelShot = { x: 0, z: 0, radiusKm: 0, elevation: 0, kind: "orbit", seg: -1, label: "" };
+const reelScratch: ReelShot = { x: 0, z: 0, radiusKm: 0, elevation: 0, kind: "orbit", seg: -1, label: "", detail: false };
 // Scratch for picking the nearest train to a reel stop (never allocates).
 const pick = { x: 0, z: 0 };
 
@@ -87,6 +87,67 @@ function framePlane(
     planePos.x - planeFwd.x * off.back,
     planePos.y - planeFwd.y * off.back + off.up,
     planePos.z - planeFwd.z * off.back
+  );
+  controls.target.lerp(planePos, k);
+  camera.position.lerp(desiredCam, k);
+}
+
+// The reel's train DETAIL close-up: instead of the wake chase, slide in tight
+// and onto the flank — a slow front-three-quarter broadside where the toy S700
+// overfills the frame and the wave livery, ink seams and lit windows read. The
+// camera sits a hair AHEAD (`fwd`, along the travel tangent) to catch the nose
+// cap + headlights, `side` off the perpendicular to swing onto the flank, and
+// `up` above the roofline looking gently down. The train stays centred because
+// the offset is rebuilt from its live tangent each frame.
+function frameTrainDetail(
+  controls: OrbitControlsImpl,
+  camera: THREE.PerspectiveCamera,
+  train: TrainState,
+  k: number
+) {
+  pointAt(train.dir, train.sRendered, scratch);
+  trainPos.set(scratch.x, train.y, scratch.z);
+  tangentAt(train.dir, train.sRendered, scratch); // unit travel tangent (x,z)
+  const o = CONFIG.camera.trainDetailOffsetKm;
+  const px = -scratch.z; // left-hand perpendicular in the xz plane
+  const pz = scratch.x;
+  desiredCam.set(
+    trainPos.x + scratch.x * o.fwd + px * o.side,
+    train.y + o.up,
+    trainPos.z + scratch.z * o.fwd + pz * o.side
+  );
+  controls.target.lerp(trainPos, k);
+  camera.position.lerp(desiredCam, k);
+}
+
+// The reel's plane DETAIL close-up: slide onto the jet's flank for a slow
+// rear-three-quarter where the tail device and the fuselage wordmark read. The
+// camera sits a hair BEHIND the nose (`back`, so the swept fin faces us), `side`
+// off the horizontal perpendicular onto the flank, and `up` above the wing.
+function framePlaneDetail(
+  controls: OrbitControlsImpl,
+  camera: THREE.PerspectiveCamera,
+  flight: Flight,
+  k: number
+) {
+  const pose = airlinerPoseAt(flight, CLOCK.t, planePose);
+  planePos.set(pose.x, pose.y, pose.z);
+  const cp = Math.cos(pose.pitch);
+  planeFwd
+    .set(cp * Math.cos(pose.yaw), Math.sin(pose.pitch), -cp * Math.sin(pose.yaw))
+    .normalize();
+  const o = CONFIG.camera.planeDetailOffsetKm;
+  // Perpendicular to the nose heading in the xz plane (ignore pitch for the
+  // side swing so the camera stays level with the flank, not tilted under it).
+  let sx = -planeFwd.z;
+  let sz = planeFwd.x;
+  const sl = Math.hypot(sx, sz) || 1;
+  sx /= sl;
+  sz /= sl;
+  desiredCam.set(
+    planePos.x - planeFwd.x * o.back + sx * o.side,
+    planePos.y - planeFwd.y * o.back + o.up,
+    planePos.z - planeFwd.z * o.back + sz * o.side
   );
   controls.target.lerp(planePos, k);
   camera.position.lerp(desiredCam, k);
@@ -172,6 +233,10 @@ export function CameraRig() {
   // True on frames the reel is riding a train or jet — the FOV loop reads it to
   // narrow the lens just as a manual chase does.
   const observeRiding = useRef(false);
+  // True on frames the reel is holding a DETAIL close-up — the FOV loop narrows
+  // harder still for the intimate zoom, and the reel drops OrbitControls'
+  // min-distance floor so the tight framing isn't clamped back out.
+  const observeDetail = useRef(false);
   // Start south of the network looking north — the city reads map-like
   // before the drift carries you elsewhere.
   const driftTheta = useRef(1.35);
@@ -184,7 +249,9 @@ export function CameraRig() {
   useFrame(() => {
     const baseFov = fovForAspect(PROFILE.baseFov, size.width / size.height);
     const chasing = followId !== null || followPlane !== null || observeRiding.current;
-    const targetFov = chasing ? baseFov - 6 : baseFov;
+    // Detail close-ups narrow the lens harder than an ordinary chase — the
+    // intimate zoom that lets the woodblock detail fill the frame.
+    const targetFov = observeDetail.current ? baseFov - 12 : chasing ? baseFov - 6 : baseFov;
     if (Math.abs(camera.fov - targetFov) > 0.05) {
       camera.fov += (targetFov - camera.fov) * Math.min(1, CLOCK.dt * 2);
       camera.updateProjectionMatrix();
@@ -368,6 +435,7 @@ export function CameraRig() {
 
     const chaseK = 1 - Math.exp(-CONFIG.camera.chaseLerp * CLOCK.dt);
     let ridingThisFrame = false;
+    let detailThisFrame = false;
 
     // A slow framed orbit around a centre — the shared motion under the idle
     // drift/tour AND the Observe reel's orbit stops. Advances driftTheta so the
@@ -421,11 +489,17 @@ export function CameraRig() {
         const rideTrain =
           shot.kind === "train" ? TRAINS.get(reelTrainId.current ?? "") : undefined;
         if (rideTrain) {
-          frameTrain(controls, camera, rideTrain, chaseK); // perspective of light rail
+          // Wake chase, or the tight three-quarter broadside on a detail stop.
+          if (shot.detail) frameTrainDetail(controls, camera, rideTrain, chaseK);
+          else frameTrain(controls, camera, rideTrain, chaseK); // perspective of light rail
           ridingThisFrame = true;
+          detailThisFrame = shot.detail;
         } else if (shot.kind === "plane" && reelPlaneIdx.current !== null) {
-          framePlane(controls, camera, FLIGHTS[reelPlaneIdx.current], chaseK); // perspective of plane
+          const jet = FLIGHTS[reelPlaneIdx.current];
+          if (shot.detail) framePlaneDetail(controls, camera, jet, chaseK);
+          else framePlane(controls, camera, jet, chaseK); // perspective of plane
           ridingThisFrame = true;
+          detailThisFrame = shot.detail;
         } else {
           // An orbit stop — or a rail stop with no train nearby (night, feed
           // asleep): fall back to a slow orbit at the anchor.
@@ -458,6 +532,13 @@ export function CameraRig() {
     }
 
     observeRiding.current = ridingThisFrame;
+    observeDetail.current = detailThisFrame;
+    // Drop OrbitControls' min-distance floor while a detail close-up holds so
+    // its tight framing isn't clamped back out to the ordinary 0.8 km; restore
+    // it otherwise. controls.update() below reads the live value.
+    controls.minDistance = detailThisFrame
+      ? CONFIG.camera.detailMinDistance
+      : CONFIG.camera.minDistance;
 
     // One zustand write per transition, from any branch above.
     if (touringThisFrame !== touringRef.current) {
