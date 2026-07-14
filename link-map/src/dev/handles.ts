@@ -4,6 +4,7 @@
 import { TRAINS, useUi } from "../trains/store";
 import { setPhaseOverride } from "../world/sun";
 import { setWeatherOverride, WeatherKind } from "../world/weather";
+import { stampStain } from "../world/stainField";
 import { TIER } from "../world/device";
 
 const stats = {
@@ -44,6 +45,8 @@ export function installHandles() {
     },
     followId: (id: string) => useUi.getState().setFollowTrain(id),
     release: () => useUi.getState().setFollowTrain(null),
+    // Lay stain by hand (x,z world km) — for smoke-testing #21 without a feed.
+    stain: (x: number, z: number, seconds = 6) => stampStain(x, z, seconds),
     // For the smoke harness: pick a train on a known curve deterministically.
     trainList: () =>
       [...TRAINS.values()].map((t) => ({

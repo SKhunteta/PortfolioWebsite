@@ -22,6 +22,8 @@ import * as THREE from "three";
 import { LIVE } from "../world/palettes";
 import { WEATHER } from "../world/weather";
 import { CLOCK } from "../world/clock";
+import { sunPhase } from "../world/sun";
+import { STAIN_TEX, STAIN_MIN, STAIN_SIZE } from "../world/stainField";
 import { PROFILE } from "../world/device";
 import { CENTROID } from "./network";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
@@ -46,6 +48,10 @@ const FRAG = /* glsl */ `
   uniform float uOpacity;
   uniform float uRain; // eased live weather (world/weather.ts)
   uniform float uTime;
+  uniform sampler2D uStain; // world-space rail stain (world/stainField.ts)
+  uniform vec2 uStainMin;
+  uniform vec2 uStainSize;
+  uniform float uStainAmp;
   void main() {
     float wash   = wcFbm(vWorld * 0.11 + 31.7); // ~9 km watercolor washes
     float grain  = wcFbm(vWorld * 2.6);         // pigment mottling
@@ -57,6 +63,23 @@ const FRAG = /* glsl */ `
     // and it costs nothing on a dry day (uRain eases back to 0).
     float wet = wcNoise(vWorld * 5.0 + vec2(0.0, uTime * 0.28));
     c *= 1.0 - uRain * 0.2 * smoothstep(0.55, 0.95, wet);
+    // #21: where trains have recently passed, the paper stays warm and damp —
+    // a slow-fading stain that leaves the busy lines lived-in and the sleepy
+    // tails crisp. Sample the world-space field, then darken like drunk water
+    // and warm the hue a touch so it reads as damp paper, not a colour wash.
+    // A hair of the fine grain mottles the stain so it dries unevenly.
+    // A small world-space warp so the stain bleeds like pigment instead of
+    // revealing the field's grid edges.
+    vec2 stWarp = vec2(wcNoise(vWorld * 3.1 + 5.0), wcNoise(vWorld.yx * 3.1 - 2.0)) - 0.5;
+    vec2 stUv = (vWorld + stWarp * 0.18 - uStainMin) / uStainSize;
+    vec2 inBounds = step(vec2(0.0), stUv) * step(stUv, vec2(1.0));
+    float stain = texture2D(uStain, stUv).r * inBounds.x * inBounds.y;
+    stain *= uStainAmp * (0.8 + 0.4 * fibers);
+    // Damp paper drinks a little light, then a warm amber bloom lifts the hue —
+    // additive so the stain still reads as warmth against the near-black night
+    // ground, where a pure darken would vanish.
+    c *= 1.0 - 0.15 * stain;
+    c += vec3(0.035, 0.021, 0.006) * stain;
     gl_FragColor = vec4(mix(c, uFog, fogFactor()), uOpacity);
   }
 `;
@@ -72,6 +95,8 @@ export function GroundPlane() {
     m.uniforms.uGrain.value = LIVE.paperGrain;
     m.uniforms.uRain.value = WEATHER.rain;
     m.uniforms.uTime.value = CLOCK.t;
+    // The warm damp reads at night; by day the pale page all but hides it.
+    m.uniforms.uStainAmp.value = 1 - 0.6 * sunPhase();
   });
 
   return (
@@ -95,6 +120,10 @@ export function GroundPlane() {
           uOpacity: { value: LIVE.groundOpacity },
           uRain: { value: 0 },
           uTime: { value: 0 },
+          uStain: { value: STAIN_TEX },
+          uStainMin: { value: STAIN_MIN },
+          uStainSize: { value: STAIN_SIZE },
+          uStainAmp: { value: 1 },
         }}
         transparent
         depthWrite={false}
