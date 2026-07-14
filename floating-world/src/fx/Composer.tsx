@@ -7,7 +7,7 @@
 
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { EffectComposer, Bloom, Vignette, Noise, SMAA } from "@react-three/postprocessing";
+import { EffectComposer, Bloom, Vignette, Noise } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import { HalfFloatType } from "three";
 import { PROFILE } from "../world/device";
@@ -24,15 +24,18 @@ export function Composer() {
 
   // Half-float buffer so the painted-HDR sources (train cores ~2.6) survive to
   // the bloom pass and the transparent washi grade presents correctly — a byte
-  // buffer crushes this scene to black. Desktop antialiases with SMAA and drops
-  // MSAA (multisampling 0): an MSAA byte/HDR render target composites this
-  // all-transparent scene to black, so the crisp sumi edges come from SMAA
-  // instead. Tablet keeps MSAA 4×. Mirrors the working meow-9/ketu-9 stacks.
+  // buffer crushes this scene to black (the original black-desktop bug was MSAA
+  // on the DEFAULT byte buffer, not MSAA itself). With HalfFloat, MSAA 4× is
+  // stable on every tier — the same path the tablet tier and the link-map
+  // sibling ship. An earlier fix swapped desktop to SMAA (multisampling 0), but
+  // SMAA's luma edge detection on this HDR buffer of painted-HDR sources and
+  // thin drifting sumi strokes classifies edges differently frame-to-frame and
+  // shimmers, so the crisp print flickered on desktop. Keep MSAA everywhere;
+  // desktop only adds the film-grain pass on top.
   const full = PROFILE.composer === "full";
 
   return (
-    <EffectComposer multisampling={full ? 0 : 4} frameBufferType={HalfFloatType}>
-      {full ? <SMAA /> : <></>}
+    <EffectComposer multisampling={4} frameBufferType={HalfFloatType}>
       <Bloom
         ref={bloomRef as never}
         mipmapBlur
