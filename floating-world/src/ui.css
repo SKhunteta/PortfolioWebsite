@@ -283,10 +283,22 @@ body {
   line-height: 1.9;
   letter-spacing: 0.1em;
   color: #3d2f1f;
-  /* A paper halo instead of a dark glow: the ink floats over the print. */
+  /* A paper halo instead of a dark glow: the ink floats over the print.
+     A soft washi wash sits behind it too (like the masthead's ::before) —
+     the halo alone hugs the glyph strokes and can't fill the space between
+     words, so against the indigo night map the sentence nearly vanishes.
+     The wash makes a patch of paper show through at any hour. */
   text-shadow:
     0 0 4px rgba(242, 230, 198, 0.92),
     0 1px 22px rgba(242, 230, 198, 0.75);
+  padding: 14px 22px;
+  border-radius: 14px;
+  background: radial-gradient(
+    120% 160% at 50% 50%,
+    rgba(243, 231, 200, 0.55),
+    rgba(243, 231, 200, 0.28) 60%,
+    rgba(243, 231, 200, 0) 100%
+  );
 }
 @keyframes hud-intro {
   0% { opacity: 0; }
