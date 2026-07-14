@@ -21,10 +21,18 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { projectLatLng } from "./network";
 import { LIVE } from "../world/palettes";
+import { sunPhase, sunPhaseAt, getPhaseOverride } from "../world/sun";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
+
+const ss = (a: number, b: number, x: number) => {
+  const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+};
 
 const VERT = /* glsl */ `
   ${FOG_VARYINGS_VERT}
+  attribute float aRainier;
+  varying float vRainier;
   varying float vY;
   varying vec3 vNormal;
   void main() {
@@ -32,6 +40,7 @@ const VERT = /* glsl */ `
     vWorld = world.xz;
     vY = world.y;
     vNormal = normal; // geometry is baked in world space; the mesh never moves
+    vRainier = aRainier;
     vec4 mv = viewMatrix * world;
     vFogDepth = -mv.z;
     gl_Position = projectionMatrix * mv;
@@ -43,8 +52,18 @@ const FRAG = /* glsl */ `
   ${FOG_VARYINGS_FRAG}
   varying float vY;
   varying vec3 vNormal;
+  varying float vRainier;
   uniform vec3 uColor;
   uniform float uOpacity;
+  uniform vec2 uRainierAxis; // Rainier's world xz — the axis the veins radiate from
+  uniform float uDawn;       // 0..1 Red Fuji vermilion, peaks at sunrise
+  uniform float uDusk;       // 0..1 indigo-plum, peaks at sundown
+
+  const vec3 SNOW = vec3(0.97, 0.94, 0.88); // warm white, the way Hokusai capped Fuji
+  const vec3 INK  = vec3(0.26, 0.18, 0.12); // sumi keyline
+  const vec3 RED_FUJI = vec3(0.72, 0.30, 0.22); // Gaifū Kaisei vermilion flank
+  const vec3 PLUM = vec3(0.33, 0.24, 0.42);     // dusk indigo-plum
+
   void main() {
     float wash = wcFbm(vWorld * 0.8 + vY * 2.1); // pigment mottle per face
     // A fixed key light from the northwest sky: sunlit and shadowed faces
@@ -54,14 +73,43 @@ const FRAG = /* glsl */ `
     // face sinks into the dark ground, while the lit ceiling holds at 1.0 (the
     // massing keeps its dimension without crossing the bloom line).
     float key = 0.66 + 0.34 * max(0.0, dot(n, normalize(vec3(-0.5, 0.8, -0.45))));
-    vec3 c = uColor * key * (0.85 + 0.3 * wash);
+
+    // --- Red Fuji: Rainier's flank takes the sun's pigment — vermilion at
+    //     dawn (Hokusai's Gaifū Kaisei), indigo-plum at dusk, pale sepia ghost
+    //     at noon (uDawn/uDusk both fall to 0). The tint is heaviest low on the
+    //     body and lifts toward the snow, and rides only on the Rainier flag.
+    float flankGrad = smoothstep(3.0, 0.3, vY);
+    vec3 rainierBody = mix(uColor, mix(uColor, RED_FUJI, 0.9), uDawn * flankGrad);
+    rainierBody = mix(rainierBody, mix(uColor, PLUM, 0.85), uDusk * flankGrad);
+    vec3 body = mix(uColor, rainierBody, vRainier);
+
+    vec3 c = body * key * (0.85 + 0.3 * wash);
     // Watercolor still pools faintly at the base.
     c *= mix(1.08, 0.94, smoothstep(0.0, 0.9, vY));
-    // Snowline — only Rainier and the Olympics climb past ~1.4 km. A lower
-    // start and a stronger cap make Rainier read as a clear snow-capped hero
-    // (Fuji's register) instead of dissolving into the pale sky.
-    // Warm white, the way Hokusai capped Fuji — never a cool blue-grey.
-    c = mix(c, vec3(0.97, 0.94, 0.88), smoothstep(1.4, 3.4, vY) * 0.93);
+
+    // --- Snow. The Olympics keep the smooth Hokusai cap (atmospheric, half
+    //     dissolved). Rainier instead wears RADIATING SNOW-VEINS: a solid
+    //     summit cap breaking into downward tongues along angular channels,
+    //     the way the woodcuts drew Fuji's snowfields streaking down the flank.
+    vec2 d = vWorld - uRainierAxis;
+    float ang = atan(d.y, d.x);
+    float waver = wcNoise(vec2(ang * 3.0, vY * 0.5));       // tongues aren't ruler-straight
+    float channel = wcFbm(vec2(ang * 8.0 + waver * 1.5, 2.3));
+    float solidCap = smoothstep(2.5, 3.0, vY);              // solid white up top
+    float tongue = smoothstep(1.3, 2.7, vY);                // fade zone for the fingers
+    float thr = mix(0.34, 0.9, 1.0 - tongue);               // deeper down, only the strongest veins hold
+    float veinSnow = max(solidCap, smoothstep(thr, thr + 0.12, channel) * tongue);
+    float olympicSnow = smoothstep(1.4, 3.4, vY) * 0.93;
+    c = mix(c, SNOW, mix(olympicSnow, veinSnow, vRainier));
+
+    // --- Sumi keyline: a fresnel rim inks Rainier's silhouette so it reads as
+    //     the DRAWN hero of the sheet, not an atmospheric stain like the
+    //     Olympics ghosting the far horizon. Bold in linework, not in light.
+    vec3 wpos = vec3(vWorld.x, vY, vWorld.y);
+    vec3 view = normalize(cameraPosition - wpos);
+    float rim = smoothstep(0.55, 0.98, 1.0 - max(0.0, dot(n, view))) * vRainier;
+    c = mix(c, INK, rim * 0.32);
+
     float a = uOpacity * (0.94 + 0.12 * wash);
     gl_FragColor = vec4(mix(c, uFog, fogFactor()), a);
   }
@@ -292,13 +340,16 @@ function buildGeometry(): THREE.BufferGeometry {
 
   // --- Mount Rainier, ~85 km southeast: the print's Fuji. Nudged a touch
   //     taller so its snow cap climbs clear of the mist bands and reads as a
-  //     hero on the horizon — still a pale presence, not a prop.
-  {
+  //     hero on the horizon. The mythic paint (Red Fuji dawn glow, radiating
+  //     snow-veins, sumi keyline) rides on the `aRainier` vertex flag set
+  //     below, so it lands on THIS cone alone — the Olympics stay atmospheric.
+  const rainier = (() => {
     const { x, z } = projectLatLng(46.8523, -121.7603);
     const cone = new THREE.ConeGeometry(9.4, 5.0, 9);
     cone.translate(x, 2.5, z);
-    parts.push(cone);
-  }
+    return cone;
+  })();
+  parts.push(rainier);
 
   // --- the Olympics, ~60 km west across the Sound: Rainier's answer on the
   //     opposite horizon — a jagged ridge, half-dissolved in fog, snowline
@@ -309,6 +360,15 @@ function buildGeometry(): THREE.BufferGeometry {
   parts.push(peak(47.8358, -123.0864, 3.4, 2.0)); // Buckhorn ridge, north end
   parts.push(peak(47.5217, -123.2372, 3.2, 1.9)); // Washington/Ellinor massif
 
+  // Tag every vertex with whether it belongs to Rainier (1) or not (0). The
+  // flag must exist on ALL parts or mergeGeometries refuses the merge; the
+  // fragment shader keys the mythic paint off it so nothing else is touched.
+  for (const g of parts) {
+    const n = g.attributes.position.count;
+    const flag = new Float32Array(n).fill(g === rainier ? 1 : 0);
+    g.setAttribute("aRainier", new THREE.BufferAttribute(flag, 1));
+  }
+
   const merged = mergeGeometries(parts, false)!;
   parts.forEach((g) => g.dispose());
   return merged;
@@ -317,12 +377,42 @@ function buildGeometry(): THREE.BufferGeometry {
 export function Landmarks() {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const geometry = useMemo(buildGeometry, []);
+  const rainierAxis = useMemo(() => {
+    const { x, z } = projectLatLng(46.8523, -121.7603);
+    return new THREE.Vector2(x, z);
+  }, []);
+  // The sun phase is a single 0..1 blend (night..day) with no dawn/dusk sign,
+  // so we recover the direction (rising → Red Fuji vermilion, falling → dusk
+  // plum) from the sun's TRAJECTORY, not from frame velocity — the real sun
+  // crawls far too slowly to register frame-to-frame. Live: sample the honest
+  // sun 10 min ahead. Override (observe sweep / ?phase=): the swept value moves
+  // fast, so a smoothed velocity works, and a pinned-static phase defaults to
+  // the hero Red Fuji.
+  const phaseRef = useRef(sunPhase());
+  const velRef = useRef(0);
 
   useFrame(() => {
     const m = materialRef.current;
     if (!m) return;
     m.uniforms.uOpacity.value = LIVE.landmarkOpacity;
     m.uniforms.uFogDensity.value = LIVE.fogDensity;
+
+    const phase = sunPhase();
+    let dir: number;
+    if (getPhaseOverride() == null) {
+      const ahead = sunPhaseAt(new Date(Date.now() + 10 * 60 * 1000));
+      dir = ahead > phase + 1e-4 ? 1 : ahead < phase - 1e-4 ? -1 : 0;
+    } else {
+      const dp = phase - phaseRef.current;
+      velRef.current = velRef.current * 0.9 + (Math.abs(dp) > 1e-5 ? Math.sign(dp) : 0) * 0.1;
+      dir = Math.abs(velRef.current) < 0.05 ? 1 : Math.sign(velRef.current);
+    }
+    phaseRef.current = phase;
+
+    // The glow lives in the twilight band and falls to a pale ghost at noon.
+    const env = ss(0.06, 0.4, phase) * (1 - ss(0.5, 0.9, phase));
+    m.uniforms.uDawn.value = env * Math.max(0, dir);
+    m.uniforms.uDusk.value = env * Math.max(0, -dir);
   });
 
   return (
@@ -336,6 +426,9 @@ export function Landmarks() {
           uOpacity: { value: LIVE.landmarkOpacity },
           uFog: { value: LIVE.fog },
           uFogDensity: { value: LIVE.fogDensity },
+          uRainierAxis: { value: rainierAxis },
+          uDawn: { value: 0 },
+          uDusk: { value: 0 },
         }}
         transparent
         depthWrite={false}
