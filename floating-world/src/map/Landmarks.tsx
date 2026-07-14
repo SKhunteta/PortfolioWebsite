@@ -38,8 +38,9 @@ export const WHEEL_LNG = -122.3426;
 export const WHEEL_HUB_Y = 0.26;
 export const WHEEL_R = 0.22;
 // A stately, unhurried rotation — always turning, never distracting on a
-// toy map watched for minutes at a time.
-export const WHEEL_SPIN_PERIOD_S = 120;
+// toy map watched for minutes at a time. 100s (20% faster than the first
+// pass's 120s, which read as barely-moving at drift distance).
+export const WHEEL_SPIN_PERIOD_S = 100;
 
 const ss = (a: number, b: number, x: number) => {
   const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
