@@ -60,6 +60,8 @@ export interface Palette {
   buildingOpacity: number;
   ferry: THREE.Color; // WSF hulls — pale washi against the Prussian Sound
   ferryOpacity: number;
+  tline: THREE.Color; // the little Tacoma T Line streetcar body (map/TacomaLink.tsx)
+  tlineWave: THREE.Color; // its teal/green identity wave over the navy skirt
   // Toy train
   trainAmbient: number; // livery brightness
   trainWindow: THREE.Color;
@@ -108,6 +110,8 @@ const DAY: Palette = {
   buildingOpacity: 0.95,
   ferry: new THREE.Color("#f0e8d2"),
   ferryOpacity: 0.95,
+  tline: new THREE.Color("#eae3cf"), // pale washi streetcar body, a hair cooler than the ferries
+  tlineWave: new THREE.Color("#2f8f86"), // Sound Transit teal wave, held under the bloom ceiling
   trainAmbient: 1.05,
   trainWindow: new THREE.Color("#fff1cf"),
   windowIntensity: 0.2,
@@ -151,6 +155,8 @@ const NIGHT: Palette = {
   buildingOpacity: 0.9,
   ferry: new THREE.Color("#c4a988"),
   ferryOpacity: 0.8,
+  tline: new THREE.Color("#b39c7a"), // lantern-warm body after dark, kin to the ferry hull
+  tlineWave: new THREE.Color("#2a6b66"), // deeper teal wave by lantern light
   trainAmbient: 0.95,
   trainWindow: new THREE.Color("#ffd9a8"),
   windowIntensity: 0.85,
@@ -194,6 +200,8 @@ const COLOR_KEYS = [
   "tree",
   "building",
   "ferry",
+  "tline",
+  "tlineWave",
   "trainWindow",
 ] as const;
 const SCALAR_KEYS = [
