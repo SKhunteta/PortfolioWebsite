@@ -167,6 +167,26 @@ function tower(lat: number, lng: number, w: number, h: number, d: number, yaw = 
   return geo;
 }
 
+/** A little conifer: a short trunk under a stacked pair of cones — the ragged
+ *  evergreen massing that skirts every Puget Sound town. Kept small so it reads
+ *  as a tree, not a peak; carries no mountain flag, so it takes the generic
+ *  landmark pigment (a dark green-ink wash) rather than any snowline paint. */
+function conifer(lat: number, lng: number, h: number, spread = 0) {
+  const { x, z } = projectLatLng(lat, lng);
+  const trunk = new THREE.CylinderGeometry(h * 0.05, h * 0.07, h * 0.3, 5);
+  trunk.translate(0, h * 0.15, 0);
+  const lower = new THREE.ConeGeometry(h * 0.42, h * 0.6, 6);
+  lower.translate(0, h * 0.5, 0);
+  const upper = new THREE.ConeGeometry(h * 0.3, h * 0.55, 6);
+  upper.translate(0, h * 0.8, 0);
+  const geo = mergeGeometries([trunk, lower, upper], false)!;
+  trunk.dispose();
+  lower.dispose();
+  upper.dispose();
+  geo.translate(x, 0, z + spread);
+  return geo;
+}
+
 /** A mountain: base-anchored cone, real height in km (the snowline in the
  *  fragment shader does the rest). */
 function peak(lat: number, lng: number, r: number, h: number) {
@@ -511,6 +531,37 @@ function buildGeometry(): THREE.BufferGeometry {
     return g;
   })();
   parts.push(tacoma);
+
+  // --- a little Tacoma around the Dome: so the great white bubble doesn't sit
+  //     alone on the far horizon, ring it with the low downtown massing and the
+  //     evergreen skirt every Puget Sound town wears. A modest cluster of boxy
+  //     mid-rises (the Museum-of-Glass / downtown Tacoma silhouette) with a few
+  //     taller cores, and a scatter of conifers pushing up the ridge behind —
+  //     enough to read as a second city out past Rainier, not a lone landmark.
+  //     Hand-placed near the real Dome (47.2364, -122.4241) so it stays put on
+  //     the drifting print; all generic-pigment, no landmark flags. ---
+  // downtown blocks north of the Dome, along the Pacific Ave / Dock St grade
+  parts.push(tower(47.2452, -122.4382, 0.34, 0.62, 0.34, 0.3));   // a downtown core
+  parts.push(tower(47.2471, -122.4368, 0.3, 0.78, 0.3, -0.2));    // the tallest tower
+  parts.push(tower(47.2438, -122.4405, 0.4, 0.46, 0.4, 0.5));     // a broad mid-rise
+  parts.push(tower(47.2489, -122.4351, 0.28, 0.54, 0.28, 0.1));
+  parts.push(tower(47.2419, -122.4351, 0.44, 0.36, 0.5, -0.35));  // a low retail slab
+  parts.push(tower(47.2405, -122.4318, 0.32, 0.44, 0.32, 0.4));
+  parts.push(tower(47.2468, -122.4419, 0.26, 0.5, 0.26, 0.15));
+  parts.push(tower(47.2436, -122.4463, 0.3, 0.4, 0.34, -0.5));
+  parts.push(tower(47.239, -122.4372, 0.36, 0.34, 0.36, 0.25));   // near the Dome's north face
+  parts.push(tower(47.2413, -122.4278, 0.28, 0.48, 0.28, -0.1));  // out toward the tide flats
+  // the evergreen skirt on the ridge behind (west / south of downtown)
+  parts.push(conifer(47.2503, -122.4441, 0.62, 0.02));
+  parts.push(conifer(47.2496, -122.4462, 0.5, -0.03));
+  parts.push(conifer(47.2515, -122.4408, 0.7, 0.01));
+  parts.push(conifer(47.2481, -122.4489, 0.56, 0.04));
+  parts.push(conifer(47.2528, -122.4383, 0.6, -0.02));
+  parts.push(conifer(47.2466, -122.4507, 0.48, 0.03));
+  parts.push(conifer(47.2352, -122.4498, 0.66, -0.01));
+  parts.push(conifer(47.2331, -122.4471, 0.54, 0.02));
+  parts.push(conifer(47.2377, -122.4519, 0.58, -0.04));
+  parts.push(conifer(47.2308, -122.4436, 0.5, 0.01));
 
   // --- Mount Rainier, ~85 km southeast: the print's Fuji. Nudged a touch
   //     taller so its snow cap climbs clear of the mist bands and reads as a
