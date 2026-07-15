@@ -8,7 +8,10 @@
 // downtown building cluster in Landmarks.tsx (which sits west of roughly
 // -122.436) so the strokes read as streets the buildings face, never as
 // pavement cutting through a footprint. Same dry-brush ink treatment as
-// Roads.tsx — normal-blended pigment, one merged geometry per class.
+// Roads.tsx — normal-blended pigment, one merged geometry per class, and the
+// SAME major/arterial hue split so the I-5 spine reads as one continuous
+// ochre corridor from the baked Seattle network straight through to Tacoma
+// (majors ride LIVE.roadMajor, arterials LIVE.road).
 
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
@@ -47,7 +50,7 @@ const FRAG = /* glsl */ `
   }
 `;
 
-const CLASS_INTENSITY: Record<string, number> = { major: 1.0, arterial: 0.55 };
+const CLASS_INTENSITY: Record<string, number> = { major: 1.0, arterial: 0.65 };
 
 // I-5 through Tacoma: Federal Way (linking to the baked Seattle network's
 // southern edge, ~lat 47.35) down through Fife, past the Tacoma Dome on its
@@ -134,7 +137,10 @@ export function TacomaRoads() {
             vertexShader={VERT}
             fragmentShader={FRAG}
             uniforms={{
-              uRoad: { value: LIVE.road },
+              // Match Roads.tsx: the I-5 major rides the warm-ochre roadMajor
+              // ink, the I-705/Schuster arterials the sumi road ink — one
+              // continuous corridor with the baked Seattle network.
+              uRoad: { value: layer.cls === "major" ? LIVE.roadMajor : LIVE.road },
               uIntensity: { value: LIVE.roadIntensity },
               uFog: { value: LIVE.fog },
               uFogDensity: { value: LIVE.fogDensity },
