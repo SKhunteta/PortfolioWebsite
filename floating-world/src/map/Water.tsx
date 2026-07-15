@@ -21,7 +21,7 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { WATER } from "./waterData";
+import { WATER, TACOMA_WATER, WaterBody } from "./waterData";
 import { projectLatLng } from "./network";
 import { HAS_BASEMAP, BASEMAP_WATER, BasemapPolygon } from "./basemap";
 import { buildStrip, mergeStrips } from "./ribbon";
@@ -197,8 +197,8 @@ function ringsToShapes(polys: BasemapPolygon[]): THREE.Shape[] {
   });
 }
 
-function fallbackPolygons(): BasemapPolygon[] {
-  return WATER.map((body) => ({
+function projectBodies(bodies: WaterBody[]): BasemapPolygon[] {
+  return bodies.map((body) => ({
     ring: body.ring.map(([lat, lng]) => {
       const { x, z } = projectLatLng(lat, lng);
       return [x, z] as [number, number];
@@ -210,6 +210,10 @@ function fallbackPolygons(): BasemapPolygon[] {
       })
     ),
   }));
+}
+
+function fallbackPolygons(): BasemapPolygon[] {
+  return projectBodies(WATER);
 }
 
 function ringAreaKm2(ring: [number, number][]): number {
@@ -244,7 +248,14 @@ export function Water() {
   const tideRef = useRef({ next: 0, val: tideLevel() });
 
   const { fillGeometry, edgeGeometry } = useMemo(() => {
-    const polys = HAS_BASEMAP ? BASEMAP_WATER : fallbackPolygons();
+    // Tacoma's coast is south of the basemap bbox, so it never comes from
+    // BASEMAP_WATER — always append the hand-authored Commencement Bay + Foss
+    // Waterway rings (they're excluded from the WATER fallback, which the
+    // basemap already covers up north, so this can't double them).
+    const polys = [
+      ...(HAS_BASEMAP ? BASEMAP_WATER : fallbackPolygons()),
+      ...projectBodies(TACOMA_WATER),
+    ];
     const fillGeometry = new THREE.ShapeGeometry(ringsToShapes(polys));
     const strips: THREE.BufferGeometry[] = [];
     for (const poly of polys) {

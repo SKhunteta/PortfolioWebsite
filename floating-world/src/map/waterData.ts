@@ -93,3 +93,43 @@ export const WATER: WaterBody[] = [
     ],
   },
 ];
+
+// Tacoma's water, ~45 km south of the origin: Commencement Bay biting in from
+// the Sound to the NE of downtown, and the narrow Thea Foss Waterway running
+// south into the city past the Museum of Glass. The baked OSM basemap stops at
+// its southern bbox edge (47.35), well north of Tacoma, so this stretch of
+// coast never renders from the basemap — these hand-authored rings are the ONLY
+// water down here, and map/Water.tsx always appends them (they read the same
+// woodblock pigment + seigaiha + tideline as every other shore). Deliberately
+// simplified, like the rest of waterData.ts — orientation over cartography, so
+// the T Line's downtown reads as the real waterfront city it is.
+export const TACOMA_WATER: WaterBody[] = [
+  {
+    name: "Commencement Bay",
+    ring: [
+      [47.268, -122.452], // SW shore, toward Ruston / Old Town
+      [47.285, -122.442],
+      [47.298, -122.423], // open water to the north
+      [47.291, -122.4],
+      [47.276, -122.39], // NE tideflats
+      [47.262, -122.401], // east port mouth
+      [47.26, -122.42], // south, at the mouth of the Foss
+      [47.263, -122.438], // downtown waterfront back to the SW
+    ],
+  },
+  {
+    name: "Thea Foss Waterway",
+    ring: [
+      [47.261, -122.425], // mouth, opening to the bay
+      [47.256, -122.427],
+      [47.251, -122.4285],
+      [47.246, -122.43],
+      [47.242, -122.4318], // head of the waterway, by the Museum of Glass
+      [47.2415, -122.43], // east bank back north
+      [47.2455, -122.4285],
+      [47.2505, -122.427],
+      [47.2555, -122.4255],
+      [47.2605, -122.4235],
+    ],
+  },
+];

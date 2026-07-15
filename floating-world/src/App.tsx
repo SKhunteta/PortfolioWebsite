@@ -15,6 +15,7 @@ import { Buildings } from "./map/Buildings";
 import { Landmarks, GreatWheel } from "./map/Landmarks";
 import { Kasumi } from "./map/Kasumi";
 import { Ferries } from "./map/Ferries";
+import { TacomaLink } from "./map/TacomaLink";
 import { Orcas } from "./map/Orcas";
 import { Cyclists } from "./map/Cyclists";
 import { MontlakeCut } from "./map/MontlakeCut";
@@ -108,6 +109,7 @@ export default function App() {
         <Kasumi />
         <Wakes />
         <Ferries />
+        <TacomaLink />
         <Orcas />
         <Cyclists />
         <MontlakeCut />

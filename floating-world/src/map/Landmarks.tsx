@@ -506,9 +506,10 @@ function buildGeometry(): THREE.BufferGeometry {
   parts.push(tower(47.45888, -122.25818, 0.56, 0.13, 0.44, -0.1));
 
   // --- the Tacoma Dome, ~45 km south-southwest: the great white timber dome
-  //     ghosted on the far horizon PAST Rainier's flank — you can't ride to it
-  //     (no station, not on the Link), but on a clear print it's there, a low
-  //     pale bubble on the rust-red concourse. Its own hemisphere cap sits on
+  //     ghosted on the far horizon PAST Rainier's flank — the 1/2 Line don't
+  //     reach it, but the little T Line streetcar does (map/TacomaLink.tsx runs
+  //     the real Tacoma Link past its door), a low pale bubble on the rust-red
+  //     concourse over the accurately-built city below. Its own hemisphere cap sits on
   //     a short drum, scaled up from true-toy so it survives at drift distance
   //     the way the Needle and Wheel did. Carries its OWN `aTacoma` vertex flag
   //     (set below) so the shader can paint its real colours — pale timber roof,
@@ -532,36 +533,110 @@ function buildGeometry(): THREE.BufferGeometry {
   })();
   parts.push(tacoma);
 
-  // --- a little Tacoma around the Dome: so the great white bubble doesn't sit
-  //     alone on the far horizon, ring it with the low downtown massing and the
-  //     evergreen skirt every Puget Sound town wears. A modest cluster of boxy
-  //     mid-rises (the Museum-of-Glass / downtown Tacoma silhouette) with a few
-  //     taller cores, and a scatter of conifers pushing up the ridge behind —
-  //     enough to read as a second city out past Rainier, not a lone landmark.
-  //     Hand-placed near the real Dome (47.2364, -122.4241) so it stays put on
-  //     the drifting print; all generic-pigment, no landmark flags. ---
-  // downtown blocks north of the Dome, along the Pacific Ave / Dock St grade
-  parts.push(tower(47.2452, -122.4382, 0.34, 0.62, 0.34, 0.3));   // a downtown core
-  parts.push(tower(47.2471, -122.4368, 0.3, 0.78, 0.3, -0.2));    // the tallest tower
-  parts.push(tower(47.2438, -122.4405, 0.4, 0.46, 0.4, 0.5));     // a broad mid-rise
-  parts.push(tower(47.2489, -122.4351, 0.28, 0.54, 0.28, 0.1));
-  parts.push(tower(47.2419, -122.4351, 0.44, 0.36, 0.5, -0.35));  // a low retail slab
-  parts.push(tower(47.2405, -122.4318, 0.32, 0.44, 0.32, 0.4));
-  parts.push(tower(47.2468, -122.4419, 0.26, 0.5, 0.26, 0.15));
-  parts.push(tower(47.2436, -122.4463, 0.3, 0.4, 0.34, -0.5));
-  parts.push(tower(47.239, -122.4372, 0.36, 0.34, 0.36, 0.25));   // near the Dome's north face
-  parts.push(tower(47.2413, -122.4278, 0.28, 0.48, 0.28, -0.1));  // out toward the tide flats
-  // the evergreen skirt on the ridge behind (west / south of downtown)
-  parts.push(conifer(47.2503, -122.4441, 0.62, 0.02));
-  parts.push(conifer(47.2496, -122.4462, 0.5, -0.03));
-  parts.push(conifer(47.2515, -122.4408, 0.7, 0.01));
-  parts.push(conifer(47.2481, -122.4489, 0.56, 0.04));
-  parts.push(conifer(47.2528, -122.4383, 0.6, -0.02));
-  parts.push(conifer(47.2466, -122.4507, 0.48, 0.03));
-  parts.push(conifer(47.2352, -122.4498, 0.66, -0.01));
-  parts.push(conifer(47.2331, -122.4471, 0.54, 0.02));
-  parts.push(conifer(47.2377, -122.4519, 0.58, -0.04));
-  parts.push(conifer(47.2308, -122.4436, 0.5, 0.01));
+  // --- downtown Tacoma, built to the real map so the T Line has a true city to
+  //     run through. Everything below is placed at its actual lat/lng via
+  //     projectLatLng, so the relative geography reads correctly at drift
+  //     distance: the Foss Waterway and Museum of Glass on the SE waterfront,
+  //     the Pacific Ave / Commerce St spine of downtown climbing NW, the
+  //     Theater District and Old City Hall above it, Stadium High on its bluff
+  //     over Commencement Bay to the N, and the Hilltop ridge to the W. The
+  //     downtown grid is rotated ~45° off cardinal (avenues run NW–SE along the
+  //     waterway), so block long-axes take the shared grid bearing G below.
+  //     All generic-pigment, no landmark flags — horizon detailing, not a
+  //     focus; the accuracy is in the placement, not the polygon count. ---
+  const G = -0.66; // downtown Tacoma's street-grid bearing (avenues NW–SE)
+
+  // The Museum of Glass on the west bank of the Thea Foss Waterway: its
+  // landmark is the 90-ft tilted steel cone over the hot shop. A truncated cone
+  // (wide base, narrow open top) raked toward the water, the real silhouette.
+  {
+    const { x, z } = projectLatLng(47.2427, -122.4331);
+    const cone = new THREE.CylinderGeometry(0.16, 0.34, 0.62, 16, 1, true);
+    cone.rotateZ(0.32); // the museum's signature lean
+    cone.translate(x, 0.3, z);
+    parts.push(cone);
+    // the low gallery slab the cone rises from
+    parts.push(tower(47.2431, -122.4336, 0.26, 0.12, 0.4, G));
+  }
+  // The Chihuly Bridge of Glass: a thin pedestrian span crossing I-705 from the
+  // museum up to Union Station / Pacific Ave — a low deck on two slim pylons.
+  parts.push(tower(47.2435, -122.4344, 0.02, 0.12, 0.02));       // pylon
+  parts.push(tower(47.244, -122.4354, 0.02, 0.12, 0.02));        // pylon
+  parts.push(tower(47.24375, -122.4349, 0.13, 0.02, 0.05, G));   // the span deck
+
+  // Union Station's copper rotunda (1717 Pacific Ave): a domed hall — a short
+  // drum under a hemisphere, the one downtown dome a local reads instantly.
+  {
+    const { x, z } = projectLatLng(47.2448, -122.4366);
+    const hall = new THREE.BoxGeometry(0.22, 0.16, 0.3);
+    hall.rotateY(G);
+    hall.translate(x, 0.08, z);
+    const drum = new THREE.CylinderGeometry(0.09, 0.1, 0.06, 14);
+    drum.translate(x, 0.16, z);
+    const dome = new THREE.SphereGeometry(0.09, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+    dome.translate(x, 0.19, z);
+    parts.push(hall, drum, dome);
+  }
+  // Tacoma Art Museum, next door on Pacific — a low sculpted block.
+  parts.push(tower(47.2453, -122.4373, 0.2, 0.14, 0.22, G));
+
+  // The downtown high-rise core along Pacific Ave / Broadway (S 11th–S 15th):
+  // the real cluster — Tacoma Financial Center the tallest, with the Wells
+  // Fargo / Washington / Rust buildings stepping down around it.
+  parts.push(tower(47.2512, -122.4389, 0.24, 0.86, 0.24, G));    // Tacoma Financial Center (tallest)
+  parts.push(tower(47.2502, -122.4379, 0.26, 0.66, 0.26, G));    // Wells Fargo Plaza
+  parts.push(tower(47.2491, -122.4372, 0.24, 0.5, 0.24, G));     // Washington Building
+  parts.push(tower(47.2482, -122.4365, 0.28, 0.4, 0.24, G));     // an older mid-rise core
+  parts.push(tower(47.2472, -122.4382, 0.3, 0.34, 0.26, G));     // a broad block toward Commerce
+
+  // The Greater Tacoma Convention Center (1500 Broadway): a wide low slab.
+  parts.push(tower(47.2466, -122.4381, 0.42, 0.2, 0.34, G));
+
+  // UW Tacoma's brick warehouse campus, SW down Pacific/Jefferson (S 17th–21st):
+  // a run of low restored-warehouse blocks.
+  parts.push(tower(47.2456, -122.4384, 0.34, 0.16, 0.22, G));
+  parts.push(tower(47.2447, -122.4389, 0.3, 0.15, 0.2, G));
+  parts.push(tower(47.2439, -122.4396, 0.3, 0.14, 0.2, G));
+
+  // The Theater District — the Pantages/Rialto on Broadway at S 9th: a boxy
+  // flytower-topped playhouse.
+  parts.push(tower(47.2506, -122.44, 0.22, 0.3, 0.22, G));
+  parts.push(tower(47.2508, -122.4402, 0.08, 0.42, 0.08, G));    // the stagehouse rising above
+
+  // Old City Hall (625 Commerce St): the Italianate landmark with its tall
+  // bell/clock tower on the corner above the waterway.
+  parts.push(tower(47.2519, -122.4406, 0.2, 0.26, 0.2, G));
+  parts.push(tower(47.2521, -122.4408, 0.06, 0.5, 0.06, G));     // the campanile / clock tower
+
+  // Stadium High School and the Stadium Bowl on the bluff to the N, looking out
+  // over Commencement Bay: the château-roofed castle and its sunken stadium.
+  parts.push(tower(47.2607, -122.4497, 0.28, 0.34, 0.2, G));     // the castle block
+  parts.push(tower(47.2612, -122.449, 0.04, 0.16, 0.04, G));     // a corner turret
+  {
+    // the Bowl: a shallow open dish just below the school toward the water
+    const { x, z } = projectLatLng(47.2615, -122.4485);
+    const bowl = new THREE.CylinderGeometry(0.24, 0.18, 0.06, 14, 1, true);
+    bowl.translate(x, 0.03, z);
+    parts.push(bowl);
+  }
+
+  // The Stadium District's own little node up Tacoma Ave (near the T Line's
+  // Stadium District stop) and the Hilltop mid-rises along MLK Jr Way.
+  parts.push(tower(47.2569, -122.4435, 0.24, 0.22, 0.24, G));    // Stadium District blocks
+  parts.push(tower(47.2555, -122.4488, 0.3, 0.3, 0.24, G));      // Tacoma General Hospital (MLK)
+  parts.push(tower(47.2511, -122.449, 0.26, 0.24, 0.24, G));     // Hilltop along MLK
+  parts.push(tower(47.2489, -122.4488, 0.24, 0.26, 0.22, G));    // St Joseph Medical Center
+
+  // The evergreen skirt: the ridge climbing W of downtown into Hilltop, and a
+  // few conifers on the bluff by the school — the forest every Sound town wears.
+  parts.push(conifer(47.2532, -122.4525, 0.62, 0.02));
+  parts.push(conifer(47.2515, -122.4538, 0.5, -0.03));
+  parts.push(conifer(47.2498, -122.4522, 0.66, 0.01));
+  parts.push(conifer(47.248, -122.4535, 0.54, 0.04));
+  parts.push(conifer(47.2551, -122.4526, 0.58, -0.02));
+  parts.push(conifer(47.2585, -122.4468, 0.6, 0.03));           // the bluff by Stadium High
+  parts.push(conifer(47.2624, -122.4512, 0.52, -0.01));
+  parts.push(conifer(47.2466, -122.4514, 0.48, 0.02));
 
   // --- Mount Rainier, ~85 km southeast: the print's Fuji. Nudged a touch
   //     taller so its snow cap climbs clear of the mist bands and reads as a
