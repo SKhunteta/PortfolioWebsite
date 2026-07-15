@@ -13,7 +13,9 @@
 // ONE InstancedMesh (one draw call): 2 flying + 2 moored, matrices and
 // per-instance fade written imperatively in useFrame — the hot path never
 // touches React. Watercolor wash + fog contract like every other
-// normal-blended layer, renderOrder 6 (beside the ferries), depthWrite false.
+// normal-blended layer, renderOrder 6.3 — above the building fabric (6.2),
+// since the flying pair crosses over Fremont/Ballard rooftops on their
+// circuit and must never paint under a building — depthWrite false.
 
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
@@ -259,7 +261,7 @@ export function Seaplanes() {
       ref={meshRef}
       args={[undefined, undefined, COUNT]}
       geometry={geometry}
-      renderOrder={6}
+      renderOrder={6.3}
       frustumCulled={false}
     >
       <shaderMaterial

@@ -20,7 +20,8 @@
 // coin flip. Matrices + bank are written imperatively in useFrame; the hot
 // path never touches React. Watercolor wash + a fixed NW key light give the
 // fuselage solid, round massing; the layer mixes toward LIVE.fog and rides at
-// renderOrder 6 beside the other ambient life, depthWrite false. Livery whites
+// renderOrder 6.3 — above the building fabric (6.2), since these fly OVER the
+// town and must never paint under a rooftop — depthWrite false. Livery whites
 // are kept below the bright-paper bloom line (clamped in the shader) so the
 // jets sit in the print instead of glaring off it.
 
@@ -542,7 +543,7 @@ export function Airliners() {
       ref={meshRef}
       args={[undefined, undefined, COUNT]}
       geometry={geometry}
-      renderOrder={6}
+      renderOrder={6.3}
       frustumCulled={false}
     >
       <shaderMaterial
