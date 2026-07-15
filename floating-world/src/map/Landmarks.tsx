@@ -26,6 +26,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { projectLatLng } from "./network";
+import { spreadTacoma } from "./tacomaSpread";
 import { CONFIG } from "../world/config";
 import { LIVE } from "../world/palettes";
 import { sunPhase, sunPhaseAt, getPhaseOverride } from "../world/sun";
@@ -546,28 +547,48 @@ function buildGeometry(): THREE.BufferGeometry {
   //     focus; the accuracy is in the placement, not the polygon count. ---
   const G = -0.66; // downtown Tacoma's street-grid bearing (avenues NW–SE)
 
+  // Every building/conifer coordinate below is run through spreadTacoma,
+  // which dilates the cluster outward from a point on the T Line corridor —
+  // the real relative geography, gently pulled apart so the track has
+  // visible clearance instead of grazing every footprint (the T Line
+  // waypoints in TacomaLink.tsx are left at their true coordinates, so this
+  // only ever widens the gap around them). towerS/coniferS/atS are thin
+  // wrappers so the call sites below still read as plain lat/lng.
+  const atS = (lat: number, lng: number) => {
+    const [sLat, sLng] = spreadTacoma(lat, lng);
+    return projectLatLng(sLat, sLng);
+  };
+  const towerS = (lat: number, lng: number, w: number, h: number, d: number, yaw = 0) => {
+    const [sLat, sLng] = spreadTacoma(lat, lng);
+    return tower(sLat, sLng, w, h, d, yaw);
+  };
+  const coniferS = (lat: number, lng: number, h: number, spread = 0) => {
+    const [sLat, sLng] = spreadTacoma(lat, lng);
+    return conifer(sLat, sLng, h, spread);
+  };
+
   // The Museum of Glass on the west bank of the Thea Foss Waterway: its
   // landmark is the 90-ft tilted steel cone over the hot shop. A truncated cone
   // (wide base, narrow open top) raked toward the water, the real silhouette.
   {
-    const { x, z } = projectLatLng(47.2427, -122.4331);
+    const { x, z } = atS(47.2427, -122.4331);
     const cone = new THREE.CylinderGeometry(0.16, 0.34, 0.62, 16, 1, true);
     cone.rotateZ(0.32); // the museum's signature lean
     cone.translate(x, 0.3, z);
     parts.push(cone);
     // the low gallery slab the cone rises from
-    parts.push(tower(47.2431, -122.4336, 0.26, 0.12, 0.4, G));
+    parts.push(towerS(47.2431, -122.4336, 0.26, 0.12, 0.4, G));
   }
   // The Chihuly Bridge of Glass: a thin pedestrian span crossing I-705 from the
   // museum up to Union Station / Pacific Ave — a low deck on two slim pylons.
-  parts.push(tower(47.2435, -122.4344, 0.02, 0.12, 0.02));       // pylon
-  parts.push(tower(47.244, -122.4354, 0.02, 0.12, 0.02));        // pylon
-  parts.push(tower(47.24375, -122.4349, 0.13, 0.02, 0.05, G));   // the span deck
+  parts.push(towerS(47.2435, -122.4344, 0.02, 0.12, 0.02));       // pylon
+  parts.push(towerS(47.244, -122.4354, 0.02, 0.12, 0.02));        // pylon
+  parts.push(towerS(47.24375, -122.4349, 0.13, 0.02, 0.05, G));   // the span deck
 
   // Union Station's copper rotunda (1717 Pacific Ave): a domed hall — a short
   // drum under a hemisphere, the one downtown dome a local reads instantly.
   {
-    const { x, z } = projectLatLng(47.2448, -122.4366);
+    const { x, z } = atS(47.2448, -122.4366);
     const hall = new THREE.BoxGeometry(0.22, 0.16, 0.3);
     hall.rotateY(G);
     hall.translate(x, 0.08, z);
@@ -578,43 +599,43 @@ function buildGeometry(): THREE.BufferGeometry {
     parts.push(hall, drum, dome);
   }
   // Tacoma Art Museum, next door on Pacific — a low sculpted block.
-  parts.push(tower(47.2453, -122.4373, 0.2, 0.14, 0.22, G));
+  parts.push(towerS(47.2453, -122.4373, 0.2, 0.14, 0.22, G));
 
   // The downtown high-rise core along Pacific Ave / Broadway (S 11th–S 15th):
   // the real cluster — Tacoma Financial Center the tallest, with the Wells
   // Fargo / Washington / Rust buildings stepping down around it.
-  parts.push(tower(47.2512, -122.4389, 0.24, 0.86, 0.24, G));    // Tacoma Financial Center (tallest)
-  parts.push(tower(47.2502, -122.4379, 0.26, 0.66, 0.26, G));    // Wells Fargo Plaza
-  parts.push(tower(47.2491, -122.4372, 0.24, 0.5, 0.24, G));     // Washington Building
-  parts.push(tower(47.2482, -122.4365, 0.28, 0.4, 0.24, G));     // an older mid-rise core
-  parts.push(tower(47.2472, -122.4382, 0.3, 0.34, 0.26, G));     // a broad block toward Commerce
+  parts.push(towerS(47.2512, -122.4389, 0.24, 0.86, 0.24, G));    // Tacoma Financial Center (tallest)
+  parts.push(towerS(47.2502, -122.4379, 0.26, 0.66, 0.26, G));    // Wells Fargo Plaza
+  parts.push(towerS(47.2491, -122.4372, 0.24, 0.5, 0.24, G));     // Washington Building
+  parts.push(towerS(47.2482, -122.4365, 0.28, 0.4, 0.24, G));     // an older mid-rise core
+  parts.push(towerS(47.2472, -122.4382, 0.3, 0.34, 0.26, G));     // a broad block toward Commerce
 
   // The Greater Tacoma Convention Center (1500 Broadway): a wide low slab.
-  parts.push(tower(47.2466, -122.4381, 0.42, 0.2, 0.34, G));
+  parts.push(towerS(47.2466, -122.4381, 0.42, 0.2, 0.34, G));
 
   // UW Tacoma's brick warehouse campus, SW down Pacific/Jefferson (S 17th–21st):
   // a run of low restored-warehouse blocks.
-  parts.push(tower(47.2456, -122.4384, 0.34, 0.16, 0.22, G));
-  parts.push(tower(47.2447, -122.4389, 0.3, 0.15, 0.2, G));
-  parts.push(tower(47.2439, -122.4396, 0.3, 0.14, 0.2, G));
+  parts.push(towerS(47.2456, -122.4384, 0.34, 0.16, 0.22, G));
+  parts.push(towerS(47.2447, -122.4389, 0.3, 0.15, 0.2, G));
+  parts.push(towerS(47.2439, -122.4396, 0.3, 0.14, 0.2, G));
 
   // The Theater District — the Pantages/Rialto on Broadway at S 9th: a boxy
   // flytower-topped playhouse.
-  parts.push(tower(47.2506, -122.44, 0.22, 0.3, 0.22, G));
-  parts.push(tower(47.2508, -122.4402, 0.08, 0.42, 0.08, G));    // the stagehouse rising above
+  parts.push(towerS(47.2506, -122.44, 0.22, 0.3, 0.22, G));
+  parts.push(towerS(47.2508, -122.4402, 0.08, 0.42, 0.08, G));    // the stagehouse rising above
 
   // Old City Hall (625 Commerce St): the Italianate landmark with its tall
   // bell/clock tower on the corner above the waterway.
-  parts.push(tower(47.2519, -122.4406, 0.2, 0.26, 0.2, G));
-  parts.push(tower(47.2521, -122.4408, 0.06, 0.5, 0.06, G));     // the campanile / clock tower
+  parts.push(towerS(47.2519, -122.4406, 0.2, 0.26, 0.2, G));
+  parts.push(towerS(47.2521, -122.4408, 0.06, 0.5, 0.06, G));     // the campanile / clock tower
 
   // Stadium High School and the Stadium Bowl on the bluff to the N, looking out
   // over Commencement Bay: the château-roofed castle and its sunken stadium.
-  parts.push(tower(47.2607, -122.4497, 0.28, 0.34, 0.2, G));     // the castle block
-  parts.push(tower(47.2612, -122.449, 0.04, 0.16, 0.04, G));     // a corner turret
+  parts.push(towerS(47.2607, -122.4497, 0.28, 0.34, 0.2, G));     // the castle block
+  parts.push(towerS(47.2612, -122.449, 0.04, 0.16, 0.04, G));     // a corner turret
   {
     // the Bowl: a shallow open dish just below the school toward the water
-    const { x, z } = projectLatLng(47.2615, -122.4485);
+    const { x, z } = atS(47.2615, -122.4485);
     const bowl = new THREE.CylinderGeometry(0.24, 0.18, 0.06, 14, 1, true);
     bowl.translate(x, 0.03, z);
     parts.push(bowl);
@@ -622,21 +643,21 @@ function buildGeometry(): THREE.BufferGeometry {
 
   // The Stadium District's own little node up Tacoma Ave (near the T Line's
   // Stadium District stop) and the Hilltop mid-rises along MLK Jr Way.
-  parts.push(tower(47.2569, -122.4435, 0.24, 0.22, 0.24, G));    // Stadium District blocks
-  parts.push(tower(47.2555, -122.4488, 0.3, 0.3, 0.24, G));      // Tacoma General Hospital (MLK)
-  parts.push(tower(47.2511, -122.449, 0.26, 0.24, 0.24, G));     // Hilltop along MLK
-  parts.push(tower(47.2489, -122.4488, 0.24, 0.26, 0.22, G));    // St Joseph Medical Center
+  parts.push(towerS(47.2569, -122.4435, 0.24, 0.22, 0.24, G));    // Stadium District blocks
+  parts.push(towerS(47.2555, -122.4488, 0.3, 0.3, 0.24, G));      // Tacoma General Hospital (MLK)
+  parts.push(towerS(47.2511, -122.449, 0.26, 0.24, 0.24, G));     // Hilltop along MLK
+  parts.push(towerS(47.2489, -122.4488, 0.24, 0.26, 0.22, G));    // St Joseph Medical Center
 
   // The evergreen skirt: the ridge climbing W of downtown into Hilltop, and a
   // few conifers on the bluff by the school — the forest every Sound town wears.
-  parts.push(conifer(47.2532, -122.4525, 0.62, 0.02));
-  parts.push(conifer(47.2515, -122.4538, 0.5, -0.03));
-  parts.push(conifer(47.2498, -122.4522, 0.66, 0.01));
-  parts.push(conifer(47.248, -122.4535, 0.54, 0.04));
-  parts.push(conifer(47.2551, -122.4526, 0.58, -0.02));
-  parts.push(conifer(47.2585, -122.4468, 0.6, 0.03));           // the bluff by Stadium High
-  parts.push(conifer(47.2624, -122.4512, 0.52, -0.01));
-  parts.push(conifer(47.2466, -122.4514, 0.48, 0.02));
+  parts.push(coniferS(47.2532, -122.4525, 0.62, 0.02));
+  parts.push(coniferS(47.2515, -122.4538, 0.5, -0.03));
+  parts.push(coniferS(47.2498, -122.4522, 0.66, 0.01));
+  parts.push(coniferS(47.248, -122.4535, 0.54, 0.04));
+  parts.push(coniferS(47.2551, -122.4526, 0.58, -0.02));
+  parts.push(coniferS(47.2585, -122.4468, 0.6, 0.03));           // the bluff by Stadium High
+  parts.push(coniferS(47.2624, -122.4512, 0.52, -0.01));
+  parts.push(coniferS(47.2466, -122.4514, 0.48, 0.02));
 
   // --- Mount Rainier, ~85 km southeast: the print's Fuji. Nudged a touch
   //     taller so its snow cap climbs clear of the mist bands and reads as a
