@@ -507,20 +507,24 @@ function buildGeometry(): THREE.BufferGeometry {
   parts.push(tower(47.45888, -122.25818, 0.56, 0.13, 0.44, -0.1));
 
   // --- the I-5 corridor south of SeaTac: in real life this is NOT open
-  //     country between two skylines — Tukwila, Kent, Federal Way and Auburn
-  //     run together as one unbroken built-up strip flanking the freeway all
-  //     the way down to Tacoma. A few low warehouse/retail clusters at each
-  //     town, same massing language as Southcenter, so the corridor reads as
-  //     continuous city on the paper instead of a gap between Seattle and
-  //     the Tacoma Dome. Generic-pigment, no landmark flags. ---
-  parts.push(tower(47.4649, -122.2603, 0.22, 0.08, 0.16, 0.2)); // Tukwila, warehouse flats
-  parts.push(tower(47.4598, -122.2668, 0.18, 0.07, 0.14, -0.15));
-  parts.push(tower(47.3809, -122.2348, 0.24, 0.09, 0.18, 0.1)); // Kent, industrial/retail core
-  parts.push(tower(47.3852, -122.2296, 0.2, 0.08, 0.16, -0.2));
-  parts.push(tower(47.3223, -122.3126, 0.26, 0.1, 0.2, 0.05)); // Federal Way, town center
-  parts.push(tower(47.3268, -122.3079, 0.2, 0.08, 0.16, 0.3));
-  parts.push(tower(47.3073, -122.2285, 0.22, 0.08, 0.17, -0.1)); // Auburn, downtown core
-  parts.push(tower(47.303, -122.233, 0.18, 0.07, 0.14, 0.25));
+  //     country between two skylines — the freeway runs through unbroken
+  //     built-up land all the way to Tacoma. First pass placed these at
+  //     town CENTROIDS (downtown Kent, downtown Auburn), which sit several
+  //     km east of the actual freeway — off the ribbon, reading as
+  //     scattered blobs rather than a corridor. Re-anchored to hug the real
+  //     I-5 alignment itself (the S 200th/Southcenter interchange, the Kent
+  //     valley crossing near S 212th, the Federal Way stretch matching
+  //     TacomaRoads.tsx's I5_TACOMA polyline, and Fife/Milton where I-5
+  //     closes in on Commencement Bay), same massing language as
+  //     Southcenter. Generic-pigment, no landmark flags. ---
+  parts.push(tower(47.4649, -122.263, 0.22, 0.08, 0.16, 0.2)); // Tukwila, flanking I-5 at Southcenter
+  parts.push(tower(47.4598, -122.2685, 0.18, 0.07, 0.14, -0.15));
+  parts.push(tower(47.3846, -122.2652, 0.24, 0.09, 0.18, 0.1)); // Kent valley, I-5 at S 212th
+  parts.push(tower(47.3781, -122.2668, 0.2, 0.08, 0.16, -0.2));
+  parts.push(tower(47.3492, -122.2842, 0.2, 0.08, 0.16, 0.05)); // I-5 approaching Federal Way
+  parts.push(tower(47.322, -122.3005, 0.26, 0.1, 0.2, 0.05)); // Federal Way, straddling I5_TACOMA's start
+  parts.push(tower(47.28, -122.328, 0.22, 0.08, 0.17, -0.1)); // Fife/Milton, I5_TACOMA's midpoint
+  parts.push(tower(47.267, -122.352, 0.18, 0.07, 0.14, 0.25)); // Fife, I-5 closing on the Dome
 
   // --- the Tacoma Dome, ~45 km south-southwest: the great white timber dome
   //     ghosted on the far horizon PAST Rainier's flank — the 1/2 Line don't
