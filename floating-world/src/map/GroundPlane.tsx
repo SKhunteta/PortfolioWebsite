@@ -15,8 +15,9 @@
 //   reflections (trains/ferries/city lights — Reflections.tsx) · 4.7 foam wake
 //   (Wakes.tsx) · 5 roads
 //   (0.010/0.014) · 5.6 forest (billboarded conifers) · 6 surface + elevated
-//   ribbons, landmarks, ferries, seaplanes · 6.2 building fabric (the
-//   woodblock town) · 6.5 kasumi mist bands (y 0.5) · 7 stations (surface/elevated
+//   ribbons, landmarks, ferries · 6.2 building fabric (the
+//   woodblock town) · 6.3 seaplanes + airliners (above the town — they fly
+//   OVER it) · 6.5 kasumi mist bands (y 0.5) · 7 stations (surface/elevated
 //   orbs + hanko seals) · 8 trails · 9 train model (depthWrite:true) ·
 //   10 glow sprites + headlights + city lights (Needle beacon, stadium
 //   domes) · 10.5 weather hatch (screen-space rain/snow) · 11 labels
