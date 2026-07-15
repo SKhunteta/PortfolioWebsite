@@ -295,10 +295,14 @@ interface Breath {
 
 const breath: Breath = { y: 0, pitch: 0, surf: 0, fade: 1, splash: 0 };
 
-// Where in the leap the body re-enters the water (just past the u = 0.5
-// apex) and how tight the landing-splash pulse is around that instant.
-const SPLASH_U = 0.62;
-const SPLASH_WIDTH = 0.05;
+// Where in the leap the body actually re-enters the water, and how tight
+// the landing-splash pulse is around that instant. `y` (below) crosses back
+// to the waterline at bodyUp = 0.06/0.15 = 0.4, which on the descending side
+// of the u = 0.5 gaussian works out to u = 0.5 + 0.2*sqrt(-ln(0.4)) ≈ 0.691 —
+// solved once here rather than eyeballed, so the splash lands exactly when
+// the body actually breaks the surface, not while it's still in the air.
+const SPLASH_U = 0.5 + 0.2 * Math.sqrt(-Math.log(0.4));
+const SPLASH_WIDTH = 0.04;
 
 /** The porpoising breathing arc for one whale at clock time t — independent of
  *  where on the Sound the pod is; drives y, pitch, the surfacing burst and the
