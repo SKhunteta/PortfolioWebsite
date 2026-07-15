@@ -13,6 +13,7 @@ import { Forest } from "./map/Forest";
 import { Sakura } from "./map/Sakura";
 import { Buildings } from "./map/Buildings";
 import { Landmarks, GreatWheel } from "./map/Landmarks";
+import { StadiumLabels } from "./map/StadiumLabels";
 import { Kasumi } from "./map/Kasumi";
 import { Ferries } from "./map/Ferries";
 import { TacomaLink } from "./map/TacomaLink";
@@ -110,6 +111,7 @@ export default function App() {
         <Buildings />
         <Landmarks />
         <GreatWheel />
+        <StadiumLabels />
         <Kasumi />
         <Wakes />
         <Ferries />

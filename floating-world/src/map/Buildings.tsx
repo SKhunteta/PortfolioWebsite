@@ -18,7 +18,29 @@ import { LIVE } from "../world/palettes";
 import { PROFILE } from "../world/device";
 import { CONFIG } from "../world/config";
 import { mulberry32, fbm, isWater, sampleRoadFrontages } from "./scatter";
+import { projectLatLng } from "./network";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
+
+// Hero landmarks the scattered town must NOT bury. SODO around the two
+// stadiums is stadium footprint and parking, not a fabric of hipped-roof
+// houses — but the road frontages run right past both bowls, so without a
+// keep-out the generic blocks land on top of Lumen Field and T-Mobile Park and
+// crowd their arches into an unreadable clump (Landmarks.tsx paints the bowls;
+// this layer must clear the ground for them). Keep-out discs in projected km,
+// sized to cover each bowl plus its roof span with a little margin.
+const KEEP_OUT: { x: number; z: number; r2: number }[] = [
+  { ...projectLatLng(47.5952, -122.3316), r: 0.4 }, // Lumen Field
+  { ...projectLatLng(47.5914, -122.3325), r: 0.4 }, // T-Mobile Park
+].map(({ x, z, r }) => ({ x, z, r2: r * r }));
+
+function inKeepOut(x: number, z: number): boolean {
+  for (const k of KEEP_OUT) {
+    const dx = x - k.x;
+    const dz = z - k.z;
+    if (dx * dx + dz * dz < k.r2) return true;
+  }
+  return false;
+}
 
 const VERT = /* glsl */ `
   ${FOG_VARYINGS_VERT}
@@ -109,6 +131,7 @@ export function Buildings() {
     for (const p of pts) {
       if (mats.length >= target) break;
       if (isWater(p.x, p.z)) continue;
+      if (inKeepOut(p.x, p.z)) continue; // don't bury the SODO stadiums
       const dHeart = Math.hypot(p.x - HEART.x, p.z - HEART.z);
       const downtown = smoothstep(7.5, 0.5, dHeart);
       // The town gathers into settlements — a noise field gates where the
