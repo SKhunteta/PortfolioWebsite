@@ -73,3 +73,16 @@ export function seattleClockAt(frac: number): string {
     minute: "2-digit",
   }).format(dayFractionToDate(frac));
 }
+
+/** The Seattle wall-clock hour (0..24, fractional) at a 0..1 day position. */
+export function seattleHourAt(frac: number): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Los_Angeles",
+    hour: "numeric",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(dayFractionToDate(frac));
+  const h = Number(parts.find((p) => p.type === "hour")?.value ?? 0);
+  const m = Number(parts.find((p) => p.type === "minute")?.value ?? 0);
+  return h + m / 60;
+}
