@@ -48,7 +48,8 @@ export interface Palette {
   tideFlatIntensity: number;
   park: THREE.Color;
   parkOpacity: number;
-  road: THREE.Color; // dry-brush sumi ink by day, lantern gold by night
+  road: THREE.Color; // arterials — dry-brush sumi ink by day, lantern gold by night
+  roadMajor: THREE.Color; // motorways/trunks — warm ochre ink by day (the Google "yellow highway" read), brighter lantern-gold by night
   roadIntensity: number;
   traffic: THREE.Color; // warm headlamp/tail color for the street cars (map/Cars.tsx)
   trafficIntensity: number; // car body/opacity floor; real Seattle hour scales the fleet
@@ -76,13 +77,13 @@ const DAY: Palette = {
   background: new THREE.Color("#e8d7ac"), // washi cream — warm, NOT white (nudged a hair greyer toward the poster)
   bokashiTop: new THREE.Color("#2b4a77"), // ai-blue wiped band
   fog: new THREE.Color("#efe5c8"), // kasumi — mist paler than the paper, a touch cooler for depth
-  fogDensity: 0.0075, // deeper aerial perspective — the poster's land recedes into mist
-  ground: new THREE.Color("#b6bd8b"), // sage washi — evergreen land, greyer/muteder than the old yellow-sage
-  groundOpacity: 0.7, // opaque enough that land reads green over the cream sky base; tunnels still read
-  water: new THREE.Color("#23507c"), // Prussian blue (ai) — nudged toward the poster's muted slate-prussian
-  waterOpacity: 0.85,
+  fogDensity: 0.0055, // lifted a touch: the mid/far map reads (recognizability) while land still recedes into mist
+  ground: new THREE.Color("#adb87e"), // sage washi — evergreen land, nudged a hair greener/deeper toward the satellite forest
+  groundOpacity: 0.78, // land reads green over the cream sky base more firmly; tunnels still read
+  water: new THREE.Color("#20496f"), // Prussian blue (ai) — a hair deeper/more saturated so the Sound reads unmistakably as water
+  waterOpacity: 0.9,
   seigaiha: new THREE.Color("#e9f0ee"), // foam-white wave linework
-  seigaihaIntensity: 0.55, // day-visible: the signature move
+  seigaihaIntensity: 0.45, // day-visible signature, quieted a touch so the water SHAPE reads over the pattern
   station: new THREE.Color("#e0863c"), // persimmon
   stationAccentMix: 0.5,
   stationSealOpacity: 0.85, // hanko seals are HERO by day
@@ -93,19 +94,20 @@ const DAY: Palette = {
   paperTint: new THREE.Color("#b1ba87"), // moss-gold wash — forested-terrain mottle, greyer toward the poster
   paperGrain: 0.24,
   waterEdge: new THREE.Color("#16355e"), // blue pigment pooling
-  waterEdgeIntensity: 0.8,
+  waterEdgeIntensity: 0.95, // crisper blue coastline rim so shorelines read as clean edges
   tideFlat: new THREE.Color("#b89468"), // wet sand — warm ochre strand exposed at ebb
-  tideFlatIntensity: 0.6,
+  tideFlatIntensity: 0.45, // keep the Hiroshige tideline motif, but let the crisp edge dominate the read
   park: new THREE.Color("#86a05f"), // moss wash — the Emerald City reads green, a touch greyer/cooler
-  parkOpacity: 0.5,
-  road: new THREE.Color("#4c3a28"), // sumi ink strokes
-  roadIntensity: 0.55,
+  parkOpacity: 0.6,
+  road: new THREE.Color("#4c3a28"), // arterial sumi ink strokes
+  roadMajor: new THREE.Color("#6e4a26"), // motorway warm ochre ink — highways read as the dominant network
+  roadIntensity: 0.75,
   traffic: new THREE.Color("#7a5230"), // warm ink-ochre flow over the sumi streets
   trafficIntensity: 0.5,
   landmark: new THREE.Color("#8a5a40"), // warm sepia ink massing
   landmarkOpacity: 1.0,
-  tree: new THREE.Color("#4f6347"), // muted evergreen — the forested land
-  treeOpacity: 0.92,
+  tree: new THREE.Color("#485c40"), // muted evergreen — the forested land, a hair deeper/greener
+  treeOpacity: 0.95,
   building: new THREE.Color("#c2a87e"), // warm pale taupe town — reads light, not a black dot
   buildingOpacity: 0.95,
   ferry: new THREE.Color("#f0e8d2"),
@@ -143,8 +145,9 @@ const NIGHT: Palette = {
   tideFlatIntensity: 0.4,
   park: new THREE.Color("#4a4a33"),
   parkOpacity: 0.28,
-  road: new THREE.Color("#e0a55e"), // lantern-gold streets
-  roadIntensity: 0.5,
+  road: new THREE.Color("#e0a55e"), // lantern-gold arterial streets
+  roadMajor: new THREE.Color("#eab766"), // motorways glow a touch brighter gold — the highway spine after dark
+  roadIntensity: 0.62,
   traffic: new THREE.Color("#ecac5e"), // lantern-gold headlamp flow after dark
   trafficIntensity: 0.55,
   landmark: new THREE.Color("#6e4436"),
@@ -195,6 +198,7 @@ const COLOR_KEYS = [
   "tideFlat",
   "park",
   "road",
+  "roadMajor",
   "traffic",
   "landmark",
   "tree",

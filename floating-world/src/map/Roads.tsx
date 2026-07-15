@@ -1,9 +1,11 @@
 // The street skeleton: motorways/trunks ("major") and primary/secondary
-// ("arterial") as thin dry-brush strokes — sumi ink on the bright washi by
-// day, lantern gold by night. NORMAL-blended pigment, not additive light:
-// ink must be able to darken the paper, and additive strokes die on a
-// bright base. All strips of a class merge into ONE geometry: two draw
-// calls total.
+// ("arterial") as thin dry-brush strokes. Majors ink in warm ochre
+// (LIVE.roadMajor) and arterials in sumi (LIVE.road), so the highway spine
+// reads as the dominant network the way Google's yellow highways sit over
+// white streets — same ink language, a legible tier split. Lantern gold by
+// night. NORMAL-blended pigment, not additive light: ink must be able to
+// darken the paper, and additive strokes die on a bright base. All strips of
+// a class merge into ONE geometry: two draw calls total.
 
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
@@ -45,7 +47,7 @@ const FRAG = /* glsl */ `
   }
 `;
 
-const CLASS_INTENSITY: Record<string, number> = { major: 1.0, arterial: 0.55 };
+const CLASS_INTENSITY: Record<string, number> = { major: 1.0, arterial: 0.65 };
 
 export function Roads() {
   const materials = useRef<{ material: THREE.ShaderMaterial; classIntensity: number }[]>([]);
@@ -91,7 +93,10 @@ export function Roads() {
             vertexShader={VERT}
             fragmentShader={FRAG}
             uniforms={{
-              uRoad: { value: LIVE.road },
+              // Palette-by-reference: majors ride the warm ochre roadMajor ink
+              // (the dominant highway spine), arterials the sumi road ink.
+              // updatePalette() lerps whichever LIVE color this points at.
+              uRoad: { value: layer.cls === "major" ? LIVE.roadMajor : LIVE.road },
               uIntensity: { value: LIVE.roadIntensity },
               uFog: { value: LIVE.fog },
               uFogDensity: { value: LIVE.fogDensity },

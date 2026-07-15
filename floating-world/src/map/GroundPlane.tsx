@@ -146,7 +146,7 @@ export function GroundPlane() {
           uHills: { value: HILLS },
           uHillR2: { value: 1.69 }, // ~1.3 km hill radius
           uHillK: { value: 6.0 },
-          uHillStrength: { value: 0.14 }, // subtle — a relief wash, not a bevel
+          uHillStrength: { value: 0.22 }, // relief wash — firmer so the hilly terrain reads (still a wash, not a bevel)
         }}
         transparent
         depthWrite={false}
