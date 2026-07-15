@@ -143,6 +143,45 @@ const FRAG = /* glsl */ `
   }
 `;
 
+// Splash: a flat foam ring laid on the water surface at each whale's
+// position, lit up for the instant of re-entry (see `breathAt`'s `splash`
+// output) and fading as it settles — the little punctuation a real breach
+// leaves on the water. One quad per pod member, on its own InstancedMesh
+// (still instanced-everything: one extra draw call for the whole pod).
+const SPLASH_VERT = /* glsl */ `
+  ${FOG_VARYINGS_VERT}
+  attribute float aSplash;
+  varying vec2 vUv;
+  varying float vSplash;
+  void main() {
+    vUv = uv;
+    vSplash = aSplash;
+    vec4 world = modelMatrix * instanceMatrix * vec4(position, 1.0);
+    vWorld = world.xz;
+    vec4 mv = viewMatrix * world;
+    vFogDepth = -mv.z;
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+
+const SPLASH_FRAG = /* glsl */ `
+  ${FOG_VARYINGS_FRAG}
+  varying vec2 vUv;
+  varying float vSplash;
+  uniform vec3 uFoam;
+  uniform float uOpacity;
+  void main() {
+    if (vSplash < 0.01) discard;
+    vec2 p = vUv - 0.5;
+    float r = length(p) * 2.0;
+    // A ring, not a filled disc — brightest a little out from centre,
+    // fading to nothing at the rim and hollow at the very middle.
+    float ring = smoothstep(1.0, 0.55, r) * smoothstep(0.15, 0.5, r);
+    float a = uOpacity * vSplash * ring;
+    gl_FragColor = vec4(mix(uFoam, uFog, fogFactor()), a);
+  }
+`;
+
 interface Track {
   pts: { x: number; z: number }[];
   cum: number[];
@@ -251,9 +290,15 @@ interface Breath {
   pitch: number; // nose-down on the dive, up on the rise
   surf: number; // 0..1 surfacing burst (foam + blow) at the peak of the arc
   fade: number; // submersion alpha — a ghost under water, solid at the breach
+  splash: number; // 0..1 landing splash burst, just after re-entry
 }
 
-const breath: Breath = { y: 0, pitch: 0, surf: 0, fade: 1 };
+const breath: Breath = { y: 0, pitch: 0, surf: 0, fade: 1, splash: 0 };
+
+// Where in the leap the body re-enters the water (just past the u = 0.5
+// apex) and how tight the landing-splash pulse is around that instant.
+const SPLASH_U = 0.62;
+const SPLASH_WIDTH = 0.05;
 
 /** The porpoising breathing arc for one whale at clock time t — independent of
  *  where on the Sound the pod is; drives y, pitch, the surfacing burst and the
@@ -275,6 +320,10 @@ function breathAt(w: Whale, t: number, out: Breath = breath): Breath {
   out.surf = THREE.MathUtils.smoothstep(bodyUp, 0.5, 0.92);
   // A ghost of the dark body glides just under the surface between leaps.
   out.fade = 0.16 + 0.84 * THREE.MathUtils.smoothstep(bodyUp, 0.06, 0.42);
+  // A quick ring of foam right as the body knifes back into the water —
+  // a narrow gaussian centered just past the apex, in the same u-space so it
+  // recurs every breathing cycle for free.
+  out.splash = Math.exp(-Math.pow((u - SPLASH_U) / SPLASH_WIDTH, 2));
   return out;
 }
 
@@ -385,9 +434,16 @@ const scale = new THREE.Vector3();
 const centerNow: PodCenter = { x: 0, z: 0 };
 const centerAhead: PodCenter = { x: 0, z: 0 };
 
+const splashMatrix = new THREE.Matrix4();
+const splashQuat = new THREE.Quaternion();
+const splashEuler = new THREE.Euler(-Math.PI / 2, 0, 0);
+splashQuat.setFromEuler(splashEuler);
+
 export function Orcas() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
+  const splashRef = useRef<THREE.InstancedMesh>(null);
+  const splashMaterialRef = useRef<THREE.ShaderMaterial>(null);
   const { geometry, fadeAttr, surfAttr } = useMemo(() => {
     const geometry = buildOrca();
     const fadeAttr = new THREE.InstancedBufferAttribute(new Float32Array(POD.length).fill(1), 1);
@@ -398,13 +454,24 @@ export function Orcas() {
     geometry.setAttribute("aSurf", surfAttr);
     return { geometry, fadeAttr, surfAttr };
   }, []);
+  const { splashGeometry, splashAttr } = useMemo(() => {
+    const splashGeometry = new THREE.PlaneGeometry(1, 1);
+    const splashAttr = new THREE.InstancedBufferAttribute(new Float32Array(POD.length), 1);
+    splashAttr.setUsage(THREE.DynamicDrawUsage);
+    splashGeometry.setAttribute("aSplash", splashAttr);
+    return { splashGeometry, splashAttr };
+  }, []);
 
   useFrame(() => {
     const mesh = meshRef.current;
     const m = materialRef.current;
-    if (!mesh || !m) return;
+    const splashMesh = splashRef.current;
+    const sm = splashMaterialRef.current;
+    if (!mesh || !m || !splashMesh || !sm) return;
     m.uniforms.uOpacity.value = LIVE.ferryOpacity;
     m.uniforms.uFogDensity.value = LIVE.fogDensity;
+    sm.uniforms.uOpacity.value = LIVE.ferryOpacity;
+    sm.uniforms.uFogDensity.value = LIVE.fogDensity;
 
     const t = CLOCK.t;
     // The whole pod shares one foraging centre (migrating around the Sound by
@@ -428,7 +495,7 @@ export function Orcas() {
       // and spreads onto its lane by its lateral offset.
       const x = centerNow.x - hx * w.lagKm + perpX * w.offsetKm;
       const z = centerNow.z - hz * w.lagKm + perpZ * w.offsetKm;
-      const { y, pitch, surf, fade } = breathAt(w, t);
+      const { y, pitch, surf, fade, splash } = breathAt(w, t);
       euler.set(0, yaw, pitch, "YZX");
       quaternion.setFromEuler(euler);
       // Non-uniform scale: uniform length, but the bull's dorsal stands taller
@@ -441,38 +508,72 @@ export function Orcas() {
       mesh.setMatrixAt(i, matrix);
       fadeAttr.setX(i, fade);
       surfAttr.setX(i, surf);
+
+      // The landing splash sits flat on the water at the same xz, sized off
+      // the whale's own length so the bull's splash reads bigger than the
+      // calf's.
+      const splashSize = w.toyLengthKm * 1.8;
+      splashMatrix.compose(position.set(x, 0.001, z), splashQuat, scale.set(splashSize, splashSize, splashSize));
+      splashMesh.setMatrixAt(i, splashMatrix);
+      splashAttr.setX(i, splash);
     }
     mesh.instanceMatrix.needsUpdate = true;
     fadeAttr.needsUpdate = true;
     surfAttr.needsUpdate = true;
+    splashMesh.instanceMatrix.needsUpdate = true;
+    splashAttr.needsUpdate = true;
   });
 
   if (OVERRIDE === false) return null;
 
   return (
-    <instancedMesh
-      ref={meshRef}
-      args={[undefined, undefined, POD.length]}
-      geometry={geometry}
-      renderOrder={6}
-      frustumCulled={false}
-    >
-      <shaderMaterial
-        ref={materialRef}
-        vertexShader={VERT}
-        fragmentShader={FRAG}
-        uniforms={{
-          uBody: { value: LIVE.label }, // sumi ink — palette-by-reference
-          uPatch: { value: LIVE.ferry }, // pale washi eyepatch + saddle
-          uFoam: { value: LIVE.seigaiha }, // foam-white blow (gold-thread at night)
-          uOpacity: { value: LIVE.ferryOpacity },
-          uFog: { value: LIVE.fog },
-          uFogDensity: { value: LIVE.fogDensity },
-        }}
-        transparent
-        depthWrite={false}
-        side={THREE.FrontSide}
-      />
-    </instancedMesh>
+    <>
+      <instancedMesh
+        ref={meshRef}
+        args={[undefined, undefined, POD.length]}
+        geometry={geometry}
+        renderOrder={6}
+        frustumCulled={false}
+      >
+        <shaderMaterial
+          ref={materialRef}
+          vertexShader={VERT}
+          fragmentShader={FRAG}
+          uniforms={{
+            uBody: { value: LIVE.label }, // sumi ink — palette-by-reference
+            uPatch: { value: LIVE.ferry }, // pale washi eyepatch + saddle
+            uFoam: { value: LIVE.seigaiha }, // foam-white blow (gold-thread at night)
+            uOpacity: { value: LIVE.ferryOpacity },
+            uFog: { value: LIVE.fog },
+            uFogDensity: { value: LIVE.fogDensity },
+          }}
+          transparent
+          depthWrite={false}
+          side={THREE.FrontSide}
+        />
+      </instancedMesh>
+      <instancedMesh
+        ref={splashRef}
+        args={[undefined, undefined, POD.length]}
+        geometry={splashGeometry}
+        renderOrder={6}
+        frustumCulled={false}
+      >
+        <shaderMaterial
+          ref={splashMaterialRef}
+          vertexShader={SPLASH_VERT}
+          fragmentShader={SPLASH_FRAG}
+          uniforms={{
+            uFoam: { value: LIVE.seigaiha },
+            uOpacity: { value: LIVE.ferryOpacity },
+            uFog: { value: LIVE.fog },
+            uFogDensity: { value: LIVE.fogDensity },
+          }}
+          transparent
+          depthWrite={false}
+          side={THREE.FrontSide}
+        />
+      </instancedMesh>
+    </>
   );
 }
