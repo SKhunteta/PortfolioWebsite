@@ -11,20 +11,25 @@
 // sky), and "live" clears the pin back to the real sun.
 
 import { useState } from "react";
-import { setPhaseOverride, sunPhaseForFraction, seattleClockAt } from "../world/sun";
+import { setPhaseOverride, sunPhaseForFraction, seattleClockAt, seattleHourAt } from "../world/sun";
 import { isObserving, stopObserve } from "../world/observe";
 
 // A short word for the position so the dial reads like the rest of the HUD's
-// prose, not a clock. Keyed to the phase (real light), biased by whether the sun
-// is rising or setting so the same brightness reads "dawn" in the morning and
-// "dusk" in the evening.
+// prose, not a clock. The sun's phase saturates to full day for hours around
+// solar noon (all of them would read "midday"), so the word is keyed to the
+// actual Seattle wall-clock hour instead, with night/dawn/dusk still deferring
+// to the real light so a dark winter afternoon doesn't call itself "evening".
 function timeWord(frac: number): string {
   const p = sunPhaseForFraction(frac);
   const rising = sunPhaseForFraction(frac + 0.01) >= p;
   if (p < 0.1) return "night";
-  if (p > 0.9) return "midday";
   if (p < 0.5) return rising ? "dawn" : "dusk";
-  return rising ? "morning" : "evening";
+
+  const hour = seattleHourAt(frac);
+  if (hour < 11) return "morning";
+  if (hour < 14) return "midday";
+  if (hour < 17) return "afternoon";
+  return "evening";
 }
 
 export function TimeOfDay() {
