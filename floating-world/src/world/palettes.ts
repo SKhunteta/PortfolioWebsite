@@ -40,6 +40,12 @@ export interface Palette {
   paperGrain: number; // grain/fiber strength — high: the paper is the subject
   waterEdge: THREE.Color; // blue pigment pooling along shorelines
   waterEdgeIntensity: number;
+  // The exposed strand: wet-sand/mudflat pigment revealed landward of the
+  // water's current reach, up to the historical high-tide mark — a
+  // Hiroshige tideline motif driven by world/tide.ts's real astronomical
+  // level (map/Water.tsx EDGE_FRAG).
+  tideFlat: THREE.Color;
+  tideFlatIntensity: number;
   park: THREE.Color;
   parkOpacity: number;
   road: THREE.Color; // dry-brush sumi ink by day, lantern gold by night
@@ -86,6 +92,8 @@ const DAY: Palette = {
   paperGrain: 0.24,
   waterEdge: new THREE.Color("#16355e"), // blue pigment pooling
   waterEdgeIntensity: 0.8,
+  tideFlat: new THREE.Color("#b89468"), // wet sand — warm ochre strand exposed at ebb
+  tideFlatIntensity: 0.6,
   park: new THREE.Color("#86a05f"), // moss wash — the Emerald City reads green, a touch greyer/cooler
   parkOpacity: 0.5,
   road: new THREE.Color("#4c3a28"), // sumi ink strokes
@@ -127,6 +135,8 @@ const NIGHT: Palette = {
   paperGrain: 0.16,
   waterEdge: new THREE.Color("#101f3d"),
   waterEdgeIntensity: 0.65,
+  tideFlat: new THREE.Color("#5a4634"), // damp sand, dim under lantern light
+  tideFlatIntensity: 0.4,
   park: new THREE.Color("#4a4a33"),
   parkOpacity: 0.28,
   road: new THREE.Color("#e0a55e"), // lantern-gold streets
@@ -176,6 +186,7 @@ const COLOR_KEYS = [
   "label",
   "paperTint",
   "waterEdge",
+  "tideFlat",
   "park",
   "road",
   "traffic",
@@ -197,6 +208,7 @@ const SCALAR_KEYS = [
   "bloomIntensity",
   "paperGrain",
   "waterEdgeIntensity",
+  "tideFlatIntensity",
   "parkOpacity",
   "roadIntensity",
   "trafficIntensity",
