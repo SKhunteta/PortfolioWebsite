@@ -103,7 +103,31 @@ export const WATER: WaterBody[] = [
 // woodblock pigment + seigaiha + tideline as every other shore). Deliberately
 // simplified, like the rest of waterData.ts — orientation over cartography, so
 // the T Line's downtown reads as the real waterfront city it is.
+//
+// "South Sound Approach" below is the fix for a real bug this left behind: the
+// baked basemap water gets hard-clipped flat right at lat 47.35 (near
+// Redondo/Federal Way), a full ~6 km short of Commencement Bay's northern
+// edge. With nothing hand-authored in between, that gap rendered as solid
+// land — the Sound looked like it stopped short and Commencement Bay read as
+// an isolated inland lake instead of the same body of water. This ring
+// follows the real coast (Redondo → Poverty Bay → Dash Point → Browns Point)
+// from the exact basemap edge down to the bay mouth, so the water reads
+// unbroken the whole way to Tacoma, the way it actually is.
 export const TACOMA_WATER: WaterBody[] = [
+  {
+    name: "South Sound Approach",
+    ring: [
+      [47.35, -122.324], // the basemap's hard bbox edge — must match exactly, no seam
+      [47.352, -122.322], // Redondo
+      [47.332, -122.353], // Poverty Bay, off the Federal Way bluff
+      [47.317, -122.404], // Dash Point
+      [47.305, -122.435], // Browns Point, the mouth of Commencement Bay
+      [47.298, -122.423], // into the bay's open water — matches Commencement Bay's NE point
+      [47.305, -122.36], // offshore, back north past Dash Point
+      [47.325, -122.32], // offshore past Poverty Bay
+      [47.35, -122.28], // offshore back up to the basemap edge's latitude
+    ],
+  },
   {
     name: "Commencement Bay",
     ring: [
