@@ -77,7 +77,10 @@ export const CONFIG = {
     // these widths hold >=1.5px even at the steeper portrait framing, where
     // the old 60–110 m strokes fell under 1.3px and vanished into AA.
     roadWidthKm: { major: 0.16, arterial: 0.09 } as Record<string, number>,
-    waterEdgeWidthKm: 0.12,
+    // Wide enough that the tideline motif (map/Water.tsx EDGE_FRAG) reads as
+    // its own exposed-mudflat band at drift distance, not just a thin rim —
+    // real Puget Sound tideflats run to a few hundred meters at some shores.
+    waterEdgeWidthKm: 0.4,
     waterEdgeMinHoleKm2: 1.0,
     wobbleAmpKm: 0.03,
     wobbleFreq: 0.35,
