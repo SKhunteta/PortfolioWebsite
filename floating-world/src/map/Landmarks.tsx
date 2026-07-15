@@ -506,6 +506,22 @@ function buildGeometry(): THREE.BufferGeometry {
   //   (2800 Southcenter Pkwy)
   parts.push(tower(47.45888, -122.25818, 0.56, 0.13, 0.44, -0.1));
 
+  // --- the I-5 corridor south of SeaTac: in real life this is NOT open
+  //     country between two skylines — Tukwila, Kent, Federal Way and Auburn
+  //     run together as one unbroken built-up strip flanking the freeway all
+  //     the way down to Tacoma. A few low warehouse/retail clusters at each
+  //     town, same massing language as Southcenter, so the corridor reads as
+  //     continuous city on the paper instead of a gap between Seattle and
+  //     the Tacoma Dome. Generic-pigment, no landmark flags. ---
+  parts.push(tower(47.4649, -122.2603, 0.22, 0.08, 0.16, 0.2)); // Tukwila, warehouse flats
+  parts.push(tower(47.4598, -122.2668, 0.18, 0.07, 0.14, -0.15));
+  parts.push(tower(47.3809, -122.2348, 0.24, 0.09, 0.18, 0.1)); // Kent, industrial/retail core
+  parts.push(tower(47.3852, -122.2296, 0.2, 0.08, 0.16, -0.2));
+  parts.push(tower(47.3223, -122.3126, 0.26, 0.1, 0.2, 0.05)); // Federal Way, town center
+  parts.push(tower(47.3268, -122.3079, 0.2, 0.08, 0.16, 0.3));
+  parts.push(tower(47.3073, -122.2285, 0.22, 0.08, 0.17, -0.1)); // Auburn, downtown core
+  parts.push(tower(47.303, -122.233, 0.18, 0.07, 0.14, 0.25));
+
   // --- the Tacoma Dome, ~45 km south-southwest: the great white timber dome
   //     ghosted on the far horizon PAST Rainier's flank — the 1/2 Line don't
   //     reach it, but the little T Line streetcar does (map/TacomaLink.tsx runs
