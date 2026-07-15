@@ -16,6 +16,8 @@ import { Landmarks, GreatWheel } from "./map/Landmarks";
 import { Kasumi } from "./map/Kasumi";
 import { Ferries } from "./map/Ferries";
 import { TacomaLink } from "./map/TacomaLink";
+import { TacomaTrack } from "./map/TacomaTrack";
+import { TacomaRoads } from "./map/TacomaRoads";
 import { Orcas } from "./map/Orcas";
 import { Cyclists } from "./map/Cyclists";
 import { MontlakeCut } from "./map/MontlakeCut";
@@ -100,6 +102,8 @@ export default function App() {
         <Water />
         <GroundPlane />
         <Roads />
+        <TacomaRoads />
+        <TacomaTrack />
         <Cars />
         <Forest />
         <Sakura />
