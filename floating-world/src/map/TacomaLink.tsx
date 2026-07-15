@@ -96,7 +96,7 @@ function route(latlngs: [number, number][]): Route {
 // east side of downtown and back down the Hilltop on the west. A couple of
 // bend points round the Stadium District and Division/MLK corners so the car
 // follows the streets instead of cutting across the blocks.
-const T_LINE = route([
+export const T_LINE_LATLNGS: [number, number][] = [
   [47.2394, -122.4282], // Tacoma Dome Station
   [47.2417, -122.431], //  S 25th St (Pacific Ave)
   [47.2448, -122.4366], // Union Station
@@ -110,7 +110,9 @@ const T_LINE = route([
   [47.2528, -122.4489], // 6th Ave (MLK Jr Way)
   [47.2511, -122.4489], // Hilltop District (S 11th)
   [47.2484, -122.4488], // St Joseph (S 19th)
-]);
+];
+
+const T_LINE = route(T_LINE_LATLNGS);
 
 interface Streetcar {
   route: Route;
