@@ -29,6 +29,7 @@ import { CLOCK } from "../world/clock";
 import { LIVE } from "../world/palettes";
 import { CONFIG } from "../world/config";
 import { tideLevel } from "../world/tide";
+import { WEATHER } from "../world/weather";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
 const WOBBLE_GLSL = /* glsl */ `
@@ -96,6 +97,26 @@ const FILL_FRAG = /* glsl */ `
   uniform float uOpacity;
   uniform float uBreath;
   uniform float uTime;
+  uniform float uRain;
+
+  // Raindrop rings: while real rain falls (world/weather.ts), sparse foam
+  // circles swell outward over the pigment and dissolve — the drops you'd
+  // never see landing, printed at toy scale in the seigaiha's own foam line.
+  // Hash-scattered cells, each drop on its own clock; density rides the rain.
+  float rainRings(vec2 w) {
+    vec2 g = w * 1.4;
+    vec2 cell = floor(g), f = fract(g);
+    float h = wcHash(cell);
+    float gate = step(1.0 - uRain * 0.55, wcHash(cell + 31.7));
+    if (gate < 0.5) return 0.0;
+    vec2 center = vec2(0.25) + 0.5 * vec2(h, wcHash(cell + 11.3));
+    float life = fract(uTime * (0.3 + 0.25 * h) + h * 7.0);
+    float r = life * 0.4; // the ring swells outward…
+    float fade = 1.0 - life; // …and the line dissolves as it goes
+    float d = abs(length(f - center) - r);
+    return (1.0 - smoothstep(0.02, 0.05, d)) * fade;
+  }
+
   void main() {
     float blotch = 0.80 + 0.35 * wcFbm(vWorld * 0.6);
     vec3 water = uWater;
@@ -106,6 +127,9 @@ const FILL_FRAG = /* glsl */ `
       // and the global breath surfaces then submerges it (~9 s).
       float silk = smoothstep(0.42, 0.72, wcNoise(vWorld * 0.08 + vec2(uTime * 0.008, -uTime * 0.006)));
       water = mix(water, uSeigaiha, fan * silk * uBreath * uSeigaihaIntensity);
+    }
+    if (uRain > 0.003) {
+      water = mix(water, uSeigaiha, rainRings(vWorld) * uRain * 0.5);
     }
     vec3 c = mix(water, uFog, fogFactor());
     gl_FragColor = vec4(c, uOpacity * blotch * (0.9 + 0.1 * uBreath));
@@ -290,6 +314,7 @@ export function Water() {
       fillRef.current.uniforms.uFogDensity.value = LIVE.fogDensity;
       fillRef.current.uniforms.uOpacity.value = LIVE.waterOpacity;
       fillRef.current.uniforms.uSeigaihaIntensity.value = LIVE.seigaihaIntensity;
+      fillRef.current.uniforms.uRain.value = WEATHER.rain;
     }
     if (overRef.current) {
       overRef.current.uniforms.uTime.value = CLOCK.t;
@@ -297,6 +322,7 @@ export function Water() {
       overRef.current.uniforms.uFogDensity.value = LIVE.fogDensity;
       overRef.current.uniforms.uOpacity.value = LIVE.waterOpacity * OVERPRINT;
       overRef.current.uniforms.uSeigaihaIntensity.value = LIVE.seigaihaIntensity;
+      overRef.current.uniforms.uRain.value = WEATHER.rain;
     }
     if (edgeRef.current) {
       if (CLOCK.t >= tideRef.current.next) {
@@ -332,6 +358,7 @@ export function Water() {
             uFogDensity: { value: LIVE.fogDensity },
             uOpacity: { value: LIVE.waterOpacity },
             uBreath: { value: 0 },
+            uRain: { value: 0 },
             ...wobbleUniforms(),
           }}
           transparent
@@ -359,6 +386,7 @@ export function Water() {
             uFogDensity: { value: LIVE.fogDensity },
             uOpacity: { value: LIVE.waterOpacity * OVERPRINT },
             uBreath: { value: 0 },
+            uRain: { value: 0 },
             ...wobbleUniforms(),
           }}
           transparent
