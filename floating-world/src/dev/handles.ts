@@ -16,8 +16,9 @@ import {
   WEATHER,
   LIGHTNING,
 } from "../world/weather";
-import { TIER } from "../world/device";
+import { TIER, PROFILE } from "../world/device";
 import { setAudioEnabled } from "../audio/engine";
+import { WATCHDOG_STATS } from "../fx/watchdog";
 
 const stats = {
   fps: 0,
@@ -25,6 +26,12 @@ const stats = {
   trains: 0,
   tier: TIER,
   hover: null as string | null,
+  // The live post stack: the tier's off/lite/full, or "off(fallback:…)" when
+  // the composer watchdog tripped. watchdog is a live reference to its
+  // counters ({frames, glErrorFrames, blackFrames, tripped}) — the smoke
+  // harness fails on any nonzero error/black count.
+  composer: PROFILE.composer as string,
+  watchdog: WATCHDOG_STATS,
 };
 
 let frames = 0;
@@ -42,6 +49,8 @@ export function markFrame() {
     stats.mode = useUi.getState().mode;
     stats.trains = TRAINS.size;
     stats.hover = useUi.getState().hoverStationId;
+    const fallback = useUi.getState().composerFallback;
+    stats.composer = fallback ? `off(fallback:${fallback})` : PROFILE.composer;
   }
 }
 

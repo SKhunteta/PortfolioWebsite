@@ -1,26 +1,59 @@
 // Post stack by tier. Phone: nothing — the painted sprite glow carries the
-// look. Tablet: bloom + vignette. Desktop adds film grain (which reads as
-// paper grain here). Bloom threshold sits AT 1.0 with tight smoothing: the
-// bright washi paper (~0.85 luminance) must never catch the skirt — only
-// deliberate HDR sources ignite (train cores, dwell pulses), lanterns in
-// daylight. The vignette is light plate-wear at the edges, not a tunnel.
+// look. Tablet: bloom + vignette. Desktop adds the drifting paper grain
+// (PaperGrain.tsx — a static sheet that creeps sub-perceptually, NEVER the
+// per-frame-random NoiseEffect, which reads as TV static). Bloom threshold
+// sits AT 1.0 with tight smoothing: the bright washi paper (~0.85 luminance)
+// must never catch the skirt — only deliberate HDR sources ignite (train
+// cores, dwell pulses), lanterns in daylight. The vignette is light
+// plate-wear at the edges, not a tunnel.
+//
+// ?fx=-grain,-bloom,-fxaa,-vignette (or +pass to force one on) bisects the
+// chain on real hardware — see world/device.ts. The composer watchdog
+// (watchdog.ts) probes the first ~2 s for the known catastrophic signatures
+// and falls back to composer off if this chain ever breaks a real GPU again.
 
-import { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
-import { EffectComposer, Bloom, Vignette, Noise, FXAA } from "@react-three/postprocessing";
-import { BlendFunction } from "postprocessing";
+import { useEffect, useRef } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+import { EffectComposer, Bloom, Vignette, FXAA } from "@react-three/postprocessing";
+import type { EffectComposer as EffectComposerImpl } from "postprocessing";
 import { HalfFloatType } from "three";
-import { PROFILE } from "../world/device";
+import { PROFILE, fxEnabled } from "../world/device";
 import { LIVE } from "../world/palettes";
+import { useUi } from "../trains/store";
+import { PaperGrain } from "./PaperGrain";
+import { armComposerWatchdog } from "./watchdog";
 
 export function Composer() {
   const bloomRef = useRef<{ intensity: number } | null>(null);
+  const composerRef = useRef<EffectComposerImpl>(null);
+  const gl = useThree((s) => s.gl);
+  const fallback = useUi((s) => s.composerFallback);
 
   useFrame(() => {
     if (bloomRef.current) bloomRef.current.intensity = LIVE.bloomIntensity;
   });
 
-  if (PROFILE.composer === "off") return null;
+  useEffect(() => {
+    if (fallback || !composerRef.current) return;
+    armComposerWatchdog(composerRef.current, gl.getContext(), (reason) =>
+      useUi.getState().setComposerFallback(reason)
+    );
+  }, [gl, fallback]);
+
+  // The watchdog fallback unmounts the whole stack: R3F's auto-render takes
+  // back over (the composer's priority-1 loop is gone) and the piece renders
+  // the way phones always have.
+  if (PROFILE.composer === "off" || fallback) return null;
+
+  const full = PROFILE.composer === "full";
+  const passes = {
+    fxaa: fxEnabled("fxaa", true),
+    bloom: fxEnabled("bloom", true),
+    grain: fxEnabled("grain", full),
+    vignette: fxEnabled("vignette", true),
+  };
+  // All passes bisected away == composer off; don't mount an empty pass.
+  if (!passes.fxaa && !passes.bloom && !passes.grain && !passes.vignette) return null;
 
   // Half-float buffer so the painted-HDR sources (train cores ~2.6) survive to
   // the bloom pass and the transparent washi grade presents correctly — a byte
@@ -43,24 +76,22 @@ export function Composer() {
   // multi-pass luma edge classification also flickers on this HDR buffer of
   // drifting sumi strokes (PR #197). FXAA declares no DEPTH attribute and
   // its single-pass luma AA is temporally soft, so the print holds still.
-  const full = PROFILE.composer === "full";
-
   return (
-    <EffectComposer multisampling={0} frameBufferType={HalfFloatType}>
-      <FXAA />
-      <Bloom
-        ref={bloomRef as never}
-        mipmapBlur
-        intensity={1.05}
-        luminanceThreshold={1.0}
-        luminanceSmoothing={0.08}
-      />
-      {full ? (
-        <Noise premultiply blendFunction={BlendFunction.SCREEN} opacity={0.055} />
+    <EffectComposer ref={composerRef} multisampling={0} frameBufferType={HalfFloatType}>
+      {passes.fxaa ? <FXAA /> : <></>}
+      {passes.bloom ? (
+        <Bloom
+          ref={bloomRef as never}
+          mipmapBlur
+          intensity={1.05}
+          luminanceThreshold={1.0}
+          luminanceSmoothing={0.08}
+        />
       ) : (
         <></>
       )}
-      <Vignette eskil={false} offset={0.24} darkness={0.32} />
+      {passes.grain ? <PaperGrain /> : <></>}
+      {passes.vignette ? <Vignette eskil={false} offset={0.24} darkness={0.32} /> : <></>}
     </EffectComposer>
   );
 }
