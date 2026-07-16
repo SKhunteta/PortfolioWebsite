@@ -1,8 +1,11 @@
 // Hand-inked landmarks: the silhouettes that make the diagram unmistakably
-// Seattle — downtown's massed towers, the Space Needle, the SODO stadiums,
-// UW's campus and Husky Stadium, SeaTac's runways and terminal, the working
-// waterfront's gantry cranes, the Great Wheel, Gas Works' rusted drums, the
-// Amazon Spheres, Bellevue's second skyline across the lake for the 2 Line,
+// Seattle — downtown's massed towers, the Space Needle, Smith Tower wearing
+// its pyramid cap, King Street Station's campanile beside the tracks, the
+// SODO stadiums, UW's campus and Husky Stadium, SeaTac's runways and terminal,
+// the working waterfront's gantry cranes, the Great Wheel, Gas Works' rusted
+// drums, the Fremont Troll hunched under the Aurora Bridge, the Pacific
+// Science Center's white arches, Volunteer Park's water tower and glasshouse,
+// the Amazon Spheres, Bellevue's second skyline across the lake for the 2 Line,
 // the region's big malls (Alderwood up north, Southcenter down in Tukwila), a
 // handful of neighborhood haunts strung along the line (the Kraken's
 // Iceplex at Northgate, brewpubs and Broadway cafés), Pike Place Market on the
@@ -361,7 +364,38 @@ function buildGeometry(): THREE.BufferGeometry {
   parts.push(tower(47.6103, -122.332, 0.26, 1.1, 0.26)); // Two Union Sq
   parts.push(tower(47.6067, -122.3327, 0.26, 1.02, 0.26)); // F5 Tower
   parts.push(tower(47.6046, -122.3294, 0.24, 0.96, 0.24)); // Municipal Tower
-  parts.push(tower(47.6019, -122.3318, 0.16, 0.72, 0.16)); // Smith Tower
+  // --- Smith Tower: the 1914 white terra-cotta tower that was the tallest
+  //     thing west of the Mississippi for half a century. A plain box read as
+  //     generic downtown fill — the stepped neck and the pyramid cap are the
+  //     silhouette every Seattle skyline drawing hangs on, so it gets them. ---
+  {
+    const { x, z } = projectLatLng(47.6019, -122.3318);
+    const shaft = new THREE.BoxGeometry(0.16, 0.5, 0.16);
+    shaft.translate(x, 0.25, z);
+    const neck = new THREE.BoxGeometry(0.1, 0.14, 0.1);
+    neck.translate(x, 0.57, z);
+    const cap = new THREE.ConeGeometry(0.078, 0.18, 4);
+    cap.rotateY(Math.PI / 4); // square pyramid, faces square to the shaft
+    cap.translate(x, 0.73, z);
+    parts.push(shaft, neck, cap);
+  }
+
+  // --- King Street Station: the 1906 clock-tower campanile (modeled on
+  //     Venice's San Marco) over the low waiting hall — the intercity rail
+  //     landmark two blocks from the line's Pioneer Square dive, where the
+  //     Amtrak and Sounder trains still call. A rail map owes it a portrait. ---
+  {
+    const { x, z } = projectLatLng(47.5984, -122.33);
+    const hall = new THREE.BoxGeometry(0.18, 0.08, 0.12);
+    hall.rotateY(0.12); // the SODO grid's slight tilt off true north
+    hall.translate(x - 0.05, 0.04, z + 0.03);
+    const clockTower = new THREE.BoxGeometry(0.07, 0.44, 0.07);
+    clockTower.translate(x, 0.22, z);
+    const cap = new THREE.ConeGeometry(0.055, 0.12, 4);
+    cap.rotateY(Math.PI / 4);
+    cap.translate(x, 0.5, z);
+    parts.push(hall, clockTower, cap);
+  }
   parts.push(tower(47.6128, -122.3382, 0.28, 0.78, 0.28)); // Westin-ish
   parts.push(tower(47.6089, -122.3298, 0.24, 0.68, 0.24)); // mid-rise fill
   parts.push(tower(47.6141, -122.3345, 0.24, 0.6, 0.24)); // Denny Triangle fill
@@ -383,6 +417,22 @@ function buildGeometry(): THREE.BufferGeometry {
 
   // --- Seattle Center around the Needle: Climate Pledge's low sweep ---
   parts.push(tower(47.6221, -122.3541, 0.26, 0.1, 0.2));
+
+  // --- Pacific Science Center: Minoru Yamasaki's white pointed arches over
+  //     the courtyard pools, a block south of the Needle. Half-tori like the
+  //     stadium roofs but slim and tall — two arches read cleanly at drift
+  //     distance where the real five would merge into noise. ---
+  {
+    const { x, z } = projectLatLng(47.6193, -122.3512);
+    for (const off of [-0.03, 0.03] as const) {
+      const arch = new THREE.TorusGeometry(0.08, 0.012, 6, 20, Math.PI);
+      arch.rotateY(0.35); // square to the Center's grid, like Climate Pledge
+      arch.translate(x + off * 0.4, 0.01, z + off);
+      parts.push(arch);
+    }
+    // the low museum halls ringing the courtyard
+    parts.push(tower(47.6188, -122.3505, 0.16, 0.06, 0.12, 0.35));
+  }
 
   // --- Amazon Spheres: three little glass domes tucked into Denny Triangle ---
   {
@@ -465,6 +515,22 @@ function buildGeometry(): THREE.BufferGeometry {
     }
   }
 
+  // --- the Fremont Troll: the hunched concrete giant under the north end of
+  //     the Aurora Bridge (whose deck is bridge() work below), one hand
+  //     closed around a real VW Beetle. Toy-scaled up from his true 5.5 m the
+  //     way the cafés were, so the mound still reads under the deck. ---
+  {
+    const { x, z } = projectLatLng(47.65105, -122.34735);
+    const body = new THREE.SphereGeometry(0.055, 10, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+    body.scale(1.3, 1, 1); // hunched shoulders, wider than tall
+    body.translate(x, 0, z);
+    const head = new THREE.SphereGeometry(0.028, 9, 7);
+    head.translate(x + 0.02, 0.06, z);
+    const beetle = new THREE.BoxGeometry(0.034, 0.02, 0.022);
+    beetle.translate(x + 0.06, 0.04, z + 0.016); // the Bug, caught mid-crush
+    parts.push(body, head, beetle);
+  }
+
   // --- Bellevue: the 2 Line's second skyline across the lake ---
   parts.push(tower(47.617, -122.2015, 0.26, 0.85, 0.26)); // Lincoln Square N
   parts.push(tower(47.6153, -122.2025, 0.24, 0.78, 0.24)); // Lincoln Square S
@@ -492,6 +558,26 @@ function buildGeometry(): THREE.BufferGeometry {
   parts.push(tower(47.61855, -122.32104, 0.07, 0.055, 0.06));
   //   … and Life on Mars, the plant-based bar at Pike & Harvard (722 E Pike).
   parts.push(tower(47.61423, -122.31958, 0.07, 0.07, 0.055, 0.3));
+
+  // --- Volunteer Park, up the hill from Capitol Hill Station: the 1906 brick
+  //     water tower on its knoll and the white Victorian glasshouse of the
+  //     conservatory answering it down the length of the lawn. ---
+  {
+    const { x, z } = projectLatLng(47.6296, -122.3147); // the water tower
+    const drum = new THREE.CylinderGeometry(0.045, 0.05, 0.16, 10);
+    drum.translate(x, 0.08, z);
+    const roof = new THREE.ConeGeometry(0.054, 0.05, 10);
+    roof.translate(x, 0.185, z);
+    parts.push(drum, roof);
+  }
+  {
+    const { x, z } = projectLatLng(47.6322, -122.3157); // the conservatory
+    const wings = new THREE.BoxGeometry(0.14, 0.045, 0.05);
+    wings.translate(x, 0.0225, z);
+    const dome = new THREE.SphereGeometry(0.035, 10, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+    dome.translate(x, 0.042, z);
+    parts.push(wings, dome);
+  }
 
   // --- SeaTac: the paired runways (flat inked strokes), control tower, and
   //     the long main terminal with its two satellite concourses east of the

@@ -67,7 +67,12 @@ it on a second monitor and the print breathes at them.
   the **city of bridges** (the I-90 and SR-520 floating spans the trains and
   highways ride across Lake Washington, plus the ship-canal drawbridges), the
   **Ballard Locks** where the canal meets the Sound, and the **far-shore
-  islands** the ferries sail to (Bainbridge, Vashon, Blake). The **seven
+  islands** the ferries sail to (Bainbridge, Vashon, Blake). Plus the named
+  silhouettes: **Smith Tower** wearing its pyramid cap, **King Street
+  Station**'s campanile beside the tracks, the **Fremont Troll** (VW Beetle in
+  hand) under the Aurora Bridge's north end, the **Pacific Science Center**
+  arches by the Needle, and **Volunteer Park**'s brick water tower and
+  conservatory glasshouse up the hill from Capitol Hill Station. The **seven
   hills** are a stylized sum-of-gaussians hillshade in the ground shader
   (`map/GroundPlane.tsx`) — relief, not geometry — and **shore lighthouses**
   (West Point, Alki, Mukilteo) flash over the Sound from `map/CityLights.tsx`.
