@@ -7,6 +7,20 @@
 // full in live and simulated mode, and an empty platform when the network
 // rests.
 //
+// Most of the crowd just loiters and gathers, but a couple of figures per
+// platform are given a COMMUTER role so the exchange with the train reads, not
+// just the milling. On every platform an index-assigned boarder and alighter
+// walk the entrance — a shared, stylized ukiyo-e gate (the same point the crowd
+// gathers toward) — timed by the SIGN of the dwell pulse's velocity, which tells
+// a train pulling IN from one pulling OUT:
+//   • an ALIGHTER is born at the gate as the train arrives and strides out
+//     across the paper to a loitering spot — someone who just stepped off;
+//   • a BOARDER waits at its scatter spot, then converges on the gate as the
+//     train pulls away and fades out at the threshold — someone stepping aboard.
+// Nobody's matrix ever moves (still one draw call, static instances): the walk
+// lives entirely in the shader, gated off the same honest pulse, so it can never
+// outrun the trains and an empty network still means an empty platform.
+//
 // The crowd is not a uniform smear of dabs but three kinds of traveller, each a
 // tiny ukiyo-e silhouette carved into the same billboard:
 //   • plain folk — a standing body and head, warm ochre pigment;
@@ -52,6 +66,8 @@ const VERT = /* glsl */ `
   attribute float aPulse;     // this figure's station dwell pulse (updated per frame)
   attribute vec2 aScatter;    // offset from the platform entrance (km) at rest
   attribute float aCaretaker; // 1 = the lone figure kept when the network rests
+  attribute float aRole;      // 0 loiterer, 1 boarder, 2 alighter (index-assigned)
+  attribute float aFlow;      // signed dwell velocity: + train arriving, - departing
   uniform float uTime;
   uniform float uGather;      // how far the crowd tightens toward the entrance on dwell
   varying vec2 vUv;
@@ -59,16 +75,39 @@ const VERT = /* glsl */ `
   varying float vSeed;
   varying float vCare;
   varying float vKind;
+  varying float vRole;
+  varying float vFlow;
   void main() {
     vUv = uv;
     vPulse = aPulse;
     vSeed = aSeed;
     vCare = aCaretaker;
     vKind = aKind;
-    // A gathering crowd tightens toward the entrance as its train pulls in and
-    // loosens back to a loitering scatter as it leaves — driven straight off
-    // the honest dwell pulse, so the motion can never outrun the trains.
-    vec3 offset = vec3(aScatter.x, 0.0, aScatter.y) * (1.0 - uGather * aPulse);
+    vRole = aRole;
+    vFlow = aFlow;
+    // The loitering crowd tightens toward the entrance as its train pulls in and
+    // loosens back to a scatter as it leaves — driven straight off the honest
+    // dwell pulse, so the motion can never outrun the trains.
+    vec3 gathered = vec3(aScatter.x, 0.0, aScatter.y) * (1.0 - uGather * aPulse);
+    // A per-figure stagger so commuters trickle through the gate, never in unison,
+    // and arriving/departing edges read off the SIGN of the dwell velocity.
+    float ph = aSeed - 0.5;
+    float arrive = smoothstep(0.05 + 0.12 * ph, 0.5, aFlow);
+    float depart = smoothstep(0.05 + 0.12 * ph, 0.5, -aFlow);
+    vec3 offset = gathered;
+    float stride = 0.0;         // how hard this figure is walking (drives the lean)
+    if (aRole > 1.5) {
+      // Alighter: born at the entrance (offset 0) as the train pulls in, then
+      // strides OUT to its loitering spot as the dwell rises — just stepped off.
+      float walkOut = smoothstep(0.06 + 0.12 * ph, 0.6, aPulse);
+      offset = mix(vec3(0.0), gathered, walkOut);
+      stride = arrive;
+    } else if (aRole > 0.5) {
+      // Boarder: waits at its scatter spot, then converges on the entrance as the
+      // train pulls out (opacity finishes the exit in the frag) — stepping aboard.
+      offset = mix(gathered, vec3(0.0), depart);
+      stride = depart;
+    }
     vec4 center = modelMatrix * (instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0) + vec4(offset, 0.0));
     vWorld = center.xz;
     vec4 mv = viewMatrix * center;
@@ -83,7 +122,10 @@ const VERT = /* glsl */ `
     // lantern-bearers get a wider quad so the canopy and the hung lantern have
     // room beside the body.
     float aspect = aKind > 0.5 ? 0.74 : 0.55;
-    vec2 q = (uv - vec2(0.5, 0.0)) * vec2(aSize * aspect, aSize);
+    // A walking figure leans into the stride: a slight vertical stretch reads as
+    // motion, not a teleport, without ever moving the (static) instance matrix.
+    float stretch = 1.0 + 0.16 * stride;
+    vec2 q = (uv - vec2(0.5, 0.0)) * vec2(aSize * aspect, aSize * stretch);
     mv.xy += q;
     vFogDepth = -mv.z;
     gl_Position = projectionMatrix * mv;
@@ -98,6 +140,8 @@ const FRAG = /* glsl */ `
   varying float vSeed;
   varying float vCare;
   varying float vKind;
+  varying float vRole;
+  varying float vFlow;
   uniform vec3 uWarm;      // figure pigment — persimmon by day, amber by night (by reference)
   uniform vec3 uParasolA;  // ai-blue wagasa
   uniform vec3 uParasolB;  // vermilion wagasa
@@ -123,6 +167,12 @@ const FRAG = /* glsl */ `
     // platforms so an empty print still has a person in it — not a ghost town.
     // In live/simulated mode uResting is 0 and the crowd stays fully honest.
     crowd = max(crowd, vCare * uResting * 0.55);
+    // A boarder fades out as it reaches the gate on the departing edge — stepped
+    // aboard — so the platform visibly sheds a figure as the train pulls away.
+    if (vRole > 0.5 && vRole < 1.5) {
+      float depart = smoothstep(0.05, 0.5, -vFlow);
+      crowd *= 1.0 - smoothstep(0.2, 0.85, depart);
+    }
     // Day/night character: parasol folk crowd the sunny platforms and thin after
     // dark; the lantern-carriers are the night's own, holding through it. The
     // platform empties out toward evening the way a real one does.
@@ -195,12 +245,14 @@ export function PlatformLife() {
 
   // Static layout: scatter each station's figures in a small disc around its
   // platform, biased toward the entrance. Built once from the published sites.
-  const { geometry, pulseAttr, siteOf } = useMemo(() => {
+  const { geometry, pulseAttr, flowAttr, siteOf } = useMemo(() => {
     const geometry = new THREE.PlaneGeometry(1, 1);
     const seed = new Float32Array(POOL);
     const size = new Float32Array(POOL);
     const kind = new Float32Array(POOL);
+    const role = new Float32Array(POOL); // 0 loiterer, 1 boarder, 2 alighter
     const pulse = new Float32Array(POOL);
+    const flow = new Float32Array(POOL); // signed station dwell velocity (per frame)
     const siteOf = new Int32Array(POOL);
     // Per-figure scatter (offset from the entrance) rides an attribute now —
     // the instance matrices just place the pool at each site center, and the
@@ -222,6 +274,11 @@ export function PlatformLife() {
         // print inhabited, sparse enough that it still reads as "resting".
         const isCaretaker = m === 0 && s % 5 === 0;
         caretaker[k] = isCaretaker ? 1 : 0;
+        // Commuter role, index-assigned so every platform reliably fields both a
+        // boarder and an alighter (m%3 → 1 boarder, 2 alighter, else loiterer).
+        // The lone resting caretaker always loiters, so a resting print — where
+        // there is no train and thus no arriving/departing edge — never empties.
+        role[k] = isCaretaker ? 0 : m % 3 === 1 ? 1 : m % 3 === 2 ? 2 : 0;
         // Traveller kind: the lone caretaker carries a lantern (a warm glow to
         // hold a resting night-print), otherwise a deterministic mix of plain
         // folk, parasol-bearers and lantern-carriers.
@@ -236,17 +293,25 @@ export function PlatformLife() {
     }
     const pulseAttr = new THREE.InstancedBufferAttribute(pulse, 1);
     pulseAttr.setUsage(THREE.DynamicDrawUsage);
+    const flowAttr = new THREE.InstancedBufferAttribute(flow, 1);
+    flowAttr.setUsage(THREE.DynamicDrawUsage);
     geometry.setAttribute("aSeed", new THREE.InstancedBufferAttribute(seed, 1));
     geometry.setAttribute("aSize", new THREE.InstancedBufferAttribute(size, 1));
     geometry.setAttribute("aKind", new THREE.InstancedBufferAttribute(kind, 1));
+    geometry.setAttribute("aRole", new THREE.InstancedBufferAttribute(role, 1));
     geometry.setAttribute("aPulse", pulseAttr);
+    geometry.setAttribute("aFlow", flowAttr);
     geometry.setAttribute("aScatter", new THREE.InstancedBufferAttribute(scatter, 2));
     geometry.setAttribute("aCaretaker", new THREE.InstancedBufferAttribute(caretaker, 1));
-    return { geometry, pulseAttr, siteOf };
+    return { geometry, pulseAttr, flowAttr, siteOf };
   }, [SITE_COUNT, POOL]);
 
   const placed = useRef(false);
   const resting = useRef(0);
+  // Per-station dwell state for the arriving/departing signal: last frame's pulse
+  // and the smoothed velocity derived from it (sized lazily to the site count).
+  const prevPulse = useRef<Float32Array>(new Float32Array(0));
+  const flowState = useRef<Float32Array>(new Float32Array(0));
 
   useFrame(() => {
     const mesh = meshRef.current;
@@ -268,10 +333,33 @@ export function PlatformLife() {
       mesh.instanceMatrix.needsUpdate = true;
     }
 
-    // Per-frame: each figure inherits its station's live dwell pulse.
+    // Per-frame: each figure inherits its station's live dwell pulse, plus the
+    // signed velocity of that pulse — the arriving(+)/departing(−) signal that
+    // tells boarders from alighters. One subtraction per site, smoothed so an
+    // edge reads as a steady flow rather than a one-frame spike, and clamped to
+    // keep the shader's ramps in range.
     const pulses = PLATFORM_PULSE.value;
-    for (let k = 0; k < POOL; k++) pulseAttr.setX(k, pulses[siteOf[k]] ?? 0);
+    if (prevPulse.current.length !== SITE_COUNT) {
+      prevPulse.current = new Float32Array(SITE_COUNT);
+      flowState.current = new Float32Array(SITE_COUNT);
+    }
+    const prev = prevPulse.current;
+    const flowS = flowState.current;
+    const invDt = 1 / Math.max(CLOCK.dt, 1e-3);
+    const smooth = Math.min(1, CLOCK.dt * 8);
+    for (let s = 0; s < SITE_COUNT; s++) {
+      const p = pulses[s] ?? 0;
+      const v = Math.max(-1, Math.min(1, (p - prev[s]) * invDt * 0.6));
+      flowS[s] += (v - flowS[s]) * smooth;
+      prev[s] = p;
+    }
+    for (let k = 0; k < POOL; k++) {
+      const s = siteOf[k];
+      pulseAttr.setX(k, pulses[s] ?? 0);
+      flowAttr.setX(k, flowS[s]);
+    }
     pulseAttr.needsUpdate = true;
+    flowAttr.needsUpdate = true;
 
     const mat = mesh.material as THREE.ShaderMaterial;
     mat.uniforms.uTime.value = CLOCK.t;
