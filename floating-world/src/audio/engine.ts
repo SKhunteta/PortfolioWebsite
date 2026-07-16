@@ -24,7 +24,7 @@
 // silent path is free.
 
 import { create } from "zustand";
-import { WEATHER } from "../world/weather";
+import { WEATHER, LIGHTNING } from "../world/weather";
 import { TRAINS } from "../trains/store";
 import { CLOCK } from "../world/clock";
 import { TIER } from "../world/device";
@@ -102,6 +102,10 @@ class AmbientEngine {
   // gap plus a warm-up delay thins the burst to a murmur.
   private lastPluckT = 0;
   private startedAt = 0;
+
+  // Thunder listens for the strike edge (world/weather.ts LIGHTNING) — the
+  // same deterministic storm the flash paints, heard a few seconds behind.
+  private lastStrikeId = 0;
 
   get isRunning() {
     return this.running;
@@ -263,6 +267,8 @@ class AmbientEngine {
     void ctx.resume(); // inside the toggle's click gesture — satisfies autoplay
     this.running = true;
     this.startedAt = ctx.currentTime;
+    // Don't rumble for a strike that happened before the toggle came on.
+    this.lastStrikeId = LIGHTNING.strikeId;
     // A slow swell up: the print fades IN, it never snaps on.
     this.master.gain.cancelScheduledValues(ctx.currentTime);
     this.master.gain.setTargetAtTime(0.9, ctx.currentTime, 1.4);
@@ -325,6 +331,43 @@ class AmbientEngine {
     this.reverbReturn.gain.setTargetAtTime(0.45 + 0.5 * w.fog, now, 0.9);
     const muffleCut = 6500 - 3600 * w.fog - 2400 * w.rain - 3000 * w.snow - 1200 * w.overcast;
     this.muffle.frequency.setTargetAtTime(Math.max(1400, muffleCut), now, 0.9);
+
+    // The strike edge: each flash of the deterministic storm rolls a rumble
+    // in a few seconds later — the distance between the light and the sound.
+    if (LIGHTNING.strikeId !== this.lastStrikeId) {
+      this.lastStrikeId = LIGHTNING.strikeId;
+      this.thunder(1.2 + this.rng() * 3.2);
+    }
+  }
+
+  // Thunder: filtered noise swelling in and dying long, the band sweeping
+  // downward as the roll fades — distance you can hear. Soft against the pad
+  // (the drone sits at ~0.16), sent through the room like everything else.
+  private thunder(delayS: number) {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    const t0 = ctx.currentTime + delayS;
+    const src = ctx.createBufferSource();
+    src.buffer = this.makeNoise(ctx, 3);
+    src.loop = true;
+    const lp = ctx.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.Q.value = 0.9;
+    lp.frequency.setValueAtTime(240, t0);
+    lp.frequency.exponentialRampToValueAtTime(70, t0 + 3.4);
+    const g = ctx.createGain();
+    const peak = 0.2 + 0.12 * this.rng(); // every roll its own weight
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(peak, t0 + 0.35);
+    g.gain.setTargetAtTime(0, t0 + 0.4, 1.1);
+    src.connect(lp);
+    lp.connect(g);
+    g.connect(this.muffle);
+    g.connect(this.reverbSend);
+    src.start(t0);
+    src.stop(t0 + 6);
+    // Free the chain once the tail (start delay + roll) is gone.
+    setTimeout(() => g.disconnect(), (delayS + 6.5) * 1000);
   }
 
   // A dwell rising edge (Stations.tsx): strike a koto pluck, pitched by line.

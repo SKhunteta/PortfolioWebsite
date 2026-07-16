@@ -92,8 +92,16 @@ it on a second monitor and the print breathes at them.
   from scene fog like the weather hatch.
 - Real Seattle weather still paints the page (`world/weather.ts`,
   Open-Meteo): rain darkens the washes (wet paper), fog is pale kasumi
-  (never slate), snow dusts warm-pale. Honesty rule unchanged: the weather
-  word speaks only after a real fetch; never invent weather.
+  (never slate), snow dusts warm-pale. Rain also stamps **raindrop rings** —
+  sparse foam circles swelling over the water pigment (`map/Water.tsx`, in
+  the seigaiha's own foam line) — and the overlay's hatch slant is **wind**,
+  meandering through gusts off the shared clock. A real **storm strikes
+  lightning** (the Sanka Hakuu move): deterministic hash-scheduled strikes
+  flash the sheet pale — never past the bright-paper ceiling — and carve a
+  vermilion-gold bolt in a sumi halo (`fx/WeatherOverlay.tsx`), while the
+  room tone rolls thunder in a few seconds behind the light
+  (`audio/engine.ts`). Honesty rule unchanged: the weather word speaks only
+  after a real fetch; never invent weather.
   `?weather=clear|cloudy|fog|drizzle|rain|storm|snow` pins it.
 - Tunnels below the translucent paper, honesty badge (live / simulated /
   resting), gliding tween contract, camera moods — all identical to

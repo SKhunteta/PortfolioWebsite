@@ -21,6 +21,7 @@
 import * as THREE from "three";
 import { create } from "zustand";
 import { LIVE } from "./palettes";
+import { CLOCK } from "./clock";
 
 export type WeatherKind =
   | "clear"
@@ -36,22 +37,23 @@ interface Levels {
   snow: number; // 0..1 — pale dusting + drifting flakes
   fog: number; // 0..1 — extra fog density, landmark dissolve
   overcast: number; // 0..1 — a general dimming of the page
+  lightning: number; // 0..1 — storm only: the page flashes, the bolt is carved
 }
 
 const LEVELS: Record<WeatherKind, Levels> = {
-  clear: { rain: 0, snow: 0, fog: 0, overcast: 0 },
-  cloudy: { rain: 0, snow: 0, fog: 0, overcast: 0.8 },
-  fog: { rain: 0, snow: 0, fog: 1, overcast: 0.5 },
-  drizzle: { rain: 0.4, snow: 0, fog: 0.25, overcast: 0.7 },
-  rain: { rain: 0.8, snow: 0, fog: 0.15, overcast: 0.9 },
-  storm: { rain: 1, snow: 0, fog: 0.2, overcast: 1 },
-  snow: { rain: 0, snow: 1, fog: 0.3, overcast: 0.7 },
+  clear: { rain: 0, snow: 0, fog: 0, overcast: 0, lightning: 0 },
+  cloudy: { rain: 0, snow: 0, fog: 0, overcast: 0.8, lightning: 0 },
+  fog: { rain: 0, snow: 0, fog: 1, overcast: 0.5, lightning: 0 },
+  drizzle: { rain: 0.4, snow: 0, fog: 0.25, overcast: 0.7, lightning: 0 },
+  rain: { rain: 0.8, snow: 0, fog: 0.15, overcast: 0.9, lightning: 0 },
+  storm: { rain: 1, snow: 0, fog: 0.2, overcast: 1, lightning: 1 },
+  snow: { rain: 0, snow: 1, fog: 0.3, overcast: 0.7, lightning: 0 },
 };
 
 /** Eased live values — read by shaders and the overlay every frame. */
-export const WEATHER: Levels = { rain: 0, snow: 0, fog: 0, overcast: 0 };
+export const WEATHER: Levels = { rain: 0, snow: 0, fog: 0, overcast: 0, lightning: 0 };
 
-const target: Levels = { rain: 0, snow: 0, fog: 0, overcast: 0 };
+const target: Levels = { rain: 0, snow: 0, fog: 0, overcast: 0, lightning: 0 };
 
 // What the HUD whispers. Only rain/fog/snow speak; clear and cloudy stay
 // silent — the palette already says everything a gray day needs to.
@@ -137,7 +139,12 @@ async function fetchWeather() {
 
 /** Kick off the ten-minute weather poll. Returns a stop function. */
 export function startWeather(): () => void {
-  if (override) setKind(override);
+  if (override) {
+    setKind(override);
+    // A URL pin is for demos and tests: start IN the pinned weather rather
+    // than easing into it from a dry page. Runtime changes still wash in.
+    Object.assign(WEATHER, LEVELS[override]);
+  }
   void fetchWeather();
   const id = setInterval(() => {
     if (!document.hidden) void fetchWeather();
@@ -153,6 +160,71 @@ export function startWeather(): () => void {
   };
 }
 
+// --- lightning ---------------------------------------------------------------
+// Hokusai's storm move (Sanka Hakuu — the red bolt at Fuji's flank): when a
+// real storm sits over the city, the sheet flashes pale for an instant and a
+// carved bolt cracks down the print (fx/WeatherOverlay.tsx draws it). Strikes
+// are scheduled deterministically from the shared clock — a hash of the strike
+// index, never Math.random on the frame path — so the smoke harness and two
+// side-by-side tabs see the same storm.
+
+export const LIGHTNING = {
+  flash: 0, // 0..1 page-flash envelope — applyWeather lifts the palette by it
+  bolt: 0, // 0..1 bolt-ink envelope — sharper attack, lingers a beat longer
+  seed: 0, // 0..1 per-strike hash: where the bolt falls, how it zigzags
+  strikeId: 0, // increments on each strike (the audio engine listens for the edge)
+};
+
+const strikeHash = (n: number) => {
+  const x = Math.sin(n * 127.1 + 311.7) * 43758.5453123;
+  return x - Math.floor(x);
+};
+
+let nextStrikeT = -1;
+let strikeT = -Infinity;
+let strikeN = 0;
+
+// Screenshot/demo pin (the reelAt precedent): hold a bolt fully lit at a
+// chosen seed so the smoke harness can catch the strike without racing the
+// ~0.2 s envelope. __linkMap.strike(seed) sets it; strike(null) releases.
+let strikePin: number | null = null;
+
+export function setStrikePin(seed: number | null) {
+  strikePin = seed;
+  if (seed != null) LIGHTNING.seed = seed - Math.floor(seed);
+}
+
+function tickLightning(t: number) {
+  if (strikePin != null) {
+    LIGHTNING.flash = 0.8;
+    LIGHTNING.bolt = 1;
+    return;
+  }
+  const gate = WEATHER.lightning;
+  if (gate < 0.05) {
+    LIGHTNING.flash = 0;
+    LIGHTNING.bolt = 0;
+    nextStrikeT = -1; // the next storm opens with its own first strike
+    return;
+  }
+  if (nextStrikeT < 0) nextStrikeT = t + 2 + strikeHash(strikeN + 0.7) * 6;
+  if (t >= nextStrikeT) {
+    strikeT = t;
+    strikeN++;
+    LIGHTNING.seed = strikeHash(strikeN);
+    LIGHTNING.strikeId = strikeN;
+    nextStrikeT = t + 7 + strikeHash(strikeN + 0.31) * 15; // one every ~7–22 s
+  }
+  const age = t - strikeT;
+  // Double flicker: the main discharge and a fainter return stroke ~0.2 s on.
+  const main = Math.exp(-age * 9);
+  const echo = 0.5 * Math.exp(-Math.pow((age - 0.22) * 9, 2));
+  const flash = (main + echo) * gate;
+  LIGHTNING.flash = flash < 0.003 ? 0 : Math.min(1, flash);
+  const bolt = Math.exp(-age * 5.5) * gate;
+  LIGHTNING.bolt = bolt < 0.003 ? 0 : Math.min(1, bolt);
+}
+
 // --- per-frame -------------------------------------------------------------
 
 const EASE_TAU_S = 8; // a shower arrives like a wash (~8 s time constant)
@@ -164,6 +236,8 @@ export function easeWeather(dt: number) {
   WEATHER.snow += (target.snow - WEATHER.snow) * k;
   WEATHER.fog += (target.fog - WEATHER.fog) * k;
   WEATHER.overcast += (target.overcast - WEATHER.overcast) * k;
+  WEATHER.lightning += (target.lightning - WEATHER.lightning) * k;
+  tickLightning(CLOCK.t);
 }
 
 // Scratch colors for the snow/fog lerps — never handed to materials.
@@ -172,6 +246,10 @@ export function easeWeather(dt: number) {
 const SNOW_PAPER = new THREE.Color("#ece5d4");
 const SNOW_PARK = new THREE.Color("#f0ead8");
 const FOG_PALE = new THREE.Color("#e6d6ae");
+// The flash lifts toward pale washi, NOT white — the bright-paper bloom rule
+// binds even lightning (every channel stays under ~#f2, only painted-HDR
+// sources ever ignite the composer).
+const FLASH_PAPER = new THREE.Color("#efe7cd");
 
 /**
  * Modulate the LIVE palette with the eased weather. MUST run right after
@@ -209,5 +287,18 @@ export function applyWeather(sunPhase: number) {
     LIVE.paperTint.lerp(SNOW_PAPER, w.snow * 0.32);
     LIVE.park.lerp(SNOW_PARK, w.snow * 0.55);
     LIVE.groundOpacity = Math.min(1, LIVE.groundOpacity + 0.12 * w.snow);
+  }
+
+  // Lightning: for one flickering instant the whole sheet lifts pale and the
+  // horizon leaps back out of the storm — the dissolved landmarks reappear in
+  // silhouette, the way a night landscape exists only during the flash.
+  const flash = LIGHTNING.flash;
+  if (flash > 0.003) {
+    LIVE.background.lerp(FLASH_PAPER, 0.3 * flash);
+    LIVE.ground.lerp(FLASH_PAPER, 0.22 * flash);
+    LIVE.paperTint.lerp(FLASH_PAPER, 0.22 * flash);
+    LIVE.fog.lerp(FLASH_PAPER, 0.25 * flash);
+    LIVE.fogDensity *= 1 - 0.35 * flash;
+    LIVE.landmarkOpacity = Math.min(1, LIVE.landmarkOpacity * (1 + 0.3 * flash));
   }
 }

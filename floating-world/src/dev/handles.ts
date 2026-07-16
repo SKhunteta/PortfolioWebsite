@@ -9,7 +9,13 @@ import { setPhaseOverride } from "../world/sun";
 import { startObserve, stopObserve, toggleObserve, setObserveReelPin } from "../world/observe";
 import { setTideOverride } from "../world/tide";
 import { setBloomOverride } from "../world/bloom";
-import { setWeatherOverride, WeatherKind } from "../world/weather";
+import {
+  setWeatherOverride,
+  setStrikePin,
+  WeatherKind,
+  WEATHER,
+  LIGHTNING,
+} from "../world/weather";
 import { TIER } from "../world/device";
 import { setAudioEnabled } from "../audio/engine";
 
@@ -56,6 +62,12 @@ export function installHandles() {
     setTide: (level: number | null) => setTideOverride(level),
     setBloom: (level: number | null) => setBloomOverride(level),
     setWeather: (k: WeatherKind | null) => setWeatherOverride(k),
+    // Live weather/lightning state for the smoke harness — lets a test wait
+    // for the storm's next deterministic strike instead of screenshotting blind.
+    weatherState: () => ({ ...WEATHER, ...LIGHTNING }),
+    // Hold a bolt fully lit at a chosen seed (0..1 → screen position) so a
+    // screenshot can catch the strike; strike(null) releases the pin.
+    strike: (seed: number | null = 0.5) => setStrikePin(seed),
     // The ambient room tone (world-keyed Web Audio). Toggle from the console
     // as well as the HUD button; note a real user gesture is still needed the
     // first time for the browser to un-suspend the audio context.
