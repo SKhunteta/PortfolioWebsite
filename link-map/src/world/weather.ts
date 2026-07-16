@@ -82,15 +82,49 @@ function setKind(kind: WeatherKind) {
   useWeather.setState({ kind, label: LABELS[kind] ?? null });
 }
 
-/** WMO weather codes (Open-Meteo's `weather_code`) → our watercolor kinds. */
-function classify(code: number, cloudCover: number): WeatherKind {
+/** WMO weather codes (Open-Meteo's `weather_code`) → our watercolor kinds.
+ * `convective` upgrades falling rain to a storm: outside Central Europe most
+ * of the models behind Open-Meteo never speak the thunderstorm codes (95+)
+ * in the `current` block, so a real thunderstorm over Seattle usually
+ * arrives labeled "showers". The thunder evidence lives in the hourly
+ * series instead (isConvective below) — rain that is actually falling plus
+ * a convective hour is a storm, honestly observed, not invented. */
+function classify(code: number, cloudCover: number, convective = false): WeatherKind {
   if (code === 45 || code === 48) return "fog";
-  if ((code >= 51 && code <= 57) || code === 80) return "drizzle";
-  if ((code >= 61 && code <= 63) || code === 81) return "rain";
+  if ((code >= 51 && code <= 57) || code === 80) return convective ? "storm" : "drizzle";
+  if ((code >= 61 && code <= 63) || code === 81) return convective ? "storm" : "rain";
   if ((code >= 65 && code <= 67) || code === 82) return "storm";
   if ((code >= 71 && code <= 77) || code === 85 || code === 86) return "snow";
   if (code >= 95) return "storm";
   return cloudCover > 55 ? "cloudy" : "clear";
+}
+
+interface HourlySeries {
+  time?: number[]; // unix seconds, hour starts (timeformat=unixtime)
+  weather_code?: number[];
+  cape?: number[];
+}
+
+// Seattle thunderstorms are low-CAPE affairs — a few hundred J/kg where the
+// plains see thousands — while the stable marine drizzle sits near zero.
+// 350 J/kg with rain already falling is convection worth calling a storm.
+const CAPE_STORM_JKG = 350;
+
+/** Thunder evidence for the hour we're in (or the one about to arrive):
+ * an hourly thunderstorm code, or enough convective energy to make one. */
+function isConvective(hourly: HourlySeries | undefined, nowMs: number): boolean {
+  const times = hourly?.time;
+  if (!times?.length) return false;
+  const nowS = nowMs / 1000;
+  const i = times.findIndex((t) => nowS >= t && nowS < t + 3600);
+  if (i < 0) return false;
+  for (const j of [i, i + 1]) {
+    const code = hourly?.weather_code?.[j];
+    if (typeof code === "number" && code >= 95) return true;
+    const cape = hourly?.cape?.[j];
+    if (typeof cape === "number" && cape >= CAPE_STORM_JKG) return true;
+  }
+  return false;
 }
 
 // --- override (?weather= / __linkMap.setWeather) --------------------------
@@ -120,6 +154,8 @@ export function setWeatherOverride(kind: WeatherKind | null) {
 const URL_CURRENT =
   "https://api.open-meteo.com/v1/forecast?latitude=47.6062&longitude=-122.3321" +
   "&current=weather_code,cloud_cover,temperature_2m";
+// The hourly block carries the thunder evidence (isConvective above).
+const URL_HOURLY = "&hourly=weather_code,cape&forecast_days=1&timeformat=unixtime";
 const FETCH_EVERY_MS = 10 * 60_000;
 
 let lastFetched: WeatherKind | null = null;
@@ -127,14 +163,22 @@ let lastFetchAt = 0;
 
 async function fetchWeather() {
   try {
-    const res = await fetch(URL_CURRENT);
+    // If the enriched query is ever rejected (an upstream variable rename),
+    // fall back to bare current conditions rather than losing weather whole.
+    let res = await fetch(URL_CURRENT + URL_HOURLY);
+    if (!res.ok) res = await fetch(URL_CURRENT);
     if (!res.ok) return; // silence is honest — the paper stays as it was
     const json = (await res.json()) as {
       current?: { weather_code?: number; cloud_cover?: number; temperature_2m?: number };
+      hourly?: HourlySeries;
     };
     const code = json.current?.weather_code;
     if (typeof code !== "number") return;
-    lastFetched = classify(code, json.current?.cloud_cover ?? 0);
+    lastFetched = classify(
+      code,
+      json.current?.cloud_cover ?? 0,
+      isConvective(json.hourly, Date.now())
+    );
     lastFetchAt = Date.now();
     // Warm Puget Sound nights (~15 °C air and up) are when the dinoflagellates
     // bloom; map the real temperature into the biolum gate.
