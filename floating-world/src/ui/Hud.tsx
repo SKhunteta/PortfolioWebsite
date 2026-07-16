@@ -69,7 +69,9 @@ export function Hud() {
   const [settled, setSettled] = useState(false);
   const [intro, setIntro] = useState<string | null>(null);
   const introDone = useRef(false);
-  const [debug, setDebug] = useState<{ fps: number; trains: number } | null>(null);
+  const [debug, setDebug] = useState<{ fps: number; trains: number; composer: string } | null>(
+    null
+  );
 
   useEffect(() => {
     const t = setTimeout(() => setSettled(true), 14000);
@@ -98,8 +100,13 @@ export function Hud() {
   useEffect(() => {
     if (!new URLSearchParams(window.location.search).has("debug")) return;
     const id = setInterval(() => {
-      const stats = (window as unknown as Record<string, { fps?: number }>).__linkMapStats;
-      setDebug({ fps: Math.round(stats?.fps ?? 0), trains: TRAINS.size });
+      const stats = (window as unknown as Record<string, { fps?: number; composer?: string }>)
+        .__linkMapStats;
+      setDebug({
+        fps: Math.round(stats?.fps ?? 0),
+        trains: TRAINS.size,
+        composer: stats?.composer ?? "?",
+      });
     }, 500);
     return () => clearInterval(id);
   }, []);
@@ -224,7 +231,7 @@ export function Hud() {
 
       {debug && (
         <div className="hud-debug">
-          {debug.fps} fps · {TRAINS.size} trains · {mode} · {TIER}
+          {debug.fps} fps · {TRAINS.size} trains · {mode} · {TIER} · {debug.composer}
         </div>
       )}
     </>

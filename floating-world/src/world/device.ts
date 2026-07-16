@@ -139,7 +139,7 @@ export const PROFILE = PROFILES[TIER];
 
 // Desktop fill-rate guard — the reason the piece can feel effortless on a
 // phone yet lag on a powerful desktop. The full-composer desktop path
-// (bloom mipmap chain + 4× MSAA + grain) is fill-rate bound: cost scales
+// (bloom mipmap chain + FXAA + grain) is fill-rate bound: cost scales
 // with the backing store = viewport × devicePixelRatio². On a Retina laptop
 // or a HiDPI / display-scaled monitor devicePixelRatio is 2, so a large
 // window renders ~10–30× the pixels of a phone through a far heavier
@@ -163,6 +163,28 @@ if (TIER === "desktop") {
   // R3F reads the tuple as a range and clamps devicePixelRatio into it, so a
   // non-Retina desktop (dpr 1) is untouched; only 2× displays get pulled down.
   PROFILE.dpr = [1, desktopDprCap()];
+}
+
+// ---- ?fx= debug pass toggles (fx/Composer.tsx consumes these) --------------
+// Bisect the post chain on real hardware — headless SwiftShader has passed
+// every historically broken composer config, so the only trustworthy flicker
+// bisect is a human eye on a real GPU. ?fx=-grain,-bloom disables passes;
+// ?fx=+grain force-enables one off its tier (e.g. grain on tablet). Debug-only,
+// decided once at boot like ?tier=.
+export type FxPass = "fxaa" | "bloom" | "grain" | "vignette";
+
+const FX_OVERRIDES = new Map<FxPass, boolean>();
+if (hasWindow) {
+  const raw = new URLSearchParams(window.location.search).get("fx") ?? "";
+  for (const tok of raw.split(",")) {
+    const m = /^([+-])(fxaa|bloom|grain|vignette)$/.exec(tok.trim());
+    if (m) FX_OVERRIDES.set(m[2] as FxPass, m[1] === "+");
+  }
+}
+
+/** The tier's default for a pass, unless a ?fx= override flips it. */
+export function fxEnabled(pass: FxPass, tierDefault: boolean): boolean {
+  return FX_OVERRIDES.get(pass) ?? tierDefault;
 }
 
 const REF_ASPECT = 16 / 9;

@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
@@ -9,4 +10,7 @@ export default defineConfig(({ command }) => ({
   plugins: [react()],
   base: command === "build" ? "/sound-and-rail/" : "/",
   server: { host: true },
+  // Constraint tests only (src/fx/__tests__) — postprocessing effects are
+  // GL-free until initialize(renderer), so plain node suffices.
+  test: { environment: "node" },
 }));

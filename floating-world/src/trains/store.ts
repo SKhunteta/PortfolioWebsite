@@ -8,6 +8,8 @@
 
 import { create } from "zustand";
 import type { DirectionGeometry } from "../map/network";
+import type { WatchdogReason } from "../fx/watchdog";
+import { storedFallback } from "../fx/watchdog";
 import { CONFIG } from "../world/config";
 
 export type Mode = "live" | "simulated" | "resting" | "connecting";
@@ -106,6 +108,10 @@ interface UiState {
   // (observer/tour.ts) — set on the tour's entry/exit transitions only, never
   // per frame. Drives the quiet "touring" hint in the HUD.
   touring: boolean;
+  // Non-null when the composer watchdog (fx/watchdog.ts) caught a catastrophic
+  // render signature and the post stack fell back to off. Initialized from
+  // sessionStorage so a reload doesn't re-flash the broken chain.
+  composerFallback: WatchdogReason | null;
   setMode: (mode: Mode, fetchedAt: string | null) => void;
   setHoverStation: (id: string | null) => void;
   setFollowTrain: (id: string | null) => void;
@@ -115,6 +121,7 @@ interface UiState {
   setObserving: (observing: boolean) => void;
   setObserveShot: (label: string | null) => void;
   setTouring: (touring: boolean) => void;
+  setComposerFallback: (reason: WatchdogReason | null) => void;
 }
 
 export const useUi = create<UiState>((set) => ({
@@ -128,6 +135,7 @@ export const useUi = create<UiState>((set) => ({
   observing: false,
   observeShotLabel: null,
   touring: false,
+  composerFallback: storedFallback(),
   setMode: (mode, fetchedAt) => set({ mode, fetchedAt }),
   setHoverStation: (hoverStationId) => set({ hoverStationId }),
   // The three camera riders (train / plane / underground dive) are exclusive —
@@ -145,4 +153,5 @@ export const useUi = create<UiState>((set) => ({
   setObserving: (observing) => set({ observing }),
   setObserveShot: (observeShotLabel) => set({ observeShotLabel }),
   setTouring: (touring) => set({ touring }),
+  setComposerFallback: (composerFallback) => set({ composerFallback }),
 }));
