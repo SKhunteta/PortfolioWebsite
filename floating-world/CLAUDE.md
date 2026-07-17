@@ -114,10 +114,10 @@ it on a second monitor and the print breathes at them.
 - **Jimothy** (`map/Jimothy.tsx`, one instanced draw call): the round raccoon
   of Ballard — a real short-spined raccoon who went viral in July 2026 after
   he was filmed one evening by the Ballard Goodwill. A tasteful Easter egg at
-  the crow commute's honesty tier: one pure sumi silhouette (a low, squared
-  loaf of a body carried close to the ground, a forward head and pointed snout,
-  bunched stub legs, a big bushy ringtail streaming out behind) trotting a
-  small deterministic block-loop by the Locks, with two pause-and-sniff beats
+  the crow commute's honesty tier: one pure sumi silhouette (the round
+  fuzzy-ball body that made him famous, a small tucked head, bunched stub legs,
+  a short bushy ringtail hugging close behind) trotting a small deterministic
+  block-loop by the Locks, with two pause-and-sniff beats
   ("very spry"). Canoe-tier restraint, storybook-tiny, NORMAL-blended ink on
   `LIVE.landmark`, renderOrder 6. Gated crepuscular on the crows' twilight
   band — the hours a raccoon keeps and the hour he was seen — hidden entirely
