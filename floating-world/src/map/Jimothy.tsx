@@ -24,7 +24,9 @@
 // TWO InstancedMeshes (two draw calls): Jimothy's matrix written imperatively
 // in useFrame, the cans' matrices placed once. The hot path never touches
 // React. NORMAL-blended ink with the fog contract, renderOrder 6 beside the
-// canoe/ferries, depthWrite false; Jimothy hides himself outside the twilight
+// canoe/ferries. Both materials WRITE DEPTH (the train-model exception, for
+// the same reason: multi-part solid bodies must self-occlude — a see-through
+// raccoon breaks the object read). Jimothy hides himself outside the twilight
 // windows so midday and deep night cost only the static cans.
 //
 // ?jimothy=on|off pins him for demos, tests and screenshots.
@@ -70,13 +72,43 @@ const FRAG = /* glsl */ `
     float wash = wcFbm(vWorld * 2.4 + vLocal.x * 2.0);
     vec3 c = uInk * 0.55 * (0.88 + 0.28 * wash);
     c *= mix(1.06, 0.9, smoothstep(0.0, 0.32, vLocal.y));
-    // The ringtail: faint sumi bands only on the tail's reach behind the rump
-    // (x well negative), so the little mark still reads as a ringtailed raccoon
-    // and not just a blob.
+    // Solid pigment: the dry-brush wash lives in the COLOR, not the alpha — a
+    // see-through raccoon (or can) breaks the object read.
+    float a = uOpacity * uFade;
+    gl_FragColor = vec4(mix(c, uFog, fogFactor()), a);
+  }
+`;
+
+// Jimothy's own coat: real raccoon fur, not landmark sepia — grizzled cool
+// gray over the palette ink so he still breathes with the print's day/night,
+// with the dark limbs and banded tail of the actual animal.
+const FRAG_FUR = /* glsl */ `
+  ${NOISE_GLSL}
+  ${FOG_VARYINGS_FRAG}
+  varying vec3 vLocal;
+  uniform vec3 uInk;
+  uniform float uFade;
+  uniform float uOpacity;
+  void main() {
+    if (uFade < 0.004) discard;
+    float wash = wcFbm(vWorld * 2.4 + vLocal.x * 2.0);
+    // Grizzled agouti gray, keyed mostly to true raccoon pelt with a whisper
+    // of the palette ink so he never detaches from the print.
+    // Authored dark: the renderer's output transform lifts mid grays, and the
+    // real Jimothy is a DARK grizzled gray — so the pelt sits low.
+    vec3 pelt = vec3(0.11, 0.105, 0.115);
+    vec3 c = mix(pelt, uInk * 0.3, 0.2) * (0.82 + 0.26 * wash);
+    // Grizzled highlights along the back, sooty legs and underside below —
+    // the real two-tone of him, kept mid-gray so he stays a dark mark on paper.
+    c *= mix(0.5, 1.0, smoothstep(0.02, 0.3, vLocal.y));
+    // The ringtail: alternating dark bands on the tail's reach behind the rump.
     float tailZone = smoothstep(-0.3, -0.44, vLocal.x);
     float rings = 0.5 + 0.5 * sin(vLocal.x * 40.0);
-    c *= mix(1.0, mix(0.66, 1.1, rings), tailZone);
-    float a = uOpacity * uFade * (0.9 + 0.2 * wash);
+    c *= mix(1.0, mix(0.55, 1.15, rings), tailZone);
+    // The bandit mask: a dark wrap across the head zone at eye height.
+    float maskZone = smoothstep(0.24, 0.34, vLocal.x) * (1.0 - smoothstep(0.36, 0.42, vLocal.y)) * smoothstep(0.24, 0.3, vLocal.y);
+    c *= mix(1.0, 0.5, maskZone);
+    float a = uOpacity * uFade;
     gl_FragColor = vec4(mix(c, uFog, fogFactor()), a);
   }
 `;
@@ -133,31 +165,37 @@ function loopPointAt(s: number): { x: number; z: number; yaw: number } {
   };
 }
 
-// The cans live where he stops: one standing just past each rummage point (so
-// his nose lands in the mouth of it), plus one he's already knocked over
-// earlier on the loop — the classic scene of the crime. Fixtures of the alley,
-// on stage all day whether or not Jimothy is; deterministic like everything.
+// The cans live where he stops — but OFF his path, at the curb side, so his
+// trot line never passes through one (physics is respected: he walks past,
+// then TURNS to the can to rummage). Two standing at nose reach beside the
+// rummage points, plus one he's already knocked over earlier on the loop —
+// the classic scene of the crime. Fixtures of the alley, on stage all day
+// whether or not Jimothy is; deterministic like everything.
 const CAN_NOSE_REACH_KM = 0.55 * TOY_LENGTH_KM; // snout-to-can-mouth distance
+// A can beside the path at arc fraction f: perpendicular (curb-side) offset,
+// which for heading (cos yaw, -sin yaw) is the (-sin yaw, -cos yaw) direction
+// — the same side he swings his nose to (yaw + PI/2).
+function canBeside(f: number, reachKm: number) {
+  const p = loopPointAt(f * BEAT.lengthKm);
+  return {
+    x: p.x - Math.sin(p.yaw) * reachKm,
+    z: p.z - Math.cos(p.yaw) * reachKm,
+    pathYaw: p.yaw,
+  };
+}
 const CANS = [
   ...SNIFF_AT.map((f) => {
-    const p = loopPointAt(f * BEAT.lengthKm);
-    return {
-      x: p.x + Math.cos(p.yaw) * CAN_NOSE_REACH_KM,
-      z: p.z - Math.sin(p.yaw) * CAN_NOSE_REACH_KM,
-      yaw: p.yaw + 0.4, // lids askew — nobody's alley cans line up
-      tipped: false,
-    };
+    const c = canBeside(f, CAN_NOSE_REACH_KM);
+    return { x: c.x, z: c.z, yaw: c.pathYaw + 0.4, tipped: false };
   }),
+  // The tipped one sits well clear of the line too.
   (() => {
-    const p = loopPointAt(0.12 * BEAT.lengthKm);
-    return {
-      x: p.x - Math.sin(p.yaw) * 0.02, // off the path to one side
-      z: p.z - Math.cos(p.yaw) * 0.02,
-      yaw: p.yaw - 1.1,
-      tipped: true, // already been visited
-    };
+    const c = canBeside(0.12, 0.02);
+    return { x: c.x, z: c.z, yaw: c.pathYaw - 1.1, tipped: true };
   })(),
 ];
+// While he rummages he pivots from his heading to face the curb-side can.
+const RUMMAGE_TURN = Math.PI / 2;
 
 interface Pose {
   x: number;
@@ -376,14 +414,16 @@ export function Jimothy() {
 
     const { x, z, yaw, moving } = jimothyPoseAt(CLOCK.t);
     // The waddle: a quick vertical bob and a little roll while he trots. At
-    // each stop he RUMMAGES — nose pitched down into the can that stands
-    // there, haunches up, with a busy little head-wiggle worked in.
+    // each stop he RUMMAGES — he pivots to face the curb-side can (never
+    // walking through it), noses down into its mouth, haunches up, with a
+    // busy little head-wiggle worked in.
     const g = CLOCK.t * GAIT_HZ * Math.PI * 2;
     const rummage = 1 - moving;
     const bob = moving * 0.05 * Math.abs(Math.sin(g));
     const roll = moving * 0.12 * Math.sin(g) + rummage * 0.06 * Math.sin(CLOCK.t * 11);
     const pitch = rummage * 0.5; // nose dives into the can's mouth
-    euler.set(pitch, yaw + rummage * 0.07 * Math.sin(CLOCK.t * 14), roll, "YXZ");
+    const turn = rummage * RUMMAGE_TURN; // pivot toward the can beside the path
+    euler.set(pitch, yaw + turn + rummage * 0.07 * Math.sin(CLOCK.t * 14), roll, "YXZ");
     quaternion.setFromEuler(euler);
     matrix.compose(
       position.set(x, bob * TOY_LENGTH_KM, z),
@@ -409,16 +449,16 @@ export function Jimothy() {
           vertexShader={VERT}
           fragmentShader={FRAG}
           uniforms={{
-            // Same sumi treatment as Jimothy, but the cans never gate: uFade
+            // Sumi ink like the landmarks, but the cans never gate: uFade
             // holds at 1 and only the shared fog contract dims them.
             uInk: { value: LIVE.landmark },
             uFade: { value: 1 },
-            uOpacity: { value: 0.85 },
+            uOpacity: { value: 1 },
             uFog: { value: LIVE.fog },
             uFogDensity: { value: LIVE.fogDensity },
           }}
           transparent
-          depthWrite={false}
+          depthWrite
           side={THREE.FrontSide}
         />
       </instancedMesh>
@@ -433,19 +473,19 @@ export function Jimothy() {
       <shaderMaterial
         ref={materialRef}
         vertexShader={VERT}
-        fragmentShader={FRAG}
+        fragmentShader={FRAG_FUR}
         uniforms={{
-          // palette-by-reference: the stable sepia landmark ink, pulled deep
-          // toward sumi in the shader (same choice as the canoe — the label ink
-          // flips to cream after dark, wrong for a silhouette on the ground).
+          // palette-by-reference: the landmark ink still feeds the fur mix so
+          // his coat breathes with the print's day/night, but the base is true
+          // raccoon-gray pelt (FRAG_FUR), not sepia.
           uInk: { value: LIVE.landmark },
           uFade: { value: 0 },
-          uOpacity: { value: 0.95 },
+          uOpacity: { value: 1 },
           uFog: { value: LIVE.fog },
           uFogDensity: { value: LIVE.fogDensity },
         }}
         transparent
-        depthWrite={false}
+        depthWrite
         side={THREE.FrontSide}
       />
       </instancedMesh>

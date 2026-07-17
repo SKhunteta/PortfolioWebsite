@@ -118,8 +118,13 @@ it on a second monitor and the print breathes at them.
   fuzzy-ball body that made him famous, a small tucked head, bunched stub legs,
   a short bushy ringtail hugging close behind) trotting a small deterministic
   block-loop by the Locks, with two rummage stops at his own little sumi
-  garbage cans (a second instanced draw call — two standing where he noses in,
-  one knocked over; alley furniture on stage all day, palette- and fog-bound)
+  garbage cans (a second instanced draw call — two standing at the curb side
+  clear of his trot line, he pivots to nose in; one knocked over; alley
+  furniture on stage all day, palette- and fog-bound). His coat is true
+  grizzled raccoon-gray (FRAG_FUR: pale flanks, sooty legs, bandit mask,
+  banded tail) mixed with a whisper of the palette ink; he and the cans are
+  solid pigment — they write depth (the train-model exception) so the parts
+  self-occlude
   ("very spry"). Canoe-tier restraint, storybook-tiny, NORMAL-blended ink on
   `LIVE.landmark`, renderOrder 6. Gated crepuscular on the crows' twilight
   band — the hours a raccoon keeps and the hour he was seen — hidden entirely
@@ -182,10 +187,11 @@ it on a second monitor and the print breathes at them.
   don't add randomness server-side.
 - Everything scene-side is transparent + `depthWrite: false` and ordered by
   `renderOrder` (0 parks → 11 labels; full table in `map/GroundPlane.tsx`;
-  Kasumi slots at 6.5, SkyBokashi at −1), with ONE exception: the
+  Kasumi slots at 6.5, SkyBokashi at −1), with TWO exceptions: the
   train-model materials write depth (renderOrder 9) so the three sections
-  self-occlude. Breaking the ordering shatters the tunnel-through-paper
-  illusion.
+  self-occlude, and Jimothy + his garbage cans write depth (renderOrder 6)
+  for the same reason — multi-part solid bodies must self-occlude. Breaking
+  the ordering shatters the tunnel-through-paper illusion.
 - Raw ShaderMaterials do NOT get scene fog: any normal-blended layer must
   mix toward `LIVE.fog` itself and additive layers must MULTIPLY by the fog
   factor (`map/watercolorGlsl.ts` has the helpers), or the horizon breaks
