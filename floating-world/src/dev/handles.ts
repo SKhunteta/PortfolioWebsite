@@ -2,6 +2,7 @@
 // read __linkMapStats; __linkMap pokes the piece.
 
 import { TRAINS, useUi } from "../trains/store";
+import { TRAIN_GUARD } from "../trains/Trains";
 import { UNDERGROUND_SITES } from "../stations/platformPulse";
 import { FLIGHTS, airlinerPoseAt } from "../map/Airliners";
 import { CLOCK } from "../world/clock";
@@ -32,6 +33,9 @@ const stats = {
   // harness fails on any nonzero error/black count.
   composer: PROFILE.composer as string,
   watchdog: WATCHDOG_STATS,
+  // Live reference to the train feed guard (trains/Trains.tsx): badFixes
+  // counts non-finite transforms caught before reaching the GPU.
+  trainGuard: TRAIN_GUARD,
 };
 
 let frames = 0;
