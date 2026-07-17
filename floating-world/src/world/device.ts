@@ -54,6 +54,10 @@ export interface DeviceProfile {
   // (map/Birds.tsx). platformMotes: boarding dabs scattered per station on
   // dwell (stations/PlatformLife.tsx) — the pool is stations × this.
   birdCount: number;
+  // The twilight crow commute streaming to the Bothell roost (map/Crows.tsx)
+  // — ONE instanced draw call, hidden outside the twilight windows; the count
+  // is how thick the river reads.
+  crowCount: number;
   platformMotes: number;
   // Deep-platform crowd for the underground halls (stations/UndergroundLife.tsx)
   // — ONE instanced draw call, the pool is (underground stations) × this. The
@@ -88,6 +92,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     treeCount: 5000,
     buildingCount: 2200,
     birdCount: 9,
+    crowCount: 12,
     platformMotes: 4,
     undergroundMotes: 3,
     cyclistCount: 3,
@@ -107,6 +112,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     treeCount: 11000,
     buildingCount: 4000,
     birdCount: 13,
+    crowCount: 20,
     platformMotes: 6,
     undergroundMotes: 5,
     cyclistCount: 4,
@@ -126,6 +132,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     treeCount: 18000,
     buildingCount: 6500,
     birdCount: 16,
+    crowCount: 28,
     platformMotes: 8,
     undergroundMotes: 7,
     cyclistCount: 5,

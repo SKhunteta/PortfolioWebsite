@@ -26,6 +26,9 @@ import { Seaplanes } from "./map/Seaplanes";
 import { Airliners } from "./map/Airliners";
 import { Wakes } from "./map/Wakes";
 import { Birds } from "./map/Birds";
+import { Crows } from "./map/Crows";
+import { Canoe } from "./map/Canoe";
+import { Seafair } from "./map/Seafair";
 import { Heroes } from "./map/Heroes";
 import { CityLights } from "./map/CityLights";
 import { Reflections } from "./map/Reflections";
@@ -115,6 +118,8 @@ export default function App() {
         <Kasumi />
         <Wakes />
         <Ferries />
+        <Canoe />
+        <Seafair />
         <TacomaLink />
         <Orcas />
         <Cyclists />
@@ -122,6 +127,7 @@ export default function App() {
         <Seaplanes />
         <Airliners />
         <Birds />
+        <Crows />
         <CityLights />
         <Reflections />
         <LineRibbons />
