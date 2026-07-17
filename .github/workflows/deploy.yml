@@ -55,6 +55,11 @@ jobs:
       # Source dir stays floating-world/; only the served path changed.
       - run: npm ci
         working-directory: floating-world
+      # Its suite runs HERE, with its own deps — the root vitest excludes
+      # floating-world/** (root node_modules lacks postprocessing, which is
+      # what silently blocked every deploy from #221 to #224).
+      - run: npm test
+        working-directory: floating-world
       - run: npm run build
         working-directory: floating-world
       - run: mkdir -p dist/sound-and-rail && cp -r floating-world/dist/. dist/sound-and-rail/
