@@ -17,6 +17,7 @@
 import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { EffectComposer, Bloom, Vignette, FXAA } from "@react-three/postprocessing";
+import { KernelSize } from "postprocessing";
 import type { EffectComposer as EffectComposerImpl } from "postprocessing";
 import { HalfFloatType } from "three";
 import { PROFILE, fxEnabled } from "../world/device";
@@ -69,6 +70,15 @@ export function Composer() {
   // cores over a black page, the classic signature). Antialiasing comes from
   // FXAA instead, on both composer tiers.
   //
+  // Bloom uses the KAWASE blur path, NEVER mipmapBlur — the third member of
+  // the same Apple-GPU family. The mipmap-chain blur intermittently presented
+  // single all-black or half-black frames on iPad AND Apple-silicon desktop
+  // (Safari and Chrome alike — the shared Metal driver, not the browser),
+  // roughly every few seconds, one frame long. Field-bisected on a real iPad
+  // (Jul 17): ?fx=-bloom stopped it cold with FXAA + vignette still mounted,
+  // and the flicker watchdog's black-flicker trips confirmed the cadence.
+  // SwiftShader, as always with this family, saw nothing.
+  //
   // FXAA, NOT SMAA: SMAAEffect declares EffectAttribute.DEPTH, which makes
   // the composer spin up its stable-depth copy — the depth texture is
   // clone()d, and in three r162+ a clone shares the same GL image via
@@ -84,7 +94,8 @@ export function Composer() {
       {passes.bloom ? (
         <Bloom
           ref={bloomRef as never}
-          mipmapBlur
+          mipmapBlur={false}
+          kernelSize={KernelSize.LARGE}
           intensity={1.05}
           luminanceThreshold={1.0}
           luminanceSmoothing={0.08}

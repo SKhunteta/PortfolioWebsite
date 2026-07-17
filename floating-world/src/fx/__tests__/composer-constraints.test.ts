@@ -24,6 +24,17 @@ describe("load-bearing composer constraints", () => {
     expect(COMPOSER_SRC).toMatch(/frameBufferType=\{HalfFloatType\}/);
   });
 
+  it("bloom never uses mipmapBlur — the mip-chain blur strobed single black frames on Apple GPUs", () => {
+    // Field-bisected on a real iPad (Jul 17, ?fx=-bloom) after the flicker
+    // watchdog's black-flicker trips flagged it: one-frame all/half-black
+    // presents every few seconds, identical in Safari and Chrome (the shared
+    // Metal driver), invisible on SwiftShader like the rest of the family.
+    // The Kawase path (mipmapBlur={false} + kernelSize) is the stable blur.
+    // The prose above may name the banned prop; the JSX may not use it bare.
+    expect(COMPOSER_SRC).toMatch(/<Bloom[\s\S]*?mipmapBlur=\{false\}[\s\S]*?kernelSize=/);
+    expect(COMPOSER_SRC).not.toMatch(/<Bloom[\s\S]*?mipmapBlur(?!=\{false\})/);
+  });
+
   it("SMAA never returns — its DEPTH attribute arms the broken stable-depth copy", () => {
     // The comment block may (should) explain the ban; imports and JSX may not.
     expect(COMPOSER_SRC).not.toMatch(/import[^;]*\bSMAA\b/);
