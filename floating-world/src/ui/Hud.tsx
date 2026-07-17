@@ -69,9 +69,16 @@ export function Hud() {
   const [settled, setSettled] = useState(false);
   const [intro, setIntro] = useState<string | null>(null);
   const introDone = useRef(false);
-  const [debug, setDebug] = useState<{ fps: number; trains: number; composer: string } | null>(
-    null
-  );
+  const [debug, setDebug] = useState<{
+    fps: number;
+    trains: number;
+    composer: string;
+    // Flicker forensics, readable on-device without a console: the train
+    // feed guard's catch count and the composer watchdog's transient
+    // blackout count (both live references on __linkMapStats).
+    badFixes: number;
+    blackEvents: number;
+  } | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setSettled(true), 14000);
@@ -100,12 +107,23 @@ export function Hud() {
   useEffect(() => {
     if (!new URLSearchParams(window.location.search).has("debug")) return;
     const id = setInterval(() => {
-      const stats = (window as unknown as Record<string, { fps?: number; composer?: string }>)
-        .__linkMapStats;
+      const stats = (
+        window as unknown as Record<
+          string,
+          {
+            fps?: number;
+            composer?: string;
+            trainGuard?: { badFixes: number };
+            watchdog?: { blackEvents: number };
+          }
+        >
+      ).__linkMapStats;
       setDebug({
         fps: Math.round(stats?.fps ?? 0),
         trains: TRAINS.size,
         composer: stats?.composer ?? "?",
+        badFixes: stats?.trainGuard?.badFixes ?? 0,
+        blackEvents: stats?.watchdog?.blackEvents ?? 0,
       });
     }, 500);
     return () => clearInterval(id);
@@ -231,7 +249,8 @@ export function Hud() {
 
       {debug && (
         <div className="hud-debug">
-          {debug.fps} fps · {TRAINS.size} trains · {mode} · {TIER} · {debug.composer}
+          {debug.fps} fps · {TRAINS.size} trains · {mode} · {TIER} · {debug.composer} · guard{" "}
+          {debug.badFixes} · black {debug.blackEvents}
         </div>
       )}
     </>
