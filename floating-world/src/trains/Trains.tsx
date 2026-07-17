@@ -24,6 +24,12 @@ import { FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "../map/watercolorGlsl";
 
 export const MAX_TRAINS = 48;
 
+// Live counter for ?debug and the smoke harness (dev/handles.ts exposes it):
+// how many times the feed guard below caught a non-finite train transform
+// before it could reach the GPU. Nonzero in the field = the flicker's source
+// confirmed; the guard is what keeps it invisible.
+export const TRAIN_GUARD = { badFixes: 0 };
+
 const VERT = /* glsl */ `
   attribute vec3 aColor;
   attribute float aPulse;
@@ -160,6 +166,40 @@ export function Trains() {
       if (i >= MAX_TRAINS) break;
       advanceTrain(train, CLOCK.dt, CLOCK.t);
       pointAt(train.dir, train.sRendered, scratch);
+      // Feed guard: one bad fix must never reach the GPU. A single non-finite
+      // value here poisons an instance matrix for the sprite, the ink halo,
+      // the trail AND the depth-writing model — which rasterizes as a giant
+      // screen-covering polygon for exactly one frame (the black-flash
+      // flicker recorded on iPad + desktop, Jul 16). Skip the slot, flag the
+      // train, and let the next honest poll heal it.
+      // The sum covers every per-train number that feeds vertex data somewhere:
+      // position (sprite/ink/model/trail), toy length (scales), and load
+      // (trail width/ink — a NaN load would otherwise self-perpetuate through
+      // its own lerp and poison the trail buffer forever).
+      if (
+        !Number.isFinite(
+          scratch.x + scratch.z + train.y + train.modelL + train.sRendered + train.load
+        )
+      ) {
+        TRAIN_GUARD.badFixes++;
+        console.warn(
+          `[sound-and-rail] non-finite train transform (id=${train.id} s=${train.sRendered} ` +
+            `x=${scratch.x} z=${scratch.z} y=${train.y} L=${train.modelL}) — slot skipped`
+        );
+        // Re-arm from the last known target so the train can recover instead
+        // of warning forever; if the target is poisoned too, drop the train.
+        if (Number.isFinite(train.sTarget)) {
+          train.sRendered = train.sTarget;
+          train.y = 0.02;
+          train.modelL = m.farLenKm;
+          train.vEst = 0;
+          train.load = 0.5;
+          train.trailCount = 0;
+        } else {
+          TRAINS.delete(train.id);
+        }
+        continue;
+      }
       matrix.makeTranslation(scratch.x, train.y, scratch.z);
       mesh.setMatrixAt(i, matrix);
 
