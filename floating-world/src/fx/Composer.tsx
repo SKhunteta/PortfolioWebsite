@@ -9,8 +9,10 @@
 //
 // ?fx=-grain,-bloom,-fxaa,-vignette (or +pass to force one on) bisects the
 // chain on real hardware — see world/device.ts. The composer watchdog
-// (watchdog.ts) probes the first ~2 s for the known catastrophic signatures
-// and falls back to composer off if this chain ever breaks a real GPU again.
+// (watchdog.ts) probes the first ~2 s for the known catastrophic signatures,
+// then stays armed for the life of the page as a flicker sentinel (transient
+// single-frame blackouts — the Jul 16 iPad/desktop strobe), and falls back
+// to composer off if this chain ever breaks a real GPU again.
 
 import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
