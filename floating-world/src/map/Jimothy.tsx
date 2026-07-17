@@ -15,11 +15,17 @@
 // deliberately storybook-sized (smaller than the canoe) so he reads as the
 // tiny thing he is without vanishing at drift distance.
 //
-// ONE InstancedMesh (one draw call), the matrix written imperatively in
-// useFrame — the hot path never touches React. NORMAL-blended ink with the fog
-// contract, renderOrder 6 beside the canoe/ferries, depthWrite false, and the
-// mesh hides itself outside the twilight windows so midday and deep night cost
-// nothing.
+// His stops are GARBAGE CANS: three little sumi alley cans (two standing at
+// his rummage points — his nose lands right in the mouth of them — and one
+// already knocked over, the classic scene of the crime). The cans are
+// furniture, on stage all day whether or not Jimothy is; when he arrives he
+// pitches nose-down into one and works it with a busy head-wiggle.
+//
+// TWO InstancedMeshes (two draw calls): Jimothy's matrix written imperatively
+// in useFrame, the cans' matrices placed once. The hot path never touches
+// React. NORMAL-blended ink with the fog contract, renderOrder 6 beside the
+// canoe/ferries, depthWrite false; Jimothy hides himself outside the twilight
+// windows so midday and deep night cost only the static cans.
 //
 // ?jimothy=on|off pins him for demos, tests and screenshots.
 
@@ -103,13 +109,55 @@ const BEAT = loop([
   [47.6689, -122.3826],
 ]);
 
-// Spry: he trots, faster than the canoe pulls. Two brief pause-and-sniff beats
-// per loop — the "very spry but stops to investigate everything" of him.
+// Spry: he trots, faster than the canoe pulls. Two brief pause beats per loop
+// — and each stop is a GARBAGE CAN: he noses right into it, the true raccoon
+// errand ("very spry but stops to investigate everything").
 const SPEED_KM_S = 0.018;
 const SNIFF_S = 3.5;
-const SNIFF_AT = [0.34, 0.72]; // arc-length fractions where he stops to sniff
+const SNIFF_AT = [0.34, 0.72]; // arc-length fractions where he stops to rummage
 const TOY_LENGTH_KM = 0.032; // storybook-tiny, clearly smaller than the canoe
 const GAIT_HZ = 3.2; // the quick waddle bob
+
+/** Point + segment heading at arc length s along the loop. */
+function loopPointAt(s: number): { x: number; z: number; yaw: number } {
+  const { pts, cum } = BEAT;
+  let i = 1;
+  while (i < cum.length - 1 && cum[i] < s) i++;
+  const f = THREE.MathUtils.clamp((s - cum[i - 1]) / Math.max(1e-6, cum[i] - cum[i - 1]), 0, 1);
+  const a = pts[i - 1];
+  const b = pts[i];
+  return {
+    x: a.x + (b.x - a.x) * f,
+    z: a.z + (b.z - a.z) * f,
+    yaw: Math.atan2(-(b.z - a.z), b.x - a.x),
+  };
+}
+
+// The cans live where he stops: one standing just past each rummage point (so
+// his nose lands in the mouth of it), plus one he's already knocked over
+// earlier on the loop — the classic scene of the crime. Fixtures of the alley,
+// on stage all day whether or not Jimothy is; deterministic like everything.
+const CAN_NOSE_REACH_KM = 0.55 * TOY_LENGTH_KM; // snout-to-can-mouth distance
+const CANS = [
+  ...SNIFF_AT.map((f) => {
+    const p = loopPointAt(f * BEAT.lengthKm);
+    return {
+      x: p.x + Math.cos(p.yaw) * CAN_NOSE_REACH_KM,
+      z: p.z - Math.sin(p.yaw) * CAN_NOSE_REACH_KM,
+      yaw: p.yaw + 0.4, // lids askew — nobody's alley cans line up
+      tipped: false,
+    };
+  }),
+  (() => {
+    const p = loopPointAt(0.12 * BEAT.lengthKm);
+    return {
+      x: p.x - Math.sin(p.yaw) * 0.02, // off the path to one side
+      z: p.z - Math.cos(p.yaw) * 0.02,
+      yaw: p.yaw - 1.1,
+      tipped: true, // already been visited
+    };
+  })(),
+];
 
 interface Pose {
   x: number;
@@ -231,6 +279,26 @@ function buildJimothy(): THREE.BufferGeometry {
   return merged;
 }
 
+/** Unit garbage can, base at y = 0: a slightly tapered alley can with a
+ *  wider brimmed lid sitting askew and a little knob handle — the woodblock
+ *  shorthand for "trash can", no label, no litter. About Jimothy's height. */
+function buildCan(): THREE.BufferGeometry {
+  const parts: THREE.BufferGeometry[] = [];
+  const body = new THREE.CylinderGeometry(0.2, 0.17, 0.5, 10);
+  body.translate(0, 0.25, 0);
+  parts.push(body);
+  const lid = new THREE.CylinderGeometry(0.24, 0.24, 0.05, 10);
+  lid.rotateZ(0.12); // resting askew — the raccoon neighborhood tell
+  lid.translate(0.02, 0.53, 0);
+  parts.push(lid);
+  const knob = new THREE.SphereGeometry(0.045, 8, 6);
+  knob.translate(0.03, 0.58, 0);
+  parts.push(knob);
+  const merged = mergeGeometries(parts, false)!;
+  parts.forEach((g) => g.dispose());
+  return merged;
+}
+
 const matrix = new THREE.Matrix4();
 const position = new THREE.Vector3();
 const quaternion = new THREE.Quaternion();
@@ -240,13 +308,43 @@ const scale = new THREE.Vector3();
 export function Jimothy() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
+  const cansRef = useRef<THREE.InstancedMesh>(null);
+  const cansMaterialRef = useRef<THREE.ShaderMaterial>(null);
   const geometry = useMemo(buildJimothy, []);
+  const canGeometry = useMemo(buildCan, []);
   const captioned = useRef(false);
+  const cansPlaced = useRef(false);
 
   useFrame(() => {
     const mesh = meshRef.current;
     const m = materialRef.current;
     if (!mesh || !m) return;
+
+    // The cans are furniture: placed once, on stage all day (a raccoon's cans
+    // don't come out only at dusk). Their material still follows the palette
+    // and fog by reference each frame.
+    const cans = cansRef.current;
+    const cm = cansMaterialRef.current;
+    if (cans && cm) {
+      cm.uniforms.uFogDensity.value = LIVE.fogDensity;
+      if (!cansPlaced.current) {
+        cansPlaced.current = true;
+        for (let i = 0; i < CANS.length; i++) {
+          const c = CANS[i];
+          // The tipped can lies on its side, rolled onto the lid seam.
+          euler.set(c.tipped ? Math.PI / 2 : 0, c.yaw, 0, "YXZ");
+          quaternion.setFromEuler(euler);
+          matrix.compose(
+            position.set(c.x, c.tipped ? 0.2 * TOY_LENGTH_KM : 0, c.z),
+            quaternion,
+            scale.setScalar(TOY_LENGTH_KM),
+          );
+          cans.setMatrixAt(i, matrix);
+        }
+        cans.instanceMatrix.needsUpdate = true;
+        cans.visible = true;
+      }
+    }
 
     const override = jimothyOverride();
     if (override === false) {
@@ -277,13 +375,15 @@ export function Jimothy() {
     m.uniforms.uFogDensity.value = LIVE.fogDensity;
 
     const { x, z, yaw, moving } = jimothyPoseAt(CLOCK.t);
-    // The waddle: a quick vertical bob and a little roll while he trots, easing
-    // flat while he stops to sniff, with a small nose-down pitch mid-sniff.
+    // The waddle: a quick vertical bob and a little roll while he trots. At
+    // each stop he RUMMAGES — nose pitched down into the can that stands
+    // there, haunches up, with a busy little head-wiggle worked in.
     const g = CLOCK.t * GAIT_HZ * Math.PI * 2;
+    const rummage = 1 - moving;
     const bob = moving * 0.05 * Math.abs(Math.sin(g));
-    const roll = moving * 0.12 * Math.sin(g);
-    const pitch = (1 - moving) * 0.35; // nose dips to the ground on a sniff
-    euler.set(pitch, yaw, roll, "YXZ");
+    const roll = moving * 0.12 * Math.sin(g) + rummage * 0.06 * Math.sin(CLOCK.t * 11);
+    const pitch = rummage * 0.5; // nose dives into the can's mouth
+    euler.set(pitch, yaw + rummage * 0.07 * Math.sin(CLOCK.t * 14), roll, "YXZ");
     quaternion.setFromEuler(euler);
     matrix.compose(
       position.set(x, bob * TOY_LENGTH_KM, z),
@@ -295,14 +395,41 @@ export function Jimothy() {
   });
 
   return (
-    <instancedMesh
-      ref={meshRef}
-      args={[undefined, undefined, 1]}
-      geometry={geometry}
-      renderOrder={6}
-      frustumCulled={false}
-      visible={false}
-    >
+    <>
+      <instancedMesh
+        ref={cansRef}
+        args={[undefined, undefined, CANS.length]}
+        geometry={canGeometry}
+        renderOrder={6}
+        frustumCulled={false}
+        visible={false}
+      >
+        <shaderMaterial
+          ref={cansMaterialRef}
+          vertexShader={VERT}
+          fragmentShader={FRAG}
+          uniforms={{
+            // Same sumi treatment as Jimothy, but the cans never gate: uFade
+            // holds at 1 and only the shared fog contract dims them.
+            uInk: { value: LIVE.landmark },
+            uFade: { value: 1 },
+            uOpacity: { value: 0.85 },
+            uFog: { value: LIVE.fog },
+            uFogDensity: { value: LIVE.fogDensity },
+          }}
+          transparent
+          depthWrite={false}
+          side={THREE.FrontSide}
+        />
+      </instancedMesh>
+      <instancedMesh
+        ref={meshRef}
+        args={[undefined, undefined, 1]}
+        geometry={geometry}
+        renderOrder={6}
+        frustumCulled={false}
+        visible={false}
+      >
       <shaderMaterial
         ref={materialRef}
         vertexShader={VERT}
@@ -321,6 +448,7 @@ export function Jimothy() {
         depthWrite={false}
         side={THREE.FrontSide}
       />
-    </instancedMesh>
+      </instancedMesh>
+    </>
   );
 }

@@ -117,7 +117,9 @@ it on a second monitor and the print breathes at them.
   the crow commute's honesty tier: one pure sumi silhouette (the round
   fuzzy-ball body that made him famous, a small tucked head, bunched stub legs,
   a short bushy ringtail hugging close behind) trotting a small deterministic
-  block-loop by the Locks, with two pause-and-sniff beats
+  block-loop by the Locks, with two rummage stops at his own little sumi
+  garbage cans (a second instanced draw call — two standing where he noses in,
+  one knocked over; alley furniture on stage all day, palette- and fog-bound)
   ("very spry"). Canoe-tier restraint, storybook-tiny, NORMAL-blended ink on
   `LIVE.landmark`, renderOrder 6. Gated crepuscular on the crows' twilight
   band — the hours a raccoon keeps and the hour he was seen — hidden entirely
