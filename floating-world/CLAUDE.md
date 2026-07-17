@@ -111,6 +111,19 @@ it on a second monitor and the print breathes at them.
   design — a respectful mark in the print's own language. The rail is only
   the newest transit on this water, and the print says so.
   `?canoe=peak|none` pins the season.
+- **Jimothy** (`map/Jimothy.tsx`, one instanced draw call): the round raccoon
+  of Ballard — a real short-spined raccoon who went viral in July 2026 after
+  he was filmed one evening by the Ballard Goodwill. A tasteful Easter egg at
+  the crow commute's honesty tier: one pure sumi silhouette (spherical body,
+  tucked neckless head, stub legs, a banded ringtail) trotting a small
+  deterministic block-loop by the Locks, with two pause-and-sniff beats
+  ("very spry"). Canoe-tier restraint, storybook-tiny, NORMAL-blended ink on
+  `LIVE.landmark`, renderOrder 6. Gated crepuscular on the crows' twilight
+  band — the hours a raccoon keeps and the hour he was seen — hidden entirely
+  (zero cost) at midday and deep night; observe mode sweeps him for free. One
+  quiet HUD caption on first sighting. `?jimothy=on|off` pins him (on lifts
+  the gate to any phase); `__linkMap.jimothy(true|false|null)` from the
+  console.
 - **SkyBokashi** (`fx/SkyBokashi.tsx`, one screen-space quad, renderOrder
   −1): the hand-wiped gradient at the top of every print — transparent into
   Prussian blue by day, deep plum by night, faint baren streaking. Exempt
@@ -186,8 +199,9 @@ it on a second monitor and the print breathes at them.
   underground layers (deep-platform crowd + art frescoes, UndergroundLife.tsx).
   Whole scene ≈ 30 draw calls on every tier (link-map's ~25 + Kasumi +
   SkyBokashi + the two underground layers + the crow commute); the seasonal
-  meshes (the canoe, Seafair's hydros and delta) hide themselves entirely
-  when off stage instead of counting against every frame.
+  meshes (the canoe, Seafair's hydros and delta) and the gated critters (the
+  crow commute, Jimothy at twilight) hide themselves entirely when off stage
+  instead of counting against every frame.
   `frustumCulled = false` on instanced meshes — spread instances mis-cull.
 - Toy scale is per-object and camera-relative (trains `modelL`, station
   orbs' `toyScale`): a chased train eases toward real scale while the
@@ -253,7 +267,8 @@ by a quiet HUD caption. The reel yields to a touch for a few seconds
 `?bloom=peak|none|0..1` pins the cherry-blossom season; `?gamenight` lights the
 stadiums; `?seafair=on|off` pins the Seafair weekend (hydros + the Blue
 Angels delta); `?canoe=peak|none` pins the Canoe Journeys season;
-`?crows=off` clears the twilight crow commute; `?tod=` pins the orca pod's time of day (a 0..1 day fraction, a 0..24
+`?crows=off` clears the twilight crow commute; `?jimothy=on|off` pins Ballard's
+round raccoon; `?tod=` pins the orca pod's time of day (a 0..1 day fraction, a 0..24
 hour, or dawn|morning|noon|afternoon|dusk|night) — the pod's foraging ground
 migrates around the Sound by the Seattle hour (`map/Orcas.tsx`), and observe
 mode sweeps it with the sun. `scripts/device-smoke.mjs` is the per-tier
