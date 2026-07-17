@@ -10,6 +10,8 @@ import { setPhaseOverride } from "../world/sun";
 import { startObserve, stopObserve, toggleObserve, setObserveReelPin } from "../world/observe";
 import { setTideOverride } from "../world/tide";
 import { setBloomOverride } from "../world/bloom";
+import { setJimothyOverride } from "../world/jimothy";
+import { jimothyPoseAt } from "../map/Jimothy";
 import {
   setWeatherOverride,
   setStrikePin,
@@ -74,6 +76,15 @@ export function installHandles() {
     reelAt: (frac: number | null) => setObserveReelPin(frac),
     setTide: (level: number | null) => setTideOverride(level),
     setBloom: (level: number | null) => setBloomOverride(level),
+    // Ballard's round raccoon: true/false pins him on/off at any sun phase,
+    // null restores the honest crepuscular gate. Same effect as ?jimothy=.
+    jimothy: (on: boolean | null = true) => setJimothyOverride(on),
+    // Jimothy's live world position, so the smoke harness / a curious console
+    // can fly the camera to the round raccoon deterministically.
+    jimothyPos: () => {
+      const p = jimothyPoseAt(CLOCK.t);
+      return { x: p.x, z: p.z, yaw: p.yaw };
+    },
     setWeather: (k: WeatherKind | null) => setWeatherOverride(k),
     // Live weather/lightning state for the smoke harness — lets a test wait
     // for the storm's next deterministic strike instead of screenshotting blind.
