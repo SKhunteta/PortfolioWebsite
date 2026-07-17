@@ -8,11 +8,12 @@
 // small deterministic loop near the Locks where he was seen. Ambient paint,
 // never presented as data.
 //
-// Treatment is Canoe-tier restraint: one pure sumi silhouette — a spherical
-// body, a tucked head, four stub legs, and a banded ringtail — a respectful
-// little mark in the print's own language, NOT a cartoon. He is deliberately
-// storybook-sized (smaller than the canoe) so he reads as the tiny thing he
-// is without vanishing at drift distance.
+// Treatment is Canoe-tier restraint: one pure sumi silhouette — a low, squared
+// loaf of a body carried close to the ground, a forward head and pointed
+// snout, four bunched stub legs, and a big bushy ringtail streaming out behind
+// — a respectful little mark in the print's own language, NOT a cartoon. He is
+// deliberately storybook-sized (smaller than the canoe) so he reads as the
+// tiny thing he is without vanishing at drift distance.
 //
 // ONE InstancedMesh (one draw call), the matrix written imperatively in
 // useFrame — the hot path never touches React. NORMAL-blended ink with the fog
@@ -63,10 +64,11 @@ const FRAG = /* glsl */ `
     float wash = wcFbm(vWorld * 2.4 + vLocal.x * 2.0);
     vec3 c = uInk * 0.55 * (0.88 + 0.28 * wash);
     c *= mix(1.06, 0.9, smoothstep(0.0, 0.32, vLocal.y));
-    // The ringtail: faint sumi bands only on the tail's reach (rear, x < 0),
-    // so the little mark still reads as a raccoon and not just a blob.
-    float tailZone = smoothstep(-0.16, -0.34, vLocal.x);
-    float rings = 0.5 + 0.5 * sin(vLocal.x * 46.0);
+    // The ringtail: faint sumi bands only on the tail's reach behind the rump
+    // (x well negative), so the little mark still reads as a ringtailed raccoon
+    // and not just a blob.
+    float tailZone = smoothstep(-0.38, -0.52, vLocal.x);
+    float rings = 0.5 + 0.5 * sin(vLocal.x * 38.0);
     c *= mix(1.0, mix(0.66, 1.1, rings), tailZone);
     float a = uOpacity * uFade * (0.9 + 0.2 * wash);
     gl_FragColor = vec4(mix(c, uFog, fogFactor()), a);
@@ -166,51 +168,60 @@ export function jimothyPoseAt(t: number, out: Pose = pose): Pose {
   return out;
 }
 
-/** Unit Jimothy along +X, feet at y = 0: a short-spine raccoon — the torso
- *  pulled into a near-sphere, the head tucked straight onto it with no neck,
- *  stub legs bunched close front and rear, and a fat ringtail swept up behind.
- *  Round is the whole point of him. */
+/** Unit Jimothy along +X, feet at y = 0: the real raccoon reads as a low,
+ *  SQUARED loaf carried close to the ground — longer than it is tall, blocky
+ *  rather than spherical — with the short-spine legs bunched under it, a low
+ *  forward head and pointed snout, and a big bushy ringtail streaming straight
+ *  out BEHIND him, near-horizontal with a slight droop. Square is the point. */
 function buildJimothy(): THREE.BufferGeometry {
   const parts: THREE.BufferGeometry[] = [];
 
-  // The spherical body — nearly as tall and wide as it is long.
-  const body = new THREE.BoxGeometry(0.5, 0.44, 0.46);
-  body.translate(0.02, 0.28, 0);
+  // The body: a squared, low-slung loaf — clearly longer than tall. A slight
+  // rump box behind lifts the haunches the way he humps when he runs, but the
+  // silhouette stays boxy, not round.
+  const body = new THREE.BoxGeometry(0.62, 0.4, 0.44);
+  body.translate(0.0, 0.28, 0);
   parts.push(body);
+  const rump = new THREE.BoxGeometry(0.26, 0.42, 0.42);
+  rump.translate(-0.2, 0.3, 0);
+  parts.push(rump);
 
-  // Head tucked onto the front of the sphere — no neck.
-  const head = new THREE.BoxGeometry(0.24, 0.24, 0.26);
-  head.translate(0.32, 0.26, 0);
+  // Head set low and forward off the front of the loaf — barely any neck.
+  const head = new THREE.BoxGeometry(0.24, 0.22, 0.24);
+  head.translate(0.36, 0.22, 0);
   parts.push(head);
-  // Snout nub.
-  const snout = new THREE.BoxGeometry(0.1, 0.09, 0.11);
-  snout.translate(0.45, 0.2, 0);
+  // Pointed snout, dropping forward toward the ground.
+  const snout = new THREE.BoxGeometry(0.16, 0.11, 0.13);
+  snout.translate(0.52, 0.17, 0);
   parts.push(snout);
-  // Two ear nubs.
+  // Two small ear nubs.
   for (const side of [-1, 1]) {
     const ear = new THREE.BoxGeometry(0.07, 0.08, 0.07);
-    ear.translate(0.3, 0.4, side * 0.09);
+    ear.translate(0.32, 0.35, side * 0.09);
     parts.push(ear);
   }
 
   // Four stub legs, bunched close the way a short spine draws them together.
-  for (const fx of [0.22, -0.18]) {
+  for (const fx of [0.2, -0.16]) {
     for (const side of [-1, 1]) {
-      const leg = new THREE.BoxGeometry(0.09, 0.14, 0.09);
-      leg.translate(fx, 0.07, side * 0.17);
+      const leg = new THREE.BoxGeometry(0.09, 0.13, 0.09);
+      leg.translate(fx, 0.065, side * 0.16);
       parts.push(leg);
     }
   }
 
-  // The ringtail: three boxes arcing up and back, banded in the shader.
+  // The ringtail: a big bushy tail held straight out behind, near-horizontal
+  // with a slight downward droop toward the tip — long and thick, ~the length
+  // of the body. Banded in the shader.
   const tailSpec: [number, number, number, number][] = [
-    // x, y, size, rotZ
-    [-0.28, 0.22, 0.17, 0.2],
-    [-0.4, 0.3, 0.15, 0.55],
-    [-0.48, 0.42, 0.13, 0.95],
+    // x, y, size, rotZ (small negative rotZ droops the tip earthward)
+    [-0.42, 0.29, 0.22, -0.06],
+    [-0.62, 0.27, 0.2, -0.14],
+    [-0.8, 0.23, 0.16, -0.22],
+    [-0.94, 0.18, 0.12, -0.3],
   ];
   for (const [x, y, sz, rz] of tailSpec) {
-    const seg = new THREE.BoxGeometry(sz, sz * 0.85, sz * 0.85);
+    const seg = new THREE.BoxGeometry(sz * 1.15, sz, sz);
     seg.rotateZ(rz);
     seg.translate(x, y, 0);
     parts.push(seg);
