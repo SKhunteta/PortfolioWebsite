@@ -24,6 +24,7 @@ export default defineConfig({
       "ketu-9/**",
       "meow-9/**",
       "link-map/**",
+      "floating-world/**",
     ],
   },
 });
