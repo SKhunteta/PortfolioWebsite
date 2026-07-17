@@ -86,6 +86,31 @@ it on a second monitor and the print breathes at them.
   `LIVE.fog` with a thin gilt (kinkumo) edge. They yield to REAL fog
   (honesty rule: stylized mist never impersonates weather) and thin at
   night.
+- **The crow commute** (`map/Crows.tsx`, one instanced draw call): Seattle's
+  real evening river of crows streaming northeast to the Bothell roost, and
+  scattering back over the city at dawn. Unlike the gulls' symmetric
+  golden-hours gate this one is DIRECTIONAL — the sun's trajectory decides
+  which way the stream flows (roost-bound as it falls, city-bound as it
+  rises) — and the marks are true sumi crows, darker and floppier than the
+  gulls' shallow chevrons. Hidden at midday and deep night (the mesh costs
+  nothing off-gate). `?crows=off` clears the sky.
+- **Seafair weekend** (`map/Seafair.tsx`, gated by `world/seafair.ts`): the
+  first weekend of August, show hours only — three hydroplanes drag seigaiha
+  roostertails around the Stan Sayres log-boom course while the Blue Angels'
+  six-ship delta banks a low show line over Lake Washington, with one quiet
+  caption as the first heat comes up. A CALENDAR estimate at bloom.ts's
+  honesty tier, deterministic from the wall clock like the stadium nights —
+  the other 51 weekends the lake is bare: absence, not invention.
+  `?seafair=on|off` pins it.
+- **The canoe crossing** (`map/Canoe.tsx`, gated by `world/journeys.ts`): a
+  single high-prowed Coast Salish cedar canoe pulls the long crossing of
+  Elliott Bay — the Duwamish mouth to the landing beach at Alki — through
+  the summer Canoe Journeys season, daylight-only on the crew shells' own
+  crossfade. Treatment is deliberately restrained: a pure sumi silhouette
+  with a file of paddler ink dabs, NO invented regalia or specific tribal
+  design — a respectful mark in the print's own language. The rail is only
+  the newest transit on this water, and the print says so.
+  `?canoe=peak|none` pins the season.
 - **SkyBokashi** (`fx/SkyBokashi.tsx`, one screen-space quad, renderOrder
   −1): the hand-wiped gradient at the top of every print — transparent into
   Prussian blue by day, deep plum by night, faint baren streaking. Exempt
@@ -159,8 +184,10 @@ it on a second monitor and the print breathes at them.
   preallocated buffer for all trails (drawRange trims), ONE merged geometry
   per road class, per water layer, ONE for landmarks, plus the two submerged
   underground layers (deep-platform crowd + art frescoes, UndergroundLife.tsx).
-  Whole scene ≈ 29 draw calls on every tier (link-map's ~25 + Kasumi +
-  SkyBokashi + the two underground layers).
+  Whole scene ≈ 30 draw calls on every tier (link-map's ~25 + Kasumi +
+  SkyBokashi + the two underground layers + the crow commute); the seasonal
+  meshes (the canoe, Seafair's hydros and delta) hide themselves entirely
+  when off stage instead of counting against every frame.
   `frustumCulled = false` on instanced meshes — spread instances mis-cull.
 - Toy scale is per-object and camera-relative (trains `modelL`, station
   orbs' `toyScale`): a chased train eases toward real scale while the
@@ -224,7 +251,9 @@ by a quiet HUD caption. The reel yields to a touch for a few seconds
 `?debug` shows the HUD readout; `?tier=` forces a device tier;
 `?phase=` pins the sun; `?weather=` pins the sky; `?tide=` pins the tide;
 `?bloom=peak|none|0..1` pins the cherry-blossom season; `?gamenight` lights the
-stadiums; `?tod=` pins the orca pod's time of day (a 0..1 day fraction, a 0..24
+stadiums; `?seafair=on|off` pins the Seafair weekend (hydros + the Blue
+Angels delta); `?canoe=peak|none` pins the Canoe Journeys season;
+`?crows=off` clears the twilight crow commute; `?tod=` pins the orca pod's time of day (a 0..1 day fraction, a 0..24
 hour, or dawn|morning|noon|afternoon|dusk|night) — the pod's foraging ground
 migrates around the Sound by the Seattle hour (`map/Orcas.tsx`), and observe
 mode sweeps it with the sun. `scripts/device-smoke.mjs` is the per-tier
