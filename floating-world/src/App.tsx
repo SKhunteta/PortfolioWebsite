@@ -31,6 +31,7 @@ import { Crows } from "./map/Crows";
 import { Canoe } from "./map/Canoe";
 import { Jimothy } from "./map/Jimothy";
 import { GumWall } from "./map/GumWall";
+import { Chalk } from "./map/Chalk";
 import { Seafair } from "./map/Seafair";
 import { Heroes } from "./map/Heroes";
 import { CityLights } from "./map/CityLights";
@@ -114,6 +115,7 @@ export default function App() {
         <TacomaRoads />
         <TacomaTrack />
         <Cars />
+        <Chalk />
         <Forest />
         <Sakura />
         <Buildings />

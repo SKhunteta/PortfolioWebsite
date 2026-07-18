@@ -162,6 +162,29 @@ it on a second monitor and the print breathes at them.
   (`world/__tests__/gumwall.test.ts`). `?gumwall=on` loops the pilgrim for
   demos, `off` stills the alley (the accumulated dots always stay);
   `__linkMap.gumwall()` / `gumwallState()` from the console.
+- **Sidewalk chalk half-life** (`map/Chalk.tsx` + `world/chalk.ts`): on a dry
+  summer weekend a small patch of colored chalk scribbles appears on a park
+  path — procedural and childlike (a scribbled spiral, a lopsided sun, a
+  zigzag, a hopscotch, a wavy rainbow), drawn from that weekend's dusty pastel
+  tray. The whole drawing is seeded from the weekend id (Saturday and its
+  Sunday share one id, so the two days carry the same marks; two tabs and a
+  reload agree), never Math.random. Only SOME summer weekends draw — a
+  deterministic per-weekend gate, absence not invention, the Seafair honesty
+  tier — and the park path rotates among real kid-friendly spots (Green Lake,
+  Gas Works, Cal Anderson, Volunteer Park, Seward, Alki). Each rain ERASES it:
+  the wash tracks the real `WEATHER.rain` and is MONOTONIC within a weekend, so
+  once a shower has crossed the path the chalk stays gone even after the sky
+  dries — the print's most fragile mark. It fades toward dusk (a daytime kid
+  thing) and is NOT persisted: impermanence at kid scale, nothing to
+  accumulate, only to lose. ONE draw call — every stroke merged into a single
+  ribbon geometry (the road/shoreline strip builder) with a per-vertex pastel,
+  a chalk shader breaking the coverage up with the pavement tooth and
+  dissolving it as the wash rises; normal-blended on the fog contract,
+  renderOrder 5.2, storybook-tiny and hidden (zero cost) whenever it's not on
+  stage. Pure logic (calendar, weekend id, tray, gate, scribbles) is node-safe
+  and vitest-covered (`world/__tests__/chalk.test.ts`). `?chalk=on` forces a
+  patch onto a path off-season for demos, `off` clears it;
+  `__linkMap.chalk()` / `chalkState()` from the console.
 - **The 1962 Monorail** (`map/Monorail.tsx`): the World's Fair Alweg trains
   shuttling their 0.9-mile beamway up Fifth Avenue between Westlake and
   Seattle Center — always exactly the two two-car trains, the Red one and the
@@ -322,7 +345,8 @@ by a quiet HUD caption. The reel yields to a touch for a few seconds
 stadiums; `?seafair=on|off` pins the Seafair weekend (hydros + the Blue
 Angels delta); `?canoe=peak|none` pins the Canoe Journeys season;
 `?crows=off` clears the twilight crow commute; `?jimothy=on|off` pins Ballard's
-round raccoon; `?gumwall=on|off` loops or stills the Gum Wall pilgrimage; `?tod=` pins the orca pod's time of day (a 0..1 day fraction, a 0..24
+round raccoon; `?gumwall=on|off` loops or stills the Gum Wall pilgrimage;
+`?chalk=on|off` forces or clears the summer-weekend sidewalk chalk; `?tod=` pins the orca pod's time of day (a 0..1 day fraction, a 0..24
 hour, or dawn|morning|noon|afternoon|dusk|night) — the pod's foraging ground
 migrates around the Sound by the Seattle hour (`map/Orcas.tsx`), and observe
 mode sweeps it with the sun. `scripts/device-smoke.mjs` is the per-tier
