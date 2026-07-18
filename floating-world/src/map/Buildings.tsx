@@ -15,6 +15,9 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { LIVE } from "../world/palettes";
+import { CLOCK } from "../world/clock";
+import { useUi } from "../trains/store";
+import { undergroundSiteById } from "../stations/platformPulse";
 import { PROFILE } from "../world/device";
 import { CONFIG } from "../world/config";
 import { mulberry32, fbm, isWater, sampleRoadFrontages } from "./scatter";
@@ -65,6 +68,7 @@ const FRAG = /* glsl */ `
   ${FOG_VARYINGS_FRAG}
   uniform vec3 uColor;
   uniform float uOpacity;
+  uniform vec3 uDive; // xy = dived hall's world XZ, z = fade strength 0..1
   varying vec3 vNormal;
   varying float vY;
   varying float vTone;
@@ -79,7 +83,14 @@ const FRAG = /* glsl */ `
     vec3 c = uColor * vTone * key * (0.92 + 0.18 * wash);
     // Roofs (up-facing, higher) catch a touch more light than the walls.
     c *= 0.96 + 0.12 * smoothstep(0.0, 0.5, vY);
-    gl_FragColor = vec4(mix(c, uFog, fogFactor()), uOpacity * (0.95 + 0.08 * wash));
+    // The dive skylight: while the camera holds inside an underground hall,
+    // the town within the hall's footprint thins to a ghost so the room
+    // reads through the paper instead of hiding behind downtown's towers.
+    float skylight = uDive.z * (1.0 - smoothstep(0.55, 1.3, distance(vWorld, uDive.xy)));
+    gl_FragColor = vec4(
+      mix(c, uFog, fogFactor()),
+      uOpacity * (0.95 + 0.08 * wash) * (1.0 - 0.82 * skylight)
+    );
   }
 `;
 
@@ -185,6 +196,18 @@ export function Buildings() {
     if (mat) {
       mat.uniforms.uOpacity.value = LIVE.buildingOpacity;
       mat.uniforms.uFogDensity.value = LIVE.fogDensity;
+      // Ease the skylight open over the dived hall (and closed on release) —
+      // the fade breathes with the camera's own glide, never a hard pop.
+      const diveId = useUi.getState().diveStationId;
+      const site = diveId ? undergroundSiteById(diveId) : undefined;
+      const dive = mat.uniforms.uDive.value as THREE.Vector3;
+      if (site) {
+        dive.x = site.x;
+        dive.y = site.z;
+        dive.z = Math.min(1, dive.z + CLOCK.dt * 1.6);
+      } else {
+        dive.z = Math.max(0, dive.z - CLOCK.dt * 1.6);
+      }
     }
   });
 
@@ -204,6 +227,7 @@ export function Buildings() {
         uniforms={{
           uColor: { value: LIVE.building }, // palette-by-reference
           uOpacity: { value: LIVE.buildingOpacity },
+          uDive: { value: new THREE.Vector3(0, 0, 0) },
           uFog: { value: LIVE.fog },
           uFogDensity: { value: LIVE.fogDensity },
         }}

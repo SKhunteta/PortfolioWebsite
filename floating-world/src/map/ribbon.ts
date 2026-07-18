@@ -71,6 +71,68 @@ export function buildStrip(points: [number, number][], opts: StripOptions): THRE
   return geometry;
 }
 
+export interface WallOptions {
+  /** Signed lateral offset from the polyline (km): +left / −right of travel. */
+  offsetKm: number;
+  /** Wall top height (km). */
+  yTop: number;
+  /** Per-point wall base height (km) — usually the rail floor a hair down. */
+  ysBottom: number[];
+}
+
+/** A VERTICAL ribbon: the polyline offset sideways by `offsetKm`, extruded
+ *  from `ysBottom[i]` up to `yTop`. uv.x is normalized 0..1 along the run
+ *  (so shaders can fade the ends at portals), uv.y is 0 at the base, 1 at
+ *  the top. Same averaged-tangent miters as buildStrip; DoubleSide caller
+ *  contract also applies (winding depends on the offset sign). */
+export function buildWallStrip(points: [number, number][], opts: WallOptions): THREE.BufferGeometry {
+  const n = points.length;
+  const cum = new Float32Array(n);
+  for (let i = 1; i < n; i++) {
+    cum[i] = cum[i - 1] + Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]);
+  }
+  const total = cum[n - 1] || 1;
+
+  const positions = new Float32Array(n * 2 * 3);
+  const uvs = new Float32Array(n * 2 * 2);
+  const indices: number[] = [];
+  const clamp = (i: number) => Math.max(0, Math.min(n - 1, i));
+
+  for (let i = 0; i < n; i++) {
+    const prev = points[clamp(i - 1)];
+    const next = points[clamp(i + 1)];
+    let tx = next[0] - prev[0];
+    let tz = next[1] - prev[1];
+    const len = Math.hypot(tx, tz) || 1;
+    tx /= len;
+    tz /= len;
+    const x = points[i][0] + -tz * opts.offsetKm;
+    const z = points[i][1] + tx * opts.offsetKm;
+    const u = cum[i] / total;
+    const base = i * 6;
+    positions[base] = x;
+    positions[base + 1] = opts.ysBottom[i];
+    positions[base + 2] = z;
+    positions[base + 3] = x;
+    positions[base + 4] = opts.yTop;
+    positions[base + 5] = z;
+    uvs[i * 4] = u;
+    uvs[i * 4 + 1] = 0;
+    uvs[i * 4 + 2] = u;
+    uvs[i * 4 + 3] = 1;
+    if (i < n - 1) {
+      const a = i * 2;
+      indices.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+    }
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
+  geometry.setIndex(indices);
+  return geometry;
+}
+
 /** Concatenate strips into one geometry (one draw call for a whole layer). */
 export function mergeStrips(strips: THREE.BufferGeometry[]): THREE.BufferGeometry {
   let vertCount = 0;

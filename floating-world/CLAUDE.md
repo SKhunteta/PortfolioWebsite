@@ -45,7 +45,16 @@ it on a second monitor and the print breathes at them.
   vines, Pioneer Square's clocks, Roosevelt's gold ziggurat, U District's
   light tubes), flaring into bloom on a train's arrival. The motif descriptor
   (which shader, which second pigment) is a rendering choice kept OUT of the
-  researched identity JSON.
+  researched identity JSON. Underground CLASSIFICATION is the researched
+  `structure` field, never the eased rail height (portal-boundary stations
+  land mid-ramp: SODO is at-grade, Beacon Hill is the deepest hall) — and
+  every hall floor sits at the canonical tunnel depth. Each hall is a ROOM
+  (`stations/HallShells.tsx`, renderOrder 2.9): a warm floor wash and an
+  accent-lamplit ring wall that turn up while dived into (lighting the room
+  is scenery; the crowd stays train-honest), the bored tunnels run between
+  lamplit trench walls (`map/TunnelWalls.tsx`, 2.8), and the town fades to a
+  ghost inside a dived hall's footprint (`map/Buildings.tsx` uDive skylight)
+  so downtown's towers never bury the artwork.
 - Rainier ghosts the horizon at real scale with **Fuji's warm-white snow
   cap**; **Mount Baker** answers it on the northern horizon as a cooler second
   Fuji (its own `aBaker` vertex flag drives the bold cap + sumi keyline, but

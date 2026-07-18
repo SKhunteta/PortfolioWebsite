@@ -17,7 +17,7 @@ import { useFrame, ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import { STATIONS, LINES, LINE_BY_ID } from "../map/network";
 import { railHeightAt } from "../map/grade";
-import { accentForName } from "./identity";
+import { accentForName, identityForName } from "./identity";
 import { TRAINS, useUi } from "../trains/store";
 import { CONFIG } from "../world/config";
 import { CLOCK } from "../world/clock";
@@ -40,7 +40,8 @@ interface StationSlot {
   accent: THREE.Color;
   railY: number; // the line's eased height at this station's arc mark
   orbY: number;
-  submerged: boolean; // platform under the paper — orb renders below ground
+  submerged: boolean; // a real underground hall — orb renders below the paper
+  hallY: number; // canonical platform-floor depth for submerged halls
   orbIndex: number; // index within its bucket's instanced mesh
 }
 
@@ -196,6 +197,7 @@ export function Stations() {
           railY: 0,
           orbY: 0,
           submerged: false,
+          hallY: 0,
           orbIndex: 0,
         },
       ])
@@ -214,8 +216,22 @@ export function Stations() {
     const all = [...byId.values()];
     for (const slot of all) {
       slot.railY = railYFor(slot.marks);
-      slot.orbY = slot.railY + CONFIG.station.orbLiftKm;
-      slot.submerged = slot.railY < CONFIG.station.submergedRailY;
+      // Underground is a researched FACT (station-identity.json), not a
+      // geometric guess: several stations sit exactly on a portal boundary,
+      // where the eased rail height lands mid-ramp — SODO (an at-grade
+      // platform) used to sink halfway under the paper, while Beacon Hill
+      // (the deepest hall on the line) came out slightly positive and lost
+      // its fresco, crowd, shaft and dive entirely.
+      slot.submerged = identityForName(slot.name)?.structure === "underground";
+      // Every hall floor sits at the one canonical tunnel depth, so a
+      // portal-adjacent hall reads as deep as its siblings instead of a
+      // half-sunk smear at the ramp midpoint.
+      slot.hallY = CONFIG.ribbon.y.tunnel;
+      // Surface orbs never hide under the sheet (a portal-boundary mark can
+      // ease below zero); submerged orbs glow at their hall's floor.
+      slot.orbY = slot.submerged
+        ? slot.hallY + CONFIG.station.orbLiftKm
+        : Math.max(slot.railY, CONFIG.ribbon.y["at-grade"]) + CONFIG.station.orbLiftKm;
     }
     const surface = all.filter((s) => !s.submerged);
     const submerged = all.filter((s) => s.submerged);
@@ -240,7 +256,7 @@ export function Stations() {
             pulseIndex: i,
             x: s.x,
             z: s.z,
-            y: s.railY,
+            y: s.hallY,
             accent: s.accent,
             motif: m ? m.motif : -1,
             colorB: m ? m.colorB : "#ffffff",
@@ -282,7 +298,7 @@ export function Stations() {
       for (let i = 0; i < submergedSlots.length; i++) {
         const slot = submergedSlots[i];
         const top = 0.02;
-        const depth = top - slot.railY;
+        const depth = top - slot.hallY;
         matrix.makeScale(CONFIG.station.shaftRadiusKm, depth, CONFIG.station.shaftRadiusKm);
         matrix.setPosition(slot.x, top - depth / 2, slot.z);
         shafts.setMatrixAt(i, matrix);
