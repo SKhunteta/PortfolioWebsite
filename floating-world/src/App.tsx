@@ -34,6 +34,7 @@ import { GumWall } from "./map/GumWall";
 import { Seafair } from "./map/Seafair";
 import { Heroes } from "./map/Heroes";
 import { CityLights } from "./map/CityLights";
+import { LighthouseBeams } from "./map/LighthouseBeams";
 import { Reflections } from "./map/Reflections";
 import { LineRibbons } from "./map/LineRibbons";
 import { TunnelWalls } from "./map/TunnelWalls";
@@ -136,6 +137,7 @@ export default function App() {
         <Airliners />
         <Birds />
         <Crows />
+        <LighthouseBeams />
         <CityLights />
         <Reflections />
         <TunnelWalls />
