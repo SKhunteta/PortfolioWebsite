@@ -12,6 +12,8 @@ import { setTideOverride } from "../world/tide";
 import { setBloomOverride } from "../world/bloom";
 import { setJimothyOverride } from "../world/jimothy";
 import { jimothyPoseAt } from "../map/Jimothy";
+import { setGumwallOverride, summonPilgrim } from "../world/gumwall";
+import { GUM_STATE, gumWallAnchor } from "../map/GumWall";
 import {
   setWeatherOverride,
   setStrikePin,
@@ -85,6 +87,16 @@ export function installHandles() {
       const p = jimothyPoseAt(CLOCK.t);
       return { x: p.x, z: p.z, yaw: p.yaw };
     },
+    // The Gum Wall pilgrimage: true loops the pilgrim for demos, false stills
+    // the alley (the accumulated dots always stay), null restores the honest
+    // once-per-visit walk. Same effect as ?gumwall=.
+    gumwall: (on: boolean | null = true) => setGumwallOverride(on),
+    // Send a pilgrim up Post Alley right now (skips the settle delay; works
+    // even after this visit's walk) — for demos, screenshots and the harness.
+    gumwallNow: () => summonPilgrim(),
+    // The wall's world anchor + live dot count, so the smoke harness / a
+    // curious console can fly to Post Alley and check the visitor's wall.
+    gumwallState: () => ({ ...gumWallAnchor(), ...GUM_STATE }),
     setWeather: (k: WeatherKind | null) => setWeatherOverride(k),
     // Live weather/lightning state for the smoke harness — lets a test wait
     // for the storm's next deterministic strike instead of screenshotting blind.

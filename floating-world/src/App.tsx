@@ -29,6 +29,7 @@ import { Birds } from "./map/Birds";
 import { Crows } from "./map/Crows";
 import { Canoe } from "./map/Canoe";
 import { Jimothy } from "./map/Jimothy";
+import { GumWall } from "./map/GumWall";
 import { Seafair } from "./map/Seafair";
 import { Heroes } from "./map/Heroes";
 import { CityLights } from "./map/CityLights";
@@ -121,6 +122,7 @@ export default function App() {
         <Ferries />
         <Canoe />
         <Jimothy />
+        <GumWall />
         <Seafair />
         <TacomaLink />
         <Orcas />
