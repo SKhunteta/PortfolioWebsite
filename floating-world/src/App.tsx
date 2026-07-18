@@ -19,6 +19,7 @@ import { Ferries } from "./map/Ferries";
 import { TacomaLink } from "./map/TacomaLink";
 import { TacomaTrack } from "./map/TacomaTrack";
 import { TacomaRoads } from "./map/TacomaRoads";
+import { Monorail } from "./map/Monorail";
 import { Orcas } from "./map/Orcas";
 import { Cyclists } from "./map/Cyclists";
 import { MontlakeCut } from "./map/MontlakeCut";
@@ -127,6 +128,7 @@ export default function App() {
         <GumWall />
         <Seafair />
         <TacomaLink />
+        <Monorail />
         <Orcas />
         <Cyclists />
         <MontlakeCut />

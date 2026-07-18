@@ -162,6 +162,21 @@ it on a second monitor and the print breathes at them.
   (`world/__tests__/gumwall.test.ts`). `?gumwall=on` loops the pilgrim for
   demos, `off` stills the alley (the accumulated dots always stay);
   `__linkMap.gumwall()` / `gumwallState()` from the console.
+- **The 1962 Monorail** (`map/Monorail.tsx`): the World's Fair Alweg trains
+  shuttling their 0.9-mile beamway up Fifth Avenue between Westlake and
+  Seattle Center — always exactly the two two-car trains, the Red one and the
+  Blue one, each on its own parallel beam, counter-phased with a dwell at each
+  terminal. Ambient paint at the T Line's honesty tier (deterministic from the
+  clock, never presented as live), drawn deliberately more CARTOONISH than the
+  Link fleet — a slight bob and nose-nod while under way, stilled at the
+  platforms — an older print pasted into a newer one, given the affection of a
+  family elder: it has run this route since 1962. Liveries are painted from
+  the real trains (cream + red roofline/bullet nose/belt over the fluted
+  corrugated-aluminum skirt; deep Alweg blue under a pale roof cap with a
+  sky-blue belt and the wraparound windshield). Three draw calls: the elevated
+  beam strip, one merged pylon colonnade, and ONE InstancedMesh for both
+  trains with a per-instance `aTrain` flag selecting the livery in the shader
+  (the red/blue split is structural, like the airliners' Delta/Alaska halves).
 - **SkyBokashi** (`fx/SkyBokashi.tsx`, one screen-space quad, renderOrder
   −1): the hand-wiped gradient at the top of every print — transparent into
   Prussian blue by day, deep plum by night, faint baren streaking. Exempt
