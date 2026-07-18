@@ -35,11 +35,13 @@ import { Heroes } from "./map/Heroes";
 import { CityLights } from "./map/CityLights";
 import { Reflections } from "./map/Reflections";
 import { LineRibbons } from "./map/LineRibbons";
+import { TunnelWalls } from "./map/TunnelWalls";
 import { Trains } from "./trains/Trains";
 import { TrainModel } from "./trains/TrainModel";
 import { Trails } from "./trains/Trails";
 import { Stations } from "./stations/Stations";
 import { PlatformLife } from "./stations/PlatformLife";
+import { HallShells } from "./stations/HallShells";
 import { UndergroundLife } from "./stations/UndergroundLife";
 import { Labels } from "./stations/Labels";
 import { CameraRig } from "./observer/CameraRig";
@@ -134,9 +136,11 @@ export default function App() {
         <Crows />
         <CityLights />
         <Reflections />
+        <TunnelWalls />
         <LineRibbons />
         <Stations />
         <PlatformLife />
+        <HallShells />
         <UndergroundLife />
         <Heroes />
         <Trains />

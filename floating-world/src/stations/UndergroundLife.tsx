@@ -316,8 +316,14 @@ export function UndergroundLife() {
     const night = 1 - sunPhase();
 
     if (fm) {
+      // The dived hall's artwork runs lit while the camera holds over it —
+      // lighting the ART is scenery; the crowd below stays train-honest.
+      const diveId = useUi.getState().diveStationId;
       for (let i = 0; i < fresco.count; i++) {
-        fresco.pulseAttr.setX(i, pulses[fresco.sites[i].pulseIndex] ?? 0);
+        const site = fresco.sites[i];
+        let p = pulses[site.pulseIndex] ?? 0;
+        if (site.id === diveId) p = Math.max(p, 1);
+        fresco.pulseAttr.setX(i, p);
       }
       fresco.pulseAttr.needsUpdate = true;
       const mat = fm.material as THREE.ShaderMaterial;

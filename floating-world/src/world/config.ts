@@ -140,7 +140,6 @@ export const CONFIG = {
     sealRadiusKm: 0.19,
     orbLiftKm: 0.03, // orb center rides just above its rail height
     shaftRadiusKm: 0.035,
-    submergedRailY: -0.05, // rail below this = underground platform bucket
   },
   camera: {
     // The drift's home is downtown (Westlake sits at the projection origin),

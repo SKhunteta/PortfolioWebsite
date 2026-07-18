@@ -74,7 +74,7 @@ function lanternGlow(pigment: THREE.Color): THREE.Color {
 /** Slice a direction's polyline to [fromKm, toKm] with interpolated ends.
  *  Each point carries [x, z, s] — arc length rides along so the height
  *  profile can be evaluated per vertex. */
-function slicePolyline(dir: DirectionGeometry, fromKm: number, toKm: number): number[][] {
+export function slicePolyline(dir: DirectionGeometry, fromKm: number, toKm: number): number[][] {
   const pts: number[][] = [];
   const { points, cumKm } = dir;
   const at = (s: number) => {
@@ -105,7 +105,7 @@ function slicePolyline(dir: DirectionGeometry, fromKm: number, toKm: number): nu
 
 /** Insert points so no segment exceeds maxStepKm — a coarse polyline would
  *  render the ramp as one or two hard kinks; densifying makes it a curve. */
-function densify(pts: number[][], maxStepKm: number): number[][] {
+export function densify(pts: number[][], maxStepKm: number): number[][] {
   const out: number[][] = [pts[0]];
   for (let i = 1; i < pts.length; i++) {
     const a = pts[i - 1];

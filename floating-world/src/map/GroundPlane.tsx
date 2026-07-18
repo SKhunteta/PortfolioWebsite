@@ -7,7 +7,9 @@
 // the train model at 9 which is the one depthWrite:true exception so its
 // sections self-occlude):
 //   −1 sky bokashi (screen-space wipe, under everything) · 0 parks
-//   (under-wash, y −0.08) · 1 water fill under-layer (−0.06) · 3 tunnel
+//   (under-wash, y −0.08) · 1 water fill under-layer (−0.06) · 2.8 tunnel
+//   trench walls (TunnelWalls.tsx) · 2.9 underground hall floors + ring
+//   walls (HallShells.tsx) · 3 tunnel
 //   ribbons (−0.22) + underground station orbs, their light shafts, and the
 //   deep-platform crowd + art frescoes (UndergroundLife.tsx) ·
 //   4 ground/paper (0) · 4.5 water over-print (the blue block stamped above
