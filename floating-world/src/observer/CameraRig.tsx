@@ -742,7 +742,7 @@ export function CameraRig() {
     observeVista.current = vistaThisFrame;
     // Relax OrbitControls' clamps per-frame so the tight/low framings survive
     // controls.update(): a detail close-up drops the min-distance floor below
-    // 0.8 km; an at-grade vista drops it further AND relaxes the polar clamp
+    // 0.4 km; an at-grade vista drops it further AND relaxes the polar clamp
     // past vertical so the eye-level look down the rail isn't lifted back up.
     // Everything else (drift, orbits, a user at the wheel) keeps the ordinary
     // floors, so manual control never flips under the map.

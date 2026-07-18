@@ -186,7 +186,7 @@ export const CONFIG = {
     // REEL_PERIOD (tour.ts), and the sky day-sweep is locked to the same period
     // (observe.ts `CYCLE_S`) so a stop lands under roughly the same sky each loop.
     observeReel: { travelS: 1.5, orbitDwellS: 3 },
-    minDistance: 0.8,
+    minDistance: 0.4,
     maxDistance: 90,
     // The free-orbit / aerial tilt clamp on OrbitControls (polar angle from
     // straight-down): 1.38 rad ≈ 79°, so the camera can never flip under the
@@ -197,7 +197,7 @@ export const CONFIG = {
     // FOLLOWS a latched train down the line (the same at-vehicle-level ride as the
     // manual click-to-follow), composed so the glowing ribbon recedes past it to
     // the scenic horizon — Rainier on the southern run, the skyline out of SODO.
-    // These need the polar clamp relaxed past vertical and the 0.8 km distance
+    // These need the polar clamp relaxed past vertical and the 0.4 km distance
     // floor dropped, both applied per-frame ONLY while a vista holds (free-orbit
     // keeps the 1.38 clamp, so manual control is unchanged).
     atGradeMaxPolar: 1.62, // ~93°: look at (and a hair above) the horizon
@@ -255,7 +255,7 @@ export const CONFIG = {
     trainDetailOffsetKm: { fwd: 0.06, side: 0.24, up: 0.07 },
     planeDetailOffsetKm: { back: 0.14, side: 0.4, up: 0.12 },
     // OrbitControls clamps camera-to-target to [minDistance, maxDistance]. The
-    // detail close-ups sit well inside the ordinary 0.8 km floor, so CameraRig
+    // detail close-ups sit well inside the ordinary 0.4 km floor, so CameraRig
     // drops the floor to this while a detail shot holds (restored afterward);
     // still clear of the 0.1 km camera near plane.
     detailMinDistance: 0.12,
