@@ -35,6 +35,7 @@ import { CityLights } from "./map/CityLights";
 import { Reflections } from "./map/Reflections";
 import { LineRibbons } from "./map/LineRibbons";
 import { TunnelWalls } from "./map/TunnelWalls";
+import { TunnelPortals } from "./map/TunnelPortals";
 import { Trains } from "./trains/Trains";
 import { TrainModel } from "./trains/TrainModel";
 import { Trails } from "./trains/Trails";
@@ -135,6 +136,7 @@ export default function App() {
         <CityLights />
         <Reflections />
         <TunnelWalls />
+        <TunnelPortals />
         <LineRibbons />
         <Stations />
         <PlatformLife />

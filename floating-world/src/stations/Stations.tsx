@@ -154,11 +154,18 @@ const SHAFT_VERT = /* glsl */ `
 `;
 const SHAFT_FRAG = /* glsl */ `
   ${FOG_VARYINGS_FRAG}
+  uniform float uLow;
   varying vec3 vColor;
   varying float vY;
   void main() {
+    // The shafts are composed for the look-down — seen up through the paper
+    // they're faint elevator-light columns. Side-on at eye level the same
+    // cylinders project as huge flat slabs of accent, so they bow out as
+    // the camera sinks toward rail height (uLow 0→1) and the trench walls
+    // and portal arches carry the interior instead.
     float fade = smoothstep(0.5, 0.12, abs(vY));
-    gl_FragColor = vec4(vColor * fade * (1.0 - fogFactor()), fade * 0.6);
+    float a = fade * 0.6 * (1.0 - 0.85 * uLow);
+    gl_FragColor = vec4(vColor * fade * (1.0 - fogFactor()) * (1.0 - 0.85 * uLow), a);
   }
 `;
 
@@ -408,7 +415,11 @@ export function Stations() {
     sealMat.uniforms.uOpacity.value = LIVE.stationSealOpacity;
     sealMat.uniforms.uFogDensity.value = LIVE.fogDensity;
     if (shafts) {
-      (shafts.material as THREE.ShaderMaterial).uniforms.uFogDensity.value = LIVE.fogDensity;
+      const shaftMat = shafts.material as THREE.ShaderMaterial;
+      shaftMat.uniforms.uFogDensity.value = LIVE.fogDensity;
+      // Eye-level ease (same band the tunnel trench walls key on).
+      const t = Math.max(0, Math.min(1, (0.6 - camera.position.y) / 0.42));
+      shaftMat.uniforms.uLow.value = t * t * (3 - 2 * t);
     }
   });
 
@@ -515,6 +526,7 @@ export function Stations() {
             uniforms={{
               uFog: { value: LIVE.fog },
               uFogDensity: { value: LIVE.fogDensity },
+              uLow: { value: 0 },
             }}
             transparent
             depthWrite={false}

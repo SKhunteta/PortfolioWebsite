@@ -113,15 +113,21 @@ export function TunnelWalls() {
     return specs;
   }, []);
 
-  useFrame(() => {
+  useFrame(({ camera }) => {
     const phase = sunPhase();
+    // From the drift the trench is a whisper under the track — but as the
+    // camera sinks toward rail height (riding a train to a portal, holding
+    // in a dived hall) the walls come up to full lamplight, so the inside
+    // of the tunnel reads as an interior instead of an open plain.
+    const t = Math.max(0, Math.min(1, (0.6 - camera.position.y) / 0.42));
+    const low = t * t * (3 - 2 * t);
     for (const entry of materials.current) {
       if (!entry) continue;
       entry.spec.color.lerpColors(entry.spec.lantern, entry.spec.pigment, phase);
       // Ride the line-intensity mood at the tunnels' own dimmed register —
       // the trench is scenery under the track's voice, never over it.
       entry.material.uniforms.uIntensity.value =
-        LIVE.lineIntensity * CONFIG.ribbon.intensity.tunnel * 0.22;
+        LIVE.lineIntensity * CONFIG.ribbon.intensity.tunnel * 0.22 * (1 + 3.5 * low);
       entry.material.uniforms.uTime.value = CLOCK.t;
       entry.material.uniforms.uFogDensity.value = LIVE.fogDensity;
     }
