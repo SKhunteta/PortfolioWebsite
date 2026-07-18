@@ -85,6 +85,20 @@ it on a second monitor and the print breathes at them.
   hills** are a stylized sum-of-gaussians hillshade in the ground shader
   (`map/GroundPlane.tsx`) — relief, not geometry — and **shore lighthouses**
   (West Point, Alki, Mukilteo) flash over the Sound from `map/CityLights.tsx`.
+- **The lighthouse's slow sentence** (`map/LighthouseBeams.tsx`): after dark,
+  West Point and Alki Point sweep real-cadence rotating beams over the Sound —
+  West Point its real alternating white/red panel pair (one rotation per 10 s,
+  a flash every 5 s alternating colour), Alki a single white beam on its real
+  5 s flash; cadence is read from the CityLights entries so lantern and beam
+  keep the same time. Where a beam crosses the water it briefly reveals what
+  the night hides — a seigaiha wave crest, a seal's sumi head, once in a rare
+  while a pair of orca fins — a rolling ~1 s spotlight (fade-out a touch
+  longer than fade-in) over a deterministic hashed set of hidden things that
+  re-seeds every few minutes, placed only in authored open-water sectors. Two
+  draw calls (additive fog-multiplied beam wedges under the bloom line +
+  normal-blended reveal sprites), hidden entirely by day like the gated
+  critters; one quiet caption the first time a sweep finds the fins.
+  `?beams=on|off` pins or clears the sweeps.
 - **Sakura** (`map/Sakura.tsx`, one instanced draw call): cherry-blossom
   canopies clustered at the real bloom sites (UW Quad, the Arboretum, Green
   Lake, Seward Park). SEASONAL and honest — keyed to `world/bloom.ts` (up in
@@ -277,8 +291,9 @@ it on a second monitor and the print breathes at them.
   Whole scene ≈ 30 draw calls on every tier (link-map's ~25 + Kasumi +
   SkyBokashi + the two underground layers + the crow commute); the seasonal
   meshes (the canoe, Seafair's hydros and delta) and the gated critters (the
-  crow commute, Jimothy at twilight) hide themselves entirely when off stage
-  instead of counting against every frame.
+  crow commute, Jimothy at twilight, the lighthouse beams + their reveals
+  after dark) hide themselves entirely when off stage instead of counting
+  against every frame.
   `frustumCulled = false` on instanced meshes — spread instances mis-cull.
 - Toy scale is per-object and camera-relative (trains `modelL`, station
   orbs' `toyScale`): a chased train eases toward real scale while the
@@ -344,7 +359,8 @@ by a quiet HUD caption. The reel yields to a touch for a few seconds
 `?bloom=peak|none|0..1` pins the cherry-blossom season; `?gamenight` lights the
 stadiums; `?seafair=on|off` pins the Seafair weekend (hydros + the Blue
 Angels delta); `?canoe=peak|none` pins the Canoe Journeys season;
-`?crows=off` clears the twilight crow commute; `?jimothy=on|off` pins Ballard's
+`?crows=off` clears the twilight crow commute; `?beams=on|off` pins or clears
+the lighthouse beam sweeps (on lifts the night gate); `?jimothy=on|off` pins Ballard's
 round raccoon; `?gumwall=on|off` loops or stills the Gum Wall pilgrimage;
 `?chalk=on|off` forces or clears the summer-weekend sidewalk chalk; `?tod=` pins the orca pod's time of day (a 0..1 day fraction, a 0..24
 hour, or dawn|morning|noon|afternoon|dusk|night) — the pod's foraging ground
