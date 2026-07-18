@@ -63,6 +63,12 @@ export interface DeviceProfile {
   // — ONE instanced draw call, the pool is (underground stations) × this. The
   // art frescoes beside it are a fixed 8 instances on every tier.
   undergroundMotes: number;
+  // Surface pedestrians (map/Pedestrians.tsx) — ONE instanced draw call of the
+  // anonymous townsfolk that fill the sidewalks, concentrated downtown and
+  // thinning to the edges. The most numerous figure layer (empty walks were the
+  // print's silence), but each is a storybook-tiny billboard so the count is
+  // fill budget, not draws; the real Seattle hour thins how many read.
+  pedestrianCount: number;
   // Burke-Gilman riders (map/Cyclists.tsx) — ONE instanced draw call, count is
   // how many hero figures ride the trail at once.
   cyclistCount: number;
@@ -102,6 +108,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     crowCount: 12,
     platformMotes: 4,
     undergroundMotes: 3,
+    pedestrianCount: 90,
     cyclistCount: 3,
     greenLakeCyclistCount: 3,
     carCount: 70,
@@ -124,6 +131,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     crowCount: 20,
     platformMotes: 6,
     undergroundMotes: 5,
+    pedestrianCount: 160,
     cyclistCount: 4,
     greenLakeCyclistCount: 4,
     carCount: 130,
@@ -146,6 +154,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     crowCount: 28,
     platformMotes: 8,
     undergroundMotes: 7,
+    pedestrianCount: 240,
     cyclistCount: 5,
     greenLakeCyclistCount: 6,
     carCount: 190,
