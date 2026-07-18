@@ -58,6 +58,13 @@ export interface Palette {
   treeOpacity: number;
   building: THREE.Color; // the woodblock town fabric lining the streets
   buildingOpacity: number;
+  // The town's roof pigments — three leanings (indigo / moss / rust) picked
+  // per instance so blocks read as separate printings, and the sumi keyline
+  // ink the building shader draws its creases, eaves, and window hatch with.
+  buildingRoofA: THREE.Color; // indigo lean
+  buildingRoofB: THREE.Color; // moss lean
+  buildingRoofC: THREE.Color; // rust lean
+  buildingInk: THREE.Color; // sumi keyline — warm dark, never pure black
   ferry: THREE.Color; // WSF hulls — pale washi against the Prussian Sound
   ferryOpacity: number;
   tline: THREE.Color; // the little Tacoma T Line streetcar body (map/TacomaLink.tsx)
@@ -108,6 +115,10 @@ const DAY: Palette = {
   treeOpacity: 0.92,
   building: new THREE.Color("#c2a87e"), // warm pale taupe town — reads light, not a black dot
   buildingOpacity: 0.95,
+  buildingRoofA: new THREE.Color("#8794a6"), // slate-indigo tile
+  buildingRoofB: new THREE.Color("#97a077"), // mossed shingle
+  buildingRoofC: new THREE.Color("#ad8168"), // rusted iron / warm tile
+  buildingInk: new THREE.Color("#52402c"), // sumi-brown keyline, kin to the road ink
   ferry: new THREE.Color("#f0e8d2"),
   ferryOpacity: 0.95,
   tline: new THREE.Color("#eae3cf"), // pale washi streetcar body, a hair cooler than the ferries
@@ -153,6 +164,10 @@ const NIGHT: Palette = {
   treeOpacity: 0.88,
   building: new THREE.Color("#7c5942"), // lantern-warm town massing — dark but never pure black
   buildingOpacity: 0.9,
+  buildingRoofA: new THREE.Color("#6b5044"), // roofs stay warm drifts of the night town
+  buildingRoofB: new THREE.Color("#6c5a3f"),
+  buildingRoofC: new THREE.Color("#7d5340"),
+  buildingInk: new THREE.Color("#33251f"), // warm night sumi — dark, never cool or black
   ferry: new THREE.Color("#c4a988"),
   ferryOpacity: 0.8,
   tline: new THREE.Color("#b39c7a"), // lantern-warm body after dark, kin to the ferry hull
@@ -199,6 +214,10 @@ const COLOR_KEYS = [
   "landmark",
   "tree",
   "building",
+  "buildingRoofA",
+  "buildingRoofB",
+  "buildingRoofC",
+  "buildingInk",
   "ferry",
   "tline",
   "tlineWave",
