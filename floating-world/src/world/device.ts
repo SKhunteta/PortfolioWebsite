@@ -77,6 +77,13 @@ export interface DeviceProfile {
   // clustered at the real bloom sites (UW Quad, the Arboretum, Green Lake,
   // Seward Park). Only visible in bloom season; the count is the fill budget.
   sakuraCount: number;
+  // Ferry deck life (map/FerryDeck.tsx) — the close-zoom reveal that turns each
+  // toy ferry into a vessel: passengers per boat along the promenade rail (one
+  // always at the bow, each with a breath puff on cold days) and parked cars on
+  // the deck below. Both are ONE instanced draw call across the small ferry
+  // fleet, and hide entirely (zero cost) until the camera zooms in close.
+  ferryPassengers: number;
+  ferryCars: number;
 }
 
 const PROFILES: Record<Tier, DeviceProfile> = {
@@ -99,6 +106,8 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     greenLakeCyclistCount: 3,
     carCount: 70,
     sakuraCount: 150,
+    ferryPassengers: 5,
+    ferryCars: 6,
   },
   tablet: {
     dpr: [1, 2],
@@ -119,6 +128,8 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     greenLakeCyclistCount: 4,
     carCount: 130,
     sakuraCount: 260,
+    ferryPassengers: 6,
+    ferryCars: 8,
   },
   desktop: {
     dpr: [1, 2],
@@ -139,6 +150,8 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     greenLakeCyclistCount: 6,
     carCount: 190,
     sakuraCount: 360,
+    ferryPassengers: 7,
+    ferryCars: 10,
   },
 };
 

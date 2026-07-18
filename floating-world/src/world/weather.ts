@@ -148,7 +148,7 @@ export function setWeatherOverride(kind: WeatherKind | null) {
 
 const URL_CURRENT =
   "https://api.open-meteo.com/v1/forecast?latitude=47.6062&longitude=-122.3321" +
-  "&current=weather_code,cloud_cover";
+  "&current=weather_code,cloud_cover,temperature_2m";
 // The hourly block carries the thunder evidence (isConvective above).
 const URL_HOURLY = "&hourly=weather_code,cape&forecast_days=1&timeformat=unixtime";
 const FETCH_EVERY_MS = 10 * 60_000;
@@ -164,11 +164,16 @@ async function fetchWeather() {
     if (!res.ok) res = await fetch(URL_CURRENT);
     if (!res.ok) return; // silence is honest — the paper stays as it was
     const json = (await res.json()) as {
-      current?: { weather_code?: number; cloud_cover?: number };
+      current?: { weather_code?: number; cloud_cover?: number; temperature_2m?: number };
       hourly?: HourlySeries;
     };
     const code = json.current?.weather_code;
     if (typeof code !== "number") return;
+    // Coldness for the breath (below): a real air temperature, ramped from
+    // "sweater weather" to "you can see your breath". If the temp field is
+    // missing we keep whatever we last knew — never invent a cold day.
+    const tempC = json.current?.temperature_2m;
+    if (typeof tempC === "number") coldFromTemp = coldnessAtC(tempC);
     lastFetched = classify(
       code,
       json.current?.cloud_cover ?? 0,
@@ -189,6 +194,9 @@ export function startWeather(): () => void {
     // than easing into it from a dry page. Runtime changes still wash in.
     Object.assign(WEATHER, LEVELS[override]);
   }
+  // A URL cold pin (?cold=) starts IN the cold, same as the weather pin — the
+  // breath is up from the first frame instead of easing in over ~8 s.
+  if (coldOverride != null) COLD.level = coldOverride;
   void fetchWeather();
   const id = setInterval(() => {
     if (!document.hidden) void fetchWeather();
@@ -202,6 +210,48 @@ export function startWeather(): () => void {
     clearInterval(id);
     document.removeEventListener("visibilitychange", onVisible);
   };
+}
+
+// --- cold (the visible-breath signal) --------------------------------------
+// A real air temperature, kept as an eased 0..1 "coldness" the same two-speed
+// way the weather levels are: a rare Seattle cold snap slides in, it doesn't
+// snap on. Read by the ferry deck (map/FerryDeck.tsx) to puff the passengers'
+// breath on cold days, and honest like the rest — it only reads a real fetched
+// temperature (or a snow day, which is cold by definition), never a guess.
+//
+// The ramp: no breath above ~10 °C, full plume by ~1 °C (with a snow day as a
+// floor, since it is cold whatever the thermometer says).
+const BREATH_WARM_C = 10;
+const BREATH_COLD_C = 1;
+
+export function coldnessAtC(tempC: number): number {
+  const t = (BREATH_WARM_C - tempC) / (BREATH_WARM_C - BREATH_COLD_C);
+  return Math.max(0, Math.min(1, t));
+}
+
+/** Eased 0..1 coldness — read by shaders every frame (like WEATHER). */
+export const COLD = { level: 0 };
+
+let coldFromTemp = 0; // 0..1 from the last real temperature fetch
+
+function parseColdOverride(): number | null {
+  if (typeof window === "undefined") return null;
+  const raw = new URLSearchParams(window.location.search).get("cold");
+  if (raw == null) return null;
+  if (raw === "on") return 1;
+  if (raw === "off") return 0;
+  const n = Number(raw);
+  return Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : null;
+}
+
+let coldOverride: number | null = parseColdOverride();
+
+/** ?cold=0..1|on|off / __linkMap.setCold — pin the breath on for demos/tests.
+ *  A pin SNAPS the live level (like the weather URL pin starts in its weather),
+ *  so a screenshot/test doesn't wait out the ease; real temperature still eases. */
+export function setColdOverride(level: number | null) {
+  coldOverride = level == null ? null : Math.max(0, Math.min(1, level));
+  if (coldOverride != null) COLD.level = coldOverride;
 }
 
 // --- lightning ---------------------------------------------------------------
@@ -281,6 +331,10 @@ export function easeWeather(dt: number) {
   WEATHER.fog += (target.fog - WEATHER.fog) * k;
   WEATHER.overcast += (target.overcast - WEATHER.overcast) * k;
   WEATHER.lightning += (target.lightning - WEATHER.lightning) * k;
+  // Coldness eases the same way. A snow day is cold whatever the thermometer
+  // last said, so the eased snow target floors it; a URL/console pin overrides.
+  const coldTarget = coldOverride != null ? coldOverride : Math.max(coldFromTemp, target.snow);
+  COLD.level += (coldTarget - COLD.level) * k;
   tickLightning(CLOCK.t);
 }
 
