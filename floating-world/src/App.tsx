@@ -23,6 +23,7 @@ import { TacomaRoads } from "./map/TacomaRoads";
 import { Monorail } from "./map/Monorail";
 import { Orcas } from "./map/Orcas";
 import { Cyclists } from "./map/Cyclists";
+import { Pedestrians } from "./map/Pedestrians";
 import { MontlakeCut } from "./map/MontlakeCut";
 import { Seaplanes } from "./map/Seaplanes";
 import { Airliners } from "./map/Airliners";
@@ -136,6 +137,7 @@ export default function App() {
         <Monorail />
         <Orcas />
         <Cyclists />
+        <Pedestrians />
         <MontlakeCut />
         <Seaplanes />
         <Airliners />
