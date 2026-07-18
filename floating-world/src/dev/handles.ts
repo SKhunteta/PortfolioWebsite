@@ -14,6 +14,8 @@ import { setJimothyOverride } from "../world/jimothy";
 import { jimothyPoseAt } from "../map/Jimothy";
 import { setGumwallOverride, summonPilgrim } from "../world/gumwall";
 import { GUM_STATE, gumWallAnchor } from "../map/GumWall";
+import { setChalkOverride } from "../world/chalk";
+import { CHALK_STATE, chalkAnchor } from "../map/Chalk";
 import {
   setWeatherOverride,
   setColdOverride,
@@ -100,6 +102,13 @@ export function installHandles() {
     // The wall's world anchor + live dot count, so the smoke harness / a
     // curious console can fly to Post Alley and check the visitor's wall.
     gumwallState: () => ({ ...gumWallAnchor(), ...GUM_STATE }),
+    // Sidewalk chalk: true forces a patch onto a park path off-season for demos,
+    // false clears it, null restores the honest dry-summer-weekend gate. Same
+    // effect as ?chalk=. The rain wash still erases it live.
+    chalk: (on: boolean | null = true) => setChalkOverride(on),
+    // The chalk patch's world anchor + live state (present, wash 0..1, park),
+    // so the smoke harness / a curious console can fly to the path and check it.
+    chalkState: () => ({ ...chalkAnchor(), ...CHALK_STATE }),
     setWeather: (k: WeatherKind | null) => setWeatherOverride(k),
     // The visible-breath signal on the ferry deck: 0..1 pins the coldness on,
     // null restores the honest temperature read. Same effect as ?cold=.
