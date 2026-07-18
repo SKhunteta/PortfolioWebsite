@@ -128,9 +128,13 @@ export const LIGHTS: Light[] = [
   { lat: 47.6205, lng: -122.3493, y: 1.09, scaleKm: 0.16, color: new THREE.Color("#ff5c48") },
   // Shore lighthouses guarding the Sound — West Point off Discovery Park,
   // Alki Point at the mouth of Elliott Bay, and Mukilteo far to the north.
-  // Each keeps its own flash character (period + phase), a warm-white ember
-  // that just kisses the bloom line at the top of its flash — the working
-  // waterfront's night-lights, deterministic from the clock like the beacon.
+  // Each keeps its own REAL flash character (period + phase): West Point's
+  // alternating pair completes a rotation in 10 s, Alki flashes every 5 s —
+  // a warm-white ember that just kisses the bloom line at the top of its
+  // flash, deterministic from the clock like the beacon. West Point and
+  // Alki's cadences are also the single source of truth for their rotating
+  // beam sweeps (map/LighthouseBeams.tsx reads these entries by label), so
+  // lantern and beam always keep the same time.
   {
     lat: 47.662,
     lng: -122.4356,
@@ -146,7 +150,7 @@ export const LIGHTS: Light[] = [
     y: 0.06,
     scaleKm: 0.13,
     color: new THREE.Color("#ffe6c0"),
-    lighthouse: { periodS: 7.5, phase: 2.1 },
+    lighthouse: { periodS: 5, phase: 2.1 },
     label: "Alki Point Light",
   },
   {
