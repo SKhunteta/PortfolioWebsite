@@ -5,18 +5,17 @@
 // the roof from above, exactly like an aerial of Lumen Field's canopy or the
 // sign band on T-Mobile Park's great arch.
 //
-// It stays a roof decal, never a billboard: the letters lie flat on the roof,
-// but the sign turns slowly about its own center so the wordmark reads upright
-// from wherever the camera has drifted (a flat engraving fixed to the roof
-// reads upside-down from the far side of an orbit — this keeps it legible while
-// never lifting off the surface). Painted, not lit: a warm off-white held under
+// It stays a roof decal, never a billboard: the letters lie flat on the roof
+// at a FIXED bearing, like the real engravings — each wordmark runs along its
+// stadium's north–south long axis and reads upright from the Sound / downtown
+// side, exactly as the aerials show. From the far side of a drift orbit it
+// reads reversed, the honest price of paint on a roof. Painted, not lit: a warm off-white held under
 // the bright-paper bloom line (like the airliner liveries), normal-blended,
 // depthWrite off, inheriting scene fog through the built-in material so the
 // horizon stays intact. renderOrder sits just above the landmark + town fabric
 // so the name always reads on top of its bowl.
 
-import { useMemo, useRef } from "react";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useMemo } from "react";
 import * as THREE from "three";
 import { projectLatLng } from "./network";
 
@@ -53,43 +52,32 @@ function wordmarkTexture(text: string): { texture: THREE.CanvasTexture; aspect: 
 }
 
 // Each sign: the stadium's location, the height on its roofline the letters
-// float at, and the length (world km) the wordmark spans across the roof.
+// float at, the length (world km) the wordmark spans across the roof, and the
+// fixed yaw of the baseline. π/2 runs the text along the SODO stadiums'
+// north–south long axis with the letter tops pointing east, so the names read
+// upright from over the Sound and downtown — the postcard angle.
 const SIGNS = [
-  { text: "LUMEN FIELD", lat: 47.5952, lng: -122.3316, y: 0.2, span: 0.3 },
-  { text: "T-MOBILE PARK", lat: 47.5914, lng: -122.3325, y: 0.14, span: 0.3 },
+  { text: "LUMEN FIELD", lat: 47.5952, lng: -122.3316, y: 0.2, span: 0.3, yaw: Math.PI / 2 },
+  { text: "T-MOBILE PARK", lat: 47.5914, lng: -122.3325, y: 0.14, span: 0.3, yaw: Math.PI / 2 },
 ];
 
 export function StadiumSigns() {
-  const camera = useThree((s) => s.camera);
-  const groups = useRef<(THREE.Group | null)[]>([]);
-
   const signs = useMemo(
     () =>
       SIGNS.map((s) => {
         const { texture, aspect } = wordmarkTexture(s.text);
         const { x, z } = projectLatLng(s.lat, s.lng);
-        return { texture, x, y: s.y, z, w: s.span, h: s.span / aspect };
+        return { texture, x, y: s.y, z, w: s.span, h: s.span / aspect, yaw: s.yaw };
       }),
     []
   );
 
-  useFrame(() => {
-    for (let i = 0; i < signs.length; i++) {
-      const g = groups.current[i];
-      if (!g) continue;
-      const s = signs[i];
-      // Turn the flat sign so the top of the letters points away from the
-      // camera — the wordmark reads upright from any drift azimuth while staying
-      // pinned flat to the roof.
-      g.rotation.y = Math.atan2(camera.position.x - s.x, camera.position.z - s.z);
-    }
-  });
-
   return (
     <>
       {signs.map((s, i) => (
-        <group key={i} ref={(el) => (groups.current[i] = el)} position={[s.x, s.y, s.z]}>
-          {/* Lay the plane flat on the roof (facing up); the group's yaw keeps it readable. */}
+        <group key={i} position={[s.x, s.y, s.z]} rotation={[0, s.yaw, 0]}>
+          {/* Lay the plane flat on the roof (facing up); the group's fixed yaw
+              sets the real-world bearing of the engraving. */}
           <mesh rotation={[-Math.PI / 2, 0, 0]} renderOrder={6.5} frustumCulled={false}>
             <planeGeometry args={[s.w, s.h]} />
             <meshBasicMaterial
