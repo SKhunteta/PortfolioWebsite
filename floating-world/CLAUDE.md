@@ -132,6 +132,27 @@ it on a second monitor and the print breathes at them.
   quiet HUD caption on first sighting. `?jimothy=on|off` pins him (on lifts
   the gate to any phase); `__linkMap.jimothy(true|false|null)` from the
   console.
+- **The Gum Wall pilgrimage** (`map/GumWall.tsx` + `world/gumwall.ts`): Post
+  Alley under Pike Place Market, where the real wall has taken a piece of gum
+  from nearly every visitor since 1993 (steam-cleaned back to brick in 2015 —
+  94 buckets, 2,350 lb — and begun again within days). Once per visit a lone
+  straw-hatted pilgrim (Heroes' billboard figure language) walks the alley,
+  pauses at the brick, and presses in ONE dot of saturated pigment drawn at
+  random from that day's four-pigment tray (date-seeded from a fixed set of
+  eight woodblock hues, all under the bloom ceiling). The dots persist in
+  **localStorage**, so each returning viewer's copy of the print ages
+  uniquely — a woodblock that wears with every impression pulled; at
+  `WALL_CAPACITY` the wall is honestly steam-cleaned and begins again, with a
+  caption for both beats. Three cheap draw calls: the brick wall (one box,
+  sumi-brick wash, depth-writing like the cans), ONE preallocated
+  InstancedMesh of pressed dots (count-trimmed, the print's only confetti),
+  and the pilgrim plane (hidden — zero cost — outside the walk). The
+  Landmarks merge gained the Economy Market / Market Theater block so the
+  alley reads as a cut between masses. Pure logic (day palette, storage
+  round-trip, capacity rule) is node-safe and vitest-covered
+  (`world/__tests__/gumwall.test.ts`). `?gumwall=on` loops the pilgrim for
+  demos, `off` stills the alley (the accumulated dots always stay);
+  `__linkMap.gumwall()` / `gumwallState()` from the console.
 - **SkyBokashi** (`fx/SkyBokashi.tsx`, one screen-space quad, renderOrder
   −1): the hand-wiped gradient at the top of every print — transparent into
   Prussian blue by day, deep plum by night, faint baren streaking. Exempt
@@ -277,7 +298,7 @@ by a quiet HUD caption. The reel yields to a touch for a few seconds
 stadiums; `?seafair=on|off` pins the Seafair weekend (hydros + the Blue
 Angels delta); `?canoe=peak|none` pins the Canoe Journeys season;
 `?crows=off` clears the twilight crow commute; `?jimothy=on|off` pins Ballard's
-round raccoon; `?tod=` pins the orca pod's time of day (a 0..1 day fraction, a 0..24
+round raccoon; `?gumwall=on|off` loops or stills the Gum Wall pilgrimage; `?tod=` pins the orca pod's time of day (a 0..1 day fraction, a 0..24
 hour, or dawn|morning|noon|afternoon|dusk|night) — the pod's foraging ground
 migrates around the Sound by the Seattle hour (`map/Orcas.tsx`), and observe
 mode sweeps it with the sun. `scripts/device-smoke.mjs` is the per-tier

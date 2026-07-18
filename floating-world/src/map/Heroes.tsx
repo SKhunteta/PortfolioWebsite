@@ -7,7 +7,7 @@
 //
 // The cast, each a distinct silhouette read off its props:
 //   • a bijin under a wagasa gazing from the Queen Anne overlook;
-//   • a straw-hatted Tōkaidō traveller with staff and bindle in Pike Place;
+//   • a straw-hatted Tōkaidō traveller with staff and bindle at Alki Point;
 //   • a broad-hatted fisherman casting a line at the Ballard Locks;
 //   • a kite-flyer on the Gas Works hill — the kite up by day, a paper lantern
 //     in hand by night (honest like the birds: kites only fly in daylight);

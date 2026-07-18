@@ -866,6 +866,10 @@ function buildGeometry(): THREE.BufferGeometry {
   //     bluff, with the clock-and-sign pylon at its north end ---
   parts.push(tower(47.6097, -122.3421, 0.1, 0.09, 0.26, 0.35)); // the arcade (long axis along the bluff)
   parts.push(tower(47.6101, -122.3419, 0.05, 0.16, 0.04, 0.35)); // the neon sign / clock pylon
+  // The Economy Market / Market Theater block on the east flank — the mass
+  // Post Alley cuts behind, so the Gum Wall's alley (map/GumWall.tsx) reads
+  // as a gap between buildings and not a wall standing alone.
+  parts.push(tower(47.6085, -122.3411, 0.06, 0.07, 0.12, 0.35));
 
   // --- Boeing Field / King County International (KBFI): the region's SECOND
   //     airfield, south of downtown — its runways inked like SeaTac's strips,
