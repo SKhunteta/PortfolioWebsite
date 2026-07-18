@@ -286,11 +286,16 @@ it on a second monitor and the print breathes at them.
   don't add randomness server-side.
 - Everything scene-side is transparent + `depthWrite: false` and ordered by
   `renderOrder` (0 parks → 11 labels; full table in `map/GroundPlane.tsx`;
-  Kasumi slots at 6.5, SkyBokashi at −1), with TWO exceptions: the
+  Kasumi slots at 6.5, SkyBokashi at −1), with THREE exceptions: the
   train-model materials write depth (renderOrder 9) so the three sections
-  self-occlude, and Jimothy + his garbage cans write depth (renderOrder 6)
-  for the same reason — multi-part solid bodies must self-occlude. Breaking
-  the ordering shatters the tunnel-through-paper illusion.
+  self-occlude, Jimothy + his garbage cans write depth (renderOrder 6), and
+  the merged landmarks write depth (renderOrder 6) — all for the same reason:
+  multi-part solid bodies must self-occlude, or their parts (train sections,
+  raccoon limbs, the Space Needle and downtown towers) bleed through each
+  other in raw buffer order and read as glassy. Atmospheric distance on the
+  landmarks (ghosted Olympics, far shores) is a color mix toward fog, not
+  alpha, so it survives the opaque depth pass. Breaking the ordering shatters
+  the tunnel-through-paper illusion.
 - Raw ShaderMaterials do NOT get scene fog: any normal-blended layer must
   mix toward `LIVE.fog` itself and additive layers must MULTIPLY by the fog
   factor (`map/watercolorGlsl.ts` has the helpers), or the horizon breaks

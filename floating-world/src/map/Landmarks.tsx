@@ -19,10 +19,18 @@
 // Toy-scaled like the trains (~4–5× real height,
 // the storybook register), merged into ONE geometry / ONE draw call, and
 // painted with the same watercolor wash + fog contract as every other
-// normal-blended layer. depthWrite stays false (the train model remains the
-// scene's only depth writer). A fixed key light from the northwest sky
-// shades each face so the massing reads SOLID — blocks with dimension, not
-// stains — while the wash keeps the hand-painted surface.
+// normal-blended layer. depthWrite is TRUE here (the same self-occlusion
+// exception the train model and Jimothy take): this is ONE merged multi-part
+// solid body, so without a depth buffer its towers and mountains paint in raw
+// buffer order — a building or peak that happens to sit later in the merge
+// bleeds through the ones in front of it, and the massing reads as glassy /
+// too transparent (the Space Needle and downtown towers you could see straight
+// through). Writing depth lets nearer faces occlude farther ones so the blocks
+// read SOLID. A fixed key light from the northwest sky still shades each face
+// so the massing has dimension, not stain, while the wash keeps the
+// hand-painted surface. Atmospheric distance (the ghosted Olympics, far shores)
+// is a COLOR mix toward fog in the shader, not alpha, so it survives the
+// opaque depth pass unchanged.
 
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
@@ -970,7 +978,7 @@ export function Landmarks() {
           uDusk: { value: 0 },
         }}
         transparent
-        depthWrite={false}
+        depthWrite // the merged solid body self-occludes — see file header
         side={THREE.FrontSide}
       />
     </mesh>

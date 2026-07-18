@@ -3,9 +3,10 @@
 // Tunnel ribbons still render BENEATH it and are seen through it — that
 // submerged read is painter's order, not the depth buffer.
 //
-// Render-order contract (everything transparent + depthWrite:false, EXCEPT
-// the train model at 9 which is the one depthWrite:true exception so its
-// sections self-occlude):
+// Render-order contract (everything transparent + depthWrite:false, EXCEPT the
+// self-occlusion cases that write depth so their multi-part solid bodies read
+// solid: the merged landmarks at 6, Jimothy + his cans at 6, and the train
+// model at 9):
 //   −1 sky bokashi (screen-space wipe, under everything) · 0 parks
 //   (under-wash, y −0.08) · 1 water fill under-layer (−0.06) · 2.8 tunnel
 //   trench walls (TunnelWalls.tsx) · 2.9 underground hall floors + ring
@@ -17,7 +18,7 @@
 //   reflections (trains/ferries/city lights — Reflections.tsx) · 4.7 foam wake
 //   (Wakes.tsx) · 5 roads
 //   (0.010/0.014) · 5.6 forest (billboarded conifers) · 6 surface + elevated
-//   ribbons, landmarks, ferries · 6.2 building fabric (the
+//   ribbons, landmarks (depthWrite:true — self-occlude), ferries · 6.2 building fabric (the
 //   woodblock town — FIVE instanced variant meshes, one per silhouette,
 //   sharing one uniforms object) · 6.3 seaplanes + airliners (above the town — they fly
 //   OVER it) · 6.5 kasumi mist bands (y 0.5) · 7 stations (surface/elevated
