@@ -238,11 +238,14 @@ const BEAM_FRAG = /* glsl */ `
   uniform float uIntensity;
   void main() {
     float across = abs(vUv.y * 2.0 - 1.0);
-    // Two beam lines with paper showing between them — the dual-beam way.
-    float beams = smoothstep(1.0, 0.55, across) * (0.35 + 0.65 * smoothstep(0.12, 0.35, across));
-    float dapple = 0.75 + 0.25 * wcNoise(vWorld * 4.0);
+    // A solid ink stroke — the beamway must READ as a line from drift
+    // distance, like the rail ribbons — with the two beam edges drawn a
+    // shade darker so up close it still resolves into the dual-beam way.
+    float core = smoothstep(1.0, 0.85, across);
+    float edges = smoothstep(0.35, 0.6, across);
+    float dapple = 0.8 + 0.2 * wcNoise(vWorld * 4.0);
     vec3 c = mix(uColor, uFog, fogFactor());
-    gl_FragColor = vec4(c, beams * dapple * uIntensity);
+    gl_FragColor = vec4(c * (1.0 - 0.25 * edges), core * dapple * uIntensity);
   }
 `;
 
@@ -331,7 +334,8 @@ const RED = new THREE.Color("#b5372a"); // Alweg red — vermilion leaning brick
 const BLUE = new THREE.Color("#2c5c8f"); // Alweg blue
 const SKY = new THREE.Color("#8fb4cd"); // the Blue train's lighter belt
 const SILVER = new THREE.Color("#b3ae9f"); // corrugated aluminum, warmed to the paper
-const CONCRETE = new THREE.Color("#9b8f76"); // the beam + pylon concrete, aged warm
+const CONCRETE = new THREE.Color("#9b8f76"); // the pylon concrete, aged warm
+const BEAM_INK = new THREE.Color("#6a5d45"); // the beamway stroke — a real sumi line, darker than the streets
 
 export function Monorail() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
@@ -345,7 +349,7 @@ export function Monorail() {
       const { x, z } = projectLatLng(lat, lng);
       return [x, z] as [number, number];
     });
-    return buildStrip(pts, { widthKm: BEAM_GAUGE * 2 + 0.014, y: BEAM_Y });
+    return buildStrip(pts, { widthKm: BEAM_GAUGE * 2 + 0.022, y: BEAM_Y });
   }, []);
 
   useFrame(() => {
@@ -356,7 +360,9 @@ export function Monorail() {
     m.uniforms.uWindowIntensity.value = LIVE.windowIntensity;
     m.uniforms.uFogDensity.value = LIVE.fogDensity;
     if (beamMatRef.current) {
-      beamMatRef.current.uniforms.uIntensity.value = LIVE.roadIntensity * 0.9;
+      // Boldest stroke on the page after the rail ribbons themselves — the
+      // roads' ink weight was vanishing under the downtown fabric.
+      beamMatRef.current.uniforms.uIntensity.value = Math.min(1, LIVE.roadIntensity * 1.7);
       beamMatRef.current.uniforms.uFogDensity.value = LIVE.fogDensity;
     }
     if (pylonMatRef.current) {
@@ -386,13 +392,15 @@ export function Monorail() {
 
   return (
     <>
-      <mesh geometry={beamGeometry} renderOrder={5} frustumCulled={false}>
+      {/* Above the building fabric (6.2), just under its own trains (6.25):
+          an elevated line hidden behind every tower isn't a line at all. */}
+      <mesh geometry={beamGeometry} renderOrder={6.22} frustumCulled={false}>
         <shaderMaterial
           ref={beamMatRef}
           vertexShader={BEAM_VERT}
           fragmentShader={BEAM_FRAG}
           uniforms={{
-            uColor: { value: CONCRETE },
+            uColor: { value: BEAM_INK },
             uIntensity: { value: 1 },
             uFog: { value: LIVE.fog }, // palette-by-reference
             uFogDensity: { value: LIVE.fogDensity },
