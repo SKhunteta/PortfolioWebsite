@@ -62,6 +62,23 @@ it on a second monitor and the print breathes at them.
   crest** closing the eastern wall — Rainier SE, Cascades E/N, Olympics W.
   Ferries, floatplanes, stadium nights, the Needle beacon — all the
   deterministic ambient life carries over unchanged.
+- **Ferry deck life** (`map/FerryDeck.tsx`): a strict CLOSE-ZOOM reveal that
+  turns the toy WSF boats from tokens into vessels. Zoom the camera in on a
+  ferry mid-crossing and the deck populates — a handful of warm passenger dabs
+  stand along the promenade rail (one is ALWAYS at the bow, watching the
+  crossing), and on cold days each puffs a little breath into the air. One car
+  deck below shows as a file of parked-car rectangles in muted woodblock hues —
+  but only on the **car ferries**: the West Seattle water taxi carries no cars,
+  so its deck stays bare (honest, like everything here). Two instanced draw
+  calls (billboard passengers with the breath carved into the same fragment
+  shader; flat oriented car rectangles), posed each frame from the SAME
+  `ferryPoseAt()` the hulls and wakes read, so the deck can never drift free of
+  its boat. Pure LOD: each vessel reveals on its OWN camera distance
+  (`config.ferryDeck`), and the whole layer HIDES ITSELF ENTIRELY at the
+  ordinary drift distance (both meshes `visible = false`, zero draw cost) — the
+  gated-critter rule. The breath is keyed to a real, eased **coldness** signal
+  (`world/weather.ts` `COLD`, an honest air-temperature read that ramps ~10 °C →
+  ~1 °C, floored by snow); `?cold=0..1|on|off` / `__linkMap.setCold()` pins it.
 - **Airliners** (`map/Airliners.tsx`, one InstancedMesh): a toy SeaTac fleet,
   half Delta half Alaska (the livery is a baked canvas atlas — wordmark + tail
   device — with a per-instance `aAirline` flag sliding each jet onto its half,
@@ -322,7 +339,9 @@ by a quiet HUD caption. The reel yields to a touch for a few seconds
 stadiums; `?seafair=on|off` pins the Seafair weekend (hydros + the Blue
 Angels delta); `?canoe=peak|none` pins the Canoe Journeys season;
 `?crows=off` clears the twilight crow commute; `?jimothy=on|off` pins Ballard's
-round raccoon; `?gumwall=on|off` loops or stills the Gum Wall pilgrimage; `?tod=` pins the orca pod's time of day (a 0..1 day fraction, a 0..24
+round raccoon; `?gumwall=on|off` loops or stills the Gum Wall pilgrimage;
+`?cold=0..1|on|off` pins the coldness that puffs the ferry passengers' breath;
+`?tod=` pins the orca pod's time of day (a 0..1 day fraction, a 0..24
 hour, or dawn|morning|noon|afternoon|dusk|night) — the pod's foraging ground
 migrates around the Sound by the Seattle hour (`map/Orcas.tsx`), and observe
 mode sweeps it with the sun. `scripts/device-smoke.mjs` is the per-tier

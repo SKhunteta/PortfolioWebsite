@@ -16,11 +16,14 @@ import { setGumwallOverride, summonPilgrim } from "../world/gumwall";
 import { GUM_STATE, gumWallAnchor } from "../map/GumWall";
 import {
   setWeatherOverride,
+  setColdOverride,
   setStrikePin,
   WeatherKind,
   WEATHER,
+  COLD,
   LIGHTNING,
 } from "../world/weather";
+import { FERRY_VESSELS, ferryPoseAt } from "../map/Ferries";
 import { TIER, PROFILE } from "../world/device";
 import { setAudioEnabled } from "../audio/engine";
 import { WATCHDOG_STATS } from "../fx/watchdog";
@@ -98,9 +101,19 @@ export function installHandles() {
     // curious console can fly to Post Alley and check the visitor's wall.
     gumwallState: () => ({ ...gumWallAnchor(), ...GUM_STATE }),
     setWeather: (k: WeatherKind | null) => setWeatherOverride(k),
-    // Live weather/lightning state for the smoke harness — lets a test wait
+    // The visible-breath signal on the ferry deck: 0..1 pins the coldness on,
+    // null restores the honest temperature read. Same effect as ?cold=.
+    setCold: (level: number | null = 1) => setColdOverride(level),
+    // Live weather/lightning/cold state for the smoke harness — lets a test wait
     // for the storm's next deterministic strike instead of screenshotting blind.
-    weatherState: () => ({ ...WEATHER, ...LIGHTNING }),
+    weatherState: () => ({ ...WEATHER, cold: COLD.level, ...LIGHTNING }),
+    // The ferries' live world positions, so the smoke harness / a curious
+    // console can fly the camera in close and wake the deck life deterministically.
+    ferryList: () =>
+      FERRY_VESSELS.map((v, i) => {
+        const p = ferryPoseAt(v, CLOCK.t, { x: 0, z: 0, yaw: 0, speed: 0 });
+        return { index: i, x: p.x, z: p.z, yaw: p.yaw };
+      }),
     // Hold a bolt fully lit at a chosen seed (0..1 → screen position) so a
     // screenshot can catch the strike; strike(null) releases the pin.
     strike: (seed: number | null = 0.5) => setStrikePin(seed),

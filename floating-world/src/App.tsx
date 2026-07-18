@@ -16,6 +16,7 @@ import { Landmarks, GreatWheel } from "./map/Landmarks";
 import { StadiumSigns } from "./map/StadiumSigns";
 import { Kasumi } from "./map/Kasumi";
 import { Ferries } from "./map/Ferries";
+import { FerryDeck } from "./map/FerryDeck";
 import { TacomaLink } from "./map/TacomaLink";
 import { TacomaTrack } from "./map/TacomaTrack";
 import { TacomaRoads } from "./map/TacomaRoads";
@@ -123,6 +124,7 @@ export default function App() {
         <Kasumi />
         <Wakes />
         <Ferries />
+        <FerryDeck />
         <Canoe />
         <Jimothy />
         <GumWall />

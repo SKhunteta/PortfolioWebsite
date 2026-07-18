@@ -262,4 +262,24 @@ export const CONFIG = {
     chaseLerp: 2.2, // per-second exponential approach
     doubleTapPx: 48, // train pick radius in screen space
   },
+
+  // Ferry deck life (map/FerryDeck.tsx) — the close-zoom reveal that turns a
+  // toy ferry into a vessel. Deck heights and positions are in UNIT-BOAT local
+  // coords (× the vessel's toyLengthKm → world), matching Ferries.buildBoat's
+  // decks: the hull tops out near y 0.07, the cabin runs 0.07..0.145, its roof
+  // is the promenade. The reveal ramp is a straight camera-to-vessel distance.
+  ferryDeck: {
+    revealNearKm: 1.7, // fully drawn once the camera is this close to a hull
+    revealFarKm: 4.5, // nothing beyond here — the whole layer hides itself
+    promenadeY: 0.155, // sun-deck rail, just above the cabin roof
+    railZ: 0.062, // half-width the promenade rail sits at (cabin is 0.15 wide)
+    railX: [-0.28, 0.3] as const, // fore–aft span the rail crowd spreads along
+    bowX: 0.365, // the forward point the lone bow-watcher always stands at
+    bowY: 0.085, // main-deck bow height, forward of and below the cabin
+    passengerHeight: 0.04, // figure height (local units) — storybook-chunky but legible
+    carDeckY: 0.052, // the vehicle deck, glimpsed below the promenade
+    carLaneZ: 0.042, // the two parked lanes' half-width
+    carSpanX: [-0.33, 0.33] as const, // fore–aft span the cars park along
+    carSize: { len: 0.09, wid: 0.052 }, // a parked-car rectangle (local units)
+  },
 } as const;
