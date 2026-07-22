@@ -79,6 +79,10 @@ export interface DeviceProfile {
   // the fleet distributed across the road network (the real Seattle hour thins
   // how many are visible). Fill/JS-pose budget, so it scales with the tier.
   carCount: number;
+  // The bus fleet (map/Buses.tsx) — ONE instanced draw call; the fleet spread
+  // across the long major streets (Metro's service span for the real Seattle
+  // hour thins how many are out). Far fewer than the cars, like the street.
+  busCount: number;
   // Cherry-blossom canopies (map/Sakura.tsx) — ONE instanced draw call,
   // clustered at the real bloom sites (UW Quad, the Arboretum, Green Lake,
   // Seward Park). Only visible in bloom season; the count is the fill budget.
@@ -112,6 +116,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     cyclistCount: 3,
     greenLakeCyclistCount: 3,
     carCount: 70,
+    busCount: 9,
     sakuraCount: 150,
     ferryPassengers: 5,
     ferryCars: 6,
@@ -135,6 +140,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     cyclistCount: 4,
     greenLakeCyclistCount: 4,
     carCount: 130,
+    busCount: 15,
     sakuraCount: 260,
     ferryPassengers: 6,
     ferryCars: 8,
@@ -158,6 +164,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     cyclistCount: 5,
     greenLakeCyclistCount: 6,
     carCount: 190,
+    busCount: 21,
     sakuraCount: 360,
     ferryPassengers: 7,
     ferryCars: 10,

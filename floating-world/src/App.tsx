@@ -9,6 +9,7 @@ import { Water } from "./map/Water";
 import { Parks } from "./map/Parks";
 import { Roads } from "./map/Roads";
 import { Cars } from "./map/Cars";
+import { Buses } from "./map/Buses";
 import { Forest } from "./map/Forest";
 import { Sakura } from "./map/Sakura";
 import { Buildings } from "./map/Buildings";
@@ -118,6 +119,7 @@ export default function App() {
         <TacomaRoads />
         <TacomaTrack />
         <Cars />
+        <Buses />
         <Chalk />
         <Forest />
         <Sakura />
