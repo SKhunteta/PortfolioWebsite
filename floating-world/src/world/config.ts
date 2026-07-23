@@ -107,6 +107,25 @@ export const CONFIG = {
     fadeKm: 0.14,
     minCorridorKm: 0.45,
   },
+  // The bus fleet (map/Buses.tsx + world/buses.ts): King County Metro toy
+  // buses working the long major streets stop to stop — drive a hop, ease to
+  // the curb (laneOffset + curbKm), dwell dwellS, pull back out. Keyed to
+  // Metro's service span, not car traffic pressure. speedKmS is the cruising
+  // pace between stops (~29 km/h; dwells drag the average down to a real
+  // in-service pace); stopSpacingKm is the target hop (~real Metro spacing);
+  // minCorridorKm keeps routes off two-block stubs.
+  bus: {
+    toyLenKm: 0.16,
+    speedKmS: 0.008,
+    speedJitter: 0.25, // ±fraction, deterministic per bus
+    y: 0.022,
+    laneOffsetKm: 0.03,
+    curbKm: 0.016,
+    stopSpacingKm: 0.42,
+    dwellS: 7,
+    fadeKm: 0.14,
+    minCorridorKm: 1.1,
+  },
   // The Burke-Gilman cyclists (map/Cyclists.tsx): toy figures, storybook-large
   // like the trains and ferries, riding at a real ~18 km/h pace.
   cyclist: {

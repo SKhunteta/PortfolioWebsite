@@ -88,6 +88,24 @@ it on a second monitor and the print breathes at them.
   clock, never live. Unlike the daylight-VFR floatplanes they hold through the
   night (the palette only dims them). Livery whites are clamped below the
   bright-paper bloom line in the shader.
+- **The bus fleet** (`map/Buses.tsx` + `world/buses.ts`): King County Metro
+  toy buses working the long major streets among the street cars — the same
+  honesty tier as the cars/cyclists (real baked-OSM geography, deterministic
+  from the scene clock, keyed to the actual Seattle hour, never presented as
+  live), but keyed to Metro's **service span** rather than car traffic
+  pressure: an early ~5am ramp, both rush peaks, a steady midday base while
+  car traffic slumps, a long evening tail, and only the owl network's whisper
+  at 3am. The signature move is the STOP — each bus works its corridor stop
+  to stop (drive a hop, ease to the curb, dwell, pull back out), driven by
+  the pure stop-and-go profile in `world/buses.ts` (node-safe,
+  vitest-covered, `world/__tests__/buses.test.ts`); while it eases into a
+  dwell it slides further to its lane side, so a stop reads as pulling over,
+  not stalling in traffic. ONE InstancedMesh with a per-instance livery flag
+  splitting the fleet structurally like the airliners' Delta/Alaska halves:
+  most in Metro's washi cream over the chartreuse-green skirt, a few in
+  RapidRide's madder red under a pale roof cap — all woodblock-muted, window
+  bands lit lantern-warm after dark by MIX, never bloom. `?buses=off|0..1`
+  pins the service level.
 - More real Seattle geography woven into `map/Landmarks.tsx` (one merged
   geometry): **Pike Place Market**, **Boeing Field / the Museum of Flight**,
   the **city of bridges** (the I-90 and SR-520 floating spans the trains and
@@ -311,7 +329,8 @@ it on a second monitor and the print breathes at them.
   per road class, per water layer, ONE for landmarks, plus the two submerged
   underground layers (deep-platform crowd + art frescoes, UndergroundLife.tsx).
   Whole scene ≈ 30 draw calls on every tier (link-map's ~25 + Kasumi +
-  SkyBokashi + the two underground layers + the crow commute); the seasonal
+  SkyBokashi + the two underground layers + the crow commute + the bus
+  fleet); the seasonal
   meshes (the canoe, Seafair's hydros and delta) and the gated critters (the
   crow commute, Jimothy at twilight, the lighthouse beams + their reveals
   after dark) hide themselves entirely when off stage instead of counting
@@ -385,6 +404,8 @@ Angels delta); `?canoe=peak|none` pins the Canoe Journeys season;
 the lighthouse beam sweeps (on lifts the night gate); `?jimothy=on|off` pins Ballard's
 round raccoon; `?gumwall=on|off` loops or stills the Gum Wall pilgrimage;
 `?cold=0..1|on|off` pins the coldness that puffs the ferry passengers' breath;
+`?buses=off|0..1` pins the bus fleet's service level (`?traffic=` does the
+same for the street cars);
 `?chalk=on|off` forces or clears the summer-weekend sidewalk chalk;
 `?tod=` pins the orca pod's time of day (a 0..1 day fraction, a 0..24
 hour, or dawn|morning|noon|afternoon|dusk|night) — the pod's foraging ground
