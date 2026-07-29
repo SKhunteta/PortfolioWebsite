@@ -116,7 +116,14 @@ it on a second monitor and the print breathes at them.
   Station**'s campanile beside the tracks, the **Fremont Troll** (VW Beetle in
   hand) under the Aurora Bridge's north end, the **Pacific Science Center**
   arches by the Needle, and **Volunteer Park**'s brick water tower and
-  conservatory glasshouse up the hill from Capitol Hill Station. The **seven
+  conservatory glasshouse up the hill from Capitol Hill Station. **Gasworks
+  Park** gets the full portrait on its Lake Union point: the cracking-tower
+  ruin as the real twin-rank cluster laced with pipework and standpipes (its
+  own `aGasworks` vertex flag paints the true iron-oxide rust + a light sumi
+  rim), the exhauster-compressor play barn, and Kite Hill's grassy mound with
+  the sundial set into its crown — the Heroes' kite-flyer stands the summit
+  (`GASWORKS_HILL_*` exports keep hill and hero in sync), and a Buildings.tsx
+  keep-out clears the town fabric off the lawn. The **seven
   hills** are a stylized sum-of-gaussians hillshade in the ground shader
   (`map/GroundPlane.tsx`) — relief, not geometry — and **shore lighthouses**
   (West Point, Alki, Mukilteo) flash over the Sound from `map/CityLights.tsx`.

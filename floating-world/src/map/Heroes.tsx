@@ -33,6 +33,7 @@ import { CLOCK } from "../world/clock";
 import { CONFIG } from "../world/config";
 import { sunPhase } from "../world/sun";
 import { projectLatLng } from "./network";
+import { GASWORKS_HILL_LAT, GASWORKS_HILL_LNG, GASWORKS_HILL_H } from "./Landmarks";
 import { isWater } from "./scatter";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
@@ -226,10 +227,12 @@ const FRAG = /* glsl */ `
   }
 `;
 
-// The cast: [lat, lng, archetype, heightKm]. Real Seattle spots, each chosen to
-// suit the character. Heights are toy-scale — about a Burke-Gilman cyclist
-// (CONFIG.cyclist.toyLenKm ≈ 0.13) — so a hero reads as one of the little
-// ambient figures dotting the print, not a giant towering over the city.
+// The cast: [lat, lng, archetype, heightKm, baseYKm?]. Real Seattle spots, each
+// chosen to suit the character. Heights are toy-scale — about a Burke-Gilman
+// cyclist (CONFIG.cyclist.toyLenKm ≈ 0.13) — so a hero reads as one of the
+// little ambient figures dotting the print, not a giant towering over the
+// city. baseY lifts a figure onto built ground (the kite-flyer stands on Kite
+// Hill's summit, the mound Landmarks.tsx raises at Gas Works Park).
 const BIJIN = 0,
   TRAVELLER = 1,
   FISHERMAN = 2,
@@ -237,11 +240,12 @@ const BIJIN = 0,
   MONK = 4,
   LOVERS = 5;
 
-const CAST: [number, number, number, number][] = [
+const CAST: [number, number, number, number, number?][] = [
   [47.6295, -122.3599, BIJIN, 0.12], // Kerry Park overlook, Queen Anne
   [47.5765, -122.409, TRAVELLER, 0.12], // Alki Point — the open western shore, gazing back at the city
   [47.6653, -122.396, FISHERMAN, 0.11], // Ballard Locks
-  [47.6456, -122.3345, KITE, 0.15], // Gas Works Park kite hill (a touch taller — the kite rides above)
+  // Gas Works Park, on Kite Hill's summit (a touch taller — the kite rides above)
+  [GASWORKS_HILL_LAT, GASWORKS_HILL_LNG, KITE, 0.15, GASWORKS_HILL_H],
   [47.639, -122.295, MONK, 0.12], // Washington Park Arboretum
   [47.681, -122.327, LOVERS, 0.12], // Green Lake path
 ];
@@ -272,13 +276,14 @@ export function Heroes() {
     const q = new THREE.Quaternion();
     const pos = new THREE.Vector3();
     const scl = new THREE.Vector3();
-    CAST.forEach(([lat, lng, arch, h], i) => {
+    CAST.forEach(([lat, lng, arch, h, baseY], i) => {
       const proj = projectLatLng(lat, lng);
       // Land-safe placement, but let the shore-dwellers (fisherman) sit at the
-      // very edge rather than being dragged inland.
-      const { x, z } = arch === FISHERMAN ? proj : toLand(proj.x, proj.z);
+      // very edge rather than being dragged inland — and never drag a lifted
+      // figure off the built ground (Kite Hill) that its baseY stands it on.
+      const { x, z } = arch === FISHERMAN || baseY != null ? proj : toLand(proj.x, proj.z);
       const w = h * (arch === LOVERS ? 1.05 : 0.85);
-      pos.set(x, 0, z);
+      pos.set(x, baseY ?? 0, z);
       scl.set(w, h, 1);
       m.compose(pos, q, scl);
       mats.push(m.clone());
