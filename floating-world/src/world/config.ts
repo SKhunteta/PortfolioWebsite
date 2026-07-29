@@ -115,7 +115,7 @@ export const CONFIG = {
   // in-service pace); stopSpacingKm is the target hop (~real Metro spacing);
   // minCorridorKm keeps routes off two-block stubs.
   bus: {
-    toyLenKm: 0.16,
+    toyLenKm: 0.19,
     speedKmS: 0.008,
     speedJitter: 0.25, // ±fraction, deterministic per bus
     y: 0.022,

@@ -102,10 +102,14 @@ it on a second monitor and the print breathes at them.
   dwell it slides further to its lane side, so a stop reads as pulling over,
   not stalling in traffic. ONE InstancedMesh with a per-instance livery flag
   splitting the fleet structurally like the airliners' Delta/Alaska halves:
-  most in Metro's washi cream over the chartreuse-green skirt, a few in
-  RapidRide's madder red under a pale roof cap — all woodblock-muted, window
-  bands lit lantern-warm after dark by MIX, never bloom. `?buses=off|0..1`
-  pins the service level.
+  most whole-coated in Metro's chartreuse-green, a few in RapidRide's madder
+  red, each wearing a washi beltline that carries the window run (lit
+  lantern-warm after dark by MIX, never bloom). Pigment is kept ON THE ROOF
+  and a sumi keyline seats the wheels and ends — the drift camera reads
+  roofs, and the first cut's cream tops vanished into the paper (ink is what
+  pops on bright paper, the train-halo lesson); the fleet also runs a step
+  bolder in alpha than the carts: transit is a mark, not a texture.
+  `?buses=off|0..1` pins the service level.
 - More real Seattle geography woven into `map/Landmarks.tsx` (one merged
   geometry): **Pike Place Market**, **Boeing Field / the Museum of Flight**,
   the **city of bridges** (the I-90 and SR-520 floating spans the trains and

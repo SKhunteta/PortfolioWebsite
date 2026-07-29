@@ -16,11 +16,14 @@
 // ONE InstancedMesh (one draw call, the instanced-everything rule); matrices,
 // a per-bus fade and the static livery flag are written imperatively — the
 // hot path never touches React. Two liveries split structurally like the
-// airliners' Delta/Alaska halves: most of the fleet in Metro's washi cream
-// over the chartreuse-green skirt, a few in RapidRide's madder red with the
-// pale roof cap. Window band lights lantern-warm after dark by MIX (never
-// bloom); normal-blended, mixed toward LIVE.fog. renderOrder 5.62: with the
-// cars (5.6), under the ferries/buildings/landmarks (6).
+// airliners' Delta/Alaska halves: most of the fleet whole-coated in Metro's
+// chartreuse-green, a few in RapidRide's madder red, each with a washi
+// beltline carrying the window run — pigment kept ON THE ROOF and a sumi
+// keyline at the wheels and ends, because the drift camera reads roofs and
+// ink is what pops on bright paper (the first cut's cream tops vanished into
+// the page). Windows light lantern-warm after dark by MIX (never bloom);
+// normal-blended, mixed toward LIVE.fog. renderOrder 5.62: with the cars
+// (5.6), under the ferries/buildings/landmarks (6).
 
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
@@ -37,7 +40,7 @@ import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGl
 const VERT = /* glsl */ `
   ${FOG_VARYINGS_VERT}
   attribute float aFade;
-  attribute float aLivery; // 0 = Metro cream/chartreuse, 1 = RapidRide red
+  attribute float aLivery; // 0 = Metro chartreuse-green, 1 = RapidRide red
   varying vec3 vLocal;
   varying float vFade;
   varying float vLivery;
@@ -59,9 +62,10 @@ const FRAG = /* glsl */ `
   varying vec3 vLocal;
   varying float vFade;
   varying float vLivery;
-  uniform vec3 uBody;    // washi cream — Metro's coat, RapidRide's roof cap
-  uniform vec3 uGreen;   // Metro chartreuse-green skirt
+  uniform vec3 uBody;    // washi cream — the beltline both liveries wear
+  uniform vec3 uGreen;   // Metro chartreuse-green coat
   uniform vec3 uRed;     // RapidRide madder red
+  uniform vec3 uInk;
   uniform vec3 uWindow;
   uniform float uWindowIntensity;
   uniform vec3 uLamp;
@@ -72,22 +76,31 @@ const FRAG = /* glsl */ `
     // vLocal spans x in [-0.5,0.5] (length), y in [0,~0.3] (height).
     float wash = wcFbm(vWorld * 2.2 + vLocal.y * 4.0);
 
-    // Metro: the green lower half under a cream top — the real fleet's split.
-    vec3 metro = mix(uGreen, uBody, smoothstep(0.11, 0.15, vLocal.y));
-    // RapidRide: red coat under a pale roof cap.
-    vec3 rapid = mix(uRed, uBody, smoothstep(0.24, 0.27, vLocal.y));
-    vec3 c = mix(metro, rapid, vLivery);
+    // Pigment ON TOP: the drift camera reads roofs, and the first cut's
+    // washi-cream Metro top simply vanished into the paper from the default
+    // framing. Each coach wears its identity color whole-coat — Metro the
+    // chartreuse-green, RapidRide the madder red — with the washi beltline
+    // at window height carrying the glass, so the fleet reads at drift
+    // distance from any angle.
+    vec3 c = mix(uGreen, uRed, vLivery);
 
-    // The long window run on the flanks — dark glass by day, lantern-gold
+    // The washi beltline and its window run — dark glass by day, lantern-gold
     // after dark via the shared window palette, dashed so it reads as panes.
-    float band = smoothstep(0.16, 0.18, vLocal.y) * (1.0 - smoothstep(0.24, 0.255, vLocal.y));
+    float belt = smoothstep(0.15, 0.17, vLocal.y) * (1.0 - smoothstep(0.25, 0.27, vLocal.y));
     float dash = step(0.3, wcHash(vec2(floor(vLocal.x * 22.0), 3.7)));
-    c = mix(c, uWindow * (0.18 + uWindowIntensity), band * dash * 0.8);
+    c = mix(c, uBody, belt * 0.9);
+    c = mix(c, uWindow * (0.18 + uWindowIntensity), belt * dash * 0.8);
 
     // Roof catches a touch more light than the flanks — tonal volume.
     c *= (0.76 + 0.38 * wash) * mix(0.88, 1.06, smoothstep(0.0, 0.3, vLocal.y));
 
-    // Headlamps (front, +x) and a fainter tail (rear, -x), low on the body.
+    // The sumi keyline — the train lesson: ink is what pops on bright paper
+    // at drift distance. A dark seat at the wheels and inked nose/tail ends.
+    float ink = max(1.0 - smoothstep(0.0, 0.045, vLocal.y), smoothstep(0.44, 0.48, abs(vLocal.x)));
+    c = mix(c, uInk, ink * 0.7);
+
+    // Headlamps (front, +x) and a fainter tail (rear, -x), low on the body —
+    // lit after the ink so the lamps still burn through the keyline.
     float low = 1.0 - smoothstep(0.05, 0.14, vLocal.y);
     float head = smoothstep(0.4, 0.47, vLocal.x) * low;
     float tail = smoothstep(0.4, 0.47, -vLocal.x) * low;
@@ -288,7 +301,8 @@ export function Buses() {
     const mesh = meshRef.current;
     const m = materialRef.current;
     if (!mesh || !m) return;
-    m.uniforms.uOpacity.value = LIVE.trafficIntensity;
+    // A step bolder than the carts' wash: transit is a mark, not a texture.
+    m.uniforms.uOpacity.value = Math.min(1, LIVE.trafficIntensity * 1.6);
     m.uniforms.uWindowIntensity.value = LIVE.windowIntensity;
     m.uniforms.uLampIntensity.value = LIVE.windowIntensity;
     m.uniforms.uFogDensity.value = LIVE.fogDensity;
@@ -324,16 +338,17 @@ export function Buses() {
         vertexShader={VERT}
         fragmentShader={FRAG}
         uniforms={{
-          // Coat: the ferry cream (pale washi by day, lantern-warm at night),
-          // so the transit fleet reads kin to the boats, not the sumi carts.
+          // Beltline: the ferry cream (pale washi by day, lantern-warm at
+          // night) — a pale waistband on the pigment coats.
           uBody: { value: LIVE.ferry },
           uGreen: { value: METRO_GREEN },
           uRed: { value: RAPID_RED },
+          uInk: { value: LIVE.buildingInk },
           uWindow: { value: LIVE.trainWindow },
           uWindowIntensity: { value: LIVE.windowIntensity },
           uLamp: { value: LIVE.traffic },
           uLampIntensity: { value: LIVE.windowIntensity },
-          uOpacity: { value: LIVE.trafficIntensity },
+          uOpacity: { value: 1 },
           uFog: { value: LIVE.fog },
           uFogDensity: { value: LIVE.fogDensity },
         }}
