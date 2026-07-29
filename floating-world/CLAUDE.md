@@ -88,28 +88,44 @@ it on a second monitor and the print breathes at them.
   clock, never live. Unlike the daylight-VFR floatplanes they hold through the
   night (the palette only dims them). Livery whites are clamped below the
   bright-paper bloom line in the shader.
-- **The bus fleet** (`map/Buses.tsx` + `world/buses.ts`): King County Metro
-  toy buses working the long major streets among the street cars — the same
-  honesty tier as the cars/cyclists (real baked-OSM geography, deterministic
-  from the scene clock, keyed to the actual Seattle hour, never presented as
-  live), but keyed to Metro's **service span** rather than car traffic
-  pressure: an early ~5am ramp, both rush peaks, a steady midday base while
-  car traffic slumps, a long evening tail, and only the owl network's whisper
-  at 3am. The signature move is the STOP — each bus works its corridor stop
-  to stop (drive a hop, ease to the curb, dwell, pull back out), driven by
-  the pure stop-and-go profile in `world/buses.ts` (node-safe,
-  vitest-covered, `world/__tests__/buses.test.ts`); while it eases into a
-  dwell it slides further to its lane side, so a stop reads as pulling over,
-  not stalling in traffic. ONE InstancedMesh with a per-instance livery flag
-  splitting the fleet structurally like the airliners' Delta/Alaska halves:
-  most whole-coated in Metro's chartreuse-green, a few in RapidRide's madder
-  red, each wearing a washi beltline that carries the window run (lit
-  lantern-warm after dark by MIX, never bloom). Pigment is kept ON THE ROOF
-  and a sumi keyline seats the wheels and ends — the drift camera reads
-  roofs, and the first cut's cream tops vanished into the paper (ink is what
-  pops on bright paper, the train-halo lesson); the fleet also runs a step
-  bolder in alpha than the carts: transit is a mark, not a texture.
-  `?buses=off|0..1` pins the service level.
+- **The bus fleet** (`map/Buses.tsx` + `world/busFeed.ts` +
+  `world/metroBuses.ts` + `world/buses.ts`): King County Metro on the real
+  streets — and when the feed is up, the REAL fleet: live GTFS-RT vehicle
+  positions for every in-service coach (up to ~1,200 at rush hour), polled
+  from `/api/metro/vehicles` on portfolio-backend (the same OneBusAway
+  GTFS-RT pipeline as the trains, agency 1 instead of 40; `routes/metro.js`
+  + `services/metroFeed.js`, 10 s cache, trimmed short-key payload). Buses
+  sit at the TRAINS' honesty tier now: live means live; each coach glides
+  exponentially toward its actual fixes (`config.bus.live`), snaps when a
+  gap is too wide to interpolate honestly, is clipped to the painted page,
+  and small tiers keep the coaches nearest the downtown heart
+  (`capByHeart`, `PROFILE.liveBusCap`). When the feed is unavailable
+  (keyless dev, outage) the layer falls back to the original deterministic
+  AMBIENT fleet — corridor loops with the stop-and-go dwell (drive a hop,
+  ease to the curb, dwell, pull out; `world/buses.ts`), thinned by Metro's
+  service span for the real Seattle hour — clearly stylized toys, never
+  presented as live. ONE InstancedMesh either way, `mesh.count` trimmed per
+  frame; pure logic node-safe and vitest-covered
+  (`world/__tests__/buses.test.ts`, `__tests__/metroBuses.test.ts`;
+  backend `test/metro-feed.test.js`).
+  **Liveries are painted from reference photos of the real fleet** (the
+  owner's photos, Jul 2026 — not invented), one shader, per-instance
+  `aLivery`: the standard coach's deep Metro green, the battery-electric
+  fleet's royal blue, and RapidRide red — each over the shared gold skirt
+  with the black belt line and the dark dashed window run (lit lantern-warm
+  after dark by MIX, never bloom). RapidRide red is DATA on the live fleet
+  (the feed's `rr` flag, keyed off the OBA route list's A–H "Line" names);
+  green-vs-blue is a deterministic per-vehicle hash — an honest nod to the
+  mixed fleet, never a claim about a specific coach. Pigments are saturated
+  a third past photo-literal to survive the print's pale overlay washes
+  (the muted first cut rendered as sage mush), pigment stays ON THE ROOF
+  (true to the photos, and how the fleet reads from the drift camera), a
+  sumi keyline seats the wheels and ends, and the coats draw at the
+  vessels' `ferryOpacity`, not the carts' wash. `?buses=off` hides the
+  layer; `?buses=0..1` forces the ambient fleet at that service level;
+  `?buses=live` forces live-only (no fallback). `scripts/bus-shot.mjs`
+  verifies both modes headlessly by mocking the endpoint (route
+  interception, a 900-coach fixture laid onto the real corridors).
 - More real Seattle geography woven into `map/Landmarks.tsx` (one merged
   geometry): **Pike Place Market**, **Boeing Field / the Museum of Flight**,
   the **city of bridges** (the I-90 and SR-520 floating spans the trains and
@@ -384,7 +400,10 @@ backend.builtbyshrey.com; localhost:3001 in dev) — the SAME endpoint and
 cache link-map polls (10 s poll matching the backend's cache TTL,
 hostname-based base URL in `trains/poller.ts`; the sub-app deliberately
 does NOT import the SPA's api config). Never fork the poller or the data
-files: both editions must agree on the network contract.
+files: both editions must agree on the network contract. The live bus
+layer polls its OWN endpoint, `/api/metro/vehicles`, on the same cadence
+and base-URL rule (`world/busFeed.ts`) — a sibling contract, not a fork
+of the trains'.
 
 ## Dev handles
 
@@ -415,8 +434,9 @@ Angels delta); `?canoe=peak|none` pins the Canoe Journeys season;
 the lighthouse beam sweeps (on lifts the night gate); `?jimothy=on|off` pins Ballard's
 round raccoon; `?gumwall=on|off` loops or stills the Gum Wall pilgrimage;
 `?cold=0..1|on|off` pins the coldness that puffs the ferry passengers' breath;
-`?buses=off|0..1` pins the bus fleet's service level (`?traffic=` does the
-same for the street cars);
+`?buses=off|0..1|live` pins the bus layer — off hides it, 0..1 forces the
+ambient fleet at that service level, live forces live-only (`?traffic=`
+pins the street cars);
 `?chalk=on|off` forces or clears the summer-weekend sidewalk chalk;
 `?tod=` pins the orca pod's time of day (a 0..1 day fraction, a 0..24
 hour, or dawn|morning|noon|afternoon|dusk|night) — the pod's foraging ground

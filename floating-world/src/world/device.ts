@@ -82,7 +82,13 @@ export interface DeviceProfile {
   // The bus fleet (map/Buses.tsx) — ONE instanced draw call; the fleet spread
   // across the long major streets (Metro's service span for the real Seattle
   // hour thins how many are out). Far fewer than the cars, like the street.
+  // This is the AMBIENT fallback fleet's size, used when the live feed is down.
   busCount: number;
+  // The LIVE Metro fleet's instance budget (world/busFeed.ts): King County
+  // Metro runs up to ~1,200 coaches at peak. Desktop draws them all; smaller
+  // tiers keep the coaches nearest the downtown heart (capByHeart) so the cap
+  // sheds the far suburban tail first. Fill/JS-pose budget like carCount.
+  liveBusCap: number;
   // Cherry-blossom canopies (map/Sakura.tsx) — ONE instanced draw call,
   // clustered at the real bloom sites (UW Quad, the Arboretum, Green Lake,
   // Seward Park). Only visible in bloom season; the count is the fill budget.
@@ -117,6 +123,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     greenLakeCyclistCount: 3,
     carCount: 70,
     busCount: 9,
+    liveBusCap: 280,
     sakuraCount: 150,
     ferryPassengers: 5,
     ferryCars: 6,
@@ -141,6 +148,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     greenLakeCyclistCount: 4,
     carCount: 130,
     busCount: 15,
+    liveBusCap: 700,
     sakuraCount: 260,
     ferryPassengers: 6,
     ferryCars: 8,
@@ -165,6 +173,7 @@ const PROFILES: Record<Tier, DeviceProfile> = {
     greenLakeCyclistCount: 6,
     carCount: 190,
     busCount: 21,
+    liveBusCap: 1400,
     sakuraCount: 360,
     ferryPassengers: 7,
     ferryCars: 10,

@@ -57,6 +57,7 @@ import { SkyBokashi } from "./fx/SkyBokashi";
 import { Hud } from "./ui/Hud";
 import { StationPanel } from "./stations/StationPanel";
 import { startPoller } from "./trains/poller";
+import { startBusPoller } from "./world/busFeed";
 import { startWeather } from "./world/weather";
 import { installHandles, markFrame } from "./dev/handles";
 
@@ -85,11 +86,13 @@ export default function App() {
   useEffect(() => {
     installHandles();
     const stop = startPoller();
+    const stopBuses = startBusPoller();
     const stopWeather = startWeather();
     const onVisibility = () => setHidden(document.hidden);
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
       stop();
+      stopBuses();
       stopWeather();
       document.removeEventListener("visibilitychange", onVisibility);
     };

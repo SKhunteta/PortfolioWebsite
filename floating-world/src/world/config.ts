@@ -125,6 +125,17 @@ export const CONFIG = {
     dwellS: 7,
     fadeKm: 0.14,
     minCorridorKm: 1.1,
+    // The LIVE fleet's glide (world/busFeed.ts + map/Buses.tsx): each real
+    // coach eases exponentially toward its latest GTFS-RT fix — ratePerS is
+    // gentle on purpose (fixes land every 10–60 s; a bus should drift toward
+    // its stop, not lunge) — snapping when the gap is too wide to interpolate
+    // honestly (tab resume, a coach reassigned across town). fadeInS eases a
+    // newly-appearing coach onto the page instead of popping it.
+    live: {
+      ratePerS: 0.35,
+      snapKm: 1.2,
+      fadeInS: 1.5,
+    },
   },
   // The Burke-Gilman cyclists (map/Cyclists.tsx): toy figures, storybook-large
   // like the trains and ferries, riding at a real ~18 km/h pace.

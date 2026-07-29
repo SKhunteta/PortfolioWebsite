@@ -1,29 +1,33 @@
-// The bus fleet: King County Metro toy buses working the long arterials among
-// the street cars — the transit stratum of the road life. Same honesty tier
-// as the cars and cyclists (real baked-OSM geography, deterministic from the
-// scene clock, keyed to the actual Seattle hour, NEVER presented as live —
-// no per-bus feed, clearly stylized toys), but keyed to Metro's SERVICE SPAN
-// (world/buses.ts) rather than car traffic pressure: buses keep rolling
-// through the midday slump and the evening, and at 3am only the owl network's
-// one or two night runs are out.
+// The bus fleet: King County Metro coaches on the real streets — and, when
+// the feed is up, the REAL ones: live GTFS-RT vehicle positions for the whole
+// in-service fleet (world/busFeed.ts polls /api/metro/vehicles on the trains'
+// cadence), each coach gliding between its actual fixes. The buses graduate
+// from the ambient tier to the trains' honesty tier: live means live. When
+// the feed is unavailable (keyless dev, outage), the layer falls back to the
+// original deterministic ambient fleet — corridor loops, stop-and-go dwells,
+// Metro's service span by the real Seattle hour (world/buses.ts) — clearly
+// stylized toys, never presented as live.
 //
-// The signature move is the STOP: each bus works its corridor stop to stop —
-// ease to the curb, dwell, pull back out — driven by the pure stop-and-go
-// profile in world/buses.ts (node-safe, vitest-covered). While `moving` falls
-// toward a dwell the bus slides curbKm FURTHER to its lane side, so a stop
-// reads as pulling over, not stalling in traffic; the cars behind glide past.
+// Liveries are painted from reference photos of the real fleet (owner's
+// photos, Jul 2026 — not invented), one fragment shader, aLivery selecting:
+//   0  the standard coach: Metro's deep green over the gold skirt, the black
+//      belt line between, dark window band up in the green (photo: coach
+//      4808, the classic two-tone every Seattleite knows)
+//   1  the battery-electric fleet's royal blue over the same gold skirt
+//      (photo: coach 1250, "zero emission bus")
+//   2  RapidRide red over gold (photo: coach 6222 on the E Line)
+// RapidRide red is DATA on the live fleet (the feed's rr flag, keyed off the
+// OBA route list); green-vs-blue is a deterministic per-vehicle hash — an
+// honest nod to the mixed fleet, never a claim about a specific coach. All
+// three coats keep their pigment ON THE ROOF (true to the photos, and the
+// reason the fleet reads from the drift camera), gold skirt low, sumi
+// keyline at the wheels and ends, windows lit lantern-warm after dark by MIX
+// (never bloom). Normal-blended, mixed toward LIVE.fog. renderOrder 5.62.
 //
-// ONE InstancedMesh (one draw call, the instanced-everything rule); matrices,
-// a per-bus fade and the static livery flag are written imperatively — the
-// hot path never touches React. Two liveries split structurally like the
-// airliners' Delta/Alaska halves: most of the fleet whole-coated in Metro's
-// chartreuse-green, a few in RapidRide's madder red, each with a washi
-// beltline carrying the window run — pigment kept ON THE ROOF and a sumi
-// keyline at the wheels and ends, because the drift camera reads roofs and
-// ink is what pops on bright paper (the first cut's cream tops vanished into
-// the page). Windows light lantern-warm after dark by MIX (never bloom);
-// normal-blended, mixed toward LIVE.fog. renderOrder 5.62: with the cars
-// (5.6), under the ferries/buildings/landmarks (6).
+// ONE InstancedMesh either way — the pool is sized for the tier's live cap
+// (up to ~1,200 real coaches at rush hour; capByHeart sheds the far suburban
+// tail first on small tiers) and mesh.count trims per frame. Matrices, fade
+// and livery are written imperatively — the hot path never touches React.
 
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
@@ -35,12 +39,14 @@ import { LIVE } from "../world/palettes";
 import { PROFILE } from "../world/device";
 import { CONFIG } from "../world/config";
 import { busDistanceAt, busService, type BusRun } from "../world/buses";
+import { BUS_FEED, BUS_PIN, LIVE_BUSES, type LiveBus } from "../world/busFeed";
+import { capByHeart, stepGlide } from "../world/metroBuses";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
 const VERT = /* glsl */ `
   ${FOG_VARYINGS_VERT}
   attribute float aFade;
-  attribute float aLivery; // 0 = Metro chartreuse-green, 1 = RapidRide red
+  attribute float aLivery; // 0 Metro green, 1 battery-electric blue, 2 RapidRide red
   varying vec3 vLocal;
   varying float vFade;
   varying float vLivery;
@@ -62,9 +68,10 @@ const FRAG = /* glsl */ `
   varying vec3 vLocal;
   varying float vFade;
   varying float vLivery;
-  uniform vec3 uBody;    // washi cream — the beltline both liveries wear
-  uniform vec3 uGreen;   // Metro chartreuse-green coat
-  uniform vec3 uRed;     // RapidRide madder red
+  uniform vec3 uGreen;   // the standard coach's deep Metro green
+  uniform vec3 uBlue;    // the battery-electric fleet's royal blue
+  uniform vec3 uRed;     // RapidRide red
+  uniform vec3 uGold;    // the gold skirt all three liveries share
   uniform vec3 uInk;
   uniform vec3 uWindow;
   uniform float uWindowIntensity;
@@ -76,27 +83,30 @@ const FRAG = /* glsl */ `
     // vLocal spans x in [-0.5,0.5] (length), y in [0,~0.3] (height).
     float wash = wcFbm(vWorld * 2.2 + vLocal.y * 4.0);
 
-    // Pigment ON TOP: the drift camera reads roofs, and the first cut's
-    // washi-cream Metro top simply vanished into the paper from the default
-    // framing. Each coach wears its identity color whole-coat — Metro the
-    // chartreuse-green, RapidRide the madder red — with the washi beltline
-    // at window height carrying the glass, so the fleet reads at drift
-    // distance from any angle.
-    vec3 c = mix(uGreen, uRed, vLivery);
+    // The coat, straight from the photos: identity pigment over the shared
+    // gold skirt with the black belt line between. Pigment stays on the roof
+    // (as on the real coaches) so the fleet reads from the drift camera.
+    vec3 coat = mix(uGreen, uBlue, step(0.5, vLivery));
+    coat = mix(coat, uRed, step(1.5, vLivery));
+    vec3 c = coat;
+    float belt = 1.0 - smoothstep(0.1, 0.118, vLocal.y); // the black belt line
+    c = mix(c, uInk, belt * 0.85);
+    float skirt = 1.0 - smoothstep(0.082, 0.098, vLocal.y); // gold below it
+    c = mix(c, uGold, skirt);
 
-    // The washi beltline and its window run — dark glass by day, lantern-gold
-    // after dark via the shared window palette, dashed so it reads as panes.
-    float belt = smoothstep(0.15, 0.17, vLocal.y) * (1.0 - smoothstep(0.25, 0.27, vLocal.y));
+    // The window run, a dark band up in the coat — dashed panes, dark glass
+    // by day, lantern-gold after dark via the shared window palette.
+    float band = smoothstep(0.17, 0.19, vLocal.y) * (1.0 - smoothstep(0.245, 0.262, vLocal.y));
     float dash = step(0.3, wcHash(vec2(floor(vLocal.x * 22.0), 3.7)));
-    c = mix(c, uBody, belt * 0.9);
-    c = mix(c, uWindow * (0.18 + uWindowIntensity), belt * dash * 0.8);
+    c = mix(c, uInk * 0.85, band * 0.8);
+    c = mix(c, uWindow * (0.18 + uWindowIntensity), band * dash * 0.85);
 
     // Roof catches a touch more light than the flanks — tonal volume.
-    c *= (0.76 + 0.38 * wash) * mix(0.88, 1.06, smoothstep(0.0, 0.3, vLocal.y));
+    c *= (0.86 + 0.28 * wash) * mix(0.92, 1.06, smoothstep(0.0, 0.3, vLocal.y));
 
-    // The sumi keyline — the train lesson: ink is what pops on bright paper
-    // at drift distance. A dark seat at the wheels and inked nose/tail ends.
-    float ink = max(1.0 - smoothstep(0.0, 0.045, vLocal.y), smoothstep(0.44, 0.48, abs(vLocal.x)));
+    // The sumi keyline — ink pops on bright paper: a dark seat at the wheels
+    // and inked nose/tail ends.
+    float ink = max(1.0 - smoothstep(0.0, 0.03, vLocal.y), smoothstep(0.45, 0.48, abs(vLocal.x)));
     c = mix(c, uInk, ink * 0.7);
 
     // Headlamps (front, +x) and a fainter tail (rear, -x), low on the body —
@@ -112,7 +122,7 @@ const FRAG = /* glsl */ `
   }
 `;
 
-// --- corridors --------------------------------------------------------------
+// --- ambient corridors (the fallback fleet) ---------------------------------
 // Buses ride only the long MAJOR strokes — the trunk streets a route would
 // actually work — with a higher length floor than the cars', so a bus never
 // shuttles a two-block stub. Built once, deterministically, like Cars.tsx.
@@ -158,7 +168,7 @@ interface Bus {
   run: BusRun; // the stop-and-go loop (world/buses.ts)
   forward: boolean; // travel direction along the corridor
   laneSign: number; // which side of the stroke (+1 / -1)
-  livery: number; // 0 Metro, 1 RapidRide
+  livery: number; // LIVERY_* — the ambient fleet mixes all three coats
   threshold: number; // out only when the hour's service span clears this
 }
 
@@ -178,6 +188,7 @@ function buildFleet(): Bus[] {
       if (acc >= target) break;
     }
     const forward = hash(i * 5.11 + 1.9) > 0.5;
+    const liveryRoll = hash(i * 11.29 + 6.2);
     buses.push({
       ci,
       run: {
@@ -190,15 +201,16 @@ function buildFleet(): Bus[] {
       },
       forward,
       laneSign: forward ? 1 : -1,
-      // RapidRide is the smaller share of the fleet, like the real network.
-      livery: hash(i * 11.29 + 6.2) < 0.3 ? 1 : 0,
+      // Mostly green, a share of battery-electric blue, a few RapidRide red —
+      // the mix the real street shows.
+      livery: liveryRoll < 0.13 ? 2 : liveryRoll < 0.3 ? 1 : 0,
       threshold: hash(i * 9.19 + 4.1) * 0.92,
     });
   }
   return buses;
 }
 
-const BUSES = buildFleet();
+const AMBIENT = buildFleet();
 
 interface BusPose {
   x: number;
@@ -210,7 +222,7 @@ interface BusPose {
 
 const pose: BusPose = { x: 0, z: 0, yaw: 0, fade: 0, moving: 0 };
 
-/** Where a bus is at clock time t: the stop-and-go arc distance from
+/** Where an ambient bus is at clock time t: the stop-and-go arc distance from
  *  world/buses.ts placed onto the corridor polyline, slid laneOffsetKm to its
  *  side plus curbKm more while it eases into a stop. Fades over fadeKm at the
  *  corridor ends so the loop wrap never pops (the Cars.tsx contract). */
@@ -277,58 +289,134 @@ function smoothstep(e0: number, e1: number, x: number): number {
   return t * t * (3 - 2 * t);
 }
 
-// Fixed livery pigments — woodblock-muted, well under the bloom ceiling.
-const METRO_GREEN = new THREE.Color("#7c9440"); // Metro chartreuse, mossed to the paper
-const RAPID_RED = new THREE.Color("#a83c30"); // RapidRide madder red
+// Fixed livery pigments, sampled from the reference photos — then SATURATED
+// past photo-literal to survive the print's pale overlay washes (kasumi,
+// paper tint): a first, muted cut rendered as sage mush; the compositing
+// stack costs roughly a third of the chroma, so the pigment carries a third
+// extra. Every channel stays under the bright-paper bloom ceiling.
+const METRO_GREEN = new THREE.Color("#1f8a50"); // coach 4808's deep green
+const BEB_BLUE = new THREE.Color("#3d55c0"); // coach 1250's royal blue
+const RAPID_RED = new THREE.Color("#c53a2c"); // coach 6222's RapidRide red
+const SKIRT_GOLD = new THREE.Color("#eda427"); // the shared gold skirt
+
+// Whether live data drives the layer this frame (the pin can force either way).
+function liveActive(): boolean {
+  if (BUS_PIN.kind === "live") return true;
+  if (BUS_PIN.kind === "off" || BUS_PIN.kind === "ambient") return false;
+  return BUS_FEED.mode === "live";
+}
 
 export function Buses() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
-  const { geometry, fadeAttr } = useMemo(() => {
+
+  // The pool serves both modes: the tier's live cap at rush hour dwarfs the
+  // ambient count, so size for the max and trim mesh.count per frame.
+  const poolSize = Math.max(1, PROFILE.liveBusCap, AMBIENT.length);
+
+  const { geometry, fadeAttr, liveryAttr } = useMemo(() => {
     const geometry = buildBus();
-    const n = Math.max(1, BUSES.length);
-    const fadeAttr = new THREE.InstancedBufferAttribute(new Float32Array(n), 1);
+    const fadeAttr = new THREE.InstancedBufferAttribute(new Float32Array(poolSize), 1);
     fadeAttr.setUsage(THREE.DynamicDrawUsage);
     geometry.setAttribute("aFade", fadeAttr);
-    // The livery split is static — written once, like the airliners' halves.
-    const livery = new Float32Array(n);
-    for (let i = 0; i < BUSES.length; i++) livery[i] = BUSES[i].livery;
-    geometry.setAttribute("aLivery", new THREE.InstancedBufferAttribute(livery, 1));
-    return { geometry, fadeAttr };
+    // Livery is per-slot and rewritten as coaches come and go on the live
+    // feed (the ambient fleet's assignment is static, but shares the buffer).
+    const liveryAttr = new THREE.InstancedBufferAttribute(new Float32Array(poolSize), 1);
+    liveryAttr.setUsage(THREE.DynamicDrawUsage);
+    geometry.setAttribute("aLivery", liveryAttr);
+    return { geometry, fadeAttr, liveryAttr };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Over-cap live fleets recompute their kept set only when the size changes
+  // (poll granularity), not per frame.
+  const keptRef = useRef<{ size: number; list: LiveBus[] }>({ size: -1, list: [] });
 
   useFrame(() => {
     const mesh = meshRef.current;
     const m = materialRef.current;
     if (!mesh || !m) return;
-    // A step bolder than the carts' wash: transit is a mark, not a texture.
-    m.uniforms.uOpacity.value = Math.min(1, LIVE.trafficIntensity * 1.6);
+    // The vessels' opacity, not the carts': the coaches are solid pigment
+    // like the ferries, monorail and T Line — at the traffic wash's alpha the
+    // deep green and gold dusted out into the paper.
+    m.uniforms.uOpacity.value = LIVE.ferryOpacity;
     m.uniforms.uWindowIntensity.value = LIVE.windowIntensity;
     m.uniforms.uLampIntensity.value = LIVE.windowIntensity;
     m.uniforms.uFogDensity.value = LIVE.fogDensity;
-    // How much of the fleet is out right now, by Metro's service span for the
-    // real Seattle hour. Each bus has its own threshold, so the network thins
-    // smoothly toward the lone owl run at 3am.
-    const span = busService();
-    for (let i = 0; i < BUSES.length; i++) {
-      const bus = BUSES[i];
-      const { x, z, yaw, fade } = busPoseAt(bus, CLOCK.t);
-      const present = smoothstep(bus.threshold - 0.06, bus.threshold + 0.06, span);
-      quaternion.setFromAxisAngle(UP, yaw);
-      matrix.compose(position.set(x, CONFIG.bus.y, z), quaternion, scale.setScalar(CONFIG.bus.toyLenKm));
-      mesh.setMatrixAt(i, matrix);
-      fadeAttr.setX(i, fade * present);
+
+    let written = 0;
+
+    if (liveActive()) {
+      // --- the real fleet: glide every coach toward its latest fix ---------
+      let list: LiveBus[];
+      if (LIVE_BUSES.size <= poolSize) {
+        list = [...LIVE_BUSES.values()];
+      } else {
+        if (keptRef.current.size !== LIVE_BUSES.size) {
+          keptRef.current = {
+            size: LIVE_BUSES.size,
+            list: capByHeart(
+              [...LIVE_BUSES.values()],
+              poolSize,
+              CONFIG.camera.heartX,
+              CONFIG.camera.heartZ
+            ),
+          };
+        }
+        list = keptRef.current.list;
+      }
+      const dt = CLOCK.dt;
+      for (const bus of list) {
+        const next = stepGlide(bus.x, bus.z, bus.targetX, bus.targetZ, dt, CONFIG.bus.live);
+        bus.x = next.x;
+        bus.z = next.z;
+        bus.fade = Math.min(1, bus.fade + dt / CONFIG.bus.live.fadeInS);
+        quaternion.setFromAxisAngle(UP, bus.yaw);
+        matrix.compose(
+          position.set(bus.x, CONFIG.bus.y, bus.z),
+          quaternion,
+          scale.setScalar(CONFIG.bus.toyLenKm)
+        );
+        mesh.setMatrixAt(written, matrix);
+        fadeAttr.setX(written, bus.fade);
+        liveryAttr.setX(written, bus.livery);
+        written++;
+      }
+    } else if (BUS_PIN.kind !== "off") {
+      // --- the ambient fallback fleet: corridor loops, honest service span --
+      const span =
+        BUS_PIN.kind === "ambient" ? BUS_PIN.level : busService();
+      for (let i = 0; i < AMBIENT.length; i++) {
+        const bus = AMBIENT[i];
+        const { x, z, yaw, fade } = busPoseAt(bus, CLOCK.t);
+        const present = smoothstep(bus.threshold - 0.06, bus.threshold + 0.06, span);
+        quaternion.setFromAxisAngle(UP, yaw);
+        matrix.compose(
+          position.set(x, CONFIG.bus.y, z),
+          quaternion,
+          scale.setScalar(CONFIG.bus.toyLenKm)
+        );
+        mesh.setMatrixAt(written, matrix);
+        fadeAttr.setX(written, fade * present);
+        liveryAttr.setX(written, bus.livery);
+        written++;
+      }
     }
-    mesh.instanceMatrix.needsUpdate = true;
-    fadeAttr.needsUpdate = true;
+
+    mesh.count = written;
+    if (written > 0) {
+      mesh.instanceMatrix.needsUpdate = true;
+      fadeAttr.needsUpdate = true;
+      liveryAttr.needsUpdate = true;
+    }
   });
 
-  if (!BUSES.length) return null;
+  if (!HAS_BASEMAP || BUS_PIN.kind === "off") return null;
 
   return (
     <instancedMesh
       ref={meshRef}
-      args={[undefined, undefined, BUSES.length]}
+      args={[undefined, undefined, poolSize]}
       geometry={geometry}
       renderOrder={5.62}
       frustumCulled={false}
@@ -338,11 +426,10 @@ export function Buses() {
         vertexShader={VERT}
         fragmentShader={FRAG}
         uniforms={{
-          // Beltline: the ferry cream (pale washi by day, lantern-warm at
-          // night) — a pale waistband on the pigment coats.
-          uBody: { value: LIVE.ferry },
           uGreen: { value: METRO_GREEN },
+          uBlue: { value: BEB_BLUE },
           uRed: { value: RAPID_RED },
+          uGold: { value: SKIRT_GOLD },
           uInk: { value: LIVE.buildingInk },
           uWindow: { value: LIVE.trainWindow },
           uWindowIntensity: { value: LIVE.windowIntensity },
