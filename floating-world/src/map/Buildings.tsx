@@ -44,11 +44,15 @@ import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGl
 // houses — but the road frontages run right past both bowls, so without a
 // keep-out the generic blocks land on top of Lumen Field and T-Mobile Park and
 // crowd their arches into an unreadable clump (Landmarks.tsx paints the bowls;
-// this layer must clear the ground for them). Keep-out discs in projected km,
-// sized to cover each bowl plus its roof span with a little margin.
+// this layer must clear the ground for them). Gasworks Park takes the same
+// protection: N Northlake Way runs the park's top edge, and its frontage
+// blocks would otherwise land among the cracking towers and on Kite Hill's
+// open lawn. Keep-out discs in projected km, sized to cover each landmark
+// with a little margin.
 const KEEP_OUT: { x: number; z: number; r2: number }[] = [
   { ...projectLatLng(47.5952, -122.3316), r: 0.4 }, // Lumen Field
   { ...projectLatLng(47.5914, -122.3325), r: 0.4 }, // T-Mobile Park
+  { ...projectLatLng(47.645, -122.3345), r: 0.2 }, // Gasworks Park — ruin, barn, Kite Hill
 ].map(({ x, z, r }) => ({ x, z, r2: r * r }));
 
 function inKeepOut(x: number, z: number): boolean {

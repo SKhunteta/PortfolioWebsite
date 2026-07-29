@@ -2,8 +2,10 @@
 // Seattle — downtown's massed towers, the Space Needle, Smith Tower wearing
 // its pyramid cap, King Street Station's campanile beside the tracks, the
 // SODO stadiums, UW's campus and Husky Stadium, SeaTac's runways and terminal,
-// the working waterfront's gantry cranes, the Great Wheel, Gas Works' rusted
-// drums, the Fremont Troll hunched under the Aurora Bridge, the Pacific
+// the working waterfront's gantry cranes, the Great Wheel, Gas Works Park on
+// its Lake Union point (the rusted cracking-tower ruin laced with pipework,
+// the exhauster-compressor play barn, and Kite Hill crowned by its sundial),
+// the Fremont Troll hunched under the Aurora Bridge, the Pacific
 // Science Center's white arches, Volunteer Park's water tower and glasshouse,
 // the Amazon Spheres, Bellevue's second skyline across the lake for the 2 Line,
 // the region's big malls (Alderwood up north, Southcenter down in Tukwila), a
@@ -55,6 +57,13 @@ export const WHEEL_R = 0.22;
 // pass's 120s, which read as barely-moving at drift distance).
 export const WHEEL_SPIN_PERIOD_S = 100;
 
+// Kite Hill's mound at Gas Works Park, shared with the kite-flyer hero in
+// map/Heroes.tsx (the figure stands on the summit) — keep these in sync if
+// the hill ever moves or grows.
+export const GASWORKS_HILL_LAT = 47.6448;
+export const GASWORKS_HILL_LNG = -122.3358;
+export const GASWORKS_HILL_H = 0.07;
+
 const ss = (a: number, b: number, x: number) => {
   const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
   return t * t * (3 - 2 * t);
@@ -65,9 +74,11 @@ const VERT = /* glsl */ `
   attribute float aRainier;
   attribute float aBaker;
   attribute float aTacoma;
+  attribute float aGasworks;
   varying float vRainier;
   varying float vBaker;
   varying float vTacoma;
+  varying float vGasworks;
   varying float vY;
   varying vec3 vNormal;
   void main() {
@@ -77,6 +88,7 @@ const VERT = /* glsl */ `
     vRainier = aRainier;
     vBaker = aBaker;
     vTacoma = aTacoma;
+    vGasworks = aGasworks;
     vNormal = normalize(normalMatrix * normal); // world-space normal — correct for both the static merged landmarks and the Great Wheel, which rotates
     vec4 mv = viewMatrix * world;
     vFogDepth = -mv.z;
@@ -92,6 +104,7 @@ const FRAG = /* glsl */ `
   varying float vRainier;
   varying float vBaker;
   varying float vTacoma;
+  varying float vGasworks;
   uniform vec3 uColor;
   uniform float uOpacity;
   uniform vec2 uRainierAxis; // Rainier's world xz — the axis the veins radiate from
@@ -107,6 +120,11 @@ const FRAG = /* glsl */ `
   // rust-red wood concourse wall that rings its base.
   const vec3 TACOMA_ROOF = vec3(0.90, 0.89, 0.85);
   const vec3 TACOMA_WALL = vec3(0.55, 0.30, 0.21);
+  // The Gas Works ruin's real skin: a century of iron oxide — the cracking
+  // towers and their pipework read rust red-brown against the sepia town.
+  // Authored in LINEAR space (unlike palette uniforms, raw GLSL consts skip
+  // three's sRGB→linear conversion): displays as ~#75452f before the wash.
+  const vec3 GAS_RUST = vec3(0.18, 0.055, 0.028);
 
   void main() {
     float wash = wcFbm(vWorld * 0.8 + vY * 2.1); // pigment mottle per face
@@ -131,6 +149,9 @@ const FRAG = /* glsl */ `
     //     (~y 0.16 in world units where the hemisphere meets its base ring). ---
     vec3 tacomaBody = mix(TACOMA_WALL, TACOMA_ROOF, smoothstep(0.14, 0.20, vY));
     body = mix(body, tacomaBody, vTacoma);
+    // --- Gas Works ruin: mixed against uColor so the rust still breathes with
+    //     the palette (deepening at night like the rest of the landmark ink). ---
+    body = mix(body, mix(uColor, GAS_RUST, 0.85), vGasworks);
 
     vec3 c = body * key * (0.85 + 0.3 * wash);
     // Watercolor still pools faintly at the base.
@@ -162,7 +183,8 @@ const FRAG = /* glsl */ `
     //     Olympics ghosting the far horizon. Bold in linework, not in light.
     vec3 wpos = vec3(vWorld.x, vY, vWorld.y);
     vec3 view = normalize(cameraPosition - wpos);
-    float rim = smoothstep(0.55, 0.98, 1.0 - max(0.0, dot(n, view))) * max(max(vRainier, vBaker), vTacoma * 0.7);
+    float rim = smoothstep(0.55, 0.98, 1.0 - max(0.0, dot(n, view))) *
+      max(max(vRainier, vBaker), max(vTacoma * 0.7, vGasworks * 0.5));
     c = mix(c, INK, rim * 0.32);
 
     float a = uOpacity * (0.94 + 0.12 * wash);
@@ -508,19 +530,97 @@ function buildGeometry(): THREE.BufferGeometry {
   parts.push(tower(47.6537, -122.3078, 0.22, 0.16, 0.12, -0.4));
   parts.push(tower(47.6503, -122.3018, 0.44, 0.13, 0.26, 0.1)); // Husky Stadium
 
-  // --- Gas Works: the rusted drums on their Lake Union point ---
-  {
-    const drums: [number, number, number, number][] = [
-      [47.645, -122.3352, 0.05, 0.2],
-      [47.6444, -122.3341, 0.045, 0.26],
-      [47.6453, -122.3335, 0.04, 0.17],
+  // --- Gasworks Park: the 1906 gasification plant kept as a park on its Lake
+  //     Union point — the full portrait, replacing a first pass of three
+  //     scattered drums. The cracking-tower ruin stands as the real twin-rank
+  //     cluster laced with horizontal pipe runs and a pair of slim standpipes
+  //     rising past the tower tops; it carries its OWN `aGasworks` vertex flag
+  //     (set below) so the shader paints its true iron-oxide rust instead of
+  //     the generic sepia, plus a light sumi rim. The exhauster-compressor
+  //     play barn answers to the northeast in plain pigment, and Kite Hill's
+  //     grassy mound rises southwest with the bronze sundial set into its
+  //     crown — the summit the Heroes' kite-flyer stands on (Heroes.tsx lifts
+  //     the figure by GASWORKS_HILL_H; keep the exports in sync). ---
+  const gasworks = (() => {
+    const { x, z } = projectLatLng(47.6458, -122.3342);
+    const gParts: THREE.BufferGeometry[] = [];
+    // Two ranks of three towers, heights stepped like the real ruin. Radii are
+    // toy-widened (the drums must survive ~20-47 m/px sampling), so the ranks
+    // are spread wider than the true fenced cluster to keep daylight between
+    // the shafts — the same widening every footprint here takes.
+    const towers: [number, number, number, number][] = [
+      // dx, dz, r, h — km offsets from the ruin's center (-z is north)
+      [-0.075, -0.036, 0.03, 0.24],
+      [0.0, -0.03, 0.034, 0.3],
+      [0.075, -0.026, 0.03, 0.26],
+      [-0.075, 0.03, 0.026, 0.2],
+      [0.0, 0.034, 0.03, 0.28],
+      [0.075, 0.038, 0.026, 0.21],
     ];
-    for (const [lat, lng, r, h] of drums) {
-      const { x, z } = projectLatLng(lat, lng);
-      const c = new THREE.CylinderGeometry(r, r, h, 9);
-      c.translate(x, h / 2, z);
-      parts.push(c);
+    for (const [dx, dz, r, h] of towers) {
+      const t = new THREE.CylinderGeometry(r, r, h, 9);
+      t.translate(dx, h / 2, dz);
+      gParts.push(t);
     }
+    // The pipework that makes it read as a PLANT, not silos: one horizontal
+    // run threading each rank below its shortest tower top, and two cross
+    // links tying the ranks together lower still.
+    for (const [y, dz] of [
+      [0.2, -0.031],
+      [0.16, 0.034],
+    ] as const) {
+      const run = new THREE.CylinderGeometry(0.008, 0.008, 0.19, 6);
+      run.rotateZ(Math.PI / 2); // lie along the rank
+      run.translate(0, y, dz);
+      gParts.push(run);
+    }
+    for (const [dx, y] of [
+      [-0.075, 0.13],
+      [0.075, 0.115],
+    ] as const) {
+      const link = new THREE.CylinderGeometry(0.008, 0.008, 0.09, 6);
+      link.rotateX(Math.PI / 2); // span between the ranks
+      link.translate(dx, y, 0.002);
+      gParts.push(link);
+    }
+    // Two slim standpipes rising past the tower tops — the serrated skyline
+    // the ruin cuts against the lake.
+    for (const [dx, dz, h] of [
+      [0.032, -0.05, 0.36],
+      [-0.042, 0.05, 0.32],
+    ] as const) {
+      const flue = new THREE.CylinderGeometry(0.009, 0.009, h, 6);
+      flue.translate(dx, h / 2, dz);
+      gParts.push(flue);
+    }
+    const g = mergeGeometries(gParts, false)!;
+    gParts.forEach((p) => p.dispose());
+    g.rotateY(0.2); // the plant's slight skew to the shoreline
+    g.translate(x, 0, z);
+    return g;
+  })();
+  parts.push(gasworks);
+  // The exhauster-compressor building — the play barn under its shed roof,
+  // with the boiler-house stack at its corner. Generic pigment: the barn is
+  // painted steel, not rusted iron.
+  parts.push(tower(47.6461, -122.3332, 0.09, 0.055, 0.065, 0.2));
+  {
+    const { x, z } = projectLatLng(47.64625, -122.33295);
+    const stack = new THREE.CylinderGeometry(0.008, 0.008, 0.09, 6);
+    stack.translate(x, 0.045, z);
+    parts.push(stack);
+  }
+  // Kite Hill: the grassy spoil mound at the park's southwest, a soft squashed
+  // dome (a cone would read as a peak or a fir), with the sundial a small
+  // bronze disc set into the crown's east flank.
+  {
+    const { x, z } = projectLatLng(GASWORKS_HILL_LAT, GASWORKS_HILL_LNG);
+    const mound = new THREE.SphereGeometry(0.1, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+    mound.scale(1.2, GASWORKS_HILL_H / 0.1, 1); // oblong, height = GASWORKS_HILL_H
+    mound.translate(x, 0, z);
+    const sundial = new THREE.CylinderGeometry(0.014, 0.014, 0.008, 10);
+    sundial.translate(x + 0.03, 0.066, z);
+    parts.push(mound, sundial);
   }
 
   // --- the Fremont Troll: the hunched concrete giant under the north end of
@@ -889,9 +989,9 @@ function buildGeometry(): THREE.BufferGeometry {
   parts.push(tower(47.5178, -122.2966, 0.16, 0.1, 0.16, 0.1)); // Museum of Flight
 
   // Tag every vertex with whether it belongs to Rainier (1), Baker (1 on its
-  // own flag), or neither. A flag must exist on ALL parts or mergeGeometries
-  // refuses the merge; the fragment shader keys the mythic paint off each so
-  // nothing else is touched.
+  // own flag), the Tacoma Dome, the Gas Works ruin, or none. A flag must exist
+  // on ALL parts or mergeGeometries refuses the merge; the fragment shader
+  // keys the special paint off each so nothing else is touched.
   for (const g of parts) {
     const n = g.attributes.position.count;
     g.setAttribute(
@@ -905,6 +1005,10 @@ function buildGeometry(): THREE.BufferGeometry {
     g.setAttribute(
       "aTacoma",
       new THREE.BufferAttribute(new Float32Array(n).fill(g === tacoma ? 1 : 0), 1)
+    );
+    g.setAttribute(
+      "aGasworks",
+      new THREE.BufferAttribute(new Float32Array(n).fill(g === gasworks ? 1 : 0), 1)
     );
   }
 
@@ -994,6 +1098,7 @@ function buildWheelGeometry(): THREE.BufferGeometry {
   geo.setAttribute("aRainier", new THREE.BufferAttribute(new Float32Array(n), 1));
   geo.setAttribute("aBaker", new THREE.BufferAttribute(new Float32Array(n), 1));
   geo.setAttribute("aTacoma", new THREE.BufferAttribute(new Float32Array(n), 1));
+  geo.setAttribute("aGasworks", new THREE.BufferAttribute(new Float32Array(n), 1));
   return geo;
 }
 
