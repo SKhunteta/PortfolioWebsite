@@ -31,7 +31,7 @@ jobs:
       # deploys, so they don't gate Pages.
       - run: npm ci
         working-directory: portfolio-backend
-      - run: node --test test/linkmap-sim.test.js test/linkmap-feed.test.js
+      - run: node --test test/linkmap-sim.test.js test/linkmap-feed.test.js test/metro-feed.test.js
         working-directory: portfolio-backend
       # Ketu-9 is a standalone Vite project served at /ketu-9/ alongside the site.
       - run: npm ci
