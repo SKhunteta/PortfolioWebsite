@@ -108,20 +108,38 @@ it on a second monitor and the print breathes at them.
   frame; pure logic node-safe and vitest-covered
   (`world/__tests__/buses.test.ts`, `__tests__/metroBuses.test.ts`;
   backend `test/metro-feed.test.js`).
-  **Liveries are painted from reference photos of the real fleet** (the
-  owner's photos, Jul 2026 — not invented), one shader, per-instance
+  **The coach is modeled and painted from reference photos of the real
+  fleet** (the owner's photos, Jul 2026 — not invented), at the
+  airliners'/trains' specificity tier. Geometry is the New Flyer Xcelsior
+  silhouette the photos show: raked windshield, inset roof cap under the
+  battery/HVAC pod run, wheel cylinders seated below the skirt (tires
+  painted with pale hubs), the bike rack folded up on the nose — and BOTH
+  real coach lengths in the one InstancedMesh: per-vertex `aTail` marks the
+  artic's gray accordion bellows + trailer, per-instance `aArtic` keeps or
+  collapses them in the vertex shader, so 40-foot standards and 60-foot
+  artics share one draw call the way the airliners' Delta/Alaska split
+  shares one atlas. RapidRide coaches are ALWAYS artics (true of the real
+  fleet); otherwise length is a salted per-vehicle hash (`articFor`,
+  decorrelated from livery). One shader paints the livery, per-instance
   `aLivery`: the standard coach's deep Metro green, the battery-electric
   fleet's royal blue, and RapidRide red — each over the shared gold skirt
-  with the black belt line and the dark dashed window run (lit lantern-warm
-  after dark by MIX, never bloom). RapidRide red is DATA on the live fleet
-  (the feed's `rr` flag, keyed off the OBA route list's A–H "Line" names);
-  green-vs-blue is a deterministic per-vehicle hash — an honest nod to the
-  mixed fleet, never a claim about a specific coach. Pigments are saturated
-  a third past photo-literal to survive the print's pale overlay washes
-  (the muted first cut rendered as sage mush), pigment stays ON THE ROOF
-  (true to the photos, and how the fleet reads from the drift camera), a
-  sumi keyline seats the wheels and ends, and the coats draw at the
-  vessels' `ferryOpacity`, not the carts' wash. `?buses=off` hides the
+  with the black belt line and the dark dashed window run, broken on the
+  CURB side by the gold-framed doorways (front, mid, and the artic's third
+  door; leaves lit lantern-warm after dark by MIX, never bloom). The front
+  face carries the amber LED headsign (lit day and night, clamped under the
+  bloom ceiling) over the black windshield mask and gold bumper with
+  headlamp clusters; small amber route signs sit at the flanks' front
+  corners; the green and blue coats get the red accent flick sweeping their
+  tail corner; and the rear face gets the louvered engine grille + stacked
+  round tail lamps (photo: coach 4808's rear). RapidRide red is DATA on the
+  live fleet (the feed's `rr` flag, keyed off the OBA route list's A–H
+  "Line" names); green-vs-blue is a deterministic per-vehicle hash — an
+  honest nod to the mixed fleet, never a claim about a specific coach.
+  Pigments are saturated a third past photo-literal to survive the print's
+  pale overlay washes (the muted first cut rendered as sage mush), pigment
+  stays ON THE ROOF (true to the photos, and how the fleet reads from the
+  drift camera), a sumi keyline seats the body over its wheels, and the
+  coats draw at the vessels' `ferryOpacity`, not the carts' wash. `?buses=off` hides the
   layer; `?buses=0..1` forces the ambient fleet at that service level;
   `?buses=live` forces live-only (no fallback). `scripts/bus-shot.mjs`
   verifies both modes headlessly by mocking the endpoint (route
