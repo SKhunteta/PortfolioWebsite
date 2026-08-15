@@ -20,6 +20,7 @@ import { CONFIG } from "../world/config";
 import {
   ApiBus,
   MetroPayload,
+  articFor,
   liveryFor,
   onPage,
   yawFromBearing,
@@ -34,6 +35,7 @@ export interface LiveBus {
   yaw: number;
   hasBearing: boolean;
   livery: number; // LIVERY_* — fixed per coach
+  artic: number; // 1 = 60-foot articulated (RapidRide always; else hashed)
   fade: number; // eases 0→1 on spawn (render layer advances it)
   missedPolls: number;
 }
@@ -111,6 +113,7 @@ function fold(payload: MetroPayload) {
         yaw: v.hdg != null ? yawFromBearing(v.hdg) : 0,
         hasBearing: v.hdg != null,
         livery: liveryFor(v.id, v.rr === 1),
+        artic: articFor(v.id, v.rr === 1) ? 1 : 0,
         fade: 0,
         missedPolls: 0,
       });

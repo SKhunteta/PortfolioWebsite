@@ -7,6 +7,8 @@ import {
   LIVERY_GREEN,
   LIVERY_BLUE,
   LIVERY_RED,
+  ARTIC_SHARE,
+  articFor,
   hashId,
   liveryFor,
   onPage,
@@ -45,6 +47,39 @@ describe("livery assignment", () => {
       expect(h).toBeGreaterThanOrEqual(0);
       expect(h).toBeLessThanOrEqual(1);
     }
+  });
+});
+
+describe("coach length", () => {
+  it("every RapidRide coach is a 60-foot artic — true of the real fleet", () => {
+    expect(articFor("1_6222", true)).toBe(true);
+    expect(articFor("anything", true)).toBe(true);
+  });
+
+  it("otherwise length is a deterministic hash near the fleet's artic share", () => {
+    // Same coach, same length, every time.
+    expect(articFor("1_4808", false)).toBe(articFor("1_4808", false));
+    let artics = 0;
+    const n = 1000;
+    for (let i = 0; i < n; i++) {
+      if (articFor(`1_${4000 + i}`, false)) artics++;
+    }
+    expect(artics / n).toBeGreaterThan(ARTIC_SHARE - 0.1);
+    expect(artics / n).toBeLessThan(ARTIC_SHARE + 0.1);
+  });
+
+  it("length never correlates with livery — the hash is salted", () => {
+    // Across a fleet, every (livery, length) pairing occurs: green standards,
+    // green artics, blue standards, blue artics.
+    const seen = new Set<string>();
+    for (let i = 0; i < 500; i++) {
+      const id = `1_${4000 + i}`;
+      seen.add(`${liveryFor(id, false)}:${articFor(id, false)}`);
+    }
+    expect(seen.has(`${LIVERY_GREEN}:true`)).toBe(true);
+    expect(seen.has(`${LIVERY_GREEN}:false`)).toBe(true);
+    expect(seen.has(`${LIVERY_BLUE}:true`)).toBe(true);
+    expect(seen.has(`${LIVERY_BLUE}:false`)).toBe(true);
   });
 });
 

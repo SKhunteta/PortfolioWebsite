@@ -50,6 +50,20 @@ export function liveryFor(id: string, rr: boolean): number {
   return hashId(id) < BLUE_SHARE ? LIVERY_BLUE : LIVERY_GREEN;
 }
 
+// Roughly half of Metro's coaches on the trunk corridors are 60-foot
+// articulated (the owner's reference photos: coaches 4808 and 1250 are both
+// artics with the gray accordion bellows).
+export const ARTIC_SHARE = 0.45;
+
+/** Whether a coach is a 60-foot articulated. Every RapidRide coach really is
+ *  a 60-footer, so the rr flag decides outright; otherwise a deterministic
+ *  per-vehicle hash (salted so length never correlates with livery) — the
+ *  same honest nod as green-vs-blue, never a claim about a specific coach. */
+export function articFor(id: string, rr: boolean): boolean {
+  if (rr) return true;
+  return hashId(id + "|len") < ARTIC_SHARE;
+}
+
 // The painted page (basemap roads span ~x −21..27, z −29..30 km): Metro
 // serves the whole county, so coaches beyond the sheet's edge are dropped
 // rather than drawn onto blank void past the shorelines.

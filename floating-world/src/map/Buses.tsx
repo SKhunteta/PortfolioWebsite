@@ -8,21 +8,38 @@
 // Metro's service span by the real Seattle hour (world/buses.ts) — clearly
 // stylized toys, never presented as live.
 //
-// Liveries are painted from reference photos of the real fleet (owner's
-// photos, Jul 2026 — not invented), one fragment shader, aLivery selecting:
+// The coach is modeled and painted from reference photos of the real fleet
+// (owner's photos, Jul 2026 — not invented), at the airliners'/trains'
+// specificity tier. Geometry is the New Flyer Xcelsior silhouette every
+// photo shows: raked windshield, inset roof cap under the battery/HVAC pod
+// run, wheels seated below the skirt, the bike rack folded up on the nose —
+// and BOTH real lengths in one InstancedMesh: per-vertex aTail marks the
+// trailer + gray accordion bellows, per-instance aArtic keeps or collapses
+// them, so 40-foot standards and 60-foot artics (coaches 4808 and 1250 are
+// both artics) share one draw call the way the airliners' Delta/Alaska split
+// shares one atlas. RapidRide coaches are ALWAYS artics (true of the real
+// fleet); otherwise length is a salted per-vehicle hash.
+//
+// One fragment shader paints the livery, aLivery selecting the coat:
 //   0  the standard coach: Metro's deep green over the gold skirt, the black
-//      belt line between, dark window band up in the green (photo: coach
-//      4808, the classic two-tone every Seattleite knows)
+//      belt line between (photo: coach 4808, the classic two-tone)
 //   1  the battery-electric fleet's royal blue over the same gold skirt
 //      (photo: coach 1250, "zero emission bus")
 //   2  RapidRide red over gold (photo: coach 6222 on the E Line)
 // RapidRide red is DATA on the live fleet (the feed's rr flag, keyed off the
 // OBA route list); green-vs-blue is a deterministic per-vehicle hash — an
-// honest nod to the mixed fleet, never a claim about a specific coach. All
-// three coats keep their pigment ON THE ROOF (true to the photos, and the
-// reason the fleet reads from the drift camera), gold skirt low, sumi
-// keyline at the wheels and ends, windows lit lantern-warm after dark by MIX
-// (never bloom). Normal-blended, mixed toward LIVE.fog. renderOrder 5.62.
+// honest nod to the mixed fleet, never a claim about a specific coach.
+// Over the coat go the details the photos insist on: the dark dashed window
+// run broken by GOLD-FRAMED DOORWAYS on the curb side (front, mid, and the
+// artic's third door), the amber LED headsign over the black windshield mask
+// and gold bumper, small amber route signs at the flanks' front corners, the
+// red accent flick sweeping the tail corner of the green and blue coats,
+// tires with pale hubs, and the louvered engine grille + stacked red tail
+// lamps on the rear face. Pigment stays ON THE ROOF (true to the photos, and
+// the reason the fleet reads from the drift camera), windows lit
+// lantern-warm after dark by MIX (never bloom; the headsign LEDs stay lit
+// day and night, clamped under the bloom ceiling). Normal-blended, mixed
+// toward LIVE.fog. renderOrder 5.62.
 //
 // ONE InstancedMesh either way — the pool is sized for the tier's live cap
 // (up to ~1,200 real coaches at rush hour; capByHeart sheds the far suburban
@@ -40,21 +57,31 @@ import { PROFILE } from "../world/device";
 import { CONFIG } from "../world/config";
 import { busDistanceAt, busService, type BusRun } from "../world/buses";
 import { BUS_FEED, BUS_PIN, LIVE_BUSES, type LiveBus } from "../world/busFeed";
-import { capByHeart, stepGlide } from "../world/metroBuses";
+import { ARTIC_SHARE, capByHeart, stepGlide } from "../world/metroBuses";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
 const VERT = /* glsl */ `
   ${FOG_VARYINGS_VERT}
   attribute float aFade;
   attribute float aLivery; // 0 Metro green, 1 battery-electric blue, 2 RapidRide red
+  attribute float aArtic; // per-instance: 1 = 60-foot articulated coach
+  attribute float aPart; // per-vertex: 0 body, 1 bellows, 2 tire, 3 roof pod, 4 bike rack
+  attribute float aTail; // per-vertex: 1 = trailer geometry (artic-only)
   varying vec3 vLocal;
   varying float vFade;
   varying float vLivery;
+  varying float vArtic;
+  varying float vPart;
   void main() {
-    vLocal = position;
+    // A standard 40-footer collapses the trailer + bellows to a zero-area
+    // point at the origin, so one geometry serves both real coach lengths.
+    vec3 p = (aTail > 0.5 && aArtic < 0.5) ? vec3(0.0) : position;
+    vLocal = p;
     vFade = aFade;
     vLivery = aLivery;
-    vec4 world = modelMatrix * instanceMatrix * vec4(position, 1.0);
+    vArtic = aArtic;
+    vPart = aPart;
+    vec4 world = modelMatrix * instanceMatrix * vec4(p, 1.0);
     vWorld = world.xz;
     vec4 mv = viewMatrix * world;
     vFogDepth = -mv.z;
@@ -68,6 +95,8 @@ const FRAG = /* glsl */ `
   varying vec3 vLocal;
   varying float vFade;
   varying float vLivery;
+  varying float vArtic;
+  varying float vPart;
   uniform vec3 uGreen;   // the standard coach's deep Metro green
   uniform vec3 uBlue;    // the battery-electric fleet's royal blue
   uniform vec3 uRed;     // RapidRide red
@@ -78,44 +107,134 @@ const FRAG = /* glsl */ `
   uniform vec3 uLamp;
   uniform float uLampIntensity;
   uniform float uOpacity;
+
+  // A doorway's two dark leaves inside its gold frame (u spans the doorway).
+  float doorLeaves(float u) {
+    float pane = step(0.12, u) * (1.0 - step(0.88, u));
+    float mullion = 1.0 - step(0.07, abs(u - 0.5));
+    return pane * (1.0 - mullion);
+  }
+
+  // x within [lo, hi] -> (in-doorway, leaves) masks.
+  vec2 doorway(float x, float lo, float hi) {
+    float u = (x - lo) / (hi - lo);
+    float inD = step(0.0, u) * (1.0 - step(1.0, u));
+    return vec2(inD, inD * doorLeaves(u));
+  }
+
   void main() {
     if (vFade < 0.01) discard;
-    // vLocal spans x in [-0.5,0.5] (length), y in [0,~0.3] (height).
-    float wash = wcFbm(vWorld * 2.2 + vLocal.y * 4.0);
+    // vLocal: x in [-0.5,0.5] (a 40-footer; the artic trailer reaches -1.0),
+    // y in [0,~0.36] (ground to roof pod), z in [-0.16,0.16] (width).
+    float x = vLocal.x;
+    float y = vLocal.y;
+    float z = vLocal.z;
+    float wash = wcFbm(vWorld * 2.2 + y * 4.0);
 
-    // The coat, straight from the photos: identity pigment over the shared
-    // gold skirt with the black belt line between. Pigment stays on the roof
-    // (as on the real coaches) so the fleet reads from the drift camera.
+    // The coat: identity pigment over the shared gold skirt with the black
+    // belt line between. Pigment stays on the roof (as on the real coaches)
+    // so the fleet reads from the drift camera.
     vec3 coat = mix(uGreen, uBlue, step(0.5, vLivery));
     coat = mix(coat, uRed, step(1.5, vLivery));
-    vec3 c = coat;
-    float belt = 1.0 - smoothstep(0.1, 0.118, vLocal.y); // the black belt line
-    c = mix(c, uInk, belt * 0.85);
-    float skirt = 1.0 - smoothstep(0.082, 0.098, vLocal.y); // gold below it
-    c = mix(c, uGold, skirt);
+    // Where this coach ends: the 40-footer's own tail or the trailer's.
+    float rearX = mix(0.48, 1.0, step(0.5, vArtic));
+    // The amber LED of the headsigns — lit day and night, never bloom.
+    vec3 amber = min(vec3(0.90, 0.55, 0.16) * (0.72 + 0.30 * uWindowIntensity), vec3(0.95));
 
-    // The window run, a dark band up in the coat — dashed panes, dark glass
-    // by day, lantern-gold after dark via the shared window palette.
-    float band = smoothstep(0.17, 0.19, vLocal.y) * (1.0 - smoothstep(0.245, 0.262, vLocal.y));
-    float dash = step(0.3, wcHash(vec2(floor(vLocal.x * 22.0), 3.7)));
-    c = mix(c, uInk * 0.85, band * 0.8);
-    c = mix(c, uWindow * (0.18 + uWindowIntensity), band * dash * 0.85);
+    vec3 c;
+    if (vPart > 3.5) {
+      // The bike rack folded up on the nose — bare aluminum slats.
+      c = vec3(0.62, 0.60, 0.54) * (0.72 + 0.28 * step(0.5, fract(z * 26.0)));
+    } else if (vPart > 2.5) {
+      // The roof battery/HVAC pod run — coat-tinted equipment gray.
+      c = coat * 0.62 + vec3(0.07);
+    } else if (vPart > 1.5) {
+      // Tires: near-black rubber, a pale hub disc on each outer face.
+      c = uInk * 0.55;
+      float dxAxle = min(abs(x - 0.28), min(abs(x + 0.27), abs(x + 0.86)));
+      float hub = (1.0 - smoothstep(0.022, 0.030, length(vec2(dxAxle, y - 0.055))))
+        * step(0.152, abs(z));
+      c = mix(c, vec3(0.60, 0.58, 0.52), hub);
+    } else if (vPart > 0.5) {
+      // The artic's gray accordion bellows — vertical pleats, seated in ink.
+      c = vec3(0.56, 0.54, 0.49) * (0.76 + 0.24 * step(0.5, fract(x * 46.0)));
+      c = mix(c, uInk, 0.4 * (1.0 - smoothstep(0.05, 0.10, y)));
+    } else {
+      // --- the painted body, straight from the photos ---------------------
+      c = coat;
+      float belt = 1.0 - smoothstep(0.118, 0.136, y); // the black belt line
+      c = mix(c, uInk, belt * 0.85);
+      float skirt = 1.0 - smoothstep(0.100, 0.116, y); // gold below it
+      c = mix(c, uGold, skirt);
+
+      // The window run, a dark band up in the coat — dashed panes, dark
+      // glass by day, lantern-gold after dark via the shared window palette.
+      float band = smoothstep(0.165, 0.185, y) * (1.0 - smoothstep(0.252, 0.268, y));
+      float dash = step(0.3, wcHash(vec2(floor(x * 22.0), 3.7)));
+      c = mix(c, uInk * 0.85, band * 0.8);
+      c = mix(c, uWindow * (0.18 + uWindowIntensity), band * dash * 0.85);
+
+      // The gold-framed doorways breaking the run on the CURB side (+z):
+      // front and mid doors, plus the trailer's third door on artics.
+      float curb = step(0.148, z);
+      float doorV = smoothstep(0.050, 0.062, y) * (1.0 - smoothstep(0.258, 0.270, y));
+      vec2 d1 = doorway(x, 0.29, 0.40);
+      vec2 d2 = doorway(x, -0.03, 0.10);
+      vec2 d3 = doorway(x, -0.75, -0.63);
+      float frame = max(d1.x, max(d2.x, d3.x));
+      float leaves = max(d1.y, max(d2.y, d3.y));
+      float doorM = curb * doorV;
+      c = mix(c, uGold, doorM * frame);
+      c = mix(c, uInk * 0.80, doorM * leaves);
+      c = mix(c, uWindow * (0.12 + uWindowIntensity), doorM * leaves * 0.40);
+
+      // The small amber route sign at each flank's front corner.
+      float sideSign = step(0.148, abs(z))
+        * smoothstep(0.402, 0.410, x) * (1.0 - step(0.452, x))
+        * smoothstep(0.228, 0.236, y) * (1.0 - smoothstep(0.256, 0.262, y));
+      c = mix(c, amber, sideSign);
+
+      // The red accent flick sweeping up the tail corner of the green and
+      // blue coats (the RapidRide coat is already red — no flick).
+      float dxr = x + rearX; // 0 at this coach's tail, growing forward
+      float flick = (1.0 - smoothstep(0.02, 0.16, dxr + max(0.0, y - 0.05) * 1.1))
+        * (1.0 - step(1.5, vLivery));
+      c = mix(c, uRed, flick * 0.92);
+
+      // The FRONT face (raked in the geometry): black windshield mask over
+      // the gold bumper, amber headsign under the roofline, headlamps low.
+      float front = smoothstep(0.468, 0.478, x + 0.208 * (y - 0.04));
+      vec3 cf = mix(uGold, uInk * 0.92, smoothstep(0.070, 0.085, y));
+      cf = mix(cf, uInk * 0.70,
+        smoothstep(0.130, 0.150, y) * (1.0 - smoothstep(0.220, 0.235, y)));
+      float headsign = smoothstep(0.235, 0.243, y) * (1.0 - smoothstep(0.268, 0.276, y))
+        * (1.0 - step(0.10, abs(z)));
+      cf = mix(cf, amber, headsign);
+      float lampBox = smoothstep(0.085, 0.095, y) * (1.0 - smoothstep(0.125, 0.135, y))
+        * smoothstep(0.050, 0.060, abs(z)) * (1.0 - smoothstep(0.115, 0.125, abs(z)));
+      cf = mix(cf, uLamp * (0.40 + uLampIntensity), lampBox);
+      c = mix(c, cf, front);
+
+      // The TAIL face: louvered engine grille in the coat, gold band low,
+      // stacked round tail lamps at the corners (photo: coach 4808's rear).
+      float tail = smoothstep(rearX - 0.035, rearX - 0.015, -x);
+      vec3 ct = coat;
+      float grille = smoothstep(0.125, 0.140, y) * (1.0 - smoothstep(0.200, 0.215, y));
+      ct = mix(ct, uInk * (0.75 + 0.25 * step(0.5, fract(y * 60.0))), grille);
+      ct = mix(ct, uGold, 1.0 - smoothstep(0.100, 0.120, y));
+      float stack = smoothstep(0.070, 0.080, abs(z)) * (1.0 - smoothstep(0.115, 0.125, abs(z)))
+        * smoothstep(0.130, 0.140, y) * (1.0 - smoothstep(0.240, 0.250, y))
+        * step(0.55, fract(y * 22.0));
+      vec3 tailRed = min(vec3(0.82, 0.16, 0.10) * (0.55 + 0.60 * uLampIntensity), vec3(0.95));
+      ct = mix(ct, tailRed, stack);
+      c = mix(c, ct, tail);
+
+      // The sumi keyline seating the body over its wheels.
+      c = mix(c, uInk, 0.6 * (1.0 - smoothstep(0.042, 0.060, y)));
+    }
 
     // Roof catches a touch more light than the flanks — tonal volume.
-    c *= (0.86 + 0.28 * wash) * mix(0.92, 1.06, smoothstep(0.0, 0.3, vLocal.y));
-
-    // The sumi keyline — ink pops on bright paper: a dark seat at the wheels
-    // and inked nose/tail ends.
-    float ink = max(1.0 - smoothstep(0.0, 0.03, vLocal.y), smoothstep(0.45, 0.48, abs(vLocal.x)));
-    c = mix(c, uInk, ink * 0.7);
-
-    // Headlamps (front, +x) and a fainter tail (rear, -x), low on the body —
-    // lit after the ink so the lamps still burn through the keyline.
-    float low = 1.0 - smoothstep(0.05, 0.14, vLocal.y);
-    float head = smoothstep(0.4, 0.47, vLocal.x) * low;
-    float tail = smoothstep(0.4, 0.47, -vLocal.x) * low;
-    c = mix(c, uLamp * (0.35 + uLampIntensity), head * 0.9);
-    c = mix(c, uLamp * (0.2 + 0.55 * uLampIntensity), tail * 0.5);
+    c *= (0.86 + 0.28 * wash) * mix(0.92, 1.06, smoothstep(0.0, 0.3, y));
 
     float a = uOpacity * vFade * (0.9 + 0.2 * wash);
     gl_FragColor = vec4(mix(c, uFog, fogFactor()), a);
@@ -169,6 +288,7 @@ interface Bus {
   forward: boolean; // travel direction along the corridor
   laneSign: number; // which side of the stroke (+1 / -1)
   livery: number; // LIVERY_* — the ambient fleet mixes all three coats
+  artic: number; // 1 = 60-foot articulated (all RapidRide, plus a hashed share)
   threshold: number; // out only when the hour's service span clears this
 }
 
@@ -189,6 +309,7 @@ function buildFleet(): Bus[] {
     }
     const forward = hash(i * 5.11 + 1.9) > 0.5;
     const liveryRoll = hash(i * 11.29 + 6.2);
+    const livery = liveryRoll < 0.13 ? 2 : liveryRoll < 0.3 ? 1 : 0;
     buses.push({
       ci,
       run: {
@@ -203,7 +324,10 @@ function buildFleet(): Bus[] {
       laneSign: forward ? 1 : -1,
       // Mostly green, a share of battery-electric blue, a few RapidRide red —
       // the mix the real street shows.
-      livery: liveryRoll < 0.13 ? 2 : liveryRoll < 0.3 ? 1 : 0,
+      livery,
+      // RapidRide really runs all 60-footers; the rest split by the same
+      // share the live fleet hashes to.
+      artic: livery === 2 || hash(i * 13.57 + 8.8) < ARTIC_SHARE ? 1 : 0,
       threshold: hash(i * 9.19 + 4.1) * 0.92,
     });
   }
@@ -262,17 +386,88 @@ function busPoseAt(bus: Bus, t: number, out: BusPose = pose): BusPose {
   return out;
 }
 
-/** Unit-length bus along +X, wheels near y = 0: one long tall slab with a
- *  slightly inset roof — the flat-faced transit box, legible against the
- *  low-slung cars at a glance. The paint carries the identity. */
+// Per-vertex part tags for the fragment shader (aPart) and the artic
+// collapse (aTail) — mergeGeometries needs every part to carry both.
+const PART_BODY = 0;
+const PART_BELLOWS = 1;
+const PART_TIRE = 2;
+const PART_POD = 3;
+const PART_RACK = 4;
+
+function tag(geo: THREE.BufferGeometry, part: number, trailer: number): THREE.BufferGeometry {
+  const n = geo.getAttribute("position").count;
+  geo.setAttribute("aPart", new THREE.BufferAttribute(new Float32Array(n).fill(part), 1));
+  geo.setAttribute("aTail", new THREE.BufferAttribute(new Float32Array(n).fill(trailer), 1));
+  return geo;
+}
+
+/** A wheel-axle cylinder lying across z, faces poking past both flanks. */
+function wheel(x: number, trailer: number): THREE.BufferGeometry {
+  const w = new THREE.CylinderGeometry(0.055, 0.055, 0.32, 10);
+  w.rotateX(Math.PI / 2);
+  w.translate(x, 0.055, 0);
+  return tag(w, PART_TIRE, trailer);
+}
+
+/** The New Flyer Xcelsior coach along +X, wheels at y = 0, modeled from the
+ *  reference photos: raked windshield, inset roof cap under the battery/HVAC
+ *  pod run, wheels seated below the skirt, the bike rack folded up on the
+ *  nose — plus the artic's gray bellows and trailer (tagged aTail so a
+ *  standard 40-footer collapses them in the vertex shader). The paint
+ *  carries the identity; the silhouette now earns it. */
 function buildBus(): THREE.BufferGeometry {
   const parts: THREE.BufferGeometry[] = [];
-  const body = new THREE.BoxGeometry(0.96, 0.27, 0.3);
-  body.translate(0, 0.145, 0);
-  parts.push(body);
+
+  // Front (and, for standards, only) body: raked windshield — the top of the
+  // +X face pulls back and pinches in, the Xcelsior's sloped nose.
+  const body = new THREE.BoxGeometry(0.96, 0.24, 0.3, 3, 1, 1);
+  body.translate(0, 0.16, 0);
+  const pos = body.getAttribute("position") as THREE.BufferAttribute;
+  for (let i = 0; i < pos.count; i++) {
+    if (pos.getX(i) > 0.47) {
+      const y = pos.getY(i);
+      pos.setX(i, 0.48 - 0.208 * (y - 0.04));
+      pos.setZ(i, pos.getZ(i) * 0.9);
+    }
+  }
+  parts.push(tag(body, PART_BODY, 0));
+
   const roof = new THREE.BoxGeometry(0.88, 0.03, 0.26);
   roof.translate(0, 0.295, 0);
-  parts.push(roof);
+  parts.push(tag(roof, PART_BODY, 0));
+
+  // The roof equipment pod run (battery packs / HVAC — every photo shows it).
+  const pod = new THREE.BoxGeometry(0.5, 0.045, 0.17);
+  pod.translate(-0.06, 0.3325, 0);
+  parts.push(tag(pod, PART_POD, 0));
+
+  parts.push(wheel(0.28, 0));
+  parts.push(wheel(-0.27, 0));
+
+  // The bike rack folded up against the nose.
+  const rack = new THREE.BoxGeometry(0.05, 0.07, 0.18);
+  rack.translate(0.5, 0.075, 0);
+  parts.push(tag(rack, PART_RACK, 0));
+
+  // --- the artic's rear half, collapsed on standard coaches ---------------
+  const bellows = new THREE.BoxGeometry(0.13, 0.235, 0.27);
+  bellows.translate(-0.54, 0.1625, 0);
+  parts.push(tag(bellows, PART_BELLOWS, 1));
+
+  const trailer = new THREE.BoxGeometry(0.4, 0.24, 0.3);
+  trailer.translate(-0.8, 0.16, 0);
+  parts.push(tag(trailer, PART_BODY, 1));
+
+  const trailerRoof = new THREE.BoxGeometry(0.34, 0.03, 0.26);
+  trailerRoof.translate(-0.8, 0.295, 0);
+  parts.push(tag(trailerRoof, PART_BODY, 1));
+
+  const trailerPod = new THREE.BoxGeometry(0.24, 0.045, 0.17);
+  trailerPod.translate(-0.8, 0.3325, 0);
+  parts.push(tag(trailerPod, PART_POD, 1));
+
+  parts.push(wheel(-0.86, 1));
+
   const merged = mergeGeometries(parts, false)!;
   parts.forEach((g) => g.dispose());
   return merged;
@@ -314,17 +509,21 @@ export function Buses() {
   // ambient count, so size for the max and trim mesh.count per frame.
   const poolSize = Math.max(1, PROFILE.liveBusCap, AMBIENT.length);
 
-  const { geometry, fadeAttr, liveryAttr } = useMemo(() => {
+  const { geometry, fadeAttr, liveryAttr, articAttr } = useMemo(() => {
     const geometry = buildBus();
     const fadeAttr = new THREE.InstancedBufferAttribute(new Float32Array(poolSize), 1);
     fadeAttr.setUsage(THREE.DynamicDrawUsage);
     geometry.setAttribute("aFade", fadeAttr);
-    // Livery is per-slot and rewritten as coaches come and go on the live
-    // feed (the ambient fleet's assignment is static, but shares the buffer).
+    // Livery and length are per-slot and rewritten as coaches come and go on
+    // the live feed (the ambient fleet's assignment is static, but shares
+    // the buffers).
     const liveryAttr = new THREE.InstancedBufferAttribute(new Float32Array(poolSize), 1);
     liveryAttr.setUsage(THREE.DynamicDrawUsage);
     geometry.setAttribute("aLivery", liveryAttr);
-    return { geometry, fadeAttr, liveryAttr };
+    const articAttr = new THREE.InstancedBufferAttribute(new Float32Array(poolSize), 1);
+    articAttr.setUsage(THREE.DynamicDrawUsage);
+    geometry.setAttribute("aArtic", articAttr);
+    return { geometry, fadeAttr, liveryAttr, articAttr };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -380,6 +579,7 @@ export function Buses() {
         mesh.setMatrixAt(written, matrix);
         fadeAttr.setX(written, bus.fade);
         liveryAttr.setX(written, bus.livery);
+        articAttr.setX(written, bus.artic);
         written++;
       }
     } else if (BUS_PIN.kind !== "off") {
@@ -399,6 +599,7 @@ export function Buses() {
         mesh.setMatrixAt(written, matrix);
         fadeAttr.setX(written, fade * present);
         liveryAttr.setX(written, bus.livery);
+        articAttr.setX(written, bus.artic);
         written++;
       }
     }
@@ -408,6 +609,7 @@ export function Buses() {
       mesh.instanceMatrix.needsUpdate = true;
       fadeAttr.needsUpdate = true;
       liveryAttr.needsUpdate = true;
+      articAttr.needsUpdate = true;
     }
   });
 
