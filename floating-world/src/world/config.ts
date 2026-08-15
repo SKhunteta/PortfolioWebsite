@@ -130,11 +130,36 @@ export const CONFIG = {
     // gentle on purpose (fixes land every 10–60 s; a bus should drift toward
     // its stop, not lunge) — snapping when the gap is too wide to interpolate
     // honestly (tab resume, a coach reassigned across town). fadeInS eases a
-    // newly-appearing coach onto the page instead of popping it.
+    // newly-appearing coach onto the page instead of popping it; fadeOutS
+    // eases one back off when the crowd rule below thins it away (slower —
+    // a coach should withdraw into the paper, not blink out).
     live: {
       ratePerS: 0.35,
       snapKm: 1.2,
       fadeInS: 1.5,
+      fadeOutS: 2.4,
+    },
+    // The CROWD rule (world/metroBuses.ts `crowdShare`/`busRank`): Metro runs
+    // up to ~1,200 coaches at peak, and drawn all at once from the drift
+    // camera they read as confetti scattered over the print — the rail, the
+    // hero of the piece, drowns in them. So the fleet keys to how far back
+    // the viewer is STANDING: zoomed into a neighborhood (within fullKm of
+    // the paper) every coach on the block is out; standing back at drift
+    // framing (thinKm and beyond) the print holds `driftShare` of them.
+    // Thinning is a deterministic per-coach rank, so a coach fades in and out
+    // with the camera and never flickers — a SUBSET of the real fleet, never
+    // an invented one. rapidRideBias pulls RapidRide coaches to the front of
+    // that rank: what survives at drift is weighted toward the frequent trunk
+    // network, which is the shape a viewer at that distance can actually
+    // read. It is a modest bias on purpose — a hard one would leave the
+    // thinned page looking like a red-line-only system, a claim about the
+    // fleet mix the print has no business making. Zoom in and every coach is
+    // back, mix and all.
+    crowd: {
+      fullKm: 3.5,
+      thinKm: 12,
+      driftShare: 0.2,
+      rapidRideBias: 0.45,
     },
   },
   // The Burke-Gilman cyclists (map/Cyclists.tsx): toy figures, storybook-large

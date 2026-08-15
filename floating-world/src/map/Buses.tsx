@@ -41,13 +41,24 @@
 // day and night, clamped under the bloom ceiling). Normal-blended, mixed
 // toward LIVE.fog. renderOrder 5.62.
 //
+// The CROWD RULE keys the fleet to how far back the viewer is standing
+// (world/metroBuses.ts crowdShare/busRank, CONFIG.bus.crowd): all ~1,200
+// in-service coaches drawn at once read as confetti scattered over the print
+// from the drift camera — the rail drowns in them — so at drift framing the
+// page holds a thinned share, weighted toward the RapidRide trunk network,
+// and lean the camera into a neighborhood and every coach on those blocks
+// fades back in. The order is a fixed per-coach rank, so a coach comes and
+// goes with the camera and never flickers: a SUBSET of the real fleet (the
+// same honesty capByHeart keeps), never an invented one. `?buses=all` draws
+// every coach for anyone who wants the whole swarm.
+//
 // ONE InstancedMesh either way — the pool is sized for the tier's live cap
 // (up to ~1,200 real coaches at rush hour; capByHeart sheds the far suburban
 // tail first on small tiers) and mesh.count trims per frame. Matrices, fade
 // and livery are written imperatively — the hot path never touches React.
 
 import { useMemo, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { HAS_BASEMAP, BASEMAP_ROADS } from "./basemap";
@@ -57,7 +68,7 @@ import { PROFILE } from "../world/device";
 import { CONFIG } from "../world/config";
 import { busDistanceAt, busService, type BusRun } from "../world/buses";
 import { BUS_FEED, BUS_PIN, LIVE_BUSES, type LiveBus } from "../world/busFeed";
-import { ARTIC_SHARE, capByHeart, stepGlide } from "../world/metroBuses";
+import { ARTIC_SHARE, capByHeart, crowdShare, stepGlide } from "../world/metroBuses";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
 const VERT = /* glsl */ `
@@ -496,14 +507,27 @@ const SKIRT_GOLD = new THREE.Color("#eda427"); // the shared gold skirt
 
 // Whether live data drives the layer this frame (the pin can force either way).
 function liveActive(): boolean {
-  if (BUS_PIN.kind === "live") return true;
+  if (BUS_PIN.kind === "live" || BUS_PIN.kind === "all") return true;
   if (BUS_PIN.kind === "off" || BUS_PIN.kind === "ambient") return false;
   return BUS_FEED.mode === "live";
+}
+
+const camDir = new THREE.Vector3();
+
+/** How far the camera is standing back from the paper: the distance along its
+ *  own forward ray to where that ray meets the page (y = 0) — small when you
+ *  lean into a neighborhood, ~16 km at drift framing. Looking at or above the
+ *  horizon there is no meeting point, which reads as "as far back as it gets". */
+function cameraPageDistanceKm(camera: THREE.Camera): number {
+  camera.getWorldDirection(camDir);
+  if (camDir.y > -1e-3) return Infinity;
+  return -camera.position.y / camDir.y;
 }
 
 export function Buses() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
+  const camera = useThree((s) => s.camera);
 
   // The pool serves both modes: the tier's live cap at rush hour dwarfs the
   // ambient count, so size for the max and trim mesh.count per frame.
@@ -565,11 +589,30 @@ export function Buses() {
         list = keptRef.current.list;
       }
       const dt = CLOCK.dt;
+      // The crowd rule: how much of the fleet this framing can hold. Standing
+      // back at drift distance the print keeps its trunk share; leaning into a
+      // neighborhood brings every coach on those blocks back out.
+      const share =
+        BUS_PIN.kind === "all"
+          ? 1
+          : crowdShare(cameraPageDistanceKm(camera), CONFIG.bus.crowd);
       for (const bus of list) {
+        const out = bus.rank <= share;
+        if (!out) {
+          // Withdrawing into the paper — and once gone, gone: no matrix, no
+          // glide, no instance. It re-enters at its true fix, not a stale one.
+          if (bus.fade <= 0.001) {
+            bus.x = bus.targetX;
+            bus.z = bus.targetZ;
+            continue;
+          }
+          bus.fade = Math.max(0, bus.fade - dt / CONFIG.bus.live.fadeOutS);
+        } else {
+          bus.fade = Math.min(1, bus.fade + dt / CONFIG.bus.live.fadeInS);
+        }
         const next = stepGlide(bus.x, bus.z, bus.targetX, bus.targetZ, dt, CONFIG.bus.live);
         bus.x = next.x;
         bus.z = next.z;
-        bus.fade = Math.min(1, bus.fade + dt / CONFIG.bus.live.fadeInS);
         quaternion.setFromAxisAngle(UP, bus.yaw);
         matrix.compose(
           position.set(bus.x, CONFIG.bus.y, bus.z),

@@ -21,6 +21,7 @@ import {
   ApiBus,
   MetroPayload,
   articFor,
+  busRank,
   liveryFor,
   onPage,
   yawFromBearing,
@@ -36,7 +37,8 @@ export interface LiveBus {
   hasBearing: boolean;
   livery: number; // LIVERY_* — fixed per coach
   artic: number; // 1 = 60-foot articulated (RapidRide always; else hashed)
-  fade: number; // eases 0→1 on spawn (render layer advances it)
+  rank: number; // 0..1 place in the crowd rule's thinning order — fixed per coach
+  fade: number; // eases 0→1 on spawn, back toward 0 when thinned away
   missedPolls: number;
 }
 
@@ -50,16 +52,19 @@ export const BUS_FEED: { mode: BusMode } = { mode: "connecting" };
 // off        hide the whole layer (both modes)
 // 0..1       force the AMBIENT fleet at that pinned service level
 // live       force live-only: never fall back to the ambient fleet
+// all        live-only AND every coach on the page — the crowd rule off
 export type BusPin =
   | { kind: "none" }
   | { kind: "off" }
   | { kind: "ambient"; level: number }
-  | { kind: "live" };
+  | { kind: "live" }
+  | { kind: "all" };
 
 export function parseBusPin(raw: string | null): BusPin {
   if (raw == null) return { kind: "none" };
   if (raw === "off") return { kind: "off" };
   if (raw === "live") return { kind: "live" };
+  if (raw === "all") return { kind: "all" };
   const n = Number(raw);
   if (Number.isFinite(n)) return { kind: "ambient", level: Math.max(0, Math.min(1, n)) };
   return { kind: "none" };
@@ -114,6 +119,7 @@ function fold(payload: MetroPayload) {
         hasBearing: v.hdg != null,
         livery: liveryFor(v.id, v.rr === 1),
         artic: articFor(v.id, v.rr === 1) ? 1 : 0,
+        rank: busRank(v.id, v.rr === 1, CONFIG.bus.crowd.rapidRideBias),
         fade: 0,
         missedPolls: 0,
       });

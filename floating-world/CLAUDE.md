@@ -99,7 +99,22 @@ it on a second monitor and the print breathes at them.
   exponentially toward its actual fixes (`config.bus.live`), snaps when a
   gap is too wide to interpolate honestly, is clipped to the painted page,
   and small tiers keep the coaches nearest the downtown heart
-  (`capByHeart`, `PROFILE.liveBusCap`). When the feed is unavailable
+  (`capByHeart`, `PROFILE.liveBusCap`).
+  **How many of them the page holds is the viewer's DISTANCE, not the
+  fleet's size** (the CROWD rule — `crowdShare`/`busRank` in
+  `world/metroBuses.ts`, `config.bus.crowd`): all ~1,200 coaches drawn at
+  once read as confetti scattered over the print from the drift camera, and
+  the rail — the hero of the piece — drowns in them. So standing back at
+  drift framing the print keeps `driftShare` of the fleet, weighted toward
+  the RapidRide trunk network (a modest weight: a hard one would paint a
+  red-line-only system, a claim about the fleet mix the print has no
+  business making); lean the camera into a neighborhood and every coach on
+  those blocks fades back in. The order is a FIXED per-coach rank, so a
+  coach comes and goes with the camera and never flickers, and thinning is
+  nested — flying in only ever adds coaches. Same honesty as `capByHeart`:
+  a subset of the real fleet, never an invented one. `?buses=all` draws
+  every coach for anyone who wants the whole swarm.
+  When the feed is unavailable
   (keyless dev, outage) the layer falls back to the original deterministic
   AMBIENT fleet — corridor loops with the stop-and-go dwell (drive a hop,
   ease to the curb, dwell, pull out; `world/buses.ts`), thinned by Metro's
@@ -141,9 +156,11 @@ it on a second monitor and the print breathes at them.
   drift camera), a sumi keyline seats the body over its wheels, and the
   coats draw at the vessels' `ferryOpacity`, not the carts' wash. `?buses=off` hides the
   layer; `?buses=0..1` forces the ambient fleet at that service level;
-  `?buses=live` forces live-only (no fallback). `scripts/bus-shot.mjs`
+  `?buses=live` forces live-only (no fallback); `?buses=all` is live-only
+  with the crowd rule off — every coach on the page. `scripts/bus-shot.mjs`
   verifies both modes headlessly by mocking the endpoint (route
-  interception, a 900-coach fixture laid onto the real corridors).
+  interception, a 900-coach fixture laid onto the real corridors), and
+  shoots the drift framing both thinned and `all` as the crowd rule's A/B.
 - More real Seattle geography woven into `map/Landmarks.tsx` (one merged
   geometry): **Pike Place Market**, **Boeing Field / the Museum of Flight**,
   the **city of bridges** (the I-90 and SR-520 floating spans the trains and
@@ -452,9 +469,10 @@ Angels delta); `?canoe=peak|none` pins the Canoe Journeys season;
 the lighthouse beam sweeps (on lifts the night gate); `?jimothy=on|off` pins Ballard's
 round raccoon; `?gumwall=on|off` loops or stills the Gum Wall pilgrimage;
 `?cold=0..1|on|off` pins the coldness that puffs the ferry passengers' breath;
-`?buses=off|0..1|live` pins the bus layer — off hides it, 0..1 forces the
-ambient fleet at that service level, live forces live-only (`?traffic=`
-pins the street cars);
+`?buses=off|0..1|live|all` pins the bus layer — off hides it, 0..1 forces the
+ambient fleet at that service level, live forces live-only, all forces
+live-only with the crowd rule off (every coach on the page, however many
+that is) (`?traffic=` pins the street cars);
 `?chalk=on|off` forces or clears the summer-weekend sidewalk chalk;
 `?tod=` pins the orca pod's time of day (a 0..1 day fraction, a 0..24
 hour, or dawn|morning|noon|afternoon|dusk|night) — the pod's foraging ground
