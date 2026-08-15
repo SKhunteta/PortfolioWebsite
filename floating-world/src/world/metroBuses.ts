@@ -92,6 +92,44 @@ export function capByHeart<T extends { x: number; z: number; id: string }>(
     .slice(0, cap);
 }
 
+// --- the crowd rule -------------------------------------------------------
+// The whole in-service fleet on the page at once is ~1,200 coaches, and from
+// the drift camera that reads as confetti over the print rather than a city
+// with buses in it. So the fleet keys to the viewer's DISTANCE: every coach
+// on the block when you lean into a neighborhood, a thinned share of them
+// when you stand back and take the whole sheet in. What's dropped is dropped
+// deterministically (below), so the same coaches come and go with the camera
+// and the page never flickers — a subset of the real fleet, never an
+// invented one, the same honesty capByHeart already keeps.
+
+export interface CrowdConfig {
+  fullKm: number; // camera-to-paper distance where the whole fleet is out
+  thinKm: number; // ... and where thinning bottoms out at driftShare
+  driftShare: number; // 0..1 fraction the print holds at drift framing
+  rapidRideBias: number; // <1 pulls RapidRide coaches to the front of the rank
+}
+
+/** A coach's fixed place in the thinning order, 0..1: it is drawn while the
+ *  frame's share clears its rank. Deterministic per vehicle (the scene's
+ *  no-Math.random rule) and salted off the livery/length hashes, so which
+ *  coaches survive never correlates with how they're painted. RapidRide is
+ *  biased to the front — at drift distance the frequent trunk network is the
+ *  shape the eye can actually read. */
+export function busRank(id: string, rr: boolean, bias: number): number {
+  const base = hashId(id + "|crowd");
+  return rr ? base * bias : base;
+}
+
+/** The share of the fleet the print holds with the camera `distKm` from the
+ *  paper: 1 up close, easing to `driftShare` at thinKm and beyond. */
+export function crowdShare(distKm: number, cfg: CrowdConfig): number {
+  if (!Number.isFinite(distKm)) return cfg.driftShare;
+  const span = Math.max(1e-6, cfg.thinKm - cfg.fullKm);
+  const t = Math.min(1, Math.max(0, (distKm - cfg.fullKm) / span));
+  const eased = t * t * (3 - 2 * t);
+  return 1 - eased * (1 - cfg.driftShare);
+}
+
 /** GTFS bearing (degrees clockwise from north) → scene yaw for the +X-nosed
  *  bus model. Scene axes: +x east, +z south (projectLatLng negates latitude),
  *  and yaw = atan2(-z, x) as everywhere else in the map layers. */

@@ -152,9 +152,13 @@ const CLOSE = {
   tgt: [2.0, 0.02, 7.0],
 };
 
-// The live fleet from the default drift framing, day and night.
+// The live fleet from the default drift framing, day and night — the crowd
+// rule thinning it to the share the print can hold at that distance.
 await shoot({ name: "live-drift-day", viewport: DESKTOP, tier: "desktop", phase: "0.5", mock: "live" });
 await shoot({ name: "live-drift-night", viewport: DESKTOP, tier: "desktop", phase: "0.02", mock: "live" });
+// The same framing with the crowd rule off: every coach on the page. The pair
+// is the A/B — this is the swarm the rule exists to thin.
+await shoot({ name: "live-drift-all", viewport: DESKTOP, tier: "desktop", phase: "0.5", mock: "live", query: "&buses=all" });
 // The three photo liveries up close.
 await shoot({ name: "live-close-day", viewport: DESKTOP, tier: "desktop", phase: "0.5", mock: "live", fly: CLOSE });
 // Mobile width (project rule: verify ~375px too).

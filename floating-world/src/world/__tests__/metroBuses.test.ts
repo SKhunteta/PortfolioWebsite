@@ -1,5 +1,6 @@
 // The live bus layer's pure half (world/metroBuses.ts): livery assignment,
-// the painted-page clip, the nearest-to-the-heart cap, bearing→yaw, and the
+// the painted-page clip, the nearest-to-the-heart cap, the crowd rule that
+// keys the fleet to how far back the viewer stands, bearing→yaw, and the
 // glide step toward a fix.
 
 import { describe, it, expect } from "vitest";
@@ -14,9 +15,12 @@ import {
   onPage,
   PAGE_BOUNDS,
   capByHeart,
+  busRank,
+  crowdShare,
   yawFromBearing,
   stepGlide,
 } from "../metroBuses";
+import { CONFIG } from "../config";
 
 describe("livery assignment", () => {
   it("RapidRide is data — the rr flag always wins", () => {
@@ -111,6 +115,77 @@ describe("capByHeart", () => {
     expect(kept.map((b) => b.id)).toEqual(["downtown", "mid"]);
     // Deterministic: same input, same kept set.
     expect(capByHeart(list, 2, 1.4, 0.4)).toEqual(kept);
+  });
+});
+
+describe("the crowd rule", () => {
+  const CROWD = CONFIG.bus.crowd;
+  const BIAS = CROWD.rapidRideBias;
+
+  it("holds the whole fleet up close and thins it at drift framing", () => {
+    expect(crowdShare(0, CROWD)).toBe(1);
+    expect(crowdShare(CROWD.fullKm, CROWD)).toBe(1);
+    expect(crowdShare(CROWD.thinKm, CROWD)).toBeCloseTo(CROWD.driftShare, 10);
+    // Drift framing sits well past thinKm — the share bottoms out, never dips.
+    expect(crowdShare(16, CROWD)).toBeCloseTo(CROWD.driftShare, 10);
+    expect(crowdShare(Infinity, CROWD)).toBeCloseTo(CROWD.driftShare, 10);
+  });
+
+  it("is monotonic between the two distances — no popping as you fly in", () => {
+    let prev = 1.01;
+    for (let d = 0; d <= 20; d += 0.25) {
+      const s = crowdShare(d, CROWD);
+      expect(s).toBeLessThanOrEqual(prev + 1e-9);
+      expect(s).toBeGreaterThanOrEqual(CROWD.driftShare - 1e-9);
+      prev = s;
+    }
+  });
+
+  it("ranks each coach deterministically in 0..1", () => {
+    expect(busRank("1_4808", false, BIAS)).toBe(busRank("1_4808", false, BIAS));
+    expect(busRank("1_4808", false, BIAS)).not.toBe(busRank("1_4809", false, BIAS));
+    for (const id of ["a", "1_100", "long-vehicle-identifier"]) {
+      const r = busRank(id, false, BIAS);
+      expect(r).toBeGreaterThanOrEqual(0);
+      expect(r).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it("keeps roughly the share the camera asked for", () => {
+    const n = 1200; // the real fleet at rush hour
+    for (const share of [CROWD.driftShare, 0.5, 1]) {
+      let kept = 0;
+      for (let i = 0; i < n; i++) {
+        if (busRank(`1_${4000 + i}`, false, BIAS) <= share) kept++;
+      }
+      expect(kept / n).toBeGreaterThan(share - 0.06);
+      expect(kept / n).toBeLessThan(share + 0.06);
+    }
+  });
+
+  it("weights the thinned fleet toward the RapidRide trunk network", () => {
+    const n = 600;
+    let rr = 0;
+    let plain = 0;
+    for (let i = 0; i < n; i++) {
+      const id = `1_${6000 + i}`;
+      if (busRank(id, true, BIAS) <= CROWD.driftShare) rr++;
+      if (busRank(id, false, BIAS) <= CROWD.driftShare) plain++;
+    }
+    expect(rr).toBeGreaterThan(plain * 1.5);
+    // ... but only weights it. A hard bias would leave the thinned page
+    // looking like a red-line-only system — a claim about the real fleet mix
+    // the print has no business making.
+    expect(rr).toBeLessThan(plain * 3);
+  });
+
+  it("thinning is nested — flying in only ever adds coaches", () => {
+    // A coach out at drift share is still out at every closer framing, so the
+    // fleet fills in rather than reshuffling.
+    for (let i = 0; i < 400; i++) {
+      const r = busRank(`1_${4000 + i}`, i % 7 === 0, BIAS);
+      if (r <= CROWD.driftShare) expect(r).toBeLessThanOrEqual(0.5);
+    }
   });
 });
 
