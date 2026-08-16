@@ -25,13 +25,16 @@ import { MAX_TRAINS } from "./Trains";
 
 const BODY_VERT = /* glsl */ `
   attribute float aLead;
+  attribute float aLoad;
   varying vec3 vLocal;
   varying vec3 vNormalL;
   varying vec3 vNormalW;
   varying float vLead;
+  varying float vLoad;
   void main() {
     vLocal = position;
     vLead = aLead;
+    vLoad = aLoad;
     vNormalL = normal; // LOCAL normal: region classification must not rotate
     vNormalW = normalize(mat3(instanceMatrix) * normal);
     gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);
@@ -47,11 +50,14 @@ const BODY_FRAG = /* glsl */ `
   varying vec3 vNormalL;
   varying vec3 vNormalW;
   varying float vLead;
+  varying float vLoad;
   uniform sampler2D uLivery;
   uniform sampler2D uEmissive;
   uniform float uAmbient;
   uniform vec3 uWindow;
   uniform float uWindowIntensity;
+
+  float tmHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
 
   vec2 regionUv() {
     vec3 an = abs(vNormalL); // local axes: yaw-proof face classification
@@ -76,12 +82,44 @@ const BODY_FRAG = /* glsl */ `
     vec2 uv = regionUv();
     vec3 livery = texture2D(uLivery, uv).rgb;
     float lit = texture2D(uEmissive, uv).r;
+    float glass = uWindowIntensity;
+
+    // Souls in the windows: on the side glazing (the emissive pane band of
+    // the atlas), each pane may carry a rider's sumi silhouette against the
+    // lantern light — density keyed to THIS train's ridership (real feed
+    // occupancy when it speaks, the honest hour estimate otherwise,
+    // world/ridership.ts), so a rush-hour train's windows fill with souls
+    // and the last run of the night glides by nearly empty. The lantern
+    // itself dims a shade on an empty car; it never brightens past the
+    // palette's ceiling (the bright-paper bloom rule).
+    if (uv.y > 0.70 && uv.y < 0.87) {
+      glass *= mix(0.72, 1.0, vLoad);
+      if (lit > 0.2) {
+        // Pane grid straight from the atlas layout: pitch 34px, glass 26px.
+        float px = uv.x * 256.0 - 2.0;
+        float pane = floor(px / 34.0);
+        vec2 w = vec2((px - pane * 34.0) / 26.0, (uv.y - 0.734) / 0.11);
+        // Load quantized into the seed keeps the crowd stable frame to
+        // frame while every train draws its own pattern.
+        float seed = pane * 1.7 + vLead * 3.1 + floor(vLoad * 89.0) * 0.13;
+        float occ = step(1.0 - min(vLoad * 1.1, 0.95), tmHash(vec2(seed, 5.3)));
+        vec2 q = (w - vec2(0.24 + 0.52 * tmHash(vec2(seed, 9.1)), 0.12)) / vec2(0.24, 0.62);
+        float rider = (1.0 - smoothstep(0.75, 1.05, length(q))) * occ;
+        // A second soul once the car is truly crowded.
+        float occ2 = step(1.0 - clamp(vLoad * 1.6 - 0.75, 0.0, 1.0), tmHash(vec2(seed, 2.7)));
+        vec2 q2 = (w - vec2(0.30 + 0.45 * tmHash(vec2(seed, 4.9)), 0.10)) / vec2(0.22, 0.58);
+        rider = max(rider, (1.0 - smoothstep(0.75, 1.05, length(q2))) * occ2);
+        lit *= 1.0 - clamp(rider, 0.0, 1.0) * step(0.0, w.x) * step(w.x, 1.02) * 0.85;
+      }
+    }
+
     // Soft fake sun so the box reads as a volume.
     float shade = 0.72 + 0.28 * max(0.0, dot(vNormalW, normalize(vec3(0.35, 0.85, 0.3))));
-    // The trailing cab's nose shows taillights, not headlights.
+    // The trailing cab's nose shows taillights, not headlights (and the nose
+    // lamps never dim with the load — only the cabin lanterns do).
     bool nose = abs(vNormalL.x) > 0.6 && vLocal.y <= 0.52;
     vec3 glowColor = nose ? mix(vec3(0.75, 0.08, 0.05), uWindow, vLead) : uWindow;
-    vec3 c = livery * uAmbient * shade + glowColor * lit * uWindowIntensity;
+    vec3 c = livery * uAmbient * shade + glowColor * lit * (nose ? uWindowIntensity : glass);
     gl_FragColor = vec4(c, 1.0);
   }
 `;
@@ -115,7 +153,8 @@ interface Registry {
     dir: Parameters<typeof pointAt>[0],
     s: number,
     y: number,
-    L: number
+    L: number,
+    load: number
   ) => void;
   commit: (trainCount: number) => void;
 }
@@ -137,7 +176,7 @@ export function TrainModel() {
   const lightRef = useRef<THREE.InstancedMesh>(null);
   const bodyMatRef = useRef<THREE.ShaderMaterial>(null);
 
-  const { cabGeo, midGeo, livery, emissive, sizeAttr } = useMemo(() => {
+  const { cabGeo, midGeo, livery, emissive, sizeAttr, cabLoadAttr, midLoadAttr } = useMemo(() => {
     const sizeAttr = new THREE.InstancedBufferAttribute(new Float32Array(MAX_TRAINS), 1);
     sizeAttr.setUsage(THREE.DynamicDrawUsage);
     const cabGeo = buildCabGeometry();
@@ -151,12 +190,22 @@ export function TrainModel() {
       "aLead",
       new THREE.InstancedBufferAttribute(new Float32Array(MAX_TRAINS).fill(1), 1)
     );
+    // Per-train ridership, written with the transforms each frame — the
+    // window shader keys its riders and cabin-lantern weight off it.
+    const cabLoadAttr = new THREE.InstancedBufferAttribute(new Float32Array(MAX_TRAINS * 2), 1);
+    cabLoadAttr.setUsage(THREE.DynamicDrawUsage);
+    cabGeo.setAttribute("aLoad", cabLoadAttr);
+    const midLoadAttr = new THREE.InstancedBufferAttribute(new Float32Array(MAX_TRAINS), 1);
+    midLoadAttr.setUsage(THREE.DynamicDrawUsage);
+    midGeo.setAttribute("aLoad", midLoadAttr);
     return {
       cabGeo,
       midGeo,
       livery: buildLiveryTexture(),
       emissive: buildEmissiveTexture(),
       sizeAttr,
+      cabLoadAttr,
+      midLoadAttr,
     };
   }, []);
 
@@ -199,7 +248,7 @@ export function TrainModel() {
       return matrix;
     };
 
-    TRAIN_MODEL.write = (i, dir, s, y, L) => {
+    TRAIN_MODEL.write = (i, dir, s, y, L, load) => {
       const sec = L / 3;
       const width = L * m.widthFrac;
       const height = L * m.heightFrac;
@@ -207,6 +256,9 @@ export function TrainModel() {
       cab.setMatrixAt(i * 2, sectionMatrix(dir, s + sec, y, sec, width, height, false));
       cab.setMatrixAt(i * 2 + 1, sectionMatrix(dir, s - sec, y, sec, width, height, true));
       mid.setMatrixAt(i, sectionMatrix(dir, s, y, sec, width, height, false));
+      cabLoadAttr.setX(i * 2, load);
+      cabLoadAttr.setX(i * 2 + 1, load);
+      midLoadAttr.setX(i, load);
       // Headlight just ahead of the leading nose.
       pointAt(dir, s + sec * 1.62, front);
       pos.set(front.x, y + height * 0.35, front.z);
@@ -225,13 +277,15 @@ export function TrainModel() {
       mid.instanceMatrix.needsUpdate = true;
       light.instanceMatrix.needsUpdate = true;
       sizeAttr.needsUpdate = true;
+      cabLoadAttr.needsUpdate = true;
+      midLoadAttr.needsUpdate = true;
     };
 
     return () => {
       TRAIN_MODEL.write = () => {};
       TRAIN_MODEL.commit = () => {};
     };
-  }, [sizeAttr]);
+  }, [sizeAttr, cabLoadAttr, midLoadAttr]);
 
   useFrame(() => {
     if (bodyMatRef.current) {

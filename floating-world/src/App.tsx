@@ -54,6 +54,7 @@ import { CameraRig } from "./observer/CameraRig";
 import { Composer } from "./fx/Composer";
 import { WeatherOverlay } from "./fx/WeatherOverlay";
 import { SkyBokashi } from "./fx/SkyBokashi";
+import { MoonPrint } from "./fx/MoonPrint";
 import { Hud } from "./ui/Hud";
 import { StationPanel } from "./stations/StationPanel";
 import { startPoller } from "./trains/poller";
@@ -115,6 +116,7 @@ export default function App() {
       >
         <AtmosphereDriver />
         <SkyBokashi />
+        <MoonPrint />
         <Parks />
         <Water />
         <GroundPlane />

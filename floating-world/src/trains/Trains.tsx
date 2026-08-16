@@ -221,7 +221,7 @@ export function Trains() {
       const targetL = m.nearLenKm + (m.farLenKm - m.nearLenKm) * eased;
       train.modelL += (targetL - train.modelL) * Math.min(1, CLOCK.dt * m.scaleLerpPerS);
       scaleAttr.setX(i, train.modelL * 0.8); // halo footprint tracks the toy
-      TRAIN_MODEL.write(i, train.dir, train.sRendered, train.y, train.modelL);
+      TRAIN_MODEL.write(i, train.dir, train.sRendered, train.y, train.modelL, train.load);
 
       // Zoom-out visibility ease — its OWN, tighter range so it's ~full at
       // drift (the toy-scale ease above barely climbs at ~16 km). Drives both
