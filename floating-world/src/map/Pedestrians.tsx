@@ -23,6 +23,16 @@
 // the ink), mixed toward the scene fog so a distant figure dissolves into the
 // kasumi, and thinned overnight by the real Seattle hour (world/traffic.ts)
 // exactly like the street cars. No painted HDR — the crowd never ignites bloom.
+//
+// RAIN raises UMBRELLAS — Hiroshige's move (Sudden Shower over Shin-Ōhashi):
+// when the real WEATHER.rain washes in, the walkers, bundle-carriers and
+// children sprout paper-umbrella domes over their heads, each figure raising
+// its own at a seeded threshold so the street blooms with canopies as the
+// shower deepens rather than snapping open in lockstep. The peddler keeps
+// working bare-headed (both hands on the tenbin), and the parasol figure
+// already carries one. Same honesty tier as the wet-paper washes: the eased
+// real-rain signal, never an invented shower. Zero extra draw cost — the
+// umbrella is a few more strokes in the same fragment shader.
 // renderOrder 6.4 — in front of the woodblock town (6.2), under the platform
 // crowd (6.9) and the Heroes (6.95). depthWrite false.
 
@@ -34,6 +44,7 @@ import { CLOCK } from "../world/clock";
 import { CONFIG } from "../world/config";
 import { PROFILE } from "../world/device";
 import { trafficIntensity } from "../world/traffic";
+import { WEATHER } from "../world/weather";
 import { sampleRoadFrontages, isWater, mulberry32 } from "./scatter";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
@@ -93,6 +104,7 @@ const FRAG = /* glsl */ `
   uniform vec3 uStraw;     // pale straw — bundles, parasols, loads
   uniform vec3 uSaffron;   // warm ochre garment
   uniform float uOpacity;
+  uniform float uRain;     // eased real rain (world/weather.ts) — raises the umbrellas
 
   float ell(vec2 p, vec2 c, vec2 r) { return 1.0 - smoothstep(0.86, 1.02, length((p - c) / r)); }
   float seg(vec2 p, vec2 a, vec2 b, float r) {
@@ -119,6 +131,12 @@ const FRAG = /* glsl */ `
     vec3 garb = g < 0.30 ? uIndigo : g < 0.54 ? uVermilion : g < 0.76 ? uSaffron : g < 0.90 ? uStraw : uInk;
     vec3 head = uWarm * 0.92;
     vec3 col = garb * (0.82 + 0.14 * fract(vSeed * 3.1));
+    // Which figures may raise an umbrella when the rain comes, and where the
+    // canopy sits: the peddler's hands are full (the tenbin), and the parasol
+    // figure already carries one.
+    float umb = 0.0;
+    vec2 uc = vec2(0.5, 0.80);
+    float us = 1.0;
 
     if (arch == 0) {
       // WALKER — the baseline citizen: a plain kimono and a clear head.
@@ -127,6 +145,7 @@ const FRAG = /* glsl */ `
       col = mix(col, garb, body);
       col = mix(col, head, hd);
       m = max(body, hd);
+      umb = 1.0;
     } else if (arch == 1) {
       // BUNDLE-CARRIER — a walker with a furoshiki bundle held at the side.
       float body = kimono(p, 0.46, 0.12, 0.52);
@@ -138,6 +157,8 @@ const FRAG = /* glsl */ `
       col = mix(col, uInk, strap * 0.8);
       col = mix(col, uStraw, bundle);
       m = max(max(body, hd), max(strap, bundle));
+      umb = 1.0;
+      uc.x = 0.46;
     } else if (arch == 2) {
       // SMALL PARASOL — a walker under a modest parasol (kept clearly smaller
       // than a Hero's big wagasa so it never reads as a protagonist).
@@ -171,6 +192,25 @@ const FRAG = /* glsl */ `
       col = mix(col, g < 0.5 ? uVermilion : uStraw, body); // kids in the bright pigments
       col = mix(col, head, hd);
       m = max(body, hd);
+      umb = 1.0;
+      uc = vec2(0.5, 0.62);
+      us = 0.78;
+    }
+
+    // The sudden shower's umbrellas: each figure raises its own once the
+    // eased rain crosses its seeded threshold, so a drizzle lifts only the
+    // keenest canopies and a downpour blooms the whole street with them.
+    float raise = umb * smoothstep(0.0, 0.22, uRain - (0.08 + 0.55 * fract(vSeed * 23.0)));
+    if (raise > 0.004) {
+      float pole = seg(p, vec2(uc.x + 0.01, uc.y - 0.02), vec2(uc.x + 0.02, uc.y - 0.30 * us), 0.015);
+      float dome = ell(p, uc, vec2(0.26, 0.105) * us);
+      // A paper canopy off the figure's own seed — janome vermilion most
+      // often, indigo and oiled straw behind it, the odd sumi one.
+      float gu = fract(vSeed * 29.0);
+      vec3 canopy = gu < 0.42 ? uVermilion : gu < 0.72 ? uIndigo : gu < 0.92 ? uStraw : uInk;
+      col = mix(col, uInk, pole * 0.9 * raise);
+      col = mix(col, canopy, dome * raise);
+      m = max(m, max(dome, pole) * raise);
     }
 
     if (m < 0.01) discard;
@@ -300,6 +340,9 @@ export function Pedestrians() {
       // floor keeps a few walkers about even at 3am so the town is never dead.
       mat.uniforms.uOpacity.value = 0.92 * (0.2 + 0.8 * trafficIntensity());
       mat.uniforms.uFogDensity.value = LIVE.fogDensity;
+      // The eased real-rain signal raises the umbrellas (staggered per figure
+      // in the shader) — the same honest wash that darkens the paper.
+      mat.uniforms.uRain.value = WEATHER.rain;
     }
   });
 
@@ -329,6 +372,7 @@ export function Pedestrians() {
           uStraw: { value: new THREE.Color("#d8c48a") },
           uSaffron: { value: new THREE.Color("#c98a3a") },
           uOpacity: { value: 0.9 },
+          uRain: { value: 0 },
           uTime: { value: 0 },
           uFog: { value: LIVE.fog },
           uFogDensity: { value: LIVE.fogDensity },

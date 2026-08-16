@@ -10,6 +10,7 @@ import { setPhaseOverride } from "../world/sun";
 import { startObserve, stopObserve, toggleObserve, setObserveReelPin } from "../world/observe";
 import { setTideOverride } from "../world/tide";
 import { setBloomOverride } from "../world/bloom";
+import { setMoonOverride, moonState } from "../world/moon";
 import { setJimothyOverride } from "../world/jimothy";
 import { jimothyPoseAt } from "../map/Jimothy";
 import { setGumwallOverride, summonPilgrim } from "../world/gumwall";
@@ -83,6 +84,13 @@ export function installHandles() {
     reelAt: (frac: number | null) => setObserveReelPin(frac),
     setTide: (level: number | null) => setTideOverride(level),
     setBloom: (level: number | null) => setBloomOverride(level),
+    // The woodblock moon: true/"full"/"new"/0..1 pin it lit at any phase
+    // (lifting the night + horizon gates), false hides the disc, null
+    // restores the honest sky. Same effect as ?moon=.
+    moon: (value: boolean | number | string | null = true) => setMoonOverride(value),
+    // The moon as the print currently reads it (up, fraction, waxing, sheet
+    // x/y) — for the smoke harness and curious consoles.
+    moonState: () => ({ ...moonState() }),
     // Ballard's round raccoon: true/false pins him on/off at any sun phase,
     // null restores the honest crepuscular gate. Same effect as ?jimothy=.
     jimothy: (on: boolean | null = true) => setJimothyOverride(on),

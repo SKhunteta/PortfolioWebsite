@@ -69,6 +69,7 @@ import { CONFIG } from "../world/config";
 import { busDistanceAt, busService, type BusRun } from "../world/buses";
 import { BUS_FEED, BUS_PIN, LIVE_BUSES, type LiveBus } from "../world/busFeed";
 import { ARTIC_SHARE, capByHeart, crowdShare, stepGlide } from "../world/metroBuses";
+import { ambientLoad } from "../world/ridership";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
 
 const VERT = /* glsl */ `
@@ -76,12 +77,14 @@ const VERT = /* glsl */ `
   attribute float aFade;
   attribute float aLivery; // 0 Metro green, 1 battery-electric blue, 2 RapidRide red
   attribute float aArtic; // per-instance: 1 = 60-foot articulated coach
+  attribute float aSeed; // per-slot hash: which panes this coach's riders take
   attribute float aPart; // per-vertex: 0 body, 1 bellows, 2 tire, 3 roof pod, 4 bike rack
   attribute float aTail; // per-vertex: 1 = trailer geometry (artic-only)
   varying vec3 vLocal;
   varying float vFade;
   varying float vLivery;
   varying float vArtic;
+  varying float vSeed;
   varying float vPart;
   void main() {
     // A standard 40-footer collapses the trailer + bellows to a zero-area
@@ -91,6 +94,7 @@ const VERT = /* glsl */ `
     vFade = aFade;
     vLivery = aLivery;
     vArtic = aArtic;
+    vSeed = aSeed;
     vPart = aPart;
     vec4 world = modelMatrix * instanceMatrix * vec4(p, 1.0);
     vWorld = world.xz;
@@ -107,6 +111,7 @@ const FRAG = /* glsl */ `
   varying float vFade;
   varying float vLivery;
   varying float vArtic;
+  varying float vSeed;
   varying float vPart;
   uniform vec3 uGreen;   // the standard coach's deep Metro green
   uniform vec3 uBlue;    // the battery-electric fleet's royal blue
@@ -115,6 +120,7 @@ const FRAG = /* glsl */ `
   uniform vec3 uInk;
   uniform vec3 uWindow;
   uniform float uWindowIntensity;
+  uniform float uLoad;   // system-wide hour-shaped ridership (world/ridership.ts)
   uniform vec3 uLamp;
   uniform float uLampIntensity;
   uniform float uOpacity;
@@ -180,10 +186,23 @@ const FRAG = /* glsl */ `
 
       // The window run, a dark band up in the coat — dashed panes, dark
       // glass by day, lantern-gold after dark via the shared window palette.
+      // The cabin lantern dims a shade when the system rides empty (it never
+      // brightens past the ceiling), and occupied panes carry a rider's sumi
+      // silhouette — pane density keyed to the hour-shaped ridership, each
+      // coach seating its own riders off its slot seed. Metro's feed never
+      // speaks occupancy, so this stays the traffic-tier estimate, never a
+      // claim about a specific coach.
       float band = smoothstep(0.165, 0.185, y) * (1.0 - smoothstep(0.252, 0.268, y));
-      float dash = step(0.3, wcHash(vec2(floor(x * 22.0), 3.7)));
+      float pane = floor(x * 22.0);
+      float dash = step(0.3, wcHash(vec2(pane, 3.7)));
       c = mix(c, uInk * 0.85, band * 0.8);
-      c = mix(c, uWindow * (0.18 + uWindowIntensity), band * dash * 0.85);
+      c = mix(c, uWindow * (0.18 + uWindowIntensity * mix(0.72, 1.0, uLoad)), band * dash * 0.85);
+      float rSeed = pane * 1.7 + vSeed * 43.0;
+      float occ = step(1.0 - min(uLoad * 1.05, 0.95), wcHash(vec2(rSeed, 11.3)));
+      vec2 q = (vec2(fract(x * 22.0), (y - 0.185) / 0.067)
+        - vec2(0.25 + 0.5 * wcHash(vec2(rSeed, 6.1)), 0.10)) / vec2(0.30, 0.66);
+      float rider = (1.0 - smoothstep(0.70, 1.05, length(q))) * occ * dash * band;
+      c = mix(c, uInk * 0.8, rider * 0.85);
 
       // The gold-framed doorways breaking the run on the CURB side (+z):
       // front and mid doors, plus the trailer's third door on artics.
@@ -547,6 +566,12 @@ export function Buses() {
     const articAttr = new THREE.InstancedBufferAttribute(new Float32Array(poolSize), 1);
     articAttr.setUsage(THREE.DynamicDrawUsage);
     geometry.setAttribute("aArtic", articAttr);
+    // Static per-slot hash — which panes this coach's riders take. Written
+    // once; a live coach keeps its slot while on the page, so the crowd in
+    // its windows holds steady frame to frame.
+    const seeds = new Float32Array(poolSize);
+    for (let i = 0; i < poolSize; i++) seeds[i] = hash(i * 3.91 + 17.2);
+    geometry.setAttribute("aSeed", new THREE.InstancedBufferAttribute(seeds, 1));
     return { geometry, fadeAttr, liveryAttr, articAttr };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -565,6 +590,7 @@ export function Buses() {
     m.uniforms.uOpacity.value = LIVE.ferryOpacity;
     m.uniforms.uWindowIntensity.value = LIVE.windowIntensity;
     m.uniforms.uLampIntensity.value = LIVE.windowIntensity;
+    m.uniforms.uLoad.value = ambientLoad();
     m.uniforms.uFogDensity.value = LIVE.fogDensity;
 
     let written = 0;
@@ -678,6 +704,7 @@ export function Buses() {
           uInk: { value: LIVE.buildingInk },
           uWindow: { value: LIVE.trainWindow },
           uWindowIntensity: { value: LIVE.windowIntensity },
+          uLoad: { value: 0.5 },
           uLamp: { value: LIVE.traffic },
           uLampIntensity: { value: LIVE.windowIntensity },
           uOpacity: { value: 1 },

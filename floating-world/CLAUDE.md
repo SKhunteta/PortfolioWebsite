@@ -31,7 +31,17 @@ it on a second monitor and the print breathes at them.
   keeps trains legible on bright paper. HDR cores still ignite bloom:
   lanterns in daylight. Line colors remap toward woodblock pigment
   (`lineGlow` darkens instead of lightening — 1 Line matcha, 2 Line
-  Prussian: Hokusai's duo).
+  Prussian: Hokusai's duo). **Souls in the windows**: after dark the side
+  glazing carries riders' sumi silhouettes against the lantern light —
+  per-train density keyed to `world/ridership.ts` (real GTFS-RT occupancy
+  when the feed speaks, the honest hour curve otherwise, threaded per
+  instance through the `TRAIN_MODEL` registry), so a rush-hour train's
+  windows fill with souls and the last run glides by nearly empty; the cabin
+  lantern dims a shade on an empty car and NEVER brightens past the
+  palette's window ceiling (the bloom rule binds). The bus fleet keeps the
+  same move at its own honesty tier — Metro's feed never carries occupancy,
+  so coach windows seat riders off the system-wide hour curve plus a stable
+  per-slot seed, an estimate about the system, never a claim about a coach.
 - Stations pulse on dwell as before, but their surface seals are
   **vermilion hanko stamps** — hero-opacity by day. Station identity data
   (`src/data/station-identity.json`) is researched real-world color; never
@@ -315,6 +325,21 @@ it on a second monitor and the print breathes at them.
   −1): the hand-wiped gradient at the top of every print — transparent into
   Prussian blue by day, deep plum by night, faint baren streaking. Exempt
   from scene fog like the weather hatch.
+- **The woodblock moon** (`fx/MoonPrint.tsx` + `world/moon.ts`): after dark
+  the REAL moon prints into the bokashi band — suncalc (the sun's and the
+  tide's own ephemeris) gives its true lit fraction, altitude and azimuth, so
+  the disc rises and sets on the real Seattle sky, crosses the band east to
+  west, rides higher when it truly stands higher, and wears the honest
+  terminator (waxing light on the west limb). A full-moon night genuinely
+  differs from a crescent one, and a NEW MOON DRAWS NOTHING — the disc is
+  dark, absence not invention. Real overcast/rain/fog thin it away (a moon
+  through a storm would be a lie), and it hides entirely by day — one
+  screen-space quad at renderOrder −0.9, visible false off-stage, zero cost.
+  Pale-gold pigment under the bloom ceiling with a sumi keyline seating the
+  disc in the band; pure logic (ephemeris read, sheet mapping, pin grammar)
+  is node-safe and vitest-covered (`world/__tests__/moon.test.ts`).
+  `?moon=off|on|full|new|0..1` pins it; `__linkMap.moon()` /
+  `moonState()` from the console.
 - Real Seattle weather still paints the page (`world/weather.ts`,
   Open-Meteo): rain darkens the washes (wet paper), fog is pale kasumi
   (never slate), snow dusts warm-pale. Rain also stamps **raindrop rings** —
@@ -325,7 +350,15 @@ it on a second monitor and the print breathes at them.
   flash the sheet pale — never past the bright-paper ceiling — and carve a
   vermilion-gold bolt in a sumi halo (`fx/WeatherOverlay.tsx`), while the
   room tone rolls thunder in a few seconds behind the light
-  (`audio/engine.ts`). Honesty rule unchanged: the weather word speaks only
+  (`audio/engine.ts`). Rain also RAISES UMBRELLAS on the sidewalks
+  (`map/Pedestrians.tsx` — the Sudden Shower over Shin-Ōhashi move): as the
+  eased real rain deepens, the walkers, bundle-carriers and children sprout
+  paper-umbrella canopies (janome vermilion most often), each figure raising
+  its own at a seeded threshold so a drizzle lifts a few and a downpour
+  blooms the whole street; the peddler keeps working bare-headed (both hands
+  on the tenbin) and the parasol figure already carries one. Zero extra draw
+  cost — more strokes in the crowd's own fragment shader. Honesty rule
+  unchanged: the weather word speaks only
   after a real fetch; never invent weather.
   `?weather=clear|cloudy|fog|drizzle|rain|storm|snow` pins it.
 - Tunnels below the translucent paper, honesty badge (live / simulated /
@@ -462,7 +495,9 @@ by a quiet HUD caption. The reel yields to a touch for a few seconds
 (`camera.observeGraceS`) so you can still take the wheel, then resumes.
 `?debug` shows the HUD readout; `?tier=` forces a device tier;
 `?phase=` pins the sun; `?weather=` pins the sky; `?tide=` pins the tide;
-`?bloom=peak|none|0..1` pins the cherry-blossom season; `?gamenight` lights the
+`?bloom=peak|none|0..1` pins the cherry-blossom season;
+`?moon=off|on|full|new|0..1` pins the woodblock moon (on/full/new/number lift
+the night + horizon gates); `?gamenight` lights the
 stadiums; `?seafair=on|off` pins the Seafair weekend (hydros + the Blue
 Angels delta); `?canoe=peak|none` pins the Canoe Journeys season;
 `?crows=off` clears the twilight crow commute; `?beams=on|off` pins or clears

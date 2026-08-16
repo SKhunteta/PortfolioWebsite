@@ -85,3 +85,12 @@ export function ridershipLoad(train: TrainState): number {
   if (train.occupancy != null) return clamp01(train.occupancy);
   return clamp01(ambientBase() + idOffset(train.id));
 }
+
+/** The bare clock-keyed ambient load (no per-train offset) — the bus windows
+ *  read it fleet-wide (map/Buses.tsx): Metro's GTFS-RT positions never carry
+ *  occupancy, so the coaches stay at the TRAFFIC honesty tier — an hour-shaped
+ *  estimate of how full the system is, never a claim about a specific coach.
+ *  The ?ridership= pin covers it too. */
+export function ambientLoad(): number {
+  return ambientBase();
+}
