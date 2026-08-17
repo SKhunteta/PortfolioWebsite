@@ -30,6 +30,23 @@ describe("Hype Check TERMS dataset", () => {
     }
   });
 
+  it("cites sources for every real term, and none for fakes", () => {
+    for (const term of TERMS) {
+      if (term.category === "fake") {
+        // Invented terms have nothing to cite.
+        expect(term.sources).toBeUndefined();
+        continue;
+      }
+      expect(Array.isArray(term.sources)).toBe(true);
+      expect(term.sources.length).toBeGreaterThanOrEqual(1);
+      expect(term.sources.length).toBeLessThanOrEqual(2);
+      for (const source of term.sources) {
+        expect(source.label.length).toBeGreaterThan(0);
+        expect(source.url).toMatch(/^https:\/\//);
+      }
+    }
+  });
+
   it("has unique ids and terms", () => {
     expect(new Set(TERMS.map((t) => t.id)).size).toBe(TERMS.length);
     expect(new Set(TERMS.map((t) => t.term)).size).toBe(TERMS.length);
