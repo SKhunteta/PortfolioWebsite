@@ -6,6 +6,7 @@ import IndexerService from "../services/indexer.js";
 import { config } from "../config/index.js";
 import { v4 as uuidv4 } from "uuid";
 import setup from "../setup.js";
+import { logTrace } from "../eval/traceLogger.js";
 
 const router = express.Router();
 
@@ -86,6 +87,14 @@ router.post("/", askLimiter, async (req, res) => {
 
     // Calculate response time
     const responseTime = Date.now() - req.startTime;
+
+    logTrace({
+      source: "api_ask",
+      question,
+      searchResults,
+      answer: aiResponse.answer,
+      latencyMs: responseTime,
+    });
 
     res.json({
       answer: aiResponse.answer,

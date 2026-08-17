@@ -8,6 +8,8 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "setup": "node setup.js",
+    "eval:label": "node eval/label-helper.js",
+    "eval:retrieval": "node eval/run-retrieval-eval.js",
     "generate-presets": "node scripts/generate-presets.js",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",

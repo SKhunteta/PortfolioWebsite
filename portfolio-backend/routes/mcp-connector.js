@@ -6,6 +6,7 @@ import { z } from "zod";
 import AnthropicService from "../services/anthropic.js";
 import OpenAIService from "../services/openai.js";
 import QdrantService from "../services/qdrant.js";
+import { logTrace } from "../eval/traceLogger.js";
 import {
   getCanon,
   buildWorldContext,
@@ -312,6 +313,7 @@ Be specific and reference actual projects, roles, and skills from the context. D
       question: z.string().describe("The question to ask Shreyans"),
     },
     async ({ question }) => {
+      const startTime = Date.now();
       try {
         // Broad vector search across ALL content types
         const queryEmbedding =
@@ -335,6 +337,14 @@ Guidelines:
         const answer = await AnthropicService.generateMCPResponse({
           systemPrompt,
           userQuery: userPrompt,
+        });
+
+        logTrace({
+          source: "mcp_ask_shrey",
+          question,
+          searchResults,
+          answer,
+          latencyMs: Date.now() - startTime,
         });
 
         return {
