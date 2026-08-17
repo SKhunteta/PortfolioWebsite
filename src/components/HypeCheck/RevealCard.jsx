@@ -34,7 +34,27 @@ const RevealCard = ({ term, answer, isLast, onNext, nextLabel = "Next term" }) =
       <p className="text-hype-text/80 text-sm sm:text-base leading-relaxed mb-1 font-sans-ele">
         {term.fact}
       </p>
-      <p className="text-hype-muted text-xs mb-4 font-sans-ele">{term.factDate}</p>
+      <p className="text-hype-muted text-xs mb-4 font-sans-ele">
+        {term.factDate}
+        {term.sources?.length > 0 && (
+          <>
+            {" · "}
+            {term.sources.map((source, index) => (
+              <React.Fragment key={source.url}>
+                {index > 0 && ", "}
+                <a
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2 py-2 hover:text-hype-text transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-hype-text rounded-sm"
+                >
+                  {source.label}
+                </a>
+              </React.Fragment>
+            ))}
+          </>
+        )}
+      </p>
       <button
         ref={nextRef}
         type="button"

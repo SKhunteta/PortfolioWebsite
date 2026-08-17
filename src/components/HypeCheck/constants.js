@@ -35,6 +35,8 @@ export const OVERWHELM = {
 };
 
 // Every term the game quizzes on. `category` is the correct answer.
+// Real terms carry `sources` — links backing the fact, shown on the
+// reveal card. Invented ("fake") terms have nothing to cite.
 export const TERMS = [
   // ——— Still everywhere ———
   {
@@ -45,6 +47,16 @@ export const TERMS = [
     fact:
       "The Model Context Protocol hit roughly 97 million monthly SDK downloads by spring 2026, and its biggest spec revision yet shipped as a release candidate for July 28, 2026. The buzzword survived by becoming boring infrastructure.",
     factDate: "July 2026",
+    sources: [
+      {
+        label: "MCP blog",
+        url: "https://blog.modelcontextprotocol.io/posts/2026-07-28-release-candidate/",
+      },
+      {
+        label: "Bitcoin.com News",
+        url: "https://news.bitcoin.com/mcp-in-2026-97-million-downloads-and-growing-crypto-infrastructure-from-bitgo-to-coingecko/",
+      },
+    ],
   },
   {
     id: "vibe-coding",
@@ -54,6 +66,16 @@ export const TERMS = [
     fact:
       "Coined in early 2025, added to dictionaries by the end of it. In 2026 it stopped being a trend and became the default description for how a lot of software gets written.",
     factDate: "2026",
+    sources: [
+      {
+        label: "Karpathy on X",
+        url: "https://x.com/karpathy/status/1886192184808149383",
+      },
+      {
+        label: "CNN",
+        url: "https://www.cnn.com/2025/11/06/tech/vibe-coding-collins-word-year-scli-intl",
+      },
+    ],
   },
   {
     id: "cursor",
@@ -63,6 +85,16 @@ export const TERMS = [
     fact:
       "Cursor 3 shipped April 2026 with a dedicated Agents window and Composer 2 — a model Cursor trained itself, though it admitted the base was Moonshot's Kimi K2.5. Of 2025's dozens of 'AI IDEs,' a handful now take most paid usage; Cursor leads on revenue.",
     factDate: "April 2026",
+    sources: [
+      {
+        label: "Cursor docs",
+        url: "https://cursor.com/docs/agent/agents-window",
+      },
+      {
+        label: "Dataconomy",
+        url: "https://dataconomy.com/2026/03/23/cursor-admits-composer-2-based-on-moonshot-ais-kimi-2-5/",
+      },
+    ],
   },
   {
     id: "agentic-workflows",
@@ -72,6 +104,16 @@ export const TERMS = [
     fact:
       "Agentic AI sits at the very peak of the 2026 hype cycle. Analysts estimate only a small fraction of the thousands of self-declared 'AI agent' vendors are building genuinely agentic systems — the industry even coined a word for the rest: 'agent washing.'",
     factDate: "2026",
+    sources: [
+      {
+        label: "Gartner hype cycle",
+        url: "https://www.gartner.com/en/articles/hype-cycle-for-agentic-ai",
+      },
+      {
+        label: "Gartner on agent washing",
+        url: "https://www.gartner.com/en/newsroom/press-releases/2025-06-25-gartner-predicts-over-40-percent-of-agentic-ai-projects-will-be-canceled-by-end-of-2027",
+      },
+    ],
   },
   {
     id: "io-device",
@@ -81,6 +123,16 @@ export const TERMS = [
     fact:
       "OpenAI paid about $6.5 billion for Jony Ive's io in May 2025. As of July 2026 there is still no device — the debut is promised for 'late 2026,' and the first product, a smart speaker with a camera, is slated for early 2027.",
     factDate: "July 2026",
+    sources: [
+      {
+        label: "TechCrunch",
+        url: "https://techcrunch.com/2025/05/21/jony-ive-to-lead-openais-design-work-following-6-5b-acquisition-of-his-company",
+      },
+      {
+        label: "MacRumors",
+        url: "https://www.macrumors.com/2026/02/20/jony-ive-openai-smart-speaker-2027/",
+      },
+    ],
   },
   {
     id: "devin",
@@ -88,8 +140,18 @@ export const TERMS = [
     category: "alive",
     verdictLabel: "Still everywhere. It ate Windsurf.",
     fact:
-      "The 'AI software engineer' everyone dunked on in 2025 outlived the joke: Cognition bought Windsurf's remains in July 2025 and relaunched the IDE as Devin Desktop on June 2, 2026. 2026 roundups place Cognition in the top five paid coding vendors.",
+      "The 'AI software engineer' everyone dunked on in 2025 outlived the joke: Cognition bought Windsurf's remains in July 2025 and relaunched the IDE as Devin Desktop on June 2, 2026. Not bad for the industry's favorite punching bag.",
     factDate: "June 2026",
+    sources: [
+      {
+        label: "Cognition",
+        url: "https://cognition.com/blog/windsurf",
+      },
+      {
+        label: "Devin blog",
+        url: "https://devin.ai/blog/windsurf-is-now-devin-desktop",
+      },
+    ],
   },
   {
     id: "world-models",
@@ -99,6 +161,16 @@ export const TERMS = [
     fact:
       "By 2026 the frontier labs' favorite pitch moved from chatbots to models that perceive, predict, and simulate the physical world. 'World models' are to 2026 what 'AGI timelines' were to 2023.",
     factDate: "2026",
+    sources: [
+      {
+        label: "TIME",
+        url: "https://time.com/article/2026/07/15/world-models-are-ai-s-next-frontier/",
+      },
+      {
+        label: "Forbes",
+        url: "https://www.forbes.com/sites/josipamajic/2026/06/30/world-model-startups-raise-3-billion-vcs-bet-beyond-llms/",
+      },
+    ],
   },
   {
     id: "geo",
@@ -108,6 +180,16 @@ export const TERMS = [
     fact:
       "Generative Engine Optimization — getting your brand into AI answers instead of search results. When chatbots became the front page of the internet, an entire industry sprang up to game them.",
     factDate: "2026",
+    sources: [
+      {
+        label: "GEO paper (arXiv)",
+        url: "https://arxiv.org/abs/2311.09735",
+      },
+      {
+        label: "Search Engine Land",
+        url: "https://searchengineland.com/mastering-generative-engine-optimization-in-2026-full-guide-469142",
+      },
+    ],
   },
   {
     id: "workslop",
@@ -117,6 +199,16 @@ export const TERMS = [
     fact:
       "Coined September 2025 by BetterUp Labs and Stanford researchers in Harvard Business Review: AI output that masquerades as good work but says nothing. Its parent word 'slop' was Merriam-Webster's 2025 Word of the Year.",
     factDate: "September 2025",
+    sources: [
+      {
+        label: "Harvard Business Review",
+        url: "https://hbr.org/2025/09/ai-generated-workslop-is-destroying-productivity",
+      },
+      {
+        label: "Merriam-Webster",
+        url: "https://www.merriam-webster.com/wordplay/word-of-the-year",
+      },
+    ],
   },
   {
     id: "bolt",
@@ -126,6 +218,16 @@ export const TERMS = [
     fact:
       "Bolt didn't fade — it's still one of the two dominant text-to-app builders in 2026, with a Microsoft Azure partnership and deep enterprise reach. But Lovable overtook it, crossing $200M ARR, and Bolt never cracked the top tier of paid AI coding tools.",
     factDate: "2026",
+    sources: [
+      {
+        label: "Bolt",
+        url: "https://bolt.new/blog/bolt-microsoft-partnership",
+      },
+      {
+        label: "TechCrunch",
+        url: "https://techcrunch.com/2025/11/19/as-lovable-hits-200m-arr-its-ceo-credits-staying-in-europe-for-its-success",
+      },
+    ],
   },
   // ——— Dead or absorbed ———
   {
@@ -136,6 +238,16 @@ export const TERMS = [
     fact:
       "After 2025's acquisition saga — a collapsed OpenAI deal, a Google licensing raid, then a sale of the remains to Cognition — the brand was retired. Windsurf became 'Devin Desktop' on June 2, 2026.",
     factDate: "June 2026",
+    sources: [
+      {
+        label: "CNBC",
+        url: "https://www.cnbc.com/2025/07/14/cognition-to-buy-ai-startup-windsurf-days-after-google-poached-ceo.html",
+      },
+      {
+        label: "Devin blog",
+        url: "https://devin.ai/blog/windsurf-is-now-devin-desktop",
+      },
+    ],
   },
   {
     id: "gpt-4-5",
@@ -145,6 +257,16 @@ export const TERMS = [
     fact:
       "OpenAI's biggest non-reasoning model launched in February 2025 and was pulled from the API that same summer — too expensive to serve. By July 2026 ChatGPT is on the GPT-5.6 family, and the '.5' era reads like ancient history.",
     factDate: "2025",
+    sources: [
+      {
+        label: "OpenAI",
+        url: "https://openai.com/index/introducing-gpt-4-5/",
+      },
+      {
+        label: "VentureBeat",
+        url: "https://venturebeat.com/ai/openai-moves-forward-with-gpt-4-5-deprecation-in-api-triggering-developer-anguish-and-confusion",
+      },
+    ],
   },
   {
     id: "gemini-2-5",
@@ -154,6 +276,16 @@ export const TERMS = [
     fact:
       "State of the art at Google I/O 2025, replaced by Gemini 3 within the year. In AI-years, gemini 2.5 is now vintage hardware.",
     factDate: "Late 2025",
+    sources: [
+      {
+        label: "Google (I/O 2025)",
+        url: "https://blog.google/innovation-and-ai/models-and-research/google-deepmind/google-gemini-updates-io-2025/",
+      },
+      {
+        label: "Google (Gemini 3)",
+        url: "https://blog.google/products-and-platforms/products/gemini/gemini-3/",
+      },
+    ],
   },
   {
     id: "veo-3",
@@ -163,6 +295,16 @@ export const TERMS = [
     fact:
       "The video model that broke the internet at Google I/O 2025 was superseded within a year — first by Veo 3.1, then by Gemini Omni, which replaced Veo in the Gemini app at I/O 2026. A 'Veo 4' never shipped. The slop aesthetic, however, is immortal.",
     factDate: "May 2026",
+    sources: [
+      {
+        label: "Wikipedia",
+        url: "https://en.wikipedia.org/wiki/Veo_(text-to-video_model)",
+      },
+      {
+        label: "Google",
+        url: "https://gemini.google/overview/video-generation/",
+      },
+    ],
   },
   {
     id: "prompt-engineering",
@@ -172,6 +314,16 @@ export const TERMS = [
     fact:
       "2023's 'career of the future' quietly vanished from job boards. By 2026 the skill was renamed 'context engineering' — less magic words, more curating what the model sees — and everyone pretended it was new.",
     factDate: "2026",
+    sources: [
+      {
+        label: "Fortune",
+        url: "https://www.fortune.com/2025/05/07/prompt-engineering-200k-six-figure-role-now-obsolete-thanks-to-ai",
+      },
+      {
+        label: "Gartner",
+        url: "https://www.gartner.com/en/articles/context-engineering",
+      },
+    ],
   },
   // ——— Never existed ———
   {
