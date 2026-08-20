@@ -21,12 +21,13 @@ const APP_ROUTES = [
   "/city-quiz",
   "/monetized-reader",
   "/ai-chip",
+  "/unit-4b",
   "/hype-check",
 ];
 
 describe("DEMOS metadata", () => {
-  it("covers all ten demos", () => {
-    expect(DEMOS).toHaveLength(10);
+  it("covers all eleven demos", () => {
+    expect(DEMOS).toHaveLength(11);
   });
 
   it("has unique ids and routes", () => {

@@ -23,6 +23,7 @@ const CityQuiz = lazy(() => import("./components/CityQuiz"));
 const MonetizedReader = lazy(() => import("./components/MonetizedReader"));
 const AIChipLife = lazy(() => import("./components/AIChipLife"));
 const HypeCheck = lazy(() => import("./components/HypeCheck"));
+const ApartmentSurvivalSim = lazy(() => import("./components/ApartmentSurvivalSim"));
 const PlaygroundPage = lazy(() => import("./pages/PlaygroundPage"));
 
 function ScrollToTop() {
@@ -211,6 +212,25 @@ function App() {
               }
             >
               <HypeCheck />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/unit-4b"
+          element={
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#EDEFF1" }}>
+                  <p
+                    className="text-[#5A6B7A] text-sm"
+                    style={{ fontFamily: '"IBM Plex Mono", "JetBrains Mono", monospace' }}
+                  >
+                    Processing your application...
+                  </p>
+                </div>
+              }
+            >
+              <ApartmentSurvivalSim />
             </Suspense>
           }
         />
