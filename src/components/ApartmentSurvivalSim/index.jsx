@@ -44,7 +44,7 @@ const EVENTS = [
     eyebrow: "FACILITY NOTICE · REF #E-014",
     title: "W Elevaor Down",
     body:
-      "A sign appears in the lobby: “W Elevaor Down. Parts have been ordered. Estimated lead time: 4–8 weeks.” This is, by your records, outage number fourteen. You live near the top of the building. The sign does not apologize, and neither does the elevator.",
+      "A sign appears in the lobby: “W Elevaor Down. Parts have been ordered. Estimated lead time: 4–8 weeks.” This is, by your records, outage number fourteen. You live near the top of the building. The sign has been laminated, which is a level of long-term investment the elevator itself has never received.",
     choices: [
       {
         label: "Take the stairs. Again.",
@@ -52,7 +52,7 @@ const EVENTS = [
         evidence: 0,
         cash: 0,
         result:
-          "You climb. Somewhere around the fifth floor you begin narrating your own life in the third person. Week six of the 4–8 week lead time is later declared “on schedule.”",
+          "You climb. Somewhere around the fifth floor you begin narrating your own life in the third person, in the past tense. Week six of the 4–8 week lead time is later declared “on schedule.” No one specifies whose.",
       },
       {
         label: "Email management a numbered list of all fourteen outages, with dates.",
@@ -60,7 +60,7 @@ const EVENTS = [
         evidence: 2,
         cash: 0,
         result:
-          "You receive an automated reply thanking you for your valuable feedback. Your spreadsheet, however, now has four columns and a frozen header row. It is the most reliable thing in the building.",
+          "You receive an automated reply thanking you for your valuable feedback and inviting you to rate the reply. Your spreadsheet, however, now has four columns and a frozen header row. It is the most reliable thing in the building, a category that includes the building.",
       },
       {
         label: "Ask the AI resident assistant for a repair timeline.",
@@ -68,7 +68,7 @@ const EVENTS = [
         evidence: 1,
         cash: 0,
         result:
-          "The AI resident assistant thanks you for reaching out and offers you a tour of the building you already live in. You screenshot the exchange. Exhibit accepted.",
+          "The AI resident assistant thanks you for reaching out and offers you a tour of the building you already live in. You ask about the elevator. It offers the tour again, more slowly. You screenshot the exchange. Exhibit accepted.",
       },
     ],
   },
@@ -77,7 +77,7 @@ const EVENTS = [
     eyebrow: "COMMUNITY STANDARDS",
     title: "The Golden Hour",
     body:
-      "The east elevator smells the way it has smelled, on and off, for years: like a kennel at closing time. A neighbor's dog regards you without shame from the corner it has claimed. So does the owner.",
+      "The east elevator smells the way it has smelled, on and off, for years: like a kennel at closing time. A card above the buttons reads: “Thank you for helping us keep your journey fresh.” A neighbor's dog regards you without shame from the corner it has claimed. So does the owner.",
     choices: [
       {
         label: "Say nothing. Breathe through your mouth. Press your floor.",
@@ -85,7 +85,7 @@ const EVENTS = [
         evidence: 0,
         cash: 0,
         result:
-          "You ride in silence. The dog exits at the lobby with the confidence of a shareholder. You have now held your breath in this elevator a cumulative total of, conservatively, one hour of your life.",
+          "You ride in silence. The dog exits at the lobby with the confidence of a shareholder. You have now held your breath in this elevator a cumulative total of, conservatively, one hour of your life. The hour is not refundable. It was never itemized.",
       },
       {
         label: "File a report with timestamped photos.",
@@ -93,7 +93,7 @@ const EVENTS = [
         evidence: 2,
         cash: 0,
         result:
-          "You attach the photos. The word “documented” does most of the emotional labor. Management responds with a building-wide reminder that pets are a cherished part of our community.",
+          "You attach the photos. The word “documented” does most of the emotional labor. Management responds within the hour — a building record — with a community-wide reminder that pets are a cherished part of our community. No one is named. Everyone is meant.",
       },
       {
         label: "Raise it with the owner. Politely.",
@@ -101,7 +101,7 @@ const EVENTS = [
         evidence: 1,
         cash: 0,
         result:
-          "The owner explains that the dog is “basically self-cleaning.” You do not have a follow-up question. You do have a new tab in the spreadsheet.",
+          "The owner explains that the dog is “basically self-cleaning.” You do not have a follow-up question. Science does not have a follow-up question. You do have a new tab in the spreadsheet.",
       },
     ],
   },
@@ -110,7 +110,7 @@ const EVENTS = [
     eyebrow: "AMENITY UPDATE",
     title: "Aquatic Fitness Center",
     body:
-      "The gym has flooded. The flooring — installed after the previous flood — is being removed and replaced with newer flooring, which will also flood. A notice describes this as an “exciting refresh of your wellness space.”",
+      "The gym has flooded. The flooring — installed after the previous flood — is being removed and replaced with newer flooring, which will also flood. A notice on the door describes this as an “exciting refresh of your wellness space” and asks you to “pardon our progress.” The progress is ankle-deep.",
     choices: [
       {
         label: "Work out around the standing water.",
@@ -118,7 +118,7 @@ const EVENTS = [
         evidence: 0,
         cash: 0,
         result:
-          "You add “light wading” to your training program. The treadmill nearest the wall makes a sound you decide not to investigate.",
+          "You add “light wading” to your training program. The treadmill nearest the wall makes a sound you decide not to investigate. Technically, anything that raises your heart rate is cardio.",
       },
       {
         label: "Photograph the flood for the archive.",
@@ -126,7 +126,7 @@ const EVENTS = [
         evidence: 2,
         cash: 0,
         result:
-          "Wide shot, detail shot, one with your shoe for scale. Future historians of this building will lack for nothing. The refresh is later extended by an unspecified number of weeks.",
+          "Wide shot, detail shot, one with your shoe for scale. Future historians of this building will lack for nothing. The refresh is later extended by an unspecified number of weeks, which is the only unit of time the building recognizes.",
       },
       {
         label: "Ask when the wellness space will be well.",
@@ -134,7 +134,7 @@ const EVENTS = [
         evidence: 1,
         cash: 0,
         result:
-          "You are told the team is “targeting soon.” You write down the date on which you were told this, which turns out to be the useful part.",
+          "You are told the team is “targeting soon.” You ask whether soon comes before or after the next flood. You are told the team is targeting soon. You write down the date on which you were told this, which turns out to be the useful part.",
       },
     ],
   },
@@ -143,7 +143,7 @@ const EVENTS = [
     eyebrow: "RESIDENT SERVICES",
     title: "Say “Representative”",
     body:
-      "You need to reach the leasing office. The office phone number now routes to an AI resident assistant. The AI resident assistant does not have a phone number for the leasing office either. It is, however, delighted to help.",
+      "You need to reach the leasing office. The office phone number now routes to an AI resident assistant, which greets you: “Hi, neighbor! I live here too.” It does not live here. It does not have a phone number for the leasing office either. It is, however, delighted to help.",
     choices: [
       {
         label: "Type “human” seventeen times.",
@@ -151,7 +151,7 @@ const EVENTS = [
         evidence: 0,
         cash: 0,
         result:
-          "The assistant senses frustration and offers a curated list of nearby brunch options. You were asking about a lease document. The brunch list is, in fairness, solid.",
+          "The assistant senses frustration and offers a curated list of nearby brunch options. You were asking about a lease document. The brunch list is, in fairness, solid. You resent how solid it is. You save it.",
       },
       {
         label: "Ask it a question so simple it loops.",
@@ -167,7 +167,7 @@ const EVENTS = [
         evidence: 0,
         cash: 0,
         result:
-          "The office is dark. A sign says “Back in 15 minutes.” You wait forty. Nothing about the sign changes except your relationship to it.",
+          "The office is dark. A sign says “Back in 15 minutes.” You wait forty. Nothing about the sign changes except your relationship to it. On the way out, you nod to it, collegially.",
       },
     ],
   },
@@ -176,7 +176,7 @@ const EVENTS = [
     eyebrow: "PARKING & LOGISTICS",
     title: "Courtesy Notice",
     body:
-      "Your moving container sits in the loading zone, with the written permission you obtained two weeks in advance. A notice taped to it announces it will be towed within 24 hours, “as a courtesy.” It is unclear to whom.",
+      "Your moving container sits in the loading zone, with the written permission you obtained two weeks in advance. A notice taped to it announces it will be towed within 24 hours, “as a courtesy.” It is unclear to whom. The notice is dated tomorrow.",
     choices: [
       {
         label: "Forward the written approval. Subject line: “Re: your courtesy.”",
@@ -200,7 +200,7 @@ const EVENTS = [
         evidence: 1,
         cash: 0,
         result:
-          "The tow company has never heard of your building, your container, or the concept of a courtesy. You log the call anyway. Time, date, name of the person who was baffled.",
+          "The tow company has never heard of your building, your container, or the concept of a courtesy. You log the call anyway. Time, date, name of the person who was baffled. The file accepts all denominations.",
       },
     ],
   },
@@ -209,7 +209,7 @@ const EVENTS = [
     eyebrow: "MAINTENANCE · PRIORITY: EMERGENCY",
     title: "The Four-Hour Window",
     body:
-      "Water is coming through the ceiling in a way ceilings are not meant to participate in. Your emergency request is confirmed with a response window of “within 4 hours.” Hour five arrives unaccompanied.",
+      "Water is coming through the ceiling in a way ceilings are not meant to participate in. Your emergency request is confirmed instantly: “A technician will respond within 4 hours.” Hour five arrives unaccompanied. Hour six brings a survey about hour one.",
     choices: [
       {
         label: "Wait politely with towels.",
@@ -233,7 +233,7 @@ const EVENTS = [
         evidence: 1,
         cash: 0,
         result:
-          "The bucket has a name now. You photograph the installation for the file, partly as documentation, partly out of pride.",
+          "The bucket has a name now. You photograph the installation for the file, partly as documentation, partly out of pride. Of everything in the unit, the bucket alone has never missed a service window.",
       },
     ],
   },
@@ -242,7 +242,7 @@ const EVENTS = [
     eyebrow: "COMPLIANCE · ACTION REQUIRED",
     title: "Annual Insurance Fire Drill",
     body:
-      "An email announces that your renters insurance is not on file and threatens a non-compliance fee. Your renters insurance is on file. You have the confirmation. You also have the confirmation of the confirmation, from the last time this happened.",
+      "An email announces that your renters insurance is not on file and threatens a non-compliance fee. Your renters insurance is on file. You have the confirmation. You also have the confirmation of the confirmation, from the last time this happened. The email closes: “No action is needed if you believe this message was sent in error.” Action is needed.",
     choices: [
       {
         label: "Re-upload the policy. Third time this lease.",
@@ -258,7 +258,7 @@ const EVENTS = [
         evidence: 2,
         cash: 0,
         result:
-          "“Please see attached: your own records” is a genre you are getting good at. The thread goes quiet in the specific way threads go quiet when someone has checked and you were right.",
+          "“Please see attached: your own records” is a genre you are getting good at. The thread goes quiet in the specific way threads go quiet when someone has checked and you were right. No apology arrives. A silence arrives, shaped like one.",
       },
       {
         label: "Ignore it. Surely the system knows.",
@@ -275,7 +275,7 @@ const EVENTS = [
     eyebrow: "LIFE SAFETY SYSTEM",
     title: "3:07 AM",
     body:
-      "The fire alarm goes off at 3:07 AM. There is no fire. There is never a fire. The alarm, which does not know this, commits fully. So does the strobe light, which has been waiting all year for this.",
+      "The fire alarm goes off at 3:07 AM. There is no fire. There is never a fire. The alarm, which does not know this, commits fully. So does the strobe light, which has been waiting all year for this. By 9 AM, an email will describe the incident as “a successful activation of our life safety systems.” Nothing was scheduled. Everything passed.",
     choices: [
       {
         label: "Evacuate fully, cat carrier and all.",
@@ -283,7 +283,7 @@ const EVENTS = [
         evidence: 1,
         cash: 0,
         result:
-          "You stand in the street with two hundred neighbors in blankets. The cat files a formal objection from inside the carrier. At 3:41 AM the all-clear is issued for an emergency that never existed.",
+          "You stand in the street with two hundred neighbors in blankets. The cat files a formal objection from inside the carrier. At 3:41 AM the all-clear is issued for an emergency that never existed. You log both timestamps. The cat's objection is preserved for the record.",
       },
       {
         label: "Wait it out in the stairwell wearing a blanket as a cape.",
@@ -308,7 +308,7 @@ const EVENTS = [
     eyebrow: "PACKAGE MANAGEMENT",
     title: "Parcel Pending: 47 Unread",
     body:
-      "Parcel Pending has emailed you 47 times this quarter. One of these emails concerns an actual package. Which one is a mystery the locker system guards jealously.",
+      "Parcel Pending has emailed you 47 times this quarter. One of these emails concerns an actual package. The most recent reads, in full: “You have 1 package.” It is identical to the other 46. Which one is real is a mystery the locker system guards jealously.",
     choices: [
       {
         label: "Open all 47 to find the real one.",
@@ -341,7 +341,7 @@ const EVENTS = [
     eyebrow: "INNOVATION IN COMMUNITY LIVING",
     title: "Autonomous Hallway Hygiene Unit",
     body:
-      "A memo introduces the building's new hallway cleaning robot. A second memo, hours later, announces that doormats are no longer permitted in the hallways, as the robot eats them.",
+      "A memo introduces the building's new hallway cleaning robot. A second memo, hours later: “Effective immediately, doormats are no longer permitted in hallways.” The memos do not reference each other. The robot eats the doormats. Everyone understands this without being told, which is the closest the building has come to community.",
     choices: [
       {
         label: "Surrender the doormat.",
@@ -374,7 +374,7 @@ const EVENTS = [
     eyebrow: "LEASING OFFICE",
     title: "Office Hours Roulette",
     body:
-      "The leasing office hours are posted as 9–6. It is 2 PM on a Tuesday and the office is dark. A handwritten sign says “Back at 1.” The sign does not specify which day.",
+      "The leasing office hours are posted as 9–6. It is 2 PM on a Tuesday and the office is dark. A handwritten sign says “Back at 1.” The sign does not specify which day. The 1 has been traced over several times, for durability.",
     choices: [
       {
         label: "Wait. Someone must come back eventually.",
@@ -382,7 +382,7 @@ const EVENTS = [
         evidence: 0,
         cash: 0,
         result:
-          "You wait long enough to watch two other residents arrive, read the sign, perform the same small sigh, and leave. It's like a museum piece about yourself.",
+          "You wait long enough to watch two other residents arrive, read the sign, perform the same small sigh, and leave. It is like visiting a museum piece about yourself. Admission was included in your rent.",
       },
       {
         label: "Photograph the sign with your phone clock visible.",
@@ -407,7 +407,7 @@ const EVENTS = [
     eyebrow: "LEASE VIOLATION NOTICE",
     title: "The Citation",
     body:
-      "A neighbor files a noise complaint against you for “walking.” Management forwards a warning citing a lease section it declines to quote. Your partner — two time zones away, unbothered, fully caffeinated — reads the actual lease and the actual state landlord-tenant law.",
+      "A neighbor files a noise complaint against you for “walking.” Management forwards a formal warning citing a lease section it declines to quote, beneath a reminder that quiet enjoyment is a shared responsibility. Your partner — two time zones away, unbothered, fully caffeinated — reads the actual lease, then the actual state landlord-tenant law, then asks you, gently, to forward the original email.",
     choices: [
       {
         label: "Apologize for walking.",
@@ -423,7 +423,7 @@ const EVENTS = [
         evidence: 2,
         cash: 0,
         result:
-          "The reply cites the exact lease section, the relevant state statute, and requests the original complaint in writing per policy. Management never responds — which, in this building, is what victory sounds like. You consider framing the email.",
+          "The reply cites the lease section by number, the state statute by name, and requests the original complaint in writing, per management's own policy, which it quotes back to them in full. It closes by wishing the team a wonderful week. Management never responds. In this building, you have learned every dialect of silence, and this one is the sound a system makes when a person was right. You print the email. You are not a printer person. You print the email.",
       },
       {
         label: "Buy slippers.",
@@ -449,21 +449,21 @@ const RENEWAL_ROUNDS = [
     eyebrow: "RENEWAL DESK · CENTRALIZED SERVICES CONSULTANT #1",
     title: "Your Exciting Renewal Opportunity",
     body:
-      `Ninety days before your lease ends, an email arrives from no-reply@resident-alerts.example. Your renewal offer is $${RENT_OPENING.toLocaleString()}/month — up from $${RENT_BASE.toLocaleString()} — plus a new $${TECH_FEE} “technology fee” for the portal that loses your insurance documents. The consultant notes this offer “reflects current market conditions,” and that they are unable to discuss which market, or which conditions.`,
+      `Ninety days before your lease ends, an email arrives from no-reply@resident-alerts.example. Your renewal offer is $${RENT_OPENING.toLocaleString()}/month — up from $${RENT_BASE.toLocaleString()} — plus a new $${TECH_FEE} “technology fee” for the portal that loses your insurance documents. The consultant notes the offer “reflects current market conditions” and rates suggested by the pricing software. The software cannot be discussed. The software is a vendor. The vendor cannot be emailed.`,
     fold: `Accept $${RENT_OPENING.toLocaleString()} + fees. Resistance is exhausting.`,
     press: "Counter in writing, citing your documentation.",
     pressResult:
-      "You reply with a market comparison, your on-time payment history, and a politely devastating attachment titled “Service Interruptions, YTD.” Ten days pass. Your case is transferred.",
+      "You reply with a market comparison, your on-time payment history, and a politely devastating attachment titled “Service Interruptions, YTD.” Ten days pass. Your case is transferred. The transfer is described as an upgrade to your renewal experience.",
   },
   {
     eyebrow: "RENEWAL DESK · CENTRALIZED SERVICES CONSULTANT #2",
     title: "Your Case Has Been Transferred",
     body:
-      "Consultant #2 introduces themselves by asking for information you already provided to Consultant #1, who no longer appears to exist. Meanwhile, the DocuSign for the original offer quietly expires. Nobody mentions this. The average response time to your last three emails is 72 hours.",
+      "Consultant #2 introduces themselves by asking for information you already provided to Consultant #1, who no longer appears to exist and may never have. Meanwhile, the DocuSign for the original offer quietly expires. Nobody mentions this. Nobody will ever mention this. The average response time to your last three emails is 72 hours.",
     fold: `Give up. Sign at $${RENT_OPENING.toLocaleString()} before it gets worse.`,
     press: "Hold firm. Re-attach the spreadsheet. All tabs.",
     pressResult:
-      "You resend everything with a summary table on top, because you have learned that nobody scrolls. Then, at 4:52 PM on December 24, a new offer arrives. It is valid for 24 hours.",
+      "You resend everything with a summary table on top, because you have learned that nobody scrolls. Then, at 4:52 PM on December 24, a new offer arrives. It is valid for 24 hours. It wishes you a joyful holiday season on behalf of the entire team.",
   },
 ];
 
@@ -482,34 +482,34 @@ const ENDINGS = {
     tone: C.bad,
     title: "You Moved Out Mid-Lease.",
     body:
-      "Somewhere between the stairs, the strobe light, and the locker emails, the math stopped working. You paid the lease-break fee and it felt like a bargain. Two weeks later, the building sends a survey about your move-out experience. Then a second, identical survey, in case the first one was lost.",
+      "Somewhere between the stairs, the strobe light, and the locker emails, the math stopped working. You paid the lease-break fee and it felt like a bargain. Two weeks later, the building sends a survey about your move-out experience. Then a second, identical survey, in case the first one was lost. You complete neither. It is the first request from the building you have ever left unanswered, and it feels, briefly, like health.",
   },
   capitulated: {
     label: "LEASE STATUS: RENEWED (UNCONDITIONALLY)",
     tone: C.gold,
     title: "You Signed the First Offer.",
-    body: `$${RENT_OPENING.toLocaleString()}/month, plus the $${TECH_FEE} technology fee, plus the quiet knowledge that the spreadsheet died for nothing. The confirmation email arrives twice, with different reference numbers. Honestly? Peace has a price, and you know exactly what it is, because it's itemized.`,
+    body: `$${RENT_OPENING.toLocaleString()}/month, plus the $${TECH_FEE} technology fee, plus the quiet knowledge that the spreadsheet died for nothing. The confirmation email arrives twice, with different reference numbers. You archive both, out of habit. Peace has a price, and you know exactly what it is, because it is itemized, and because it will be itemized again next year, per current market conditions.`,
   },
   survivor: {
     label: "LEASE STATUS: RENEWED (NEGOTIATED)",
     tone: C.blue,
     title: "You Made It. On Your Terms. Mostly.",
     body:
-      "You held out through two consultants, one expired DocuSign, and a holiday-adjacent deadline, and the number came down. Not as far as the file deserved — but the file was seen, and in this building, being seen is the premium amenity.",
+      "You held out through two consultants, one expired DocuSign, and a deadline scheduled against a holiday, and the number came down. Not as far as the file deserved — but the file was seen, and in this building, being seen is the premium amenity. It does not appear on the amenity list. Nothing that works appears on the amenity list.",
   },
   negotiator: {
     label: "LEASE STATUS: RENEWED (EXPERTLY)",
     tone: C.good,
     title: "The Spreadsheet Was Mightier.",
     body:
-      "Fourteen elevator outages, timestamped. One robot, filmed. One 24-hour offer, answered inside the window with a counteroffer and receipts. They came down $110 from the opening number, which annualizes to real money, and — more importantly — they know you keep records now. The file rests. The file never sleeps.",
+      "Fourteen elevator outages, timestamped. One robot, filmed. One 24-hour offer, answered inside the window with a counteroffer and receipts. They came down $110 from the opening number, which annualizes to real money, and — more importantly — somewhere in a centralized system, a note has been added to your account. You will never see the note. You know what it says. It says you keep records. The file rests. The file never sleeps.",
   },
   escaped: {
     label: "LEASE STATUS: NOT RENEWED",
     tone: C.good,
     title: "You Walked.",
     body:
-      "You gave notice, in writing, with your customary attachment. The new place has one elevator, which works, and a landlord who answers email like it's a normal thing to do — because it is. Some nights you still hear a phantom locker notification. It fades.",
+      "You gave notice, in writing, with your customary attachment. Nobody acknowledged the attachment. That was fine. It was for you. The new place has one elevator, which works, and a landlord who answers email like it is a normal thing to do — because it is. Some nights you still hear a phantom locker notification, and your hand moves toward the phone before you remember. It fades. Everything from that building fades, except the part of you that now photographs every posted sign, just in case.",
   },
 };
 
@@ -527,6 +527,24 @@ const PARCEL_LINES = [
   "Parcel Pending: We noticed you picked up your package. Tell us everything.",
   "Parcel Pending: One (1) new notification about notifications.",
   "Parcel Pending: Your package has been delivered to a locker in a building that may be yours.",
+  "Parcel Pending: You have had 1 package for some time now.",
+  "Parcel Pending: It is the same code. Please use it.",
+  "Parcel Pending: Locker 12 was opened 0 times this month. We counted.",
+  "Parcel Pending: The lights in the package room stay on all night. We thought you should know.",
+  "Parcel Pending: Please disregard our previous notification. (There was no previous notification.)",
+  "Parcel Pending: Peak Season storage fees begin soon. Soon is not defined. Fees are.",
+  "Parcel Pending: Pickup has been simplified. There are now three steps. There were two.",
+  "Parcel Pending: Your package can hear the other packages being picked up.",
+];
+
+// Footer lines rotate with the lease month. No state is added; the month was
+// already keeping track of you.
+const FOOTER_LINES = [
+  "a work of satire · any resemblance to your building is statistically inevitable",
+  "a work of satire · the events depicted are fictional and also currently happening",
+  "a work of satire · no elevators were repaired in the making of this game",
+  "a work of satire · your experience may vary. it will not vary much",
+  "a work of satire · this footer has been received and your account has been successfully updated",
 ];
 
 const TOAST_INTERVAL_MS = 7000;
@@ -939,9 +957,11 @@ export default function ApartmentSurvivalSim() {
             <Card>
               <p style={{ margin: "0 0 14px", fontSize: 15, lineHeight: 1.65 }}>
                 Welcome home to elevated living, managed with care by whatever
-                the company is named this quarter. You will face eleven months
+                the company is named this quarter. Ahead of you: eleven months
                 of documented incidents, one renewal negotiation, and
-                approximately fifty Parcel Pending notifications.
+                approximately fifty Parcel Pending notifications, one of which
+                is real. The building is aware of your arrival and has made
+                other plans.
               </p>
               <p style={{ margin: "0 0 14px", fontSize: 15, lineHeight: 1.65 }}>
                 Guard your <strong>sanity</strong>. Collect{" "}
@@ -1031,7 +1051,7 @@ export default function ApartmentSurvivalSim() {
                   </span>
                 )}
                 {lastChoice.sanity === 0 && (lastChoice.evidence || 0) === 0 &&
-                  "NO MEASURABLE CHANGE. THE BUILDING PERSISTS."}
+                  "NO MEASURABLE CHANGE RECORDED. THE BUILDING RECORDS EVERYTHING ELSE."}
               </p>
             </Card>
             <BigButton onClick={nextMonth}>
@@ -1110,10 +1130,12 @@ export default function ApartmentSurvivalSim() {
                 </span>
                 The new number is{" "}
                 <strong>${offer.rent.toLocaleString()}/month</strong>, plus the
-                ${TECH_FEE} technology fee, which survives all negotiations the
-                way roaches survive everything. The offer is valid for 24
-                hours. The average response time to your own messages remains
-                72.
+                ${TECH_FEE} technology fee, which has survived every negotiation
+                ever conducted and appears in the paperwork the way a
+                load-bearing wall appears in a blueprint. The offer is valid
+                for 24 hours. The average response time to your own messages
+                remains 72. This asymmetry is not addressed in the offer, or
+                anywhere.
               </p>
               <p
                 style={{
@@ -1125,13 +1147,13 @@ export default function ApartmentSurvivalSim() {
               >
                 YOUR FILE: {evidence} EXHIBITS.{" "}
                 {evidence >= 12
-                  ? "THE RENEWAL DESK HAS READ THE ATTACHMENT. ALL OF IT."
+                  ? "THE RENEWAL DESK HAS READ THE ATTACHMENT. ALL OF IT. THE NUMBER BELOW IS HOW AN APOLOGY LOOKS IN THIS FORMAT."
                   : evidence >= 7
-                  ? "THE RENEWAL DESK HAS SKIMMED THE ATTACHMENT."
-                  : "THE RENEWAL DESK IS NOT AWARE YOU KEEP RECORDS."}
+                  ? "THE RENEWAL DESK HAS SKIMMED THE ATTACHMENT AND DESCRIBED IT, INTERNALLY, AS “THOROUGH.”"
+                  : "THE RENEWAL DESK IS NOT AWARE THAT YOU KEEP RECORDS."}
               </p>
             </Card>
-            <BigButton onClick={signFinal} sub="Lock it in before the window closes.">
+            <BigButton onClick={signFinal} sub="Lock it in before the window closes. The window is already closing.">
               Sign at ${offer.rent.toLocaleString()}/month →
             </BigButton>
             <BigButton variant="secondary" onClick={walk} sub="Give notice. Leave it all behind.">
@@ -1242,8 +1264,7 @@ export default function ApartmentSurvivalSim() {
             textAlign: "center",
           }}
         >
-          live remarkably™ · a work of satire · any resemblance to your
-          building is statistically inevitable
+          live remarkably™ · {FOOTER_LINES[month % FOOTER_LINES.length]}
         </footer>
       </main>
     </div>
