@@ -335,12 +335,114 @@ people whose buildings prepared them for this.
 
 ---
 
-## 8. Build order
+## 8. The Bulletin — random weirdness, documented
+
+> Addresses: the texture gap — a bad building isn't only incidents, it's a
+> constant low hum of inexplicable notices. All items below are anonymized
+> from the owner's real archive; that's the qualification for entry. The rule
+> for this pool: **no punchlines added.** The notices are funny because they
+> are real; editorializing would break the deadpan.
+
+### The mechanic
+
+Between some months (roughly 60% of transitions, weighted toward Acts II–III),
+a **COMMUNITY NOTICE** screen appears: one notice, styled as the building's
+email blasts, with a single button. No choices, no stat changes, ~8 seconds.
+It is a palate cleanser and a tone instrument, not a decision point.
+
+- The acknowledge button rotates: "Noted." / "Understood." / "Thank you for
+  keeping me informed." / "I have read this notice in its entirety."
+- A run sees 6–7 notices from a pool of 18+, so no two runs read alike.
+- One notice per run is a **setup** for a later event or exhibit (see the
+  helpful-citizen event below) — the player can't tell which, which is the
+  point: you read all of it because any of it might matter. Just like home.
+
+### The notice pool (drafted, anonymized)
+
+1. **Small white dog.** "If you see a small white dog roaming the hallways of
+   the west building by itself, please bring it to the office." No further
+   context. No follow-up notice, ever.
+2. **Prowler alert.** A warning about car prowlers that includes a full
+   license plate, a vehicle description, and the instruction to call 911 —
+   sent to every resident, forever findable in every inbox.
+3. **The retroactive closure.** "Please note the office will be closed
+   Tuesday, March 16th." Sent the evening of the 16th. The 16th was a Monday.
+4. **Tomorrow, last year.** "Annual elevator testing will begin tomorrow,
+   4/15/2025." Sent April 14 of the following year.
+5. **Seasonal inversion.** "We are aware the heat is currently on in the
+   hallways of floors 5 and 6." It is May. "Our team is actively working to
+   resolve this."
+6. **Sustainability update.** The food compost bins are being removed "to
+   improve cleanliness and odor control."
+7. **The code.** "The access code for the dog run has been changed. Please
+   contact the office for the new code." (Cross-reference: any office-closure
+   notice.)
+8. **The missive.** An elevator status update that opens "We hope this
+   missive finds you well."
+9. **Sister community.** An invitation to a food-truck event at "our sister
+   community," tonight only, with `??` where an emoji used to be.
+10. **Host your home.** The owner company invites you to earn extra income by
+    listing your apartment on Airbnb — from the same address that sends the
+    towing ultimatums.
+11. **Gigabit.** "1GB Internet Speeds Now Live!" — delivered mid-elevator
+    outage.
+12. **The rebrand.** The company announces its own new name with genuine
+    excitement. The dumpsters are re-stickered within the week. The elevator
+    is not repaired within the quarter.
+13. **Major event awareness.** With a global sporting event approaching, the
+    building announces that amenity spaces and parking "may be made available
+    for reservations, including potential use by non-residents." Residents
+    are encouraged to reserve their own building early.
+14. **Schrödinger's utility.** "Please be advised there is a possibility of a
+    temporary water interruption. The interruption may occur."
+15. **Duplicate confirmation.** "Your document has been received and your
+    account has been successfully updated!" — sent twice, four seconds apart,
+    with different reference numbers.
+16. **The survey engine.** A request to rate your recent service visit,
+    delivered on Christmas morning. Subject of the visit being rated:
+    "Alert Hub Offline."
+17. **Precision logistics.** "You have a delivery! Tracking: 1x package in
+    office."
+18. **Peak season.** Parcel Pending declares a "Peak Season period" with
+    $3.00/day storage fees, then sends the same notification three times in
+    27 minutes.
+19. **Farewell.** A staff departure announced December 31; final days in
+    office January 2nd and 3rd; residents invited to "stop by to say
+    goodbye." The office is closed January 1st.
+
+### Event upgrade from the archive: "The Helpful Citizen"
+
+The towing event gets the real story, which is better than the invented one.
+The POD and the pickup truck were never yours. Revised event: a notice
+threatens to tow an abandoned POD and truck blocking the garbage trucks. The
+Case choice is to write in *helpfully*, with observed dates and times, as a
+good citizen of the community. The response arrives the next morning:
+
+> "Thank you for your response. We will be getting both towed."
+
+— in precisely the tone they would use if you had confessed. The reply is
+flagged by the mail system as being from **an untrusted sender** ("you have
+not previously corresponded with this sender") despite two years of
+correspondence, beneath a signature block longer than the message itself,
+which includes a link to the company's Glassdoor page. Evidence +2: the
+exhibit is the signature block.
+
+### Renewal flavor upgrade
+
+Consultant #1 now occasionally attributes the offer to "the rates suggested
+by our pricing software," and cannot discuss the software, which is a vendor,
+which cannot be emailed. This mirrors the archive's actual renewal thread and
+gives the boss fight its thesis line: you are negotiating with a spreadsheet
+that outranks everyone you can talk to.
+
+---
+
+## 9. Build order
 
 | Phase | Scope | Why first |
 |---|---|---|
 | **P1** | Choice economy rework (§1) + tickets tray (§2a) + narration bands (§5) | Turns the pamphlet into a game; mostly data and copy, one new HUD element |
-| **P2** | Chains + visible dice (§2b–c) + plot spine pins (§6) + partner interstitials | The structure pass; needs P1's economy to tune against |
+| **P2** | Chains + visible dice (§2b–c) + plot spine pins (§6) + partner interstitials + the Bulletin (§8) | The structure pass; needs P1's economy to tune against. The Bulletin is cheap here: one screen type plus a copy pool |
 | **P3** | Toast gameplay (§3) + boss fight (§4) + endings/share/tracker/hard mode (§7) | The signature-risk items last, tuned against real runs of P1+P2 |
 
 ### Standing guardrails for every phase
