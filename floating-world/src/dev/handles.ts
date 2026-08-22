@@ -17,6 +17,8 @@ import { setGumwallOverride, summonPilgrim } from "../world/gumwall";
 import { GUM_STATE, gumWallAnchor } from "../map/GumWall";
 import { setChalkOverride } from "../world/chalk";
 import { CHALK_STATE, chalkAnchor } from "../map/Chalk";
+import { setBridgeOverride, bridgeState } from "../world/fremont";
+import { fremontAnchor } from "../map/FremontBridge";
 import {
   setWeatherOverride,
   setColdOverride,
@@ -117,6 +119,14 @@ export function installHandles() {
     // The chalk patch's world anchor + live state (present, wash 0..1, park),
     // so the smoke harness / a curious console can fly to the path and check it.
     chalkState: () => ({ ...chalkAnchor(), ...CHALK_STATE }),
+    // The Fremont Bridge: "on" loops openings continuously (rush gate lifted)
+    // for demos, "open" freezes the leaves raised with the boat mid-cut (for
+    // screenshots), "off" welds the span shut, null restores the honest
+    // wall-clock schedule. Same effect as ?bridge=.
+    bridge: (mode: "on" | "off" | "open" | null = "on") => setBridgeOverride(mode),
+    // The bridge's world anchor + live leaves/boat state, so the smoke
+    // harness / a curious console can fly to the cut and catch an opening.
+    bridgeState: () => ({ ...fremontAnchor(), ...bridgeState() }),
     setWeather: (k: WeatherKind | null) => setWeatherOverride(k),
     // The visible-breath signal on the ferry deck: 0..1 pins the coldness on,
     // null restores the honest temperature read. Same effect as ?cold=.
