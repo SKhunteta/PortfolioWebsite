@@ -14,6 +14,9 @@ import { Forest } from "./map/Forest";
 import { Sakura } from "./map/Sakura";
 import { Buildings } from "./map/Buildings";
 import { Landmarks, GreatWheel } from "./map/Landmarks";
+import { NeedleElevators } from "./map/NeedleElevators";
+import { FremontBridge } from "./map/FremontBridge";
+import { Streetcars } from "./map/Streetcars";
 import { StadiumSigns } from "./map/StadiumSigns";
 import { Kasumi } from "./map/Kasumi";
 import { Ferries } from "./map/Ferries";
@@ -125,12 +128,15 @@ export default function App() {
         <TacomaTrack />
         <Cars />
         <Buses />
+        <Streetcars />
         <Chalk />
         <Forest />
         <Sakura />
         <Buildings />
         <Landmarks />
         <GreatWheel />
+        <NeedleElevators />
+        <FremontBridge />
         <StadiumSigns />
         <Kasumi />
         <Wakes />
