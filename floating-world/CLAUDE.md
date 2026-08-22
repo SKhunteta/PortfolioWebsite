@@ -83,7 +83,8 @@ it on a second monitor and the print breathes at them.
   so the ground's full treatment (`cutSurface`: hole + ink + fibers) and the
   one-line `cutKeep()` alpha carve in everything stamped on the sheet
   (roads, parks, both water passes + the shore stroke, hanko seals, the
-  surface platform crowd, cars, buses, pedestrians) open and heal in
+  surface platform crowd, cars, buses, pedestrians, the streetcars and
+  their rail ink) open and heal in
   lockstep with the Buildings skylight (widened to clear the whole cut) and
   the camera's own glide. The depth-writing landmarks are sliced by DISCARD,
   not an alpha fade — a faded tower would hang an invisible depth wall over
@@ -363,6 +364,50 @@ it on a second monitor and the print breathes at them.
   beam strip, one merged pylon colonnade, and ONE InstancedMesh for both
   trains with a per-instance `aTrain` flag selecting the livery in the shader
   (the red/blue split is structural, like the airliners' Delta/Alaska halves).
+- **The Seattle Streetcar** (`map/Streetcars.tsx`): the city's OWN two little
+  lines — South Lake Union up Westlake Avenue and First Hill out Jackson and
+  up Broadway to Capitol Hill Station — the last real rail transit the print
+  was missing. Ambient paint at the monorail's / T Line's honesty tier
+  (deterministic ping-pong from the scene clock, never presented as live),
+  alignments hand-lifted to the real streets. The fleet is the famous
+  "skittles": each car wears ONE saturated solid coat (persimmon, plum,
+  matcha) picked per instance by an `aCoat` flag — the airliners'
+  Delta/Alaska move — over a pale washi roof cap, the black-belt window run
+  broken at the two articulation joints, and a dark skirt. TWO draw calls:
+  one merged warm-umber rail ribbon under both lines (renderOrder 5 with the
+  roads) and ONE InstancedMesh of all four cars at 5.63 with the street
+  traffic, so they duck behind the downtown fabric like the buses do.
+  `?streetcars=off` hides the layer.
+- **The Needle's elevator beads** (`map/NeedleElevators.tsx`): two little
+  gold cars climbing and descending the outside of the Space Needle's shaft
+  all day — the piece's single named landmark finally has motion of its own
+  at every zoom. Deterministic cadence shaped like the real ride (load at
+  the base, the climb, a longer trade-places dwell at the observation deck,
+  the glide down), counter-phased so one car is usually on the shaft. Warm
+  gold pigment with a sumi keyline, under the bloom ceiling, ONE tiny
+  InstancedMesh at renderOrder 6.01 so a bead depth-tests against the
+  painted shaft and correctly hides on its far side. Shaft profile constants
+  (`NEEDLE_*`) are shared with Landmarks.tsx — keep them in sync.
+- **The Fremont Bridge opens** (`map/FremontBridge.tsx` + `world/fremont.ts`):
+  the most-opened bascule bridge in America (~35 times a real day), promoted
+  from a static inked deck in the Landmarks merge to the print's working
+  drawbridge, painted its famous blue with the four orange control towers.
+  Openings are a deterministic hash over wall-clock slots — two tabs agree,
+  and the REAL federal rush-hour restriction holds (weekdays 7–9 and 4–6 the
+  span stays down) — at a storybook-compressed cadence (~every quarter hour
+  vs the real ~25–40 min, the ferries' pace license). Each opening: the
+  leaves rise to the bascule's proud angle (counterweights swinging down
+  below the deck), a lone sailboat's washi sail glides the cut, the leaves
+  settle; the displayed angle EASES toward the schedule so a tab resume
+  never snaps the span. THREE draw calls — static approaches/piers/towers,
+  ONE InstancedMesh for both leaves, and the boat, hidden entirely (zero
+  cost) except around an opening. depthWrite true with the landmarks (the
+  multi-part-solid exception). Pure schedule logic is node-safe and
+  vitest-covered (`world/__tests__/fremont.test.ts`). `?bridge=on|off|open`
+  pins it (on loops openings, open freezes leaves-up with the boat mid-cut
+  for screenshots); `__linkMap.bridge()` / `bridgeState()` from the console;
+  `scripts/street-rail-shot.mjs` verifies all three of these layers
+  headlessly.
 - **SkyBokashi** (`fx/SkyBokashi.tsx`, one screen-space quad, renderOrder
   −1): the hand-wiped gradient at the top of every print — transparent into
   Prussian blue by day, deep plum by night, faint baren streaking. Exempt
@@ -553,6 +598,9 @@ that is) (`?traffic=` pins the street cars);
 `?chalk=on|off` forces or clears the summer-weekend sidewalk chalk;
 `?cut=off` pins the dive incision closed (diving falls back to the
 translucent-sheet read — the real-GPU bisection lever);
+`?bridge=on|off|open` pins the Fremont Bridge (on loops openings with the
+rush gate lifted, open freezes the leaves raised with the sailboat mid-cut,
+off welds the span shut); `?streetcars=off` hides the Seattle Streetcar pair;
 `?tod=` pins the orca pod's time of day (a 0..1 day fraction, a 0..24
 hour, or dawn|morning|noon|afternoon|dusk|night) — the pod's foraging ground
 migrates around the Sound by the Seattle hour (`map/Orcas.tsx`), and observe

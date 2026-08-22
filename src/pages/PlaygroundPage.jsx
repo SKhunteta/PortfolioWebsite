@@ -139,25 +139,6 @@ const STATIC_STANDALONE = [
     },
   },
   {
-    id: "link-map",
-    title: "The Living Link",
-    kindLabel: "WebGL visualization",
-    tagline: "Seattle's light rail as a living circuit.",
-    description:
-      "Real Link trains as glowing particles on the actual line geometry: live positions when the feed breathes, honest simulation from the timetable when it sleeps. Tunnels dim beneath the ground plane, stations pulse as trains dwell, and the light follows the real sun over Seattle. Leave it open like an aquarium; double-tap a train to ride along.",
-    tags: ["three.js", "realtime", "generative"],
-    cta: "Watch the city move",
-    href: "/link-map/",
-    urlLabel: "builtbyshrey.com/link-map",
-    theme: {
-      bg: "#05070d",
-      text: "#e6ecf7",
-      muted: "#7f8db0",
-      accent: "#57d7ff",
-      ctaText: "#05070d",
-    },
-  },
-  {
     id: "floating-world",
     title: "Sound & Rail",
     kindLabel: "WebGL visualization",

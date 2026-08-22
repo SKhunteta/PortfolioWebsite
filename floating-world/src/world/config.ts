@@ -113,9 +113,11 @@ export const CONFIG = {
   // Metro's service span, not car traffic pressure. speedKmS is the cruising
   // pace between stops (~29 km/h; dwells drag the average down to a real
   // in-service pace); stopSpacingKm is the target hop (~real Metro spacing);
-  // minCorridorKm keeps routes off two-block stubs.
+  // minCorridorKm keeps routes off two-block stubs. toyLenKm keeps a coach
+  // between the toy cars (0.11) and the S700's near scale — at 0.19 a coach
+  // stood as tall as the whole three-car train and dwarfed it up close.
   bus: {
-    toyLenKm: 0.19,
+    toyLenKm: 0.13,
     speedKmS: 0.008,
     speedJitter: 0.25, // ±fraction, deterministic per bus
     y: 0.022,

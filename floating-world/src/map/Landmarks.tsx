@@ -59,6 +59,17 @@ export const WHEEL_R = 0.22;
 // pass's 120s, which read as barely-moving at drift distance).
 export const WHEEL_SPIN_PERIOD_S = 100;
 
+// The Space Needle's footprint and shaft profile, shared with its elevator
+// beads in map/NeedleElevators.tsx (the little gold cars climb the OUTSIDE of
+// this shaft, like the real ones) — keep these in sync if the Needle ever
+// moves or resizes. Shaft: radius NEEDLE_R_TOP at y = NEEDLE_SHAFT_H tapering
+// to NEEDLE_R_BASE at the ground; saucer at ~0.79.
+export const NEEDLE_LAT = 47.6205;
+export const NEEDLE_LNG = -122.3493;
+export const NEEDLE_SHAFT_H = 0.75;
+export const NEEDLE_R_TOP = 0.05;
+export const NEEDLE_R_BASE = 0.09;
+
 // Kite Hill's mound at Gas Works Park, shared with the kite-flyer hero in
 // map/Heroes.tsx (the figure stands on the summit) — keep these in sync if
 // the hill ever moves or grows.
@@ -451,9 +462,9 @@ function buildGeometry(): THREE.BufferGeometry {
   //     at drift distance; this is the piece's single named landmark, it
   //     has to survive being small on screen ---
   {
-    const { x, z } = projectLatLng(47.6205, -122.3493);
-    const shaft = new THREE.CylinderGeometry(0.05, 0.09, 0.75, 8);
-    shaft.translate(x, 0.375, z);
+    const { x, z } = projectLatLng(NEEDLE_LAT, NEEDLE_LNG);
+    const shaft = new THREE.CylinderGeometry(NEEDLE_R_TOP, NEEDLE_R_BASE, NEEDLE_SHAFT_H, 8);
+    shaft.translate(x, NEEDLE_SHAFT_H / 2, z);
     const saucer = new THREE.CylinderGeometry(0.17, 0.26, 0.12, 10);
     saucer.translate(x, 0.79, z);
     const spire = new THREE.ConeGeometry(0.024, 0.22, 6);
@@ -953,7 +964,8 @@ function buildGeometry(): THREE.BufferGeometry {
   parts.push(bridge(47.6427, -122.2758, 47.63, -122.2085, 0.08, 0.03));
   // Ship-canal spans, each a raised inked deck on piers.
   parts.push(bridge(47.6452, -122.3477, 47.6512, -122.3472, 0.05, 0.12, 2)); // Aurora (Hwy 99)
-  parts.push(bridge(47.6468, -122.3497, 47.65, -122.3496, 0.04, 0.08, 1)); // Fremont
+  // Fremont is NOT inked here anymore: it's the working bascule in
+  // map/FremontBridge.tsx now, leaves and all.
   parts.push(bridge(47.6556, -122.3762, 47.6624, -122.376, 0.05, 0.1, 2)); // Ballard
   parts.push(bridge(47.6518, -122.3202, 47.6557, -122.32, 0.04, 0.09, 1)); // University
   parts.push(bridge(47.6446, -122.3045, 47.648, -122.3044, 0.04, 0.08, 1)); // Montlake
