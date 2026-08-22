@@ -284,11 +284,14 @@ export const CONFIG = {
     tunnelDive: { backKm: 0.15, upKm: 0.85 },
     // Click-to-descend into a fixed underground hall (CameraRig.frameStationDive):
     // unlike the train tunnelDive (which rides a moving train down a portal), this
-    // holds a near-overhead, slightly-angled look-down over the hall's platform
-    // floor so its art fresco (~0.48 km disc) fills the frame and reads up through
-    // the paper. A hair lower/closer than tunnelDive; camera sits `backKm` south of
-    // the hall at height `upKm`, target on the floor. Tune in dev with `leva`.
-    stationDive: { backKm: 0.35, upKm: 0.7 },
+    // holds a slightly-angled look-down over the hall's platform floor. Framed a
+    // touch higher/wider than the old fresco close-up so the dive INCISION reads
+    // whole: the deckled tear in the sheet, its inked rim, and the terraced paper
+    // layers stepping down to the hall (map/paperCut.ts). The hold also PRECESSES
+    // slowly around the hall (`precessRadSec`, radians/s of camera orbit) so the
+    // stacked sheets keep sliding past one another in parallax — the carve stays
+    // alive through the hold instead of freezing into a still. Tune with `leva`.
+    stationDive: { backKm: 0.55, upKm: 1.05, precessRadSec: 0.045 },
     // The jetliner ride: farther back and a touch higher than the train chase
     // (the toy 737 is longer and moves faster), offset behind the nose along
     // the flight path so the camera sits in the plane's wake as it climbs,

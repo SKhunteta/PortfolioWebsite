@@ -161,12 +161,14 @@ function frameTunnelDive(
 }
 
 // Click-to-descend into a fixed underground hall. Unlike frameTunnelDive (which
-// rides a moving train down a portal), this HOLDS a near-overhead, slightly
-// angled look-down over the hall's platform floor, so its art fresco reads up
-// through the translucent paper. The target eases onto the floor (rail depth);
-// the camera eases to a point set back (south) and up, a gentle downward tilt
-// rather than a dead-overhead orthographic stare. Fixed station coords → no
-// train latch, no allocation.
+// rides a moving train down a portal), this HOLDS a slightly angled look-down
+// over the hall's platform floor — now the floor of the dive INCISION, the
+// deckled aperture torn through the paper (map/paperCut.ts) — framed high and
+// wide enough that the inked tear and the terraced sheet layers stay in the
+// shot around the fresco. The hold PRECESSES slowly around the hall on the
+// shared clock, so the stacked sheets slide past one another in parallax for
+// as long as the visitor stays down. The target eases onto the floor (rail
+// depth); fixed station coords → no train latch, no allocation.
 function frameStationDive(
   controls: OrbitControlsImpl,
   camera: THREE.PerspectiveCamera,
@@ -175,7 +177,12 @@ function frameStationDive(
 ) {
   const dive = CONFIG.camera.stationDive;
   trainPos.set(site.x, site.y, site.z); // the platform floor (tunnel depth)
-  desiredCam.set(site.x, dive.upKm, site.z + dive.backKm);
+  const th = CLOCK.t * dive.precessRadSec; // slow orbit; opens facing south (sin 0)
+  desiredCam.set(
+    site.x + Math.sin(th) * dive.backKm,
+    dive.upKm,
+    site.z + Math.cos(th) * dive.backKm
+  );
   controls.target.lerp(trainPos, k);
   camera.position.lerp(desiredCam, k);
 }

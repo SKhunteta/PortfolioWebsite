@@ -65,6 +65,37 @@ it on a second monitor and the print breathes at them.
   lamplit trench walls (`map/TunnelWalls.tsx`, 2.8), and the town fades to a
   ghost inside a dived hall's footprint (`map/Buildings.tsx` uDive skylight)
   so downtown's towers never bury the artwork.
+- **The dive incision** (`map/paperCut.ts` + `map/paperCutGlsl.ts` +
+  `map/PaperCut.tsx`): diving into a hall CUTS the print instead of merely
+  reading the room through the translucent sheet. An irregular deckled
+  aperture tears open over the hall (angular noise sampled on the unit
+  circle, so the edge closes seamlessly), sumi ink pools into the paper
+  around the cut, exposed washi fibers fringe the torn edge (a LIFT of the
+  local paper tone, never a fixed white — palette-bound cream by day, a dim
+  warm fringe on the lantern print), and a short stack of paper sheets
+  (ONE InstancedMesh, renderOrder 3.5, hidden entirely off-stage) terraces
+  down inside it, each sheet torn on its own deckle, sliding past the others
+  in parallax while the dive camera slowly PRECESSES around the hall
+  (`config.camera.stationDive.precessRadSec`) — the tunnel reads as carved
+  beneath the print. ONE eased signal drives everything, palette-by-reference
+  style: every carved material holds the same `PAPER_CUT_VEC` Vector3
+  (xy hall center, z eased strength; `PaperCut.tsx` is the single writer),
+  so the ground's full treatment (`cutSurface`: hole + ink + fibers) and the
+  one-line `cutKeep()` alpha carve in everything stamped on the sheet
+  (roads, parks, both water passes + the shore stroke, hanko seals, the
+  surface platform crowd, cars, buses, pedestrians) open and heal in
+  lockstep with the Buildings skylight (widened to clear the whole cut) and
+  the camera's own glide. The depth-writing landmarks are sliced by DISCARD,
+  not an alpha fade — a faded tower would hang an invisible depth wall over
+  the pit. Geometry contract (vitest, `map/__tests__/paperCut.test.ts`): the
+  sheets hang strictly between the paper's underside and the tunnel roof,
+  terrace inward with depth, and even the deckle's deepest bite never cuts
+  into the hall's lamplit ring wall — the aperture exists to reveal the
+  room, never to shear through it. The observe reel's moving TRAIN dive
+  (`frameTunnelDive`) deliberately does not tear the sheet — the incision
+  belongs to the held station dive, where the cut has a fixed center.
+  `scripts/dive-shot.mjs` screenshots the tear mid-open, the settled
+  precessing hold, and the heal, day + night, and fails on any shader error.
 - Rainier ghosts the horizon at real scale with **Fuji's warm-white snow
   cap**; **Mount Baker** answers it on the northern horizon as a cooler second
   Fuji (its own `aBaker` vertex flag drives the bold cap + sumi keyline, but

@@ -57,6 +57,8 @@ import { sunPhase } from "../world/sun";
 import { useUi } from "../trains/store";
 import { PLATFORM_SITES, PLATFORM_PULSE } from "./platformPulse";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "../map/watercolorGlsl";
+import { PAPER_CUT_GLSL } from "../map/paperCutGlsl";
+import { PAPER_CUT_VEC } from "../map/paperCut";
 
 const VERT = /* glsl */ `
   ${FOG_VARYINGS_VERT}
@@ -135,6 +137,7 @@ const VERT = /* glsl */ `
 const FRAG = /* glsl */ `
   ${NOISE_GLSL}
   ${FOG_VARYINGS_FRAG}
+  ${PAPER_CUT_GLSL}
   varying vec2 vUv;
   varying float vPulse;
   varying float vSeed;
@@ -218,6 +221,9 @@ const FRAG = /* glsl */ `
     float a = figMask * crowd * uOpacity * (0.55 + 0.45 * fract(vSeed)) * (1.0 - fogFactor());
     // Keep a lit lantern from dissolving as fast as flat pigment.
     a = max(a, glow * crowd * (1.0 - fogFactor()) * 0.9);
+    // A figure standing on paper the dive has carved away steps aside with
+    // it: the dived hall's surface crowd fades out with the incision.
+    a *= cutKeep(vWorld);
     if (a < 0.004) discard;
     gl_FragColor = vec4(mix(col, uFog, fogFactor()), a);
   }
@@ -397,6 +403,7 @@ export function PlatformLife() {
           uGather: { value: 0.55 }, // crowd tightens ~halfway to the entrance on full dwell
           uResting: { value: 0 },
           uNight: { value: 0 },
+          uCut: { value: PAPER_CUT_VEC }, // shared cut signal, by reference
           uFog: { value: LIVE.fog },
           uFogDensity: { value: LIVE.fogDensity },
         }}

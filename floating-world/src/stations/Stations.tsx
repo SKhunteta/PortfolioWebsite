@@ -27,6 +27,8 @@ import { initPlatformSites, initUndergroundSites, PLATFORM_PULSE } from "./platf
 import { motifForName } from "./motifs";
 import { audioArrival } from "../audio/engine";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "../map/watercolorGlsl";
+import { PAPER_CUT_GLSL } from "../map/paperCutGlsl";
+import { PAPER_CUT_VEC } from "../map/paperCut";
 
 interface StationSlot {
   id: string;
@@ -114,6 +116,7 @@ const SEAL_VERT = /* glsl */ `
 const SEAL_FRAG = /* glsl */ `
   ${NOISE_GLSL}
   ${FOG_VARYINGS_FRAG}
+  ${PAPER_CUT_GLSL}
   uniform float uOpacity;
   varying vec3 vColor;
   varying vec2 vLocal;
@@ -126,7 +129,9 @@ const SEAL_FRAG = /* glsl */ `
     float rim = smoothstep(edge - 0.45, edge - 0.1, r) * (1.0 - smoothstep(edge - 0.1, edge, r));
     float pigment = body * (0.4 + 0.85 * rim);
     vec3 c = mix(vColor, uFog, fogFactor());
-    gl_FragColor = vec4(c, pigment * uOpacity);
+    // A hanko stamped on the sheet goes with the sheet: the dived hall's own
+    // surface seal is carved away with the paper inside the incision.
+    gl_FragColor = vec4(c, pigment * uOpacity * cutKeep(vWorld));
   }
 `;
 
@@ -491,6 +496,7 @@ export function Stations() {
           fragmentShader={SEAL_FRAG}
           uniforms={{
             uOpacity: { value: LIVE.stationSealOpacity },
+            uCut: { value: PAPER_CUT_VEC }, // shared cut signal, by reference
             uFog: { value: LIVE.fog }, // palette-by-reference
             uFogDensity: { value: LIVE.fogDensity },
           }}

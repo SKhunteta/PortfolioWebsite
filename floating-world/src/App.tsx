@@ -5,6 +5,7 @@ import { PROFILE } from "./world/device";
 import { LIVE } from "./world/palettes";
 import { useUi } from "./trains/store";
 import { GroundPlane } from "./map/GroundPlane";
+import { PaperCut } from "./map/PaperCut";
 import { Water } from "./map/Water";
 import { Parks } from "./map/Parks";
 import { Roads } from "./map/Roads";
@@ -120,6 +121,7 @@ export default function App() {
         <Parks />
         <Water />
         <GroundPlane />
+        <PaperCut />
         <Roads />
         <TacomaRoads />
         <TacomaTrack />

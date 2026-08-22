@@ -36,6 +36,8 @@ import { CLOCK } from "../world/clock";
 import { PROFILE } from "../world/device";
 import { CENTROID, projectLatLng } from "./network";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
+import { PAPER_CUT_GLSL, PAPER_CUT_SURFACE_GLSL } from "./paperCutGlsl";
+import { PAPER_CUT_VEC } from "./paperCut";
 
 // Seattle's seven hills, at their real centers with a relative prominence
 // weight. The ground shader sums a soft gaussian bump at each and lights the
@@ -72,6 +74,8 @@ const FRAG = /* glsl */ `
   #define NHILLS ${HILLS.length}
   ${NOISE_GLSL}
   ${FOG_VARYINGS_FRAG}
+  ${PAPER_CUT_GLSL}
+  ${PAPER_CUT_SURFACE_GLSL}
   uniform vec3 uGround;
   uniform vec3 uPaperTint;
   uniform float uGrain;
@@ -109,7 +113,12 @@ const FRAG = /* glsl */ `
     vec3 nrm = normalize(vec3(-uHillK * grad.x, 1.0, -uHillK * grad.y));
     float shade = dot(nrm, normalize(vec3(-0.5, 0.85, -0.45))) - 0.85;
     c *= 1.0 + uHillStrength * shade;
-    gl_FragColor = vec4(mix(c, uFog, fogFactor()), uOpacity);
+    // The dive incision: while a dive holds, a deckled aperture tears open
+    // over the hall — ink pooled into the sheet around the cut, exposed washi
+    // fibers hanging into the opening, the paper itself carved away inside
+    // (paperCutGlsl.ts). Free while no dive is easing.
+    float keep = cutSurface(vWorld, c);
+    gl_FragColor = vec4(mix(c, uFog, fogFactor()), uOpacity * keep);
   }
 `;
 
@@ -145,6 +154,7 @@ export function GroundPlane() {
           uFogDensity: { value: LIVE.fogDensity },
           uGrain: { value: LIVE.paperGrain },
           uOpacity: { value: LIVE.groundOpacity },
+          uCut: { value: PAPER_CUT_VEC }, // shared cut signal, by reference
           uRain: { value: 0 },
           uTime: { value: 0 },
           uHills: { value: HILLS },
