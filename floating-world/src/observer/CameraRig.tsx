@@ -528,6 +528,12 @@ export function CameraRig() {
     const onDblClick = (e: MouseEvent) => onDoubleActivate(e.clientX, e.clientY);
     const onWheel = () => {
       lastInteraction.current = CLOCK.t;
+      // A zoom is a camera intent, like a drag: it RISES OUT of a dive
+      // instead of fighting frameStationDive's hold for altitude (the fight
+      // left the incision torn open under a far-away camera, bobbing between
+      // the wheel and the lerp). Train/jet chases keep the wheel — leaning
+      // in on a ride is part of that mood.
+      if (useUi.getState().diveStationId !== null) useUi.getState().setFollowTrain(null);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") useUi.getState().setFollowTrain(null);

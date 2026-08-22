@@ -72,7 +72,7 @@ const FRAG = /* glsl */ `
     if (body < 0.004) discard;
     // This sheet's own deckled tear, with its fringe of hanging fibers.
     float er = cutEdgeR(d, vRadius, ${SHEET_AMP.toFixed(3)}, vSeed);
-    float fib = wcNoise(normalize(d + vec2(1e-4)) * 42.0 + vSeed * 1.3);
+    float fib = wcNoise(cutDir(d) * 42.0 + vSeed * 1.3);
     float reach = 0.012 + 0.07 * fib * fib;
     float strand = smoothstep(er - reach, er - reach * 0.2, r) * smoothstep(0.35, 0.75, fib);
     float inside = 1.0 - smoothstep(er - 0.005, er + 0.005, r);
@@ -93,6 +93,15 @@ const FRAG = /* glsl */ `
     gl_FragColor = vec4(mix(c, uFog, fogFactor()), alpha);
   }
 `;
+
+// `?cut=off` pins the incision closed: the shared strength stays 0, every
+// carved shader early-outs, the landmark discard never compiles in, and the
+// sheet stack never shows — the field-bisection lever for real-GPU triage
+// (this scene's driver family has SwiftShader-invisible failure modes; see
+// fx/Composer.tsx). A dive still frames the hall, just through the old
+// translucent-sheet read.
+const CUT_ENABLED =
+  new URLSearchParams(window.location.search).get("cut") !== "off";
 
 const matrix = new THREE.Matrix4();
 const FLAT_QUAT = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0));
@@ -131,7 +140,9 @@ export function PaperCut() {
     const site = diveId ? undergroundSiteById(diveId) : undefined;
     if (site) lastSite.current = site;
     const target = lastSite.current;
-    PAPER_CUT_VEC.z = easeCutStrength(PAPER_CUT_VEC.z, !!site, CLOCK.dt);
+    PAPER_CUT_VEC.z = CUT_ENABLED
+      ? easeCutStrength(PAPER_CUT_VEC.z, !!site, CLOCK.dt)
+      : 0;
     if (target) {
       PAPER_CUT_VEC.x = target.x;
       PAPER_CUT_VEC.y = target.z;
