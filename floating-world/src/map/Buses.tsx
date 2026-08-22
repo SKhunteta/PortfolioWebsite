@@ -71,6 +71,8 @@ import { BUS_FEED, BUS_PIN, LIVE_BUSES, type LiveBus } from "../world/busFeed";
 import { ARTIC_SHARE, capByHeart, crowdShare, stepGlide } from "../world/metroBuses";
 import { ambientLoad } from "../world/ridership";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
+import { PAPER_CUT_GLSL } from "./paperCutGlsl";
+import { PAPER_CUT_VEC } from "./paperCut";
 
 const VERT = /* glsl */ `
   ${FOG_VARYINGS_VERT}
@@ -107,6 +109,7 @@ const VERT = /* glsl */ `
 const FRAG = /* glsl */ `
   ${NOISE_GLSL}
   ${FOG_VARYINGS_FRAG}
+  ${PAPER_CUT_GLSL}
   varying vec3 vLocal;
   varying float vFade;
   varying float vLivery;
@@ -266,7 +269,8 @@ const FRAG = /* glsl */ `
     // Roof catches a touch more light than the flanks — tonal volume.
     c *= (0.86 + 0.28 * wash) * mix(0.92, 1.06, smoothstep(0.0, 0.3, y));
 
-    float a = uOpacity * vFade * (0.9 + 0.2 * wash);
+    // A coach can't idle over the dive incision: carved with its street.
+    float a = uOpacity * vFade * (0.9 + 0.2 * wash) * cutKeep(vWorld);
     gl_FragColor = vec4(mix(c, uFog, fogFactor()), a);
   }
 `;
@@ -708,6 +712,7 @@ export function Buses() {
           uLamp: { value: LIVE.traffic },
           uLampIntensity: { value: LIVE.windowIntensity },
           uOpacity: { value: 1 },
+          uCut: { value: PAPER_CUT_VEC }, // shared cut signal, by reference
           uFog: { value: LIVE.fog },
           uFogDensity: { value: LIVE.fogDensity },
         }}

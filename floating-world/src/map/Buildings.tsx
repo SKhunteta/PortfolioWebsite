@@ -30,9 +30,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { LIVE } from "../world/palettes";
-import { CLOCK } from "../world/clock";
-import { useUi } from "../trains/store";
-import { undergroundSiteById } from "../stations/platformPulse";
+import { PAPER_CUT_VEC } from "./paperCut";
 import { PROFILE } from "../world/device";
 import { CONFIG } from "../world/config";
 import { mulberry32, fbm, isWater, sampleRoadFrontages } from "./scatter";
@@ -174,7 +172,10 @@ const FRAG = /* glsl */ `
     // The dive skylight: while the camera holds inside an underground hall,
     // the town within the hall's footprint thins to a ghost so the room
     // reads through the paper instead of hiding behind downtown's towers.
-    float skylight = uDive.z * (1.0 - smoothstep(0.55, 1.3, distance(vWorld, uDive.xy)));
+    // Widened to clear the whole incision (map/paperCut.ts CUT_SURFACE_R plus
+    // its deckle) — a tower standing on paper that has been torn away would
+    // give the cut the lie.
+    float skylight = uDive.z * (1.0 - smoothstep(1.15, 1.75, distance(vWorld, uDive.xy)));
     gl_FragColor = vec4(
       mix(c, uFog, ff),
       uOpacity * (0.95 + 0.08 * wash) * (1.0 - 0.82 * skylight)
@@ -298,7 +299,9 @@ export function Buildings() {
     () => ({
       uColor: { value: LIVE.building }, // palette-by-reference
       uOpacity: { value: LIVE.buildingOpacity },
-      uDive: { value: new THREE.Vector3(0, 0, 0) },
+      // The shared cut signal (map/paperCut.ts), by reference — PaperCut.tsx
+      // eases it once per frame and the skylight follows the incision exactly.
+      uDive: { value: PAPER_CUT_VEC },
       uInk: { value: LIVE.buildingInk },
       uRoofA: { value: LIVE.buildingRoofA },
       uRoofB: { value: LIVE.buildingRoofB },
@@ -439,21 +442,11 @@ export function Buildings() {
         mesh.instanceMatrix.needsUpdate = true;
       });
     }
-    // Shared uniforms object: one update drives every variant material.
+    // Shared uniforms object: one update drives every variant material. The
+    // dive skylight rides the shared PAPER_CUT_VEC (eased by PaperCut.tsx),
+    // so the town's ghosting and the paper's tearing breathe as one.
     uniforms.uOpacity.value = LIVE.buildingOpacity;
     uniforms.uFogDensity.value = LIVE.fogDensity;
-    // Ease the skylight open over the dived hall (and closed on release) —
-    // the fade breathes with the camera's own glide, never a hard pop.
-    const diveId = useUi.getState().diveStationId;
-    const site = diveId ? undergroundSiteById(diveId) : undefined;
-    const dive = uniforms.uDive.value;
-    if (site) {
-      dive.x = site.x;
-      dive.y = site.z;
-      dive.z = Math.min(1, dive.z + CLOCK.dt * 1.6);
-    } else {
-      dive.z = Math.max(0, dive.z - CLOCK.dt * 1.6);
-    }
   });
 
   return (

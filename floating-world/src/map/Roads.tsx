@@ -14,6 +14,8 @@ import { LIVE } from "../world/palettes";
 import { PROFILE } from "../world/device";
 import { CONFIG } from "../world/config";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
+import { PAPER_CUT_GLSL } from "./paperCutGlsl";
+import { PAPER_CUT_VEC } from "./paperCut";
 
 const VERT = /* glsl */ `
   ${FOG_VARYINGS_VERT}
@@ -30,6 +32,7 @@ const VERT = /* glsl */ `
 const FRAG = /* glsl */ `
   ${NOISE_GLSL}
   ${FOG_VARYINGS_FRAG}
+  ${PAPER_CUT_GLSL}
   varying vec2 vUv;
   uniform vec3 uRoad;
   uniform float uIntensity;
@@ -39,9 +42,10 @@ const FRAG = /* glsl */ `
     float dapple = 0.70 + 0.30 * wcNoise(vWorld * 3.0); // broken ink stroke
     // Normal-blended pigment: the stroke color mixes toward fog (the raw
     // ShaderMaterial contract) and intensity lives in alpha so the ink can
-    // darken OR lighten whatever paper it lands on.
+    // darken OR lighten whatever paper it lands on. Ink stamped on the sheet
+    // is carved away with it inside the dive incision (cutKeep).
     vec3 c = mix(uRoad, uFog, fogFactor());
-    gl_FragColor = vec4(c, core * dapple * uIntensity);
+    gl_FragColor = vec4(c, core * dapple * uIntensity * cutKeep(vWorld));
   }
 `;
 
@@ -92,6 +96,7 @@ export function Roads() {
             fragmentShader={FRAG}
             uniforms={{
               uRoad: { value: LIVE.road },
+              uCut: { value: PAPER_CUT_VEC }, // shared cut signal, by reference
               uIntensity: { value: LIVE.roadIntensity },
               uFog: { value: LIVE.fog },
               uFogDensity: { value: LIVE.fogDensity },

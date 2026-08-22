@@ -11,6 +11,8 @@ import { HAS_BASEMAP, BASEMAP_PARKS } from "./basemap";
 import { LIVE } from "../world/palettes";
 import { CONFIG } from "../world/config";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
+import { PAPER_CUT_GLSL } from "./paperCutGlsl";
+import { PAPER_CUT_VEC } from "./paperCut";
 
 const VERT = /* glsl */ `
   ${FOG_VARYINGS_VERT}
@@ -25,12 +27,16 @@ const VERT = /* glsl */ `
 const FRAG = /* glsl */ `
   ${NOISE_GLSL}
   ${FOG_VARYINGS_FRAG}
+  ${PAPER_CUT_GLSL}
   uniform vec3 uPark;
   uniform float uOpacity;
   void main() {
     float mottle = 0.75 + 0.4 * wcFbm(vWorld * 1.4);
     vec3 c = mix(uPark, uFog, fogFactor());
-    gl_FragColor = vec4(c, uOpacity * mottle);
+    // A wash under the sheet still belongs to the sheet: carved away inside
+    // the dive incision so no green hangs over the pit (Cal Anderson sits
+    // right beside Capitol Hill's hall).
+    gl_FragColor = vec4(c, uOpacity * mottle * cutKeep(vWorld));
   }
 `;
 
@@ -81,6 +87,7 @@ export function Parks() {
         fragmentShader={FRAG}
         uniforms={{
           uPark: { value: LIVE.park },
+          uCut: { value: PAPER_CUT_VEC }, // shared cut signal, by reference
           uFog: { value: LIVE.fog },
           uFogDensity: { value: LIVE.fogDensity },
           uOpacity: { value: LIVE.parkOpacity },

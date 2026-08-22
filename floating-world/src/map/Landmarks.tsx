@@ -45,6 +45,8 @@ import { LIVE } from "../world/palettes";
 import { sunPhase, sunPhaseAt, getPhaseOverride } from "../world/sun";
 import { CLOCK } from "../world/clock";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
+import { PAPER_CUT_GLSL } from "./paperCutGlsl";
+import { PAPER_CUT_VEC } from "./paperCut";
 
 // The Great Wheel's hub, shared with its rim lights in map/CityLights.tsx —
 // keep these in sync if the wheel ever moves or resizes.
@@ -99,6 +101,7 @@ const VERT = /* glsl */ `
 const FRAG = /* glsl */ `
   ${NOISE_GLSL}
   ${FOG_VARYINGS_FRAG}
+  ${PAPER_CUT_GLSL}
   varying float vY;
   varying vec3 vNormal;
   varying float vRainier;
@@ -127,6 +130,12 @@ const FRAG = /* glsl */ `
   const vec3 GAS_RUST = vec3(0.18, 0.055, 0.028);
 
   void main() {
+    // The dive incision slices straight down through the block: landmark mass
+    // whose footprint falls inside the deckled aperture is carved away with
+    // the paper it stood on. Discard (not an alpha fade) because this
+    // material writes depth — a faded-but-depth-writing tower would hang an
+    // invisible wall over the pit.
+    if (cutKeep(vWorld) < 0.5) discard;
     float wash = wcFbm(vWorld * 0.8 + vY * 2.1); // pigment mottle per face
     // A fixed key light from the northwest sky: sunlit and shadowed faces
     // diverge, and flat silhouettes become solid massing.
@@ -1075,6 +1084,7 @@ export function Landmarks() {
         uniforms={{
           uColor: { value: LIVE.landmark }, // palette-by-reference
           uOpacity: { value: LIVE.landmarkOpacity },
+          uCut: { value: PAPER_CUT_VEC }, // shared cut signal, by reference
           uFog: { value: LIVE.fog },
           uFogDensity: { value: LIVE.fogDensity },
           uRainierAxis: { value: rainierAxis },
@@ -1145,6 +1155,7 @@ export function GreatWheel() {
         uniforms={{
           uColor: { value: LIVE.landmark },
           uOpacity: { value: LIVE.landmarkOpacity },
+          uCut: { value: PAPER_CUT_VEC }, // shared cut signal, by reference
           uFog: { value: LIVE.fog },
           uFogDensity: { value: LIVE.fogDensity },
           uRainierAxis: { value: rainierAxis },

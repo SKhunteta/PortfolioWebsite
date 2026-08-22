@@ -31,6 +31,8 @@ import { CONFIG } from "../world/config";
 import { tideLevel } from "../world/tide";
 import { WEATHER } from "../world/weather";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
+import { PAPER_CUT_GLSL } from "./paperCutGlsl";
+import { PAPER_CUT_VEC } from "./paperCut";
 
 const WOBBLE_GLSL = /* glsl */ `
   uniform float uTime;
@@ -90,6 +92,7 @@ const SEIGAIHA_GLSL = /* glsl */ `
 const FILL_FRAG = /* glsl */ `
   ${NOISE_GLSL}
   ${FOG_VARYINGS_FRAG}
+  ${PAPER_CUT_GLSL}
   ${SEIGAIHA_GLSL}
   uniform vec3 uWater;
   uniform vec3 uSeigaiha;
@@ -132,7 +135,10 @@ const FILL_FRAG = /* glsl */ `
       water = mix(water, uSeigaiha, rainRings(vWorld) * uRain * 0.5);
     }
     vec3 c = mix(water, uFog, fogFactor());
-    gl_FragColor = vec4(c, uOpacity * blotch * (0.9 + 0.1 * uBreath));
+    // Both passes (the under-fill and the over-print stamp) are pigment on or
+    // under the sheet: carved away with it inside the dive incision, so the
+    // pit near a waterside hall (UW, by the Montlake Cut) stays dry paper.
+    gl_FragColor = vec4(c, uOpacity * blotch * (0.9 + 0.1 * uBreath) * cutKeep(vWorld));
   }
 `;
 
@@ -158,6 +164,7 @@ const EDGE_VERT = /* glsl */ `
 const EDGE_FRAG = /* glsl */ `
   ${NOISE_GLSL}
   ${FOG_VARYINGS_FRAG}
+  ${PAPER_CUT_GLSL}
   varying vec2 vUv;
   uniform vec3 uColor;
   uniform vec3 uTideFlat;
@@ -198,7 +205,7 @@ const EDGE_FRAG = /* glsl */ `
     vec3 flatColor = mix(uTideFlat, uFog, fogFactor());
     float totalAlpha = waterAlpha + flatAlpha;
     vec3 c = totalAlpha > 0.0001 ? mix(flatColor, waterColor, waterAlpha / totalAlpha) : waterColor;
-    gl_FragColor = vec4(c, totalAlpha);
+    gl_FragColor = vec4(c, totalAlpha * cutKeep(vWorld)); // carved with the sheet
   }
 `;
 
@@ -357,6 +364,7 @@ export function Water() {
             uFog: { value: LIVE.fog },
             uFogDensity: { value: LIVE.fogDensity },
             uOpacity: { value: LIVE.waterOpacity },
+            uCut: { value: PAPER_CUT_VEC }, // shared cut signal, by reference
             uBreath: { value: 0 },
             uRain: { value: 0 },
             ...wobbleUniforms(),
@@ -385,6 +393,7 @@ export function Water() {
             uFog: { value: LIVE.fog },
             uFogDensity: { value: LIVE.fogDensity },
             uOpacity: { value: LIVE.waterOpacity * OVERPRINT },
+            uCut: { value: PAPER_CUT_VEC }, // shared cut signal, by reference
             uBreath: { value: 0 },
             uRain: { value: 0 },
             ...wobbleUniforms(),
@@ -407,6 +416,7 @@ export function Water() {
             uIntensity: { value: LIVE.waterEdgeIntensity },
             uTideFlatIntensity: { value: LIVE.tideFlatIntensity },
             uTide: { value: 0 },
+            uCut: { value: PAPER_CUT_VEC }, // shared cut signal, by reference
             uFog: { value: LIVE.fog },
             uFogDensity: { value: LIVE.fogDensity },
             ...wobbleUniforms(),

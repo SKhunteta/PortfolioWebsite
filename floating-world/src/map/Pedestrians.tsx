@@ -47,6 +47,8 @@ import { trafficIntensity } from "../world/traffic";
 import { WEATHER } from "../world/weather";
 import { sampleRoadFrontages, isWater, mulberry32 } from "./scatter";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
+import { PAPER_CUT_GLSL } from "./paperCutGlsl";
+import { PAPER_CUT_VEC } from "./paperCut";
 
 const VERT = /* glsl */ `
   ${FOG_VARYINGS_VERT}
@@ -94,6 +96,7 @@ const VERT = /* glsl */ `
 const FRAG = /* glsl */ `
   ${NOISE_GLSL}
   ${FOG_VARYINGS_FRAG}
+  ${PAPER_CUT_GLSL}
   varying vec2 vUv;
   varying float vArch;
   varying float vSeed;
@@ -214,7 +217,8 @@ const FRAG = /* glsl */ `
     }
 
     if (m < 0.01) discard;
-    float a = m * uOpacity * (1.0 - fogFactor());
+    // A walker on carved-away paper steps aside with it (the dive incision).
+    float a = m * uOpacity * (1.0 - fogFactor()) * cutKeep(vWorld);
     if (a < 0.004) discard;
     gl_FragColor = vec4(mix(col, uFog, fogFactor()), a);
   }
@@ -374,6 +378,7 @@ export function Pedestrians() {
           uOpacity: { value: 0.9 },
           uRain: { value: 0 },
           uTime: { value: 0 },
+          uCut: { value: PAPER_CUT_VEC }, // shared cut signal, by reference
           uFog: { value: LIVE.fog },
           uFogDensity: { value: LIVE.fogDensity },
         }}
