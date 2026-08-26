@@ -246,10 +246,9 @@ body {
    the badge, clear of the caption/badge traffic along the bottom edge on
    phones. Sits below the observe button, which owns the top-right corner. */
 .hud-weather {
-  position: fixed;
-  /* Below the observe + sound buttons in the shared top-right column. */
-  top: calc(max(14px, env(safe-area-inset-top)) + 106px);
-  right: max(20px, env(safe-area-inset-right));
+  /* Lives inside the top-right dial column (Hud.tsx), right under the sky
+     dial that drives it, so the word can never collide with the chrome. */
+  padding-right: 2px;
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -616,10 +615,10 @@ body {
   animation: hud-pulse 3s ease-in-out infinite;
 }
 
-/* The time-of-day dial: a subtle twin of the observe button, stacked just below
-   it in the same top-right ink column. A sun-dot toggle that opens a thin slider
-   to walk the print through any Seattle hour, then hand it back to the live sun. */
-.hud-time {
+/* The manual dials' column: one fixed flex column under the observe button
+   holding the time dial and the sky dial, so an open panel pushes the dial
+   below it down the sheet instead of overlapping it. */
+.hud-column {
   position: fixed;
   top: calc(max(14px, env(safe-area-inset-top)) + 52px);
   right: max(20px, env(safe-area-inset-right));
@@ -628,6 +627,16 @@ body {
   align-items: flex-end;
   gap: 8px;
   z-index: 5;
+}
+
+/* The time-of-day dial: a subtle twin of the observe button, stacked in the
+   top-right ink column. A sun-dot toggle that opens a thin slider to walk the
+   print through any Seattle hour, then hand it back to the live sun. */
+.hud-time {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
 }
 .hud-time-toggle {
   display: inline-flex;
@@ -765,6 +774,133 @@ body {
   transition: background 0.3s ease, color 0.3s ease;
 }
 .hud-time-live:hover {
+  background: rgba(199, 62, 42, 0.12);
+}
+
+/* The sky dial: the time dial's twin, next in the same ink column. A cloud-dot
+   toggle that opens a small tray of weather chips — clear through storm and
+   snow — so any sky can be painted onto the print by hand, then given back to
+   the real Seattle weather with "real". Chips keep real touch heights. */
+.hud-sky {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.hud-sky-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 15px;
+  font-family: var(--hud-serif);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #6f5a3e;
+  background: rgba(242, 230, 198, 0.34);
+  border: 1px solid rgba(122, 101, 73, 0.38);
+  border-radius: 3px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  text-shadow: var(--fw-halo);
+  transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}
+.hud-sky-toggle:hover {
+  background: rgba(242, 230, 198, 0.55);
+  color: #4a3721;
+}
+.hud-sky-toggle:focus-visible {
+  outline: 2px solid rgba(199, 62, 42, 0.55);
+  outline-offset: 2px;
+}
+.hud-sky-toggle .hud-dot {
+  background: #a89675;
+}
+/* Pinned: the dot warms to the simulated-gold like the time dial's — the sky
+   is being painted by hand, not read live off the city. */
+.hud-sky-on {
+  background: rgba(201, 151, 46, 0.16);
+  border-color: rgba(201, 151, 46, 0.5);
+  color: #9a7526;
+}
+.hud-sky-on .hud-dot {
+  background: #c9972e;
+  box-shadow: 0 0 8px #c9972e88;
+}
+.hud-sky-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(230px, 62vw);
+  padding: 12px 14px;
+  background: rgba(242, 230, 198, 0.52);
+  border: 1px solid rgba(122, 101, 73, 0.38);
+  border-radius: 3px;
+  text-shadow: var(--fw-halo);
+}
+.hud-sky-chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.hud-sky-chip {
+  min-height: 40px;
+  padding: 6px 10px;
+  font-family: var(--hud-serif);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #6f5a3e;
+  background: rgba(242, 230, 198, 0.4);
+  border: 1px solid rgba(122, 101, 73, 0.34);
+  border-radius: 3px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+.hud-sky-chip:hover {
+  background: rgba(242, 230, 198, 0.62);
+  color: #4a3721;
+}
+.hud-sky-chip:focus-visible {
+  outline: 2px solid rgba(199, 62, 42, 0.55);
+  outline-offset: 2px;
+}
+/* The chosen sky wears the hand-driven gold, matching the pinned toggles. */
+.hud-sky-chip-on {
+  background: rgba(201, 151, 46, 0.18);
+  border-color: rgba(201, 151, 46, 0.55);
+  color: #9a7526;
+}
+.hud-sky-readout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--hud-serif);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: #6f5a3e;
+}
+.hud-sky-real {
+  font-family: var(--hud-serif);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #b0472c;
+  background: transparent;
+  border: 1px solid rgba(199, 62, 42, 0.42);
+  border-radius: 3px;
+  padding: 5px 12px;
+  min-height: 32px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+.hud-sky-real:hover {
   background: rgba(199, 62, 42, 0.12);
 }
 

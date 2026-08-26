@@ -72,9 +72,14 @@ interface WeatherUi {
 
 export const useWeather = create<WeatherUi>(() => ({ kind: null, label: null }));
 
-function setKind(kind: WeatherKind) {
+// byHand: a runtime pin (the HUD's sky dial, __linkMap.setWeather) marks the
+// word so a painted storm never claims to be the real one — honesty holds even
+// mid-demonstration. URL pins skip the mark: they exist for screenshots and
+// the smoke harness, where the suffix would only churn fixtures.
+function setKind(kind: WeatherKind, byHand = false) {
   Object.assign(target, LEVELS[kind]);
-  useWeather.setState({ kind, label: LABELS[kind] ?? null });
+  const base = LABELS[kind] ?? null;
+  useWeather.setState({ kind, label: byHand && base ? `${base} · by hand` : base });
 }
 
 /** WMO weather codes (Open-Meteo's `weather_code`) → our watercolor kinds.
@@ -134,9 +139,15 @@ function parseOverride(): WeatherKind | null {
 
 let override: WeatherKind | null = parseOverride();
 
+/** The active pin, if any — the HUD's sky dial reads it to start pinned when
+ * the page loaded with ?weather=. */
+export function weatherOverride(): WeatherKind | null {
+  return override;
+}
+
 export function setWeatherOverride(kind: WeatherKind | null) {
   override = kind && KINDS.includes(kind) ? kind : null;
-  if (override) setKind(override);
+  if (override) setKind(override, true);
   else if (lastFetched) setKind(lastFetched);
   else {
     Object.assign(target, LEVELS.clear);
