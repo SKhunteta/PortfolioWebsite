@@ -15,6 +15,7 @@ import { SOUND_FEATURE_ENABLED, OBSERVE_FEATURE_ENABLED } from "../world/config"
 import { HAS_BASEMAP } from "../map/basemap";
 import { PrintFrame } from "./PrintFrame";
 import { TimeOfDay } from "./TimeOfDay";
+import { WeatherDial } from "./WeatherDial";
 
 const MODE_LABEL: Record<Mode, string> = {
   live: "live",
@@ -144,9 +145,6 @@ export function Hud() {
         {MODE_LABEL[mode]}
       </div>
 
-      {/* The weather word — real conditions, spoken as quietly as the badge. */}
-      {weatherWord && <div className="hud-weather">{weatherWord}</div>}
-
       {intro && (
         <div
           className="hud-intro hud-intro-dismissable"
@@ -217,10 +215,18 @@ export function Hud() {
         </button>
       )}
 
-      {/* The manual time-of-day dial: pin the light to any Seattle hour by hand,
-          or hand it back to the real sun. Subtle twin of the observe button,
-          stacked just below it in the same top-right ink column. */}
-      <TimeOfDay />
+      {/* The manual dials, one top-right ink column below observe: pin the
+          light to any Seattle hour, paint any sky by hand — each hands back to
+          the real sun / real weather. One flex column so an open panel pushes
+          the dial below it instead of overlapping. */}
+      <div className="hud-column">
+        <TimeOfDay />
+        <WeatherDial />
+        {/* The weather word — real conditions (or a hand-painted sky, and it
+            says so), spoken as quietly as the badge, right under the dial
+            that drives it. */}
+        {weatherWord && <div className="hud-weather">{weatherWord}</div>}
+      </div>
 
       {/* The room tone: a generative ambient print-hum keyed to the same sun,
           weather and trains as the paint. Off by default — a breathing sheet
