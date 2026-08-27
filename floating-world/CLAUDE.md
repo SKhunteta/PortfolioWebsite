@@ -83,11 +83,23 @@ it on a second monitor and the print breathes at them.
   so the ground's full treatment (`cutSurface`: hole + ink + fibers) and the
   one-line `cutKeep()` alpha carve in everything stamped on the sheet
   (roads, parks, both water passes + the shore stroke, hanko seals, the
-  surface platform crowd, cars, buses, pedestrians) open and heal in
+  surface platform crowd, cars, buses, pedestrians, the streetcars and
+  their rail ink) open and heal in
   lockstep with the Buildings skylight (widened to clear the whole cut) and
   the camera's own glide. The depth-writing landmarks are sliced by DISCARD,
   not an alpha fade — a faded tower would hang an invisible depth wall over
-  the pit. Geometry contract (vitest, `map/__tests__/paperCut.test.ts`): the
+  the pit — and that discard is COMPILED IN only while a dive is live
+  (`Landmarks.tsx syncCutDiscard`, a lazy define): the bare presence of a
+  discard changes real-GPU codegen/early-Z even when the branch never runs,
+  and this scene's driver family has a history of SwiftShader-invisible
+  black flashes (see fx/Composer.tsx), so the idle landmark program stays
+  byte-identical to the pre-incision shader. All cut math is NaN-proof by
+  construction (`cutDir` divides by a clamped length, never normalize) — one
+  NaN pixel through bloom paints flashing black blocks on that same GPU
+  family. The wheel RISES OUT of a dive like a drag does (never fights the
+  hold for altitude), and `?cut=off` pins the incision closed entirely — the
+  field-bisection lever for real-hardware triage; a dive then still frames
+  the hall through the old translucent-sheet read. Geometry contract (vitest, `map/__tests__/paperCut.test.ts`): the
   sheets hang strictly between the paper's underside and the tunnel roof,
   terrace inward with depth, and even the deckle's deepest bite never cuts
   into the hall's lamplit ring wall — the aperture exists to reveal the
@@ -584,6 +596,8 @@ ambient fleet at that service level, live forces live-only, all forces
 live-only with the crowd rule off (every coach on the page, however many
 that is) (`?traffic=` pins the street cars);
 `?chalk=on|off` forces or clears the summer-weekend sidewalk chalk;
+`?cut=off` pins the dive incision closed (diving falls back to the
+translucent-sheet read — the real-GPU bisection lever);
 `?bridge=on|off|open` pins the Fremont Bridge (on loops openings with the
 rush gate lifted, open freezes the leaves raised with the sailboat mid-cut,
 off welds the span shut); `?streetcars=off` hides the Seattle Streetcar pair;

@@ -35,6 +35,8 @@ import { buildStrip } from "./ribbon";
 import { CLOCK } from "../world/clock";
 import { LIVE } from "../world/palettes";
 import { NOISE_GLSL, FOG_VARYINGS_VERT, FOG_VARYINGS_FRAG } from "./watercolorGlsl";
+import { PAPER_CUT_GLSL } from "./paperCutGlsl";
+import { PAPER_CUT_VEC } from "./paperCut";
 
 // South Lake Union line: McGraw Square (Westlake & Olive) up Westlake Avenue,
 // the Valley Street bend at the lake, east to the Fairview & Campus Drive
@@ -86,6 +88,7 @@ const VERT = /* glsl */ `
 const FRAG = /* glsl */ `
   ${NOISE_GLSL}
   ${FOG_VARYINGS_FRAG}
+  ${PAPER_CUT_GLSL}
   varying vec3 vLocal;
   varying float vCoat;
   uniform vec3 uCoatA;   // persimmon orange
@@ -121,7 +124,9 @@ const FRAG = /* glsl */ `
     // Pale roof cap over everything above the belt.
     c = mix(c, uRoof, smoothstep(0.215, 0.228, vLocal.y) * 0.92);
 
-    float a = uOpacity * (0.9 + 0.2 * wash);
+    // A streetcar can't ride over the dive incision (the SLU terminus sits
+    // at Westlake's hall): carved away with its street.
+    float a = uOpacity * (0.9 + 0.2 * wash) * cutKeep(vWorld);
     gl_FragColor = vec4(mix(c, uFog, fogFactor()), a);
   }
 `;
@@ -141,6 +146,7 @@ const TRACK_VERT = /* glsl */ `
 const TRACK_FRAG = /* glsl */ `
   ${NOISE_GLSL}
   ${FOG_VARYINGS_FRAG}
+  ${PAPER_CUT_GLSL}
   varying vec2 vUv;
   uniform vec3 uColor;
   uniform float uIntensity;
@@ -149,7 +155,8 @@ const TRACK_FRAG = /* glsl */ `
     float core = pow(smoothstep(1.0, 0.0, across), 1.5);
     float dapple = 0.75 + 0.25 * wcNoise(vWorld * 4.0);
     vec3 c = mix(uColor, uFog, fogFactor());
-    gl_FragColor = vec4(c, core * dapple * uIntensity);
+    // Rail ink stamped on the sheet is carved away with it (dive incision).
+    gl_FragColor = vec4(c, core * dapple * uIntensity * cutKeep(vWorld));
   }
 `;
 
@@ -338,6 +345,7 @@ export function Streetcars() {
           uniforms={{
             uColor: { value: RAIL_INK },
             uIntensity: { value: 1 },
+            uCut: { value: PAPER_CUT_VEC }, // shared cut signal, by reference
             uFog: { value: LIVE.fog }, // palette-by-reference
             uFogDensity: { value: LIVE.fogDensity },
           }}
@@ -367,6 +375,7 @@ export function Streetcars() {
             uSkirt: { value: SKIRT },
             uWindow: { value: LIVE.trainWindow },
             uWindowIntensity: { value: LIVE.windowIntensity },
+            uCut: { value: PAPER_CUT_VEC }, // shared cut signal, by reference
             uOpacity: { value: LIVE.ferryOpacity },
             uFog: { value: LIVE.fog },
             uFogDensity: { value: LIVE.fogDensity },

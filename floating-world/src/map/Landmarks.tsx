@@ -145,8 +145,15 @@ const FRAG = /* glsl */ `
     // whose footprint falls inside the deckled aperture is carved away with
     // the paper it stood on. Discard (not an alpha fade) because this
     // material writes depth — a faded-but-depth-writing tower would hang an
-    // invisible wall over the pit.
-    if (cutKeep(vWorld) < 0.5) discard;
+    // invisible wall over the pit. COMPILED IN ONLY WHILE A DIVE IS LIVE
+    // (syncCutDiscard() toggles the define): the bare presence of a discard
+    // changes real-GPU codegen and early-Z behavior even when the branch
+    // never runs, and this scene's driver family has a history of
+    // SwiftShader-invisible black flashes — idle, the program stays
+    // byte-identical to the pre-incision shader.
+    #ifdef PAPER_CUT_DISCARD
+      if (cutKeep(vWorld) < 0.5) discard;
+    #endif
     float wash = wcFbm(vWorld * 0.8 + vY * 2.1); // pigment mottle per face
     // A fixed key light from the northwest sky: sunlit and shadowed faces
     // diverge, and flat silhouettes become solid massing.
@@ -1067,6 +1074,23 @@ function dawnDuskEnv(
   return { dawn: env * Math.max(0, dir), dusk: env * Math.max(0, -dir) };
 }
 
+/** Arm the incision's discard slice only while a dive is live, and disarm it
+ *  once the cut has fully healed — two tiny recompiles per dive cycle, so the
+ *  idle landmark program stays byte-identical to the pre-incision shader
+ *  (see the PAPER_CUT_DISCARD note in FRAG). */
+function syncCutDiscard(m: THREE.ShaderMaterial) {
+  const live = PAPER_CUT_VEC.z > 0.001;
+  const armed = m.defines !== undefined && "PAPER_CUT_DISCARD" in m.defines;
+  if (live === armed) return;
+  if (live) m.defines = { ...(m.defines ?? {}), PAPER_CUT_DISCARD: 1 };
+  else {
+    const next = { ...(m.defines ?? {}) };
+    delete next.PAPER_CUT_DISCARD;
+    m.defines = next;
+  }
+  m.needsUpdate = true;
+}
+
 export function Landmarks() {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const geometry = useMemo(buildGeometry, []);
@@ -1080,6 +1104,7 @@ export function Landmarks() {
   useFrame(() => {
     const m = materialRef.current;
     if (!m) return;
+    syncCutDiscard(m);
     m.uniforms.uOpacity.value = LIVE.landmarkOpacity;
     m.uniforms.uFogDensity.value = LIVE.fogDensity;
     const { dawn, dusk } = dawnDuskEnv(phaseRef, velRef);
@@ -1147,6 +1172,7 @@ export function GreatWheel() {
   useFrame(() => {
     const m = materialRef.current;
     if (m) {
+      syncCutDiscard(m);
       m.uniforms.uOpacity.value = LIVE.landmarkOpacity;
       m.uniforms.uFogDensity.value = LIVE.fogDensity;
       const { dawn, dusk } = dawnDuskEnv(phaseRef, velRef);

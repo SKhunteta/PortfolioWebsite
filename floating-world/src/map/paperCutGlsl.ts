@@ -37,8 +37,14 @@ export const PAPER_CUT_GLSL = /* glsl */ `
   // the edge closes seamlessly at ±π: broad lobes shape the tear, a fine
   // nibble gives the paper tooth. The seed de-correlates the sheets so no
   // two tears in the stack line up.
+  // NaN-safe bearing: never normalize() (a zero-length vector would put NaN
+  // into the frame, and one NaN pixel through the bloom chain paints big
+  // black blocks on the real-GPU family SwiftShader can't reproduce).
+  vec2 cutDir(vec2 d) {
+    return d / max(length(d), 1e-3);
+  }
   float cutEdgeR(vec2 d, float baseR, float ampK, float seed) {
-    vec2 c = normalize(d + vec2(1e-4));
+    vec2 c = cutDir(d);
     float lobes = wcNoise(c * 2.7 + seed) - 0.5;
     float nib = wcNoise(c * 9.0 + seed * 3.1) - 0.5;
     return baseR * cutOpen() * (1.0 + ampK * (1.7 * lobes + 0.6 * nib));
@@ -72,7 +78,7 @@ export const PAPER_CUT_SURFACE_GLSL = /* glsl */ `
       * (0.45 + 0.55 * wcNoise(d * 6.5 + 2.2));
     // Exposed washi fibers: sparse strands of the sheet's unsized heart
     // reaching into the opening, each bearing its own length.
-    vec2 c = normalize(d + vec2(1e-4));
+    vec2 c = cutDir(d);
     float fib = wcNoise(c * 48.0 + 9.1);
     float reach = 0.015 + 0.08 * fib * fib;
     float strand = smoothstep(er - reach, er - reach * 0.15, r) * smoothstep(0.30, 0.72, fib);
