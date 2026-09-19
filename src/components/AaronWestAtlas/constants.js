@@ -50,9 +50,17 @@ export const MAP_CONFIG = {
   zoom: 4,
   minZoom: 3,
   maxZoom: 18,
-  tileUrl: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+  // CARTO's free basemap CDN now watermarks tiles with "API KEY REQUIRED",
+  // so the basemap comes from Esri's keyless light-gray canvas instead.
+  // Esri renders it natively only to zoom 16; Leaflet upscales past that.
+  maxNativeZoom: 16,
+  tileUrl:
+    "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+  // Place labels live in a separate reference layer drawn over the base.
+  labelsUrl:
+    "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}",
   tileAttribution:
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, DeLorme, NAVTEQ',
 };
 
 // Spotify track IDs for each unique song (used by SpotifyPlayer)
