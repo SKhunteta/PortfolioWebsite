@@ -36,7 +36,14 @@ const AtlasMap = ({
       scrollWheelZoom={true}
     >
       <MapRefSetter mapRef={mapRef} />
-      <TileLayer url={config.tileUrl} attribution={config.tileAttribution} />
+      <TileLayer
+        url={config.tileUrl}
+        attribution={config.tileAttribution}
+        maxNativeZoom={config.maxNativeZoom}
+      />
+      {config.labelsUrl && (
+        <TileLayer url={config.labelsUrl} maxNativeZoom={config.maxNativeZoom} />
+      )}
 
       {LOCATIONS.map((loc) => {
         const isActive = activeAlbums.has(loc.album);

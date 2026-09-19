@@ -72,9 +72,16 @@ export const MAP_CONFIG = {
   zoom: 11,
   minZoom: 9,
   maxZoom: 16,
-  tileUrl: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+  // CARTO's free basemap CDN now watermarks tiles with "API KEY REQUIRED",
+  // so the basemap comes from Esri's keyless light-gray canvas instead.
+  maxNativeZoom: 16,
+  tileUrl:
+    "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+  // Place labels live in a separate reference layer drawn over the base.
+  labelsUrl:
+    "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}",
   tileAttribution:
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+    'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, DeLorme, NAVTEQ',
 };
 
 // Station fields:

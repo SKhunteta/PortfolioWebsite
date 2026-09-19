@@ -83,7 +83,14 @@ const LinkMap = ({
     >
       <MapRefSetter mapRef={mapRef} />
       <ZoomWatcher onZoom={setZoom} />
-      <TileLayer url={MAP_CONFIG.tileUrl} attribution={MAP_CONFIG.tileAttribution} />
+      <TileLayer
+        url={MAP_CONFIG.tileUrl}
+        attribution={MAP_CONFIG.tileAttribution}
+        maxNativeZoom={MAP_CONFIG.maxNativeZoom}
+      />
+      {MAP_CONFIG.labelsUrl && (
+        <TileLayer url={MAP_CONFIG.labelsUrl} maxNativeZoom={MAP_CONFIG.maxNativeZoom} />
+      )}
 
       {LINES_FOR_ERA[era].map((lineId) => {
         if (!activeLines.has(lineId)) return null;
