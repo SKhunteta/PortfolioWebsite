@@ -345,8 +345,9 @@ export function Pedestrians() {
       mat.uniforms.uOpacity.value = 0.92 * (0.2 + 0.8 * trafficIntensity());
       mat.uniforms.uFogDensity.value = LIVE.fogDensity;
       // The eased real-rain signal raises the umbrellas (staggered per figure
-      // in the shader) — the same honest wash that darkens the paper.
-      mat.uniforms.uRain.value = WEATHER.rain;
+      // in the shader) — the same honest wash that darkens the paper. Snow
+      // raises them too: Hiroshige's snow scenes walk under laden umbrellas.
+      mat.uniforms.uRain.value = Math.max(WEATHER.rain, WEATHER.snow * 0.9);
     }
   });
 

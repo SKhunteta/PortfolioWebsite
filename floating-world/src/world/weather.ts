@@ -2,8 +2,9 @@
 // the palette (world/sun.ts). Open-Meteo's current conditions (no key, CORS
 // open) are fetched every ten minutes and classified into a handful of
 // watercolor moves: rain darkens the washes and blooms pigment along the
-// shorelines, fog thickens until the horizon landmarks dissolve, snow dusts
-// the whole map pale. Honesty is part of the art here too — the HUD only
+// shorelines, fog thickens until the horizon landmarks dissolve, snow
+// blankets the whole city pale under a heavy snow-grey sky. Honesty is part
+// of the art here too — the HUD only
 // speaks a weather word after a real fetch succeeds, and if the fetch fails
 // the paper simply stays dry: no claim, no fake drizzle.
 //
@@ -350,10 +351,15 @@ export function easeWeather(dt: number) {
 }
 
 // Scratch colors for the snow/fog lerps — never handed to materials.
-// Warm register: snow dusts the print warm-pale and fog is kasumi
+// Warm register: snow blankets the print warm-pale and fog is kasumi
 // (paper-toned mist), never slate — cool greys would break the woodblock.
-const SNOW_PAPER = new THREE.Color("#ece5d4");
-const SNOW_PARK = new THREE.Color("#f0ead8");
+// All under the bright-paper ceiling (~#f2): a snowfield, never a bloom.
+const SNOW_PAPER = new THREE.Color("#f0ebdd");
+const SNOW_PARK = new THREE.Color("#f1ecdf");
+// The heavy snow sky — a warm grey the cream sheet sinks into so the white
+// flakes and the capped roofs read against it (Hiroshige's Kanbara move:
+// darken the sky, reserve the snow).
+const SNOW_SKY = new THREE.Color("#d6cfc0");
 const FOG_PALE = new THREE.Color("#e6d6ae");
 // The flash lifts toward pale washi, NOT white — the bright-paper bloom rule
 // binds even lightning (every channel stays under ~#f2, only painted-HDR
@@ -382,20 +388,37 @@ export function applyWeather(sunPhase: number) {
   LIVE.paperGrain *= 1 + 0.4 * w.rain;
   // A grey day has to work harder against bright washi than it did against
   // link-map's night city — deeper dim so overcast actually reads.
-  const dim = 1 - 0.12 * w.overcast - 0.12 * w.rain;
+  const dim = 1 - 0.14 * w.overcast - 0.14 * w.rain;
   LIVE.ground.multiplyScalar(dim);
   LIVE.paperTint.multiplyScalar(dim);
-  LIVE.background.multiplyScalar(1 - 0.05 * w.overcast - 0.06 * w.rain);
+  LIVE.background.multiplyScalar(1 - 0.06 * w.overcast - 0.08 * w.rain);
 
   // Wet streets catch the gold filaments at night.
   LIVE.roadIntensity *= 1 + 0.35 * w.rain * (1 - sunPhase);
 
-  // Snow: the rare day the whole map goes pale — washes buried, edges cool.
+  // Snow: the rare day the whole city goes under the blanket. Washes bury,
+  // the town's roofs cap white, the evergreens flock, the sumi streets
+  // soften to tracks in the snow, and the sky sinks to a heavy snow-grey so
+  // every white mark reads in reserve against it. After dark the blanket
+  // DIMS with the print instead of erasing it — a moonlit snowfield under
+  // the lantern look, never a second daylight: the lerps ease off toward
+  // night and the sky holds its aubergine.
   if (w.snow > 0.001) {
-    LIVE.ground.lerp(SNOW_PAPER, w.snow * 0.42);
-    LIVE.paperTint.lerp(SNOW_PAPER, w.snow * 0.32);
-    LIVE.park.lerp(SNOW_PARK, w.snow * 0.55);
-    LIVE.groundOpacity = Math.min(1, LIVE.groundOpacity + 0.12 * w.snow);
+    const s = w.snow * (0.45 + 0.55 * sunPhase);
+    LIVE.ground.lerp(SNOW_PAPER, s * 0.68);
+    LIVE.paperTint.lerp(SNOW_PAPER, s * 0.55);
+    LIVE.park.lerp(SNOW_PARK, s * 0.8);
+    LIVE.tree.lerp(SNOW_PARK, s * 0.45);
+    LIVE.building.lerp(SNOW_PAPER, s * 0.3);
+    LIVE.buildingRoofA.lerp(SNOW_PAPER, s * 0.75);
+    LIVE.buildingRoofB.lerp(SNOW_PAPER, s * 0.75);
+    LIVE.buildingRoofC.lerp(SNOW_PAPER, s * 0.75);
+    LIVE.landmark.lerp(SNOW_PAPER, s * 0.22);
+    // The gold lantern streets stay lit through a night snowfall — burial is
+    // a daytime ink-cover move.
+    LIVE.roadIntensity *= 1 - 0.45 * w.snow * (0.3 + 0.7 * sunPhase);
+    LIVE.background.lerp(SNOW_SKY, w.snow * 0.5 * (0.3 + 0.7 * sunPhase));
+    LIVE.groundOpacity = Math.min(1, LIVE.groundOpacity + 0.15 * w.snow);
   }
 
   // Lightning: for one flickering instant the whole sheet lifts pale and the

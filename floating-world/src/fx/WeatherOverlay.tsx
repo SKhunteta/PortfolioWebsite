@@ -1,10 +1,14 @@
 // The rain itself, drawn the way a watercolorist draws rain: diagonal ink
-// hatching in screen space, two depths of it, plus drifting flakes when the
-// rare snow day comes. One full-screen quad, one draw call, normal-blended
-// in the label ink (palette-by-reference) so it reads as strokes ON the
-// page, never as a particle system. Gated by PROFILE.weatherOverlay —
-// phones keep weather in the palette and the wet paper only — and the mesh
-// hides itself entirely on a dry day so the fill cost is zero.
+// hatching in screen space — two depths always, a third broad near sheet
+// when a real downpour comes — plus a three-depth curtain of flake-white
+// snow on the rare snow day (far dust, mid fall, big slow near flakes, each
+// flake fluttering on its own hashed beat). One full-screen quad, one draw
+// call, normal-blended: rain is strokes of the label ink
+// (palette-by-reference), snow is warm paper-white held under the bloom
+// ceiling — so it reads as pigment ON the page, never as a particle system.
+// Gated by PROFILE.weatherOverlay — phones keep weather in the palette and
+// the wet paper only — and the mesh hides itself entirely on a dry day so
+// the fill cost is zero.
 //
 // The hatch's slant is WIND, not a constant: it meanders through gusts
 // (two incommensurate sines off the shared clock) and a storm leans the
@@ -59,16 +63,21 @@ const FRAG = /* glsl */ `
     return dash * gate;
   }
 
-  // Snow: sparse dots per grid cell, drifting down slowly with a sway.
-  // The wind carries the flakes sideways as it leans the rain.
-  float flakes(vec2 p, float cells, float speed, float density) {
-    p.x += sin(uTime * 0.5 + p.y * 5.0) * 0.02 + (1.0 - p.y) * uWind * 0.5;
+  // Snow: hashed flakes per grid cell, each with its own size, fall pace and
+  // flutter phase — a curtain, not a grid. The whole sheet sways on the wind
+  // that leans the rain, and every flake wanders its cell on its own beat.
+  float flakes(vec2 p, float cells, float speed, float density, float size) {
+    p.x += sin(uTime * 0.4 + p.y * 3.0) * 0.03 + (1.0 - p.y) * uWind * 0.6;
     p.y += uTime * speed;
     vec2 cell = floor(p * cells);
     vec2 f = fract(p * cells);
-    vec2 o = vec2(whHash(cell), whHash(cell + 11.3)) * 0.6 + 0.2;
+    float h1 = whHash(cell), h2 = whHash(cell + 11.3), h3 = whHash(cell + 71.7);
+    // Per-flake flutter — no two flakes fall in step.
+    f.x += sin(uTime * (0.5 + h3 * 0.9) + h1 * 6.28) * 0.09;
+    vec2 o = vec2(h1, h2) * 0.36 + 0.32;
     float d = length(f - o);
-    float dot_ = smoothstep(0.16, 0.05, d);
+    float r = size * (0.5 + 0.5 * h3); // hashed size spread
+    float dot_ = smoothstep(r, r * 0.3, d);
     float gate = step(1.0 - density, whHash(cell + 47.1));
     return dot_ * gate;
   }
@@ -84,21 +93,35 @@ const FRAG = /* glsl */ `
     return mix(xa, xb, f) * 0.16 + (1.0 - y) * 0.1 * (seed - 0.5);
   }
 
+  // Snowfall is PAPER, not ink: warm flake-white held under the bright-paper
+  // bloom ceiling — white reserve against the darkened snow sky, the way
+  // Hiroshige printed Kanbara.
+  const vec3 SNOWC = vec3(0.94, 0.925, 0.885);
+
   void main() {
     vec2 p = vec2(vUv.x * uAspect, vUv.y);
-    float a = 0.0;
+    float aR = 0.0;
+    float aS = 0.0;
     if (uRain > 0.003) {
       // Far sheet: fine, fast, faint. Near strokes: broad, slower, darker.
-      a += hatch(p, 130.0, 0.7, uRain * 0.5) * 0.45;
-      a += hatch(p + 3.1, 60.0, 0.45, uRain * 0.35);
+      aR += hatch(p, 130.0, 0.7, uRain * 0.55) * 0.45;
+      aR += hatch(p + 3.1, 60.0, 0.45, uRain * 0.4);
+      // The downpour's near sheet: broad slow strokes only a real rain or a
+      // storm brings out — drizzle never carries it.
+      float pour = smoothstep(0.55, 1.0, uRain);
+      aR += hatch(p + 9.4, 26.0, 0.32, pour * 0.35) * 0.85 * pour;
     }
     if (uSnow > 0.003) {
-      a += flakes(p, 24.0, 0.045, uSnow * 0.5) * 0.9;
-      a += flakes(p + 7.7, 44.0, 0.075, uSnow * 0.4) * 0.5;
+      // Three depths of the same curtain: far dust, the mid fall, and the
+      // big slow near flakes drifting just in front of the glass.
+      aS += flakes(p, 60.0, 0.05, uSnow * 0.55, 0.11) * 0.5;
+      aS += flakes(p + 7.7, 30.0, 0.075, uSnow * 0.5, 0.13) * 0.8;
+      aS += flakes(p + 3.9, 13.0, 0.11, uSnow * 0.42, 0.17);
     }
-    float wall = max(uRain, uSnow);
-    vec3 col = uInk;
-    float alpha = min(a, 1.0) * 0.16 * wall;
+    float alphaR = min(aR, 1.0) * 0.2 * uRain;
+    float alphaS = min(aS, 1.0) * 0.8 * uSnow;
+    vec3 col = mix(uInk, SNOWC, clamp(alphaS * 8.0, 0.0, 1.0));
+    float alpha = max(alphaR, alphaS);
 
     if (uBolt > 0.01) {
       // Main stroke: from the top edge down to a hashed tip height.
@@ -144,9 +167,13 @@ export function WeatherOverlay() {
     m.uniforms.uTime.value = CLOCK.t;
     m.uniforms.uRain.value = WEATHER.rain;
     m.uniforms.uSnow.value = WEATHER.snow;
-    // Gusts: two incommensurate sines meander the slant; a storm leans hard.
+    // Gusts: two incommensurate sines meander the slant; a storm leans hard —
+    // both in the gust swing and in the standing lean of the whole sheet.
     const gust = Math.sin(CLOCK.t * 0.16) * 0.6 + Math.sin(CLOCK.t * 0.043 + 2.0) * 0.4;
-    m.uniforms.uWind.value = 0.22 + gust * (0.05 + 0.1 * WEATHER.rain + 0.25 * WEATHER.lightning);
+    m.uniforms.uWind.value =
+      0.22 +
+      0.12 * WEATHER.lightning +
+      gust * (0.05 + 0.12 * WEATHER.rain + 0.3 * WEATHER.lightning);
     m.uniforms.uBolt.value = LIGHTNING.bolt;
     m.uniforms.uSeed.value = LIGHTNING.seed;
     m.uniforms.uAspect.value = size.width / size.height;

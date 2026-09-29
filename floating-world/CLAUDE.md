@@ -429,7 +429,14 @@ it on a second monitor and the print breathes at them.
   `moonState()` from the console.
 - Real Seattle weather still paints the page (`world/weather.ts`,
   Open-Meteo): rain darkens the washes (wet paper), fog is pale kasumi
-  (never slate), snow dusts warm-pale. Rain also stamps **raindrop rings** —
+  (never slate), and snow BLANKETS — the Kanbara move: the sky sinks to a
+  warm snow-grey, the town's roofs cap white, the evergreens flock, the sumi
+  streets soften to tracks, and a three-depth curtain of flake-white falls in
+  front of the glass (far dust, mid fall, big slow near flakes, each
+  fluttering on its own hashed beat — `fx/WeatherOverlay.tsx`), with the
+  walkers' umbrellas up under it. Everything stays warm-pale under the
+  bright-paper ceiling: a snowfield in reserve, never a bloom. Rain also
+  stamps **raindrop rings** —
   sparse foam circles swelling over the water pigment (`map/Water.tsx`, in
   the seigaiha's own foam line) — and the overlay's hatch slant is **wind**,
   meandering through gusts off the shared clock. A real **storm strikes
