@@ -61,12 +61,19 @@ router.use((req, res, next) => {
  */
 router.post("/", askLimiter, async (req, res) => {
   try {
-    const { question, context } = req.body;
+    const { question, context } = req.body ?? {};
 
     if (!question) {
       return res.status(400).json({
         error: "Question is required",
         message: "Please provide a question to ask about the portfolio",
+      });
+    }
+
+    if (typeof question !== "string" || question.length > 1000) {
+      return res.status(400).json({
+        error: "Invalid question",
+        message: "Questions must be text of at most 1000 characters.",
       });
     }
 
@@ -146,11 +153,16 @@ router.get("/suggestions", (req, res) => {
 });
 
 // All other routes commented out for troubleshooting
-router.post("/search", async (req, res) => {
+router.post("/search", askLimiter, async (req, res) => {
   try {
-    const { query, type } = req.body;
+    const { query, type } = req.body ?? {};
     if (!query) {
       return res.status(400).json({ error: "Query is required" });
+    }
+    if (typeof query !== "string" || query.length > 1000) {
+      return res
+        .status(400)
+        .json({ error: "Query must be a string of at most 1000 characters" });
     }
     const queryEmbedding = await OpenAIService.generateEmbedding(query);
     let searchResults;

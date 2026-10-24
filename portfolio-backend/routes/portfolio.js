@@ -1,10 +1,33 @@
 import express from "express";
+import rateLimit from "express-rate-limit";
 import OpenAIService from "../services/openai.js";
 import AnthropicService from "../services/anthropic.js";
 import QdrantService from "../services/qdrant.js";
 import IndexerService from "../services/indexer.js";
 
 const router = express.Router();
+
+// The AI endpoints below call OpenAI and Anthropic on every request, so they
+// are rate limited and their inputs capped to bound spend.
+const aiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 10,
+  message: {
+    error: "Too many requests",
+    message: "Please wait a moment before trying again.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const MAX_QUERY_CHARS = 1000;
+const MAX_JOB_DESCRIPTION_CHARS = 10000;
+const MAX_SKILLS = 50;
+const MAX_SKILL_CHARS = 100;
+
+function isBoundedString(value, maxLen) {
+  return typeof value === "string" && value.length <= maxLen;
+}
 
 /**
  * GET /api/portfolio
@@ -144,10 +167,18 @@ router.get("/experience", async (req, res) => {
  * GET /api/portfolio/search?q=<query>&types=project,skill
  * Semantic search across portfolio content.
  */
-router.get("/search", async (req, res) => {
+router.get("/search", aiLimiter, async (req, res) => {
   const query = req.query.q;
   if (!query) {
     return res.status(400).json({ error: "Query parameter 'q' is required" });
+  }
+  if (!isBoundedString(query, MAX_QUERY_CHARS)) {
+    return res.status(400).json({
+      error: `Query parameter 'q' must be a string of at most ${MAX_QUERY_CHARS} characters`,
+    });
+  }
+  if (req.query.types !== undefined && !isBoundedString(req.query.types, MAX_QUERY_CHARS)) {
+    return res.status(400).json({ error: "Query parameter 'types' is invalid" });
   }
 
   try {
@@ -187,10 +218,15 @@ router.get("/search", async (req, res) => {
  * POST /api/portfolio/ask
  * Body: { "question": "What AI projects has Shreyans built?" }
  */
-router.post("/ask", async (req, res) => {
-  const { question } = req.body;
+router.post("/ask", aiLimiter, async (req, res) => {
+  const { question } = req.body ?? {};
   if (!question) {
     return res.status(400).json({ error: "Field 'question' is required" });
+  }
+  if (!isBoundedString(question, MAX_QUERY_CHARS)) {
+    return res.status(400).json({
+      error: `Field 'question' must be a string of at most ${MAX_QUERY_CHARS} characters`,
+    });
   }
 
   try {
@@ -230,12 +266,29 @@ Guidelines:
  * POST /api/portfolio/assess-fit
  * Body: { "jobDescription": "...", "requiredSkills": ["Python", "AWS"] }
  */
-router.post("/assess-fit", async (req, res) => {
-  const { jobDescription, requiredSkills } = req.body;
+router.post("/assess-fit", aiLimiter, async (req, res) => {
+  const { jobDescription, requiredSkills } = req.body ?? {};
   if (!jobDescription) {
     return res
       .status(400)
       .json({ error: "Field 'jobDescription' is required" });
+  }
+  if (!isBoundedString(jobDescription, MAX_JOB_DESCRIPTION_CHARS)) {
+    return res.status(400).json({
+      error: `Field 'jobDescription' must be a string of at most ${MAX_JOB_DESCRIPTION_CHARS} characters`,
+    });
+  }
+  if (
+    requiredSkills !== undefined &&
+    !(
+      Array.isArray(requiredSkills) &&
+      requiredSkills.length <= MAX_SKILLS &&
+      requiredSkills.every((s) => isBoundedString(s, MAX_SKILL_CHARS))
+    )
+  ) {
+    return res.status(400).json({
+      error: `Field 'requiredSkills' must be an array of at most ${MAX_SKILLS} strings, each at most ${MAX_SKILL_CHARS} characters`,
+    });
   }
 
   try {

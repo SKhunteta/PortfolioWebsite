@@ -419,6 +419,7 @@ const ChatSection = () => {
               <input
                 type="text"
                 value={inputMessage}
+                maxLength={1000}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask me anything about Shreyans' work..."

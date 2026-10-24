@@ -1,4 +1,5 @@
 import express from "express";
+import rateLimit from "express-rate-limit";
 import { randomUUID } from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -14,8 +15,53 @@ import {
 
 const router = express.Router();
 
+// Input caps for tool arguments. Every tool call reaches OpenAI and/or
+// Anthropic, so unbounded strings are unbounded spend.
+const MAX_QUERY_CHARS = 1000;
+const MAX_JOB_DESCRIPTION_CHARS = 10000;
+const MAX_SKILLS = 50;
+const MAX_SKILL_CHARS = 100;
+
 // Session management: Map<sessionId, transport>
 const sessions = new Map();
+// Last activity per session, for idle expiry: Map<sessionId, epoch ms>
+const sessionLastSeen = new Map();
+
+// Clients that never send DELETE would otherwise leave their session in
+// memory forever, so cap the total and expire idle sessions.
+const MAX_SESSIONS = 200;
+const SESSION_IDLE_MS = 30 * 60 * 1000; // 30 minutes
+
+function touchSession(id) {
+  sessionLastSeen.set(id, Date.now());
+}
+
+function expireIdleSessions() {
+  const cutoff = Date.now() - SESSION_IDLE_MS;
+  for (const [id, transport] of sessions) {
+    if ((sessionLastSeen.get(id) ?? 0) < cutoff) {
+      sessions.delete(id);
+      sessionLastSeen.delete(id);
+      transport.close().catch(() => {});
+    }
+  }
+}
+
+setInterval(expireIdleSessions, 5 * 60 * 1000).unref();
+
+const mcpLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 60, // MCP clients send several JSON-RPC calls per tool use
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    res.status(429).json({
+      jsonrpc: "2.0",
+      error: { code: -32000, message: "Too many requests. Please slow down." },
+      id: null,
+    });
+  },
+});
 
 // CORS middleware for MCP connector requests
 router.use((req, res, next) => {
@@ -33,6 +79,8 @@ router.use((req, res, next) => {
   }
   next();
 });
+
+router.use(mcpLimiter);
 
 /**
  * Create and configure a new McpServer instance with all tools registered.
@@ -57,7 +105,7 @@ export function createMcpServer() {
     "portfolio_search",
     "Search Shreyans' portfolio for specific information about projects, skills, experience, or the world of his science-fiction novel The Happiness Liability",
     {
-      query: z.string().describe("Search query about Shreyans' portfolio"),
+      query: z.string().max(MAX_QUERY_CHARS).describe("Search query about Shreyans' portfolio"),
       contentTypes: z
         .array(
           z.enum([
@@ -117,13 +165,16 @@ export function createMcpServer() {
     {
       jobDescription: z
         .string()
+        .max(MAX_JOB_DESCRIPTION_CHARS)
         .describe("Job description or requirements to analyze against"),
       requiredSkills: z
-        .array(z.string())
+        .array(z.string().max(MAX_SKILL_CHARS))
+        .max(MAX_SKILLS)
         .optional()
         .describe("List of required skills"),
       focusArea: z
         .string()
+        .max(MAX_QUERY_CHARS)
         .optional()
         .describe("Specific area to focus the analysis on"),
     },
@@ -186,6 +237,7 @@ export function createMcpServer() {
     {
       projectName: z
         .string()
+        .max(MAX_QUERY_CHARS)
         .describe("Name of the project to get details for"),
       detailLevel: z
         .enum(["summary", "technical", "business"])
@@ -239,9 +291,10 @@ export function createMcpServer() {
     "assess_fit",
     "Assess how well Shreyans fits a specific job based on his portfolio, experience, and skills. Designed for recruiters evaluating Shrey as a candidate.",
     {
-      jobDescription: z.string().describe("Full job description text"),
+      jobDescription: z.string().max(MAX_JOB_DESCRIPTION_CHARS).describe("Full job description text"),
       requiredSkills: z
-        .array(z.string())
+        .array(z.string().max(MAX_SKILL_CHARS))
+        .max(MAX_SKILLS)
         .optional()
         .describe("List of required skills from the job posting"),
     },
@@ -309,7 +362,7 @@ Be specific and reference actual projects, roles, and skills from the context. D
     "ask_shrey",
     "Ask Shreyans a question -- searches across all portfolio content (projects, writing, experience, interests) and responds as if Shrey were answering, grounded in his actual work and perspectives.",
     {
-      question: z.string().describe("The question to ask Shreyans"),
+      question: z.string().max(MAX_QUERY_CHARS).describe("The question to ask Shreyans"),
     },
     async ({ question }) => {
       try {
@@ -362,6 +415,7 @@ Guidelines:
     {
       query: z
         .string()
+        .max(MAX_QUERY_CHARS)
         .describe("Question about the world, its history, or its logic"),
       aspect: z
         .enum([
@@ -454,15 +508,30 @@ router.post("/", async (req, res) => {
 
   if (sessionId && sessions.has(sessionId)) {
     // Existing session: route to its transport
+    touchSession(sessionId);
     const transport = sessions.get(sessionId);
     await transport.handleRequest(req, res, req.body);
   } else if (!sessionId) {
+    if (sessions.size >= MAX_SESSIONS) expireIdleSessions();
+    if (sessions.size >= MAX_SESSIONS) {
+      res.status(503).json({
+        jsonrpc: "2.0",
+        error: {
+          code: -32000,
+          message: "Server is at session capacity. Please try again later.",
+        },
+        id: null,
+      });
+      return;
+    }
+
     // New session: create transport + server, connect them
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: () => randomUUID(),
       onsessioninitialized: (id) => {
         console.log(`MCP session initialized: ${id}`);
         sessions.set(id, transport);
+        touchSession(id);
       },
     });
 
@@ -470,6 +539,7 @@ router.post("/", async (req, res) => {
       if (transport.sessionId) {
         console.log(`MCP session closed: ${transport.sessionId}`);
         sessions.delete(transport.sessionId);
+        sessionLastSeen.delete(transport.sessionId);
       }
     };
 
@@ -501,6 +571,7 @@ router.get("/", async (req, res) => {
 
   if (sessionId && sessions.has(sessionId)) {
     // Existing session — open SSE stream
+    touchSession(sessionId);
     const transport = sessions.get(sessionId);
     await transport.handleRequest(req, res);
     return;
@@ -567,6 +638,7 @@ router.delete("/", async (req, res) => {
   const transport = sessions.get(sessionId);
   await transport.handleRequest(req, res);
   sessions.delete(sessionId);
+  sessionLastSeen.delete(sessionId);
   console.log(`MCP session deleted: ${sessionId}`);
 });
 
