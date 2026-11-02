@@ -110,6 +110,34 @@ router.post("/chat", janetLimiter, async (req, res) => {
       });
     }
 
+    // Only plain-text user/assistant turns of bounded size reach Claude, so
+    // the endpoint can't be used as a general-purpose proxy (image or
+    // document blocks, huge prompts) on our API key.
+    const MAX_CHARS_BY_ROLE = { user: 2000, assistant: 8000 };
+    const MAX_TOTAL_CHARS = 100000;
+    let totalChars = 0;
+    for (const msg of messages) {
+      const maxChars = MAX_CHARS_BY_ROLE[msg?.role];
+      if (
+        !maxChars ||
+        typeof msg.content !== "string" ||
+        msg.content.length > maxChars
+      ) {
+        return res.status(400).json({
+          error: "Invalid message",
+          message:
+            "Each message needs a user or assistant role and text content of reasonable length.",
+        });
+      }
+      totalChars += msg.content.length;
+    }
+    if (totalChars > MAX_TOTAL_CHARS) {
+      return res.status(400).json({
+        error: "Conversation too long",
+        message: "JANET's demo mode supports up to 20 exchanges per session.",
+      });
+    }
+
     const client = new Anthropic({ apiKey: config.anthropic.apiKey });
 
     const response = await client.messages.create({

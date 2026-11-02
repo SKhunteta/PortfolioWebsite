@@ -26,18 +26,18 @@
   "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
-    "@modelcontextprotocol/sdk": "^1.12.3",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@qdrant/js-client-rest": "^1.14.1",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "express-rate-limit": "^8.2.1",
+    "express-rate-limit": "^8.7.1",
     "gtfs-realtime-bindings": "^2.1.0",
     "helmet": "^8.1.0",
     "morgan": "^1.10.0",
     "openai": "^4.103.0",
     "uuid": "^11.1.0",
-    "zod": "^3.25.0"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

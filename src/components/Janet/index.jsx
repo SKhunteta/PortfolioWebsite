@@ -266,6 +266,7 @@ const Janet = () => {
               ref={inputRef}
               type="text"
               value={input}
+              maxLength={2000}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={
