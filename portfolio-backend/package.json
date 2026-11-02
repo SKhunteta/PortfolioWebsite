@@ -35,7 +35,7 @@
     "gtfs-realtime-bindings": "^2.1.0",
     "helmet": "^8.1.0",
     "morgan": "^1.10.0",
-    "openai": "^4.103.0",
+    "openai": "^6.49.0",
     "uuid": "^11.1.0",
     "zod": "^4.6.7"
   },
